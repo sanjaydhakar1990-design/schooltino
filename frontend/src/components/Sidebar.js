@@ -15,7 +15,8 @@ import {
   ClipboardList,
   LogOut,
   School,
-  Globe
+  Globe,
+  UserPlus
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -31,6 +32,7 @@ export const Sidebar = () => {
 
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
+    { path: '/users', icon: UserPlus, label: 'users', roles: ['director', 'principal', 'vice_principal'] },
     { path: '/students', icon: Users, label: 'students' },
     { path: '/staff', icon: UserCog, label: 'staff' },
     { path: '/classes', icon: GraduationCap, label: 'classes' },
