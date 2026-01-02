@@ -1,0 +1,137 @@
+{
+  "project_name": "Schooltino",
+  "design_philosophy": {
+    "name": "The Modern Academy",
+    "archetype": "Swiss Utility x Organic Growth",
+    "core_values": ["Authority", "Clarity", "Efficiency", "Trust"],
+    "anti_patterns": [
+      "Generic Bootstrap Blue",
+      "Gradients on text",
+      "Low contrast gray text",
+      "Symmetry overload"
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "heading": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');"
+    ],
+    "usage_rules": {
+      "headings": "font-heading font-bold tracking-tight text-slate-900 dark:text-slate-50",
+      "subheadings": "font-heading font-semibold text-slate-600 dark:text-slate-400",
+      "body": "font-body text-slate-600 dark:text-slate-300 leading-relaxed",
+      "data_tables": "font-body text-sm",
+      "numbers_financials": "font-mono tracking-tight"
+    }
+  },
+  "colors": {
+    "palette_extension": {
+      "primary": {
+        "DEFAULT": "#4F46E5",
+        "foreground": "#FFFFFF"
+      },
+      "secondary": {
+        "DEFAULT": "#F1F5F9",
+        "foreground": "#0F172A"
+      },
+      "accent": {
+        "DEFAULT": "#F97316",
+        "foreground": "#FFFFFF"
+      },
+      "background": "#F8FAFC",
+      "card": "#FFFFFF",
+      "sidebar": {
+        "DEFAULT": "#0F172A",
+        "foreground": "#F8FAFC",
+        "border": "#1E293B"
+      }
+    },
+    "semantic_usage": {
+      "success": "text-emerald-600 bg-emerald-50 border-emerald-200",
+      "warning": "text-amber-600 bg-amber-50 border-amber-200",
+      "error": "text-rose-600 bg-rose-50 border-rose-200",
+      "info": "text-blue-600 bg-blue-50 border-blue-200"
+    }
+  },
+  "layout_strategies": {
+    "dashboard_grid": "grid grid-cols-1 md:grid-cols-12 gap-6 p-6",
+    "bento_cells": {
+      "hero_stat": "col-span-12 md:col-span-4 lg:col-span-3",
+      "main_chart": "col-span-12 md:col-span-8 lg:col-span-9 row-span-2",
+      "feed_list": "col-span-12 md:col-span-4 lg:col-span-4 row-span-2",
+      "quick_action": "col-span-6 md:col-span-2"
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-10",
+      "section_gap": "gap-8",
+      "card_padding": "p-6"
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl",
+      "header": "border-b border-slate-100 dark:border-slate-800 pb-4 mb-4"
+    },
+    "buttons": {
+      "primary": "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-lg px-6 py-2.5 font-medium transition-all active:scale-95",
+      "secondary": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm rounded-lg px-6 py-2.5 font-medium",
+      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg px-4 py-2"
+    },
+    "inputs": {
+      "style": "h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-slate-950"
+    },
+    "tables": {
+      "wrapper": "rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm",
+      "header": "bg-slate-50 text-slate-500 font-medium text-xs uppercase tracking-wider py-3",
+      "row": "hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0"
+    }
+  },
+  "visual_assets": {
+    "images": {
+      "login_hero": "https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "school_placeholder": "https://images.pexels.com/photos/159213/hall-congress-architecture-building-159213.jpeg",
+      "teacher_placeholder": "https://images.unsplash.com/photo-1593442808882-775dfcd90699?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "student_placeholder": "https://images.unsplash.com/photo-1664388287491-9291c2e294bb?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "icons": "lucide-react"
+  },
+  "motion": {
+    "page_transition": {
+      "initial": { "opacity": 0, "y": 10 },
+      "animate": { "opacity": 1, "y": 0 },
+      "exit": { "opacity": 0, "y": -10 },
+      "transition": { "duration": 0.3, "ease": "easeOut" }
+    },
+    "hover_lift": "hover:-translate-y-1 transition-transform duration-200"
+  },
+  "accessibility": {
+    "contrast_check": "Ensure text-slate-500 is only used for secondary labels. Main text must be text-slate-700 or darker.",
+    "focus_states": "focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+    "aria_labels": "Required for all icon-only buttons"
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add the Google Fonts import to index.css immediately.",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js with the colors and font families defined above.",
+    "3. LAYOUT: Use the 'SidebarLayout' pattern. Fixed sidebar on left (w-64), scrollable content on right.",
+    "4. DASHBOARD: Implement the 'Bento Grid' for the main dashboard. Do not just stack cards vertically.",
+    "5. TABLES: Use Shadcn Table but style it with the 'tables' rules above. Add 'data-testid' to all rows.",
+    "6. LANGUAGE: Prepare the UI for i18n. Use a context provider for language state (Hindi/English).",
+    "7. AI FEATURES: For the 'AI Paper Generator', use a clean, step-by-step wizard interface (Stepper component).",
+    "8. THEME: Default to Light Mode. It is an admin panel, legibility is key. Dark mode is secondary.",
+    "9. DATA-TESTID: Every interactive element (button, input, link) MUST have a data-testid attribute."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Avoid generic centered layouts.",
+    "Create depth through layered design elements.",
+    "Use glass-morphism effects sparingly (only on sticky headers/modals).",
+    "NEVER use AI assistant Emoji characters like 🤖🧠 for icons. Use Lucide icons.",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Components MUST use named exports.",
+    "Pages MUST use default exports."
+  ]
+}
