@@ -452,6 +452,197 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         created_at=current_user["created_at"]
     )
 
+# ==================== USER MANAGEMENT ROUTES ====================
+
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    role: str
+    mobile: Optional[str] = None
+    school_id: str
+    created_by: str
+    status: str = "active"  # active, pending, rejected
+
+class UserListResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+    mobile: Optional[str] = None
+    school_id: str
+    status: str
+    created_by: Optional[str] = None
+    created_by_name: Optional[str] = None
+    created_at: str
+
+@api_router.post("/users/create", response_model=UserListResponse)
+async def create_user_account(user_data: UserCreate, current_user: dict = Depends(get_current_user)):
+    """Director/Principal creates user accounts for their school staff"""
+    
+    # Check permissions
+    if current_user["role"] not in ["director", "principal", "vice_principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized to create users")
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"email": user_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Hash password
+    hashed_pw = bcrypt.hashpw(user_data.password.encode(), bcrypt.gensalt()).decode()
+    
+    # If Principal creates, status is pending (needs Director approval)
+    # If Director creates, status is active
+    status = "active" if current_user["role"] == "director" else "pending"
+    
+    new_user = {
+        "id": str(uuid.uuid4()),
+        "email": user_data.email,
+        "password": hashed_pw,
+        "name": user_data.name,
+        "role": user_data.role,
+        "mobile": user_data.mobile,
+        "school_id": user_data.school_id,
+        "status": status,
+        "created_by": current_user["id"],
+        "is_active": status == "active",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(new_user)
+    
+    await log_audit(current_user["id"], "create_user", "users", {
+        "user_id": new_user["id"],
+        "name": user_data.name,
+        "role": user_data.role,
+        "status": status
+    })
+    
+    return UserListResponse(
+        id=new_user["id"],
+        name=new_user["name"],
+        email=new_user["email"],
+        role=new_user["role"],
+        mobile=new_user["mobile"],
+        school_id=new_user["school_id"],
+        status=new_user["status"],
+        created_by=new_user["created_by"],
+        created_at=new_user["created_at"]
+    )
+
+@api_router.get("/users/school/{school_id}", response_model=List[UserListResponse])
+async def get_school_users(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all active users for a school"""
+    users = await db.users.find(
+        {"school_id": school_id, "status": "active", "is_active": True},
+        {"_id": 0, "password": 0}
+    ).to_list(200)
+    
+    result = []
+    for u in users:
+        creator = None
+        if u.get("created_by"):
+            creator = await db.users.find_one({"id": u["created_by"]}, {"_id": 0, "name": 1})
+        result.append(UserListResponse(
+            id=u["id"],
+            name=u["name"],
+            email=u["email"],
+            role=u["role"],
+            mobile=u.get("mobile"),
+            school_id=u["school_id"],
+            status=u.get("status", "active"),
+            created_by=u.get("created_by"),
+            created_by_name=creator["name"] if creator else None,
+            created_at=u["created_at"]
+        ))
+    
+    return result
+
+@api_router.get("/users/pending/{school_id}", response_model=List[UserListResponse])
+async def get_pending_users(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get pending approval users - only Director can see this"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can view pending users")
+    
+    users = await db.users.find(
+        {"school_id": school_id, "status": "pending"},
+        {"_id": 0, "password": 0}
+    ).to_list(100)
+    
+    result = []
+    for u in users:
+        creator = None
+        if u.get("created_by"):
+            creator = await db.users.find_one({"id": u["created_by"]}, {"_id": 0, "name": 1})
+        result.append(UserListResponse(
+            id=u["id"],
+            name=u["name"],
+            email=u["email"],
+            role=u["role"],
+            mobile=u.get("mobile"),
+            school_id=u["school_id"],
+            status=u.get("status", "pending"),
+            created_by=u.get("created_by"),
+            created_by_name=creator["name"] if creator else None,
+            created_at=u["created_at"]
+        ))
+    
+    return result
+
+@api_router.post("/users/{user_id}/approve")
+async def approve_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Director approves a pending user"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can approve users")
+    
+    result = await db.users.update_one(
+        {"id": user_id, "status": "pending"},
+        {"$set": {"status": "active", "is_active": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found or already processed")
+    
+    await log_audit(current_user["id"], "approve_user", "users", {"user_id": user_id})
+    
+    return {"message": "User approved successfully"}
+
+@api_router.post("/users/{user_id}/reject")
+async def reject_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Director rejects a pending user"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can reject users")
+    
+    result = await db.users.update_one(
+        {"id": user_id, "status": "pending"},
+        {"$set": {"status": "rejected", "is_active": False}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found or already processed")
+    
+    await log_audit(current_user["id"], "reject_user", "users", {"user_id": user_id})
+    
+    return {"message": "User rejected"}
+
+@api_router.post("/users/{user_id}/deactivate")
+async def deactivate_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Director deactivates an active user"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can deactivate users")
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"is_active": False, "status": "deactivated"}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await log_audit(current_user["id"], "deactivate_user", "users", {"user_id": user_id})
+    
+    return {"message": "User deactivated"}
+
 # ==================== SCHOOL ROUTES ====================
 
 @api_router.post("/schools", response_model=SchoolResponse)
