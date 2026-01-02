@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '../components/ui/dialog';
 import { Plus, Bell, Trash2, Loader2, AlertTriangle, Info, AlertCircle, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
