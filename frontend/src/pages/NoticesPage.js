@@ -160,6 +160,7 @@ export default function NoticesPage() {
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>{t('create_notice')}</DialogTitle>
+                <DialogDescription className="sr-only">Notice form</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 <div className="space-y-2">
