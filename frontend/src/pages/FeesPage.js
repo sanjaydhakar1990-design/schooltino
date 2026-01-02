@@ -119,7 +119,8 @@ export default function FeesPage() {
       });
       fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('something_went_wrong'));
+      const msg = error.response?.data?.detail;
+      toast.error(typeof msg === 'string' ? msg : t('something_went_wrong'));
     } finally {
       setSubmitting(false);
     }
@@ -147,7 +148,8 @@ export default function FeesPage() {
       setSelectedInvoice(null);
       fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('something_went_wrong'));
+      const msg = error.response?.data?.detail;
+      toast.error(typeof msg === 'string' ? msg : t('something_went_wrong'));
     } finally {
       setSubmitting(false);
     }
@@ -175,7 +177,8 @@ export default function FeesPage() {
       });
       fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('something_went_wrong'));
+      const msg = error.response?.data?.detail;
+      toast.error(typeof msg === 'string' ? msg : t('something_went_wrong'));
     } finally {
       setSubmitting(false);
     }
