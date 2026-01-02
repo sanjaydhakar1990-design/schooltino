@@ -270,6 +270,7 @@ export default function FeesPage() {
               <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>{t('create_invoice')}</DialogTitle>
+                  <DialogDescription className="sr-only">Invoice form</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateInvoice} className="space-y-4 mt-4">
                   <div className="space-y-2">
