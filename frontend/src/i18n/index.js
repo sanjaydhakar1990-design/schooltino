@@ -37,6 +37,7 @@ const resources = {
       
       // Navigation
       "dashboard": "Dashboard",
+      "users": "User Accounts",
       "students": "Students",
       "staff": "Staff",
       "classes": "Classes",
@@ -209,6 +210,7 @@ const resources = {
       
       // Navigation
       "dashboard": "डैशबोर्ड",
+      "users": "यूजर अकाउंट्स",
       "students": "छात्र",
       "staff": "कर्मचारी",
       "classes": "कक्षाएं",
