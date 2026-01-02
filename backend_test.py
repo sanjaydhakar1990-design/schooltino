@@ -421,7 +421,8 @@ class SchooltinoAPITester:
         if self.failed_tests:
             print(f"\n❌ Failed Tests:")
             for failure in self.failed_tests:
-                print(f"   - {failure['test']}: {failure.get('error', f\"Expected {failure.get('expected')}, got {failure.get('actual')}\"")}")
+                error_msg = failure.get('error', f"Expected {failure.get('expected')}, got {failure.get('actual')}")
+                print(f"   - {failure['test']}: {error_msg}")
         
         return self.tests_passed == self.tests_run
 
