@@ -168,6 +168,7 @@ export default function SettingsPage() {
               <DialogContent className="max-w-lg">
                 <DialogHeader>
                   <DialogTitle>Add New School</DialogTitle>
+                  <DialogDescription className="sr-only">Fill the form to add a new school</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                   <div className="space-y-2">
