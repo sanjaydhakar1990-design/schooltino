@@ -16,6 +16,7 @@ import NoticesPage from './pages/NoticesPage';
 import AIPaperPage from './pages/AIPaperPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
+import UserManagementPage from './pages/UserManagementPage';
 
 // Components
 import Layout from './components/Layout';
