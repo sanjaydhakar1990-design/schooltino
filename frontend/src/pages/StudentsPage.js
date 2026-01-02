@@ -188,6 +188,7 @@ export default function StudentsPage() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingStudent ? t('edit') : t('add_student')}</DialogTitle>
+              <DialogDescription className="sr-only">Student form</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
