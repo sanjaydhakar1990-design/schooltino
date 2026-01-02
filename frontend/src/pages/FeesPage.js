@@ -540,6 +540,7 @@ export default function FeesPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{t('record_payment')}</DialogTitle>
+            <DialogDescription className="sr-only">Payment form</DialogDescription>
           </DialogHeader>
           {selectedInvoice && (
             <form onSubmit={handleRecordPayment} className="space-y-4 mt-4">
