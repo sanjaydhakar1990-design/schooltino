@@ -426,6 +426,13 @@ async def login(credentials: UserLogin):
     if not user.get("is_active", True):
         raise HTTPException(status_code=401, detail="Account is deactivated")
     
+    # Check if user is pending approval
+    if user.get("status") == "pending":
+        raise HTTPException(status_code=401, detail="Account pending approval from Director")
+    
+    if user.get("status") == "rejected":
+        raise HTTPException(status_code=401, detail="Account has been rejected")
+    
     token = create_jwt_token(user)
     
     user_response = UserResponse(
