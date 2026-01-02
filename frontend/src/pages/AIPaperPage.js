@@ -67,7 +67,8 @@ export default function AIPaperPage() {
       setStep(3);
       toast.success(t('paper_ready'));
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to generate paper');
+      const msg = error.response?.data?.detail;
+      toast.error(typeof msg === 'string' ? msg : 'Failed to generate paper');
     } finally {
       setLoading(false);
     }
