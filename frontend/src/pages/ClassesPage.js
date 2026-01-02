@@ -168,6 +168,7 @@ export default function ClassesPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingClass ? t('edit') : t('add_class')}</DialogTitle>
+              <DialogDescription className="sr-only">Class form</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="space-y-2">
