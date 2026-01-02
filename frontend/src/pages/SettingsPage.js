@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '../components/ui/dialog';
 import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -73,7 +74,8 @@ export default function SettingsPage() {
       // Auto select the new school
       selectSchool(response.data.id);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('something_went_wrong'));
+      const msg = error.response?.data?.detail;
+      toast.error(typeof msg === 'string' ? msg : t('something_went_wrong'));
     } finally {
       setSubmitting(false);
     }
