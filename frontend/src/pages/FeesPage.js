@@ -454,6 +454,7 @@ export default function FeesPage() {
               <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Create Fee Plan</DialogTitle>
+                  <DialogDescription className="sr-only">Fee plan form</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreatePlan} className="space-y-4 mt-4">
                   <div className="space-y-2">
