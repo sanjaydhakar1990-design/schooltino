@@ -180,6 +180,7 @@ export default function StaffPage() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingStaff ? t('edit') : t('add_staff')}</DialogTitle>
+              <DialogDescription className="sr-only">Staff form</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
