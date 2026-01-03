@@ -524,8 +524,7 @@ class UserCreate(BaseModel):
     password: str
     role: str
     mobile: Optional[str] = None
-    school_id: str
-    created_by: str
+    school_id: Optional[str] = None
     status: str = "active"  # active, pending, rejected
 
 class UserListResponse(BaseModel):
