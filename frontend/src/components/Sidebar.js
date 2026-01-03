@@ -16,7 +16,10 @@ import {
   LogOut,
   School,
   Globe,
-  UserPlus
+  UserPlus,
+  Mic,
+  Image,
+  MessageSquare
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -32,6 +35,7 @@ export const Sidebar = () => {
 
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
+    { path: '/voice-assistant', icon: Mic, label: 'voice_assistant', roles: ['director', 'principal', 'vice_principal'] },
     { path: '/users', icon: UserPlus, label: 'users', roles: ['director', 'principal', 'vice_principal'] },
     { path: '/students', icon: Users, label: 'students' },
     { path: '/staff', icon: UserCog, label: 'staff' },
@@ -39,8 +43,11 @@ export const Sidebar = () => {
     { path: '/attendance', icon: CalendarCheck, label: 'attendance' },
     { path: '/fees', icon: Wallet, label: 'fees' },
     { path: '/notices', icon: Bell, label: 'notices' },
+    { path: '/sms', icon: MessageSquare, label: 'sms_center', roles: ['director', 'principal', 'vice_principal', 'accountant'] },
+    { path: '/gallery', icon: Image, label: 'gallery' },
     { path: '/ai-paper', icon: Sparkles, label: 'ai_paper' },
     { path: '/ai-content', icon: Sparkles, label: 'ai_content', roles: ['director', 'principal', 'vice_principal'] },
+    { path: '/website', icon: Globe, label: 'website_integration', roles: ['director', 'principal'] },
     { path: '/teacher-dashboard', icon: GraduationCap, label: 'teachtino', roles: ['teacher', 'director', 'principal', 'vice_principal'] },
     { path: '/audit-logs', icon: ClipboardList, label: 'audit_logs', roles: ['director', 'principal', 'admin'] },
     { path: '/settings', icon: Settings, label: 'settings' },
