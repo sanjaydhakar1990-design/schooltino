@@ -17,6 +17,9 @@ import AIPaperPage from './pages/AIPaperPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
 import UserManagementPage from './pages/UserManagementPage';
+import TeacherDashboard from './pages/TeacherDashboard';
+import StudentDashboard from './pages/StudentDashboard';
+import AIContentStudio from './pages/AIContentStudio';
 
 // Components
 import Layout from './components/Layout';
@@ -91,9 +94,21 @@ function AppRoutes() {
         <Route path="fees" element={<FeesPage />} />
         <Route path="notices" element={<NoticesPage />} />
         <Route path="ai-paper" element={<AIPaperPage />} />
+        <Route path="ai-content" element={<AIContentStudio />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="teacher-dashboard" element={<TeacherDashboard />} />
       </Route>
+
+      {/* Student Portal - Standalone */}
+      <Route
+        path="/student-dashboard"
+        element={
+          <ProtectedRoute>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Catch all - redirect to dashboard */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
