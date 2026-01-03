@@ -650,6 +650,148 @@ async def deactivate_user(user_id: str, current_user: dict = Depends(get_current
     
     return {"message": "User deactivated"}
 
+class SuspendUserRequest(BaseModel):
+    reason: str  # fees_pending, misconduct, document_pending, other
+    reason_details: Optional[str] = None
+    suspend_until: Optional[str] = None  # date or "until_approval"
+
+@api_router.post("/users/{user_id}/suspend")
+async def suspend_user(user_id: str, data: SuspendUserRequest, current_user: dict = Depends(get_current_user)):
+    """Director/Principal can suspend a user temporarily"""
+    if current_user["role"] not in ["director", "principal", "vice_principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized to suspend users")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "status": "suspended",
+            "is_active": False,
+            "suspension_reason": data.reason,
+            "suspension_details": data.reason_details,
+            "suspend_until": data.suspend_until,
+            "suspended_by": current_user["id"],
+            "suspended_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await log_audit(current_user["id"], "suspend_user", "users", {
+        "user_id": user_id,
+        "reason": data.reason,
+        "until": data.suspend_until
+    })
+    
+    return {"message": "User suspended", "reason": data.reason}
+
+@api_router.post("/users/{user_id}/unsuspend")
+async def unsuspend_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Director/Principal can unsuspend a user"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.users.update_one(
+        {"id": user_id, "status": "suspended"},
+        {"$set": {
+            "status": "active",
+            "is_active": True,
+            "suspension_reason": None,
+            "suspension_details": None,
+            "suspend_until": None
+        }}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found or not suspended")
+    
+    await log_audit(current_user["id"], "unsuspend_user", "users", {"user_id": user_id})
+    
+    return {"message": "User unsuspended and activated"}
+
+@api_router.post("/users/{user_id}/reactivate")
+async def reactivate_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Only Director can reactivate a deactivated user"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can reactivate users")
+    
+    result = await db.users.update_one(
+        {"id": user_id, "status": "deactivated"},
+        {"$set": {"status": "active", "is_active": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found or not deactivated")
+    
+    await log_audit(current_user["id"], "reactivate_user", "users", {"user_id": user_id})
+    
+    return {"message": "User reactivated"}
+
+class TransferUserRequest(BaseModel):
+    new_user_name: str
+    new_user_email: EmailStr
+    new_user_mobile: Optional[str] = None
+    new_password: str
+    transfer_reason: str
+
+@api_router.post("/users/{user_id}/transfer")
+async def transfer_user_account(user_id: str, data: TransferUserRequest, current_user: dict = Depends(get_current_user)):
+    """Director transfers a user account to new person (e.g., teacher changed)
+    This keeps the same ID/role but changes the person"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can transfer accounts")
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"email": data.new_user_email})
+    if existing and existing["id"] != user_id:
+        raise HTTPException(status_code=400, detail="New email already registered")
+    
+    old_user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not old_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Hash new password
+    hashed_pw = bcrypt.hashpw(data.new_password.encode(), bcrypt.gensalt()).decode()
+    
+    # Update user with new person details
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "name": data.new_user_name,
+            "email": data.new_user_email,
+            "mobile": data.new_user_mobile,
+            "password": hashed_pw,
+            "status": "active",
+            "is_active": True,
+            "transferred_at": datetime.now(timezone.utc).isoformat(),
+            "transfer_reason": data.transfer_reason,
+            "previous_holder": old_user["name"]
+        }}
+    )
+    
+    await log_audit(current_user["id"], "transfer_account", "users", {
+        "user_id": user_id,
+        "from": old_user["name"],
+        "to": data.new_user_name,
+        "reason": data.transfer_reason
+    })
+    
+    return {
+        "message": "Account transferred successfully",
+        "from": old_user["name"],
+        "to": data.new_user_name
+    }
+
+@api_router.get("/users/{user_id}/details")
+async def get_user_details(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get full details of a user including suspension info"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user
+
 # ==================== SCHOOL ROUTES ====================
 
 @api_router.post("/schools", response_model=SchoolResponse)
