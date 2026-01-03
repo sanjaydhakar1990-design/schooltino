@@ -2496,6 +2496,115 @@ async def get_student_notices(current_user: dict = Depends(get_current_user)):
     
     return notices
 
+@api_router.post("/student/notices/{notice_id}/read")
+async def mark_notice_read(notice_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a notice as read by student"""
+    await db.notice_reads.update_one(
+        {"notice_id": notice_id, "user_id": current_user.get("id", current_user.get("student_id"))},
+        {"$set": {"read_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    return {"message": "Notice marked as read"}
+
+@api_router.get("/student/homework")
+async def get_student_homework(current_user: dict = Depends(get_current_user)):
+    """Get homework for student's class"""
+    student = await db.students.find_one(
+        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
+        {"_id": 0}
+    )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    homework = await db.homework.find({
+        "class_id": student["class_id"],
+        "school_id": student["school_id"]
+    }, {"_id": 0}).sort("due_date", 1).to_list(20)
+    
+    return homework
+
+@api_router.get("/student/leaves")
+async def get_student_leaves(current_user: dict = Depends(get_current_user)):
+    """Get student's leave applications"""
+    student = await db.students.find_one(
+        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
+        {"_id": 0}
+    )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    leaves = await db.student_leaves.find({
+        "student_id": student["id"]
+    }, {"_id": 0}).sort("created_at", -1).to_list(20)
+    
+    return leaves
+
+class StudentLeaveRequest(BaseModel):
+    leave_type: str
+    from_date: str
+    to_date: Optional[str] = None
+    reason: str
+    half_day: bool = False
+
+@api_router.post("/student/leaves")
+async def apply_student_leave(leave_data: StudentLeaveRequest, current_user: dict = Depends(get_current_user)):
+    """Apply for leave (student/parent)"""
+    student = await db.students.find_one(
+        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
+        {"_id": 0}
+    )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    leave_id = str(uuid.uuid4())
+    leave_doc = {
+        "id": leave_id,
+        "student_id": student["id"],
+        "student_name": student["name"],
+        "class_id": student["class_id"],
+        "school_id": student["school_id"],
+        "leave_type": leave_data.leave_type,
+        "from_date": leave_data.from_date,
+        "to_date": leave_data.to_date or leave_data.from_date,
+        "reason": leave_data.reason,
+        "half_day": leave_data.half_day,
+        "status": "pending_teacher",  # pending_teacher -> pending_principal -> approved/rejected
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "applied_by": current_user.get("id", current_user.get("student_id"))
+    }
+    
+    await db.student_leaves.insert_one(leave_doc)
+    
+    return {"message": "Leave application submitted", "id": leave_id, "status": "pending_teacher"}
+
+class StudentAIRequest(BaseModel):
+    prompt: str
+
+@api_router.post("/student/ai-helper")
+async def student_ai_helper(request: StudentAIRequest, current_user: dict = Depends(get_current_user)):
+    """StudyTino AI Helper - Safe study assistant for students"""
+    # Safe study assistant - only study related help
+    # In production, integrate with actual AI with safety guardrails
+    
+    prompt_lower = request.prompt.lower()
+    
+    # Simple keyword-based response for demo
+    if any(word in prompt_lower for word in ['math', 'algebra', 'equation', 'गणित']):
+        response = f"📚 Mathematics Help:\n\n\"{request.prompt}\" ke baare mein:\n\nMath easy hai! Step by step samjho:\n1. Pehle formula yaad karo\n2. Example solve karo\n3. Practice questions karo\n\n💡 Tip: Daily 10 problems solve karo!"
+    elif any(word in prompt_lower for word in ['english', 'essay', 'grammar', 'अंग्रेजी']):
+        response = f"📖 English Help:\n\n\"{request.prompt}\" ke baare mein:\n\nEnglish mein strong banne ke liye:\n1. Daily 10 new words sikho\n2. Newspaper reading karo\n3. Writing practice karo\n\n💡 Tip: English movies with subtitles dekho!"
+    elif any(word in prompt_lower for word in ['science', 'physics', 'chemistry', 'biology', 'विज्ञान']):
+        response = f"🔬 Science Help:\n\n\"{request.prompt}\" ke baare mein:\n\nScience interesting hai!\n1. Concept clearly samjho\n2. Diagrams banao\n3. Real-life examples dekho\n\n💡 Tip: Experiments karo!"
+    elif any(word in prompt_lower for word in ['mcq', 'quiz', 'test', 'practice']):
+        response = f"📝 Practice MCQs:\n\n1. Question 1 - Option A/B/C/D\n2. Question 2 - Option A/B/C/D\n3. Question 3 - Option A/B/C/D\n\n💡 Tip: Time limit me solve karo!"
+    else:
+        response = f"📚 StudyTino AI Helper:\n\n\"{request.prompt}\" ke baare mein:\n\nYeh ek interesting topic hai!\n\n1. Pehle basic concepts clear karo\n2. Notes banao\n3. Practice questions solve karo\n\n💡 Tip: Regular revision important hai!\n\nKoi aur doubt ho toh zaroor pucho! 📖"
+    
+    return {"response": response}
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/health")
