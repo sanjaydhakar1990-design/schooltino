@@ -102,7 +102,6 @@ class ClassResponse(BaseModel):
 # Student Models
 class StudentCreate(BaseModel):
     name: str
-    admission_no: str
     class_id: str
     school_id: str
     father_name: str
@@ -110,15 +109,36 @@ class StudentCreate(BaseModel):
     dob: str
     gender: str
     address: str
-    mobile: str
+    mobile: str  # Parent mobile for OTP
     email: Optional[EmailStr] = None
     blood_group: Optional[str] = None
     photo_url: Optional[str] = None
+    aadhar_no: Optional[str] = None
+    previous_school: Optional[str] = None
+
+class StudentAdmissionResponse(BaseModel):
+    id: str
+    student_id: str  # Auto-generated: STD-2026-000123
+    name: str
+    class_id: str
+    class_name: Optional[str] = None
+    section: Optional[str] = None
+    school_id: str
+    father_name: str
+    mother_name: str
+    dob: str
+    gender: str
+    mobile: str
+    login_id: str  # Same as student_id
+    temporary_password: str  # Auto-generated, show once
+    status: str  # pending_approval, active, suspended, left
+    created_at: str
 
 class StudentResponse(BaseModel):
     id: str
+    student_id: str
+    admission_no: Optional[str] = None
     name: str
-    admission_no: str
     class_id: str
     class_name: Optional[str] = None
     section: Optional[str] = None
@@ -132,6 +152,7 @@ class StudentResponse(BaseModel):
     email: Optional[str] = None
     blood_group: Optional[str] = None
     photo_url: Optional[str] = None
+    status: str = "active"
     is_active: bool = True
     created_at: str
 
