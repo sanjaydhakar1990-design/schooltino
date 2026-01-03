@@ -2083,7 +2083,8 @@ class TeacherDashboardStats(BaseModel):
 @api_router.get("/teacher/dashboard", response_model=TeacherDashboardStats)
 async def get_teacher_dashboard(current_user: dict = Depends(get_current_user)):
     """Dashboard for TeachTino - Teacher Portal"""
-    if current_user["role"] not in ["teacher", "principal", "vice_principal", "director"]:
+    allowed_roles = ["teacher", "principal", "vice_principal", "director", "admission_staff", "clerk", "staff"]
+    if current_user["role"] not in allowed_roles:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
