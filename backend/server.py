@@ -1703,7 +1703,7 @@ async def get_audit_logs(
         if user:
             log["user_name"] = user["name"]
     
-    return [AuditLogResponse(**l) for l in logs]
+    return [AuditLogResponse(**log_item) for log_item in logs]
 
 # ==================== DASHBOARD ROUTES ====================
 
