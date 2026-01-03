@@ -133,6 +133,9 @@ export default function LeaveManagement() {
     );
   }
 
+  const canApplyLeave = ['teacher', 'staff', 'student'].includes(user?.role);
+  const canApproveLeave = ['director', 'principal', 'vice_principal', 'teacher'].includes(user?.role);
+
   return (
     <div className="space-y-6" data-testid="leave-management">
       {/* Header */}
@@ -144,16 +147,20 @@ export default function LeaveManagement() {
               Leave Management
             </h1>
             <p className="text-teal-100 mt-2">
-              Apply for leave, check balance & manage approvals
+              {canApproveLeave && !canApplyLeave 
+                ? 'Approve or reject leave applications' 
+                : 'Apply for leave, check balance & track status'}
             </p>
           </div>
-          <Button 
-            onClick={() => setShowApplyDialog(true)}
-            className="bg-white text-teal-600 hover:bg-teal-50"
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Apply for Leave
-          </Button>
+          {canApplyLeave && (
+            <Button 
+              onClick={() => setShowApplyDialog(true)}
+              className="bg-white text-teal-600 hover:bg-teal-50"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Apply for Leave
+            </Button>
+          )}
         </div>
       </div>
 
