@@ -51,7 +51,7 @@ const ProtectedRoute = ({ children }) => {
 
 // Public Route Component (redirect if already logged in)
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   
   if (loading) {
     return (
@@ -61,7 +61,14 @@ const PublicRoute = ({ children }) => {
     );
   }
   
-  if (isAuthenticated) {
+  if (isAuthenticated && user) {
+    // Role-based redirect
+    const role = user.role;
+    if (['teacher', 'admission_staff', 'clerk', 'staff'].includes(role)) {
+      return <Navigate to="/teacher-dashboard" replace />;
+    } else if (role === 'student') {
+      return <Navigate to="/student-dashboard" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
   
