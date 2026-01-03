@@ -1856,6 +1856,355 @@ async def get_generated_papers(
     papers = await db.generated_papers.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
     return [PaperGenerateResponse(**p) for p in papers]
 
+# ==================== AI CONTENT GENERATOR (Pamphlets/Banners) ====================
+
+class ContentGenerateRequest(BaseModel):
+    content_type: str  # admission_pamphlet, topper_banner, event_poster, activity_banner
+    school_name: str
+    details: Dict[str, Any]  # Dynamic based on content_type
+    language: str = "english"
+
+class ContentGenerateResponse(BaseModel):
+    id: str
+    content_type: str
+    image_url: Optional[str] = None
+    text_content: str
+    created_at: str
+
+@api_router.post("/ai/generate-content", response_model=ContentGenerateResponse)
+async def generate_ai_content(request: ContentGenerateRequest, current_user: dict = Depends(get_current_user)):
+    """Generate AI-powered pamphlets, banners, posters for school"""
+    if current_user["role"] not in ["director", "principal", "vice_principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if not openai_key:
+        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Generate content based on type
+        prompts = {
+            "admission_pamphlet": f"""Create admission pamphlet content for {request.school_name}:
+- Academic Year: {request.details.get('academic_year', '2025-26')}
+- Classes: {request.details.get('classes', 'Nursery to 12th')}
+- Features: {request.details.get('features', 'Smart Classes, Sports, Labs')}
+- Contact: {request.details.get('contact', '')}
+- Tagline/Slogan: Generate catchy tagline
+- Key Points: Generate 5 key selling points
+
+Return in {request.language}. Make it professional and attractive.""",
+
+            "topper_banner": f"""Create congratulatory banner content for school topper:
+- School: {request.school_name}
+- Student Name: {request.details.get('student_name', '')}
+- Class: {request.details.get('class', '')}
+- Percentage/Marks: {request.details.get('marks', '')}
+- Achievement: {request.details.get('achievement', 'Class Topper')}
+
+Return in {request.language}. Make it celebratory and inspiring.""",
+
+            "event_poster": f"""Create event poster content for school event:
+- School: {request.school_name}
+- Event Name: {request.details.get('event_name', '')}
+- Date: {request.details.get('date', '')}
+- Venue: {request.details.get('venue', 'School Auditorium')}
+- Description: {request.details.get('description', '')}
+
+Return in {request.language}. Make it engaging and informative.""",
+
+            "activity_banner": f"""Create activity announcement banner for school:
+- School: {request.school_name}
+- Activity: {request.details.get('activity', '')}
+- Details: {request.details.get('details', '')}
+
+Return in {request.language}."""
+        }
+        
+        prompt = prompts.get(request.content_type, prompts["admission_pamphlet"])
+        
+        chat = LlmChat(
+            api_key=openai_key,
+            session_id=f"content-{str(uuid.uuid4())[:8]}",
+            system_message="You are a professional content creator for Indian schools. Create engaging, professional content for school materials."
+        ).with_model("openai", "gpt-4o")
+        
+        user_msg = UserMessage(text=prompt)
+        response = await chat.send_message(user_msg)
+        
+        content_data = {
+            "id": str(uuid.uuid4()),
+            "content_type": request.content_type,
+            "school_name": request.school_name,
+            "details": request.details,
+            "text_content": response,
+            "image_url": None,  # Can integrate DALL-E later
+            "created_by": current_user["id"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.ai_content.insert_one(content_data)
+        await log_audit(current_user["id"], "generate_content", "ai_content", {
+            "type": request.content_type,
+            "school": request.school_name
+        })
+        
+        return ContentGenerateResponse(
+            id=content_data["id"],
+            content_type=content_data["content_type"],
+            text_content=content_data["text_content"],
+            image_url=content_data["image_url"],
+            created_at=content_data["created_at"]
+        )
+        
+    except Exception as e:
+        logging.error(f"AI Content generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate content: {str(e)}")
+
+# ==================== TEACHTINO - TEACHER PORTAL ROUTES ====================
+
+class TeacherDashboardStats(BaseModel):
+    my_classes: List[Dict[str, Any]]
+    total_students: int
+    attendance_today: Dict[str, int]
+    pending_homework: int
+    upcoming_exams: int
+    recent_notices: List[Dict[str, Any]]
+
+@api_router.get("/teacher/dashboard", response_model=TeacherDashboardStats)
+async def get_teacher_dashboard(current_user: dict = Depends(get_current_user)):
+    """Dashboard for TeachTino - Teacher Portal"""
+    if current_user["role"] not in ["teacher", "principal", "vice_principal", "director"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    school_id = current_user.get("school_id")
+    
+    # Get classes where user is class teacher
+    my_classes = await db.classes.find(
+        {"class_teacher_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(20)
+    
+    # If no specific classes, get all classes for school (for principal/director)
+    if not my_classes and current_user["role"] in ["principal", "vice_principal", "director"]:
+        my_classes = await db.classes.find(
+            {"school_id": school_id},
+            {"_id": 0}
+        ).to_list(50)
+    
+    # Get total students in my classes
+    class_ids = [c["id"] for c in my_classes]
+    total_students = await db.students.count_documents({
+        "class_id": {"$in": class_ids},
+        "status": "active"
+    }) if class_ids else 0
+    
+    # Today's attendance
+    present = await db.attendance.count_documents({
+        "class_id": {"$in": class_ids},
+        "date": today,
+        "status": "present"
+    }) if class_ids else 0
+    absent = await db.attendance.count_documents({
+        "class_id": {"$in": class_ids},
+        "date": today,
+        "status": "absent"
+    }) if class_ids else 0
+    
+    # Recent notices
+    notices = await db.notices.find(
+        {"school_id": school_id, "is_active": True},
+        {"_id": 0, "id": 1, "title": 1, "priority": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(5)
+    
+    return TeacherDashboardStats(
+        my_classes=my_classes,
+        total_students=total_students,
+        attendance_today={"present": present, "absent": absent},
+        pending_homework=0,  # TODO: Implement homework module
+        upcoming_exams=0,  # TODO: Implement exam schedule
+        recent_notices=notices
+    )
+
+@api_router.get("/teacher/my-classes")
+async def get_my_classes(current_user: dict = Depends(get_current_user)):
+    """Get classes assigned to teacher"""
+    if current_user["role"] not in ["teacher", "principal", "vice_principal", "director"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    classes = await db.classes.find(
+        {"class_teacher_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(20)
+    
+    # Enrich with student count
+    for cls in classes:
+        cls["student_count"] = await db.students.count_documents({
+            "class_id": cls["id"],
+            "status": "active"
+        })
+    
+    return classes
+
+@api_router.get("/teacher/class/{class_id}/students")
+async def get_class_students(class_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all students in a class for teacher"""
+    students = await db.students.find(
+        {"class_id": class_id, "status": "active"},
+        {"_id": 0, "password": 0}
+    ).to_list(100)
+    
+    return students
+
+# ==================== STUDYTINO - STUDENT PORTAL ROUTES ====================
+
+class StudentDashboardStats(BaseModel):
+    profile: Dict[str, Any]
+    attendance_summary: Dict[str, Any]
+    fee_status: Dict[str, Any]
+    recent_notices: List[Dict[str, Any]]
+    timetable: List[Dict[str, Any]]
+
+@api_router.get("/student/dashboard")
+async def get_student_dashboard(current_user: dict = Depends(get_current_user)):
+    """Dashboard for StudyTino - Student Portal"""
+    # Get student by user ID or student_id
+    student = await db.students.find_one(
+        {"id": current_user.get("id")},
+        {"_id": 0, "password": 0}
+    )
+    
+    if not student:
+        # Try finding by student_id if it's a student login
+        student = await db.students.find_one(
+            {"student_id": current_user.get("student_id")},
+            {"_id": 0, "password": 0}
+        )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+    
+    school_id = student["school_id"]
+    
+    # Get class info
+    class_info = await db.classes.find_one({"id": student["class_id"]}, {"_id": 0})
+    
+    # Attendance summary (last 30 days)
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+    attendance = await db.attendance.find({
+        "student_id": student["id"],
+        "date": {"$gte": thirty_days_ago}
+    }, {"_id": 0}).to_list(30)
+    
+    present_days = len([a for a in attendance if a["status"] == "present"])
+    absent_days = len([a for a in attendance if a["status"] == "absent"])
+    total_days = len(attendance) or 1
+    
+    # Fee status
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    fee_invoices = await db.fee_invoices.find({
+        "student_id": student["id"]
+    }, {"_id": 0}).sort("created_at", -1).to_list(5)
+    
+    pending_fees = sum(
+        inv.get("final_amount", 0) - inv.get("paid_amount", 0) 
+        for inv in fee_invoices if inv.get("status") != "paid"
+    )
+    
+    # Recent notices for students
+    notices = await db.notices.find({
+        "school_id": school_id,
+        "is_active": True,
+        "target_audience": {"$in": ["all", "students", "parents"]}
+    }, {"_id": 0}).sort("created_at", -1).to_list(5)
+    
+    return {
+        "profile": {
+            **student,
+            "class_name": class_info["name"] if class_info else "",
+            "section": class_info["section"] if class_info else ""
+        },
+        "attendance_summary": {
+            "present": present_days,
+            "absent": absent_days,
+            "total": total_days,
+            "percentage": round(present_days / total_days * 100, 1)
+        },
+        "fee_status": {
+            "pending": pending_fees,
+            "recent_invoices": fee_invoices
+        },
+        "recent_notices": notices,
+        "timetable": []  # TODO: Implement timetable
+    }
+
+@api_router.get("/student/attendance")
+async def get_student_attendance(
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get student's attendance history"""
+    student = await db.students.find_one(
+        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
+        {"_id": 0}
+    )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    query = {"student_id": student["id"]}
+    if from_date and to_date:
+        query["date"] = {"$gte": from_date, "$lte": to_date}
+    
+    attendance = await db.attendance.find(query, {"_id": 0}).sort("date", -1).to_list(100)
+    return attendance
+
+@api_router.get("/student/fees")
+async def get_student_fees(current_user: dict = Depends(get_current_user)):
+    """Get student's fee details"""
+    student = await db.students.find_one(
+        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
+        {"_id": 0}
+    )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    invoices = await db.fee_invoices.find(
+        {"student_id": student["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(20)
+    
+    return {
+        "invoices": invoices,
+        "total_pending": sum(
+            inv.get("final_amount", 0) - inv.get("paid_amount", 0) 
+            for inv in invoices if inv.get("status") != "paid"
+        )
+    }
+
+@api_router.get("/student/notices")
+async def get_student_notices(current_user: dict = Depends(get_current_user)):
+    """Get notices relevant to student"""
+    student = await db.students.find_one(
+        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
+        {"_id": 0}
+    )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    notices = await db.notices.find({
+        "school_id": student["school_id"],
+        "is_active": True,
+        "target_audience": {"$in": ["all", "students", "parents"]}
+    }, {"_id": 0}).sort("created_at", -1).to_list(20)
+    
+    return notices
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/health")
