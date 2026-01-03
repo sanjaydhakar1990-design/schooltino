@@ -1,190 +1,160 @@
-# Schooltino - Complete AI School Management System PRD
+# Schooltino v3.5 - Complete AI School Management System
 
-## Vision Statement
-**"AI + CCTV + Apps से school को automatic, secure, paperless, data-driven banana - Director को remotely full control, teachers का load kam, students का tracking + learning improve."**
+## Connected to OneTino EduOne Ecosystem
+**OneTino.com** → EduOne → **Schooltino** | **TeachTino** | **StudyTino** | **CoachTino**
 
 ---
 
-## Current Version: 3.0.0 - ALL ROUNDER AI
+## Current Version: 3.5.0
 **Last Updated:** January 3, 2026
 
 ---
 
-## ✅ Complete Feature List
+## ✅ Complete Feature Matrix
 
-### 🎯 Core Features
-| Feature | Status | Description |
-|---------|--------|-------------|
-| JWT Auth | ✅ | Secure login, role-based |
+### Core Features
+| Feature | Status | Notes |
+|---------|--------|-------|
+| JWT Authentication | ✅ | Secure login |
 | Multi-school | ✅ | One director, multiple schools |
 | User Management | ✅ | Create/Suspend/Deactivate/Transfer |
-| Student Admission | ✅ | Auto ID & password generation |
-| Staff Management | ✅ | CRUD operations |
-| Classes | ✅ | Class & section management |
+| Student Admission | ✅ | Auto ID & password |
+| Staff Management | ✅ | CRUD |
+| Classes | ✅ | Class & section |
 | Attendance | ✅ | Manual marking |
-| Fees | ✅ | Plans, invoices, payments |
-| Notices | ✅ | Priority-based, audience targeting |
-| Audit Logs | ✅ | Complete action tracking |
+| Fees | ✅ | Plans, invoices |
+| Notices | ✅ | Priority-based |
+| Audit Logs | ✅ | Action tracking |
 
-### 🎤 Voice Assistant (NEW!)
+### 🎤 Voice Assistant
 | Feature | Status |
 |---------|--------|
 | Speech recognition | ✅ |
 | Hinglish commands | ✅ |
 | GPT-4o powered | ✅ |
-| Quick command buttons | ✅ |
-| Action confirmation | ✅ |
+| Quick commands | ✅ |
 
-**Sample Commands:**
-- "Dashboard dikhao"
-- "Students ki list dikhao"
-- "Fee reminder bhejo sabko"
-- "Attendance mark karo"
-- "Pamphlet banao"
+### 📱 SMS & WhatsApp
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Send to All Parents | ✅ | |
+| Send by Class | ✅ | |
+| Individual SMS | ✅ | |
+| WhatsApp Share | ✅ | |
+| Templates | ✅ | Fee Reminder, Attendance Alert, etc. |
+| SMS Delivery | ⚠️ | **MOCKED** - Ready for Twilio |
 
-### 📱 SMS & WhatsApp Center (NEW!)
-| Feature | Status |
-|---------|--------|
-| Send to All Parents | ✅ |
-| Send by Class | ✅ |
-| Send Individual | ✅ |
-| Quick Templates | ✅ |
-| WhatsApp Share | ✅ |
-| SMS Logging | ✅ |
-
-**Templates:**
-- Fee Reminder
-- Attendance Alert
-- Exam Notice
-- Result Declared
-
-⚠️ **Note:** SMS sending is MOCKED - ready for Twilio/MSG91 integration
-
-### 🖼️ Image Gallery (NEW!)
+### 🖼️ Image Gallery
 | Feature | Status |
 |---------|--------|
 | Upload Images | ✅ |
-| Category filters | ✅ |
-| Grid/List view | ✅ |
+| Categories | ✅ |
 | WhatsApp share | ✅ |
-| AI generate from image | ✅ |
-| Delete images | ✅ |
+| AI generate | ✅ |
 
-### 🌐 Website Integration (NEW!)
+### 🌐 Website Integration
 | Feature | Status |
 |---------|--------|
-| Configure website URL | ✅ |
-| Sync toggles | ✅ |
-| Embed code generation | ✅ |
-| Public API endpoints | ✅ |
-| API key security | ✅ |
-
-**Public APIs:**
-- `/api/public/school/[id]/info`
-- `/api/public/school/[id]/notices`
-- `/api/public/school/[id]/events`
-- `/api/public/school/[id]/gallery`
-- `/api/public/school/[id]/results`
+| Website sync | ✅ |
+| Public APIs | ✅ |
+| Embed code | ✅ |
 
 ### 🎨 AI Content Studio
 | Feature | Status |
 |---------|--------|
-| Admission Pamphlet | ✅ |
-| Topper Banner | ✅ |
-| Event Poster | ✅ |
-| Activity Banner | ✅ |
-| AI Image Generation | ✅ |
+| Pamphlets | ✅ |
+| Banners | ✅ |
+| Posters | ✅ |
+| Image Generation | ✅ |
 | WhatsApp Share | ✅ |
-| Download Image | ✅ |
 
-### 📋 QR Code Generator (NEW!)
+### 📋 QR Code & Reports
 | Feature | Status |
 |---------|--------|
 | Student QR | ✅ |
 | Staff QR | ✅ |
-| ID Card ready | ✅ |
+| Report Cards | ✅ |
+| Auto grades | ✅ |
 
-### 📊 Report Card Generator (NEW!)
+### 📅 Leave Management (NEW!)
 | Feature | Status |
 |---------|--------|
-| Subject-wise marks | ✅ |
-| Auto percentage | ✅ |
-| Auto grade | ✅ |
-| Remarks | ✅ |
+| Apply Leave | ✅ |
+| Leave Balance | ✅ |
+| Approval Flow | ✅ |
+| Reject with reason | ✅ |
+| Half day | ✅ |
 
-### 📱 PWA Support
-| Feature | Status |
-|---------|--------|
-| Installable | ✅ |
-| Offline capable | ✅ |
-| App shortcuts | ✅ |
+**Leave Types:**
+- Sick Leave: 12 days/year
+- Casual Leave: 10 days/year
+- Personal Leave: 5 days/year
+- Emergency Leave: 3 days/year
 
-### 🎯 Three Portals (One App)
-| Portal | Users | Path |
-|--------|-------|------|
-| Schooltino | Director, Principal | /dashboard |
-| TeachTino | Teachers | /teacher-dashboard |
-| StudyTino | Students, Parents | /student-dashboard |
+**Approval Flow:**
+- Student → Class Teacher → Principal
+- Teacher → Principal → Director
+- Staff → Director
+
+### 📹 CCTV Dashboard (NEW!)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Camera Grid | ✅ | 6 cameras mock |
+| Online/Offline status | ✅ | |
+| Alerts | ✅ | Motion, Crowd, Restricted Area |
+| Live feed | ⚠️ | **MOCKED** - Ready for hardware |
+
+**AI Features (Ready for Integration):**
+- Face Recognition ✅
+- Attendance Tracking ✅
+- Behavior Detection 🔄 Planned
+- Crowd Monitoring ✅
+- Gate Access ✅
+
+### 🔗 OneTino Integration (NEW!)
+| API | Status |
+|-----|--------|
+| /api/onetino/school-stats | ✅ |
+| /api/onetino/all-schools | ✅ |
+| /api/onetino/issues | ✅ |
+| /api/onetino/report-issue | ✅ |
 
 ---
 
-## Technical Architecture
+## Architecture
 
-### Stack
+### OneTino Ecosystem
+```
+OneTino.com (Master Platform)
+├── LifeOne
+├── WorkOne
+├── AgriOne
+├── HealthOne
+├── VisionOne
+├── BuildOne
+├── EduOne
+│   ├── Schooltino ← Current App
+│   ├── TeachTino (Teacher Portal)
+│   ├── StudyTino (Student Portal)
+│   └── CoachTino (Coaching App)
+└── SoulOne
+```
+
+### Tech Stack
 | Layer | Technology |
 |-------|------------|
-| Frontend | React + Tailwind CSS + Shadcn/UI |
+| Frontend | React + Tailwind + Shadcn |
 | Backend | FastAPI (Python) |
 | Database | MongoDB |
-| Auth | JWT |
-| AI Text | GPT-4o (emergentintegrations) |
-| AI Image | Gemini Nano Banana (FREE!) |
-| QR Code | qrcode library |
-
-### API Endpoints
-```
-# Auth
-POST /api/auth/setup-director
-POST /api/auth/login
-
-# Voice AI
-POST /api/ai/voice-command
-
-# SMS
-GET  /api/sms/templates
-POST /api/sms/send
-
-# Images
-GET  /api/images
-POST /api/images/upload
-DELETE /api/images/{id}
-
-# QR Code
-GET /api/qr/student/{id}
-GET /api/qr/staff/{id}
-
-# Report Cards
-POST /api/reports/generate
-GET  /api/reports/student/{id}
-
-# Website
-POST /api/website/configure
-GET  /api/website/config
-
-# Public APIs
-GET /api/public/school/{id}/info
-GET /api/public/school/{id}/notices
-GET /api/public/school/{id}/events
-GET /api/public/school/{id}/gallery
-GET /api/public/school/{id}/results
-```
+| AI Text | GPT-4o |
+| AI Image | Gemini Nano Banana |
 
 ---
 
 ## Test Results
 
-### Latest: iteration_5.json
-- **Backend:** 16/16 tests passed (100%)
+### Latest: iteration_6.json
+- **Backend:** 18/18 tests (100%)
 - **Frontend:** All pages working (100%)
 
 ### Credentials
@@ -194,73 +164,53 @@ GET /api/public/school/{id}/results
 
 ---
 
-## File Structure
-```
-/app/
-├── backend/
-│   ├── server.py
-│   ├── uploads/
-│   │   └── images/
-│   └── .env
-├── frontend/
-│   └── src/
-│       ├── pages/
-│       │   ├── VoiceAssistant.js
-│       │   ├── SMSCenter.js
-│       │   ├── ImageGallery.js
-│       │   ├── WebsiteIntegration.js
-│       │   ├── AIContentStudio.js
-│       │   ├── TeacherDashboard.js
-│       │   └── StudentDashboard.js
-│       └── components/
-│           └── Sidebar.js
-└── tests/
-    └── test_new_features_iter5.py
-```
+## Mocked Features
+
+| Feature | Status | Integration Needed |
+|---------|--------|-------------------|
+| SMS Delivery | MOCKED | Twilio/MSG91 |
+| CCTV Feeds | MOCKED | IP Cameras (RTSP/ONVIF) |
 
 ---
 
 ## Changelog
 
-### v3.0.0 (January 3, 2026) - ALL ROUNDER AI
-- ✅ **Voice Assistant** - Hinglish commands, GPT-4o powered
-- ✅ **SMS & WhatsApp Center** - Bulk messaging, templates
-- ✅ **Image Gallery** - Upload, share, AI generate
-- ✅ **Website Integration** - Sync with external website
-- ✅ **QR Code Generator** - Student/Staff ID cards
-- ✅ **Report Card Generator** - Auto calculate grades
-- ✅ **WhatsApp Share** - Share AI content directly
-- ✅ 100% tests passing (16/16)
+### v3.5.0 (January 3, 2026)
+- ✅ Leave Management (apply, approve, reject, balance)
+- ✅ CCTV Dashboard (mock - 6 cameras, alerts, AI features)
+- ✅ OneTino Integration APIs
+- ✅ 18/18 tests passing
 
-### v2.1.0 (January 3, 2026)
-- AI Image Generation (Gemini)
-- Role-based redirect
-
-### v2.0.0 (January 3, 2026)
-- Security: Public registration disabled
-- AI Content Studio
-- PWA Support
-- TeachTino & StudyTino
+### v3.0.0 (January 3, 2026)
+- Voice Assistant
+- SMS & WhatsApp Center
+- Image Gallery
+- Website Integration
+- QR Code Generator
+- Report Cards
 
 ---
 
-## Mocked Features (Production Ready)
-
-| Feature | Status | Integration Needed |
-|---------|--------|-------------------|
-| SMS Sending | MOCKED | Twilio/MSG91 |
+## File Structure
+```
+/app/
+├── backend/
+│   ├── server.py (All APIs)
+│   └── uploads/images/
+├── frontend/
+│   └── src/pages/
+│       ├── LeaveManagement.js
+│       ├── CCTVDashboard.js
+│       ├── VoiceAssistant.js
+│       ├── SMSCenter.js
+│       ├── ImageGallery.js
+│       ├── WebsiteIntegration.js
+│       └── AIContentStudio.js
+└── tests/
+    └── test_leave_cctv_onetino.py
+```
 
 ---
 
-## Next Steps
-
-### Production Ready
-1. 🔲 Twilio/MSG91 integration for actual SMS
-2. 🔲 CCTV integration
-3. 🔲 OTP login
-4. 🔲 Advanced analytics
-
----
-
-*Schooltino v3.0 - Your AI-Powered School Management System*
-*बोलो और करवाओ - Voice se control, AI se generate, WhatsApp se share!*
+*Schooltino v3.5 - Connected to OneTino EduOne*
+*AI + CCTV + Apps = Complete Smart School Management*
