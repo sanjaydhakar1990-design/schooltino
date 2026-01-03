@@ -2017,7 +2017,7 @@ Language: {request.language}."""
                 
                 if images and len(images) > 0:
                     image_base64 = images[0].get('data', '')
-                    logging.info(f"Image generated successfully, base64 length: {len(image_base64)[:10] if image_base64 else 0}...")
+                    logging.info(f"Image generated successfully, base64 length: {len(image_base64) if image_base64 else 0}")
                     
             except Exception as img_error:
                 logging.error(f"Image generation failed: {str(img_error)}")
