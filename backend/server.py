@@ -1182,20 +1182,26 @@ async def get_students(
     school_id: Optional[str] = None,
     class_id: Optional[str] = None,
     search: Optional[str] = None,
+    status: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    query = {"is_active": True}
+    query = {}
     if school_id:
         query["school_id"] = school_id
     if class_id:
         query["class_id"] = class_id
+    if status:
+        query["status"] = status
+    else:
+        query["status"] = {"$in": ["active", "suspended"]}  # Don't show left students by default
     if search:
         query["$or"] = [
             {"name": {"$regex": search, "$options": "i"}},
+            {"student_id": {"$regex": search, "$options": "i"}},
             {"admission_no": {"$regex": search, "$options": "i"}}
         ]
     
-    students = await db.students.find(query, {"_id": 0}).to_list(500)
+    students = await db.students.find(query, {"_id": 0, "password": 0}).to_list(500)
     
     # Enrich with class info
     for student in students:
@@ -1203,6 +1209,11 @@ async def get_students(
         if class_doc:
             student["class_name"] = class_doc["name"]
             student["section"] = class_doc["section"]
+        # Ensure required fields exist
+        if "student_id" not in student:
+            student["student_id"] = student.get("admission_no", "N/A")
+        if "status" not in student:
+            student["status"] = "active" if student.get("is_active", True) else "inactive"
     
     return [StudentResponse(**s) for s in students]
 
