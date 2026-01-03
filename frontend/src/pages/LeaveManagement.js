@@ -137,7 +137,6 @@ export default function LeaveManagement() {
     );
   }
 
-  const canApplyLeave = ['teacher', 'staff', 'student'].includes(user?.role);
   const canApproveLeave = ['director', 'principal', 'vice_principal', 'teacher'].includes(user?.role);
 
   return (
