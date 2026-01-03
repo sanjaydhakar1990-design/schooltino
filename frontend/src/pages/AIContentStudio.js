@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
   Sparkles, FileImage, Trophy, Calendar, Megaphone,
-  Loader2, Download, Copy, Check, Wand2, RefreshCw
+  Loader2, Download, Copy, Check, Wand2, Image as ImageIcon, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -23,12 +23,13 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function AIContentStudio() {
   const { t } = useTranslation();
-  const { user, schoolId } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [generatedContent, setGeneratedContent] = useState(null);
   const [showResultDialog, setShowResultDialog] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('pamphlet');
+  const [generateImage, setGenerateImage] = useState(true);
 
   // Form states for different content types
   const [pamphletForm, setPamphletForm] = useState({
@@ -72,7 +73,8 @@ export default function AIContentStudio() {
         content_type: contentType,
         school_name: formData.school_name,
         details: { ...formData },
-        language: formData.language
+        language: formData.language,
+        generate_image: generateImage
       };
 
       const res = await axios.post(`${API}/ai/generate-content`, payload);
@@ -94,6 +96,18 @@ export default function AIContentStudio() {
     toast.success('Copied to clipboard!');
   };
 
+  const handleDownloadImage = () => {
+    if (!generatedContent?.image_base64) return;
+    
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${generatedContent.image_base64}`;
+    link.download = `schooltino-${generatedContent.content_type}-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Image downloaded!');
+  };
+
   if (!['director', 'principal', 'vice_principal'].includes(user?.role)) {
     return (
       <div className="text-center py-20">
@@ -106,47 +120,75 @@ export default function AIContentStudio() {
   return (
     <div className="space-y-6" data-testid="ai-content-studio">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-6 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtNi42MjcgMC0xMiA1LjM3My0xMiAxMnM1LjM3MyAxMiAxMiAxMiAxMi01LjM3MyAxMi0xMi01LjM3My0xMi0xMi0xMnoiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
+        <div className="relative flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <Sparkles className="w-8 h-8" />
               AI Content Studio
             </h1>
             <p className="text-purple-100 mt-2">
-              Generate professional pamphlets, banners, and posters for your school
+              Generate professional pamphlets, banners & posters with AI 🎨
             </p>
           </div>
-          <div className="hidden md:block">
-            <Wand2 className="w-16 h-16 text-white/20" />
+          <div className="hidden md:flex items-center gap-4">
+            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+              <ImageIcon className="w-8 h-8" />
+            </div>
+            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+              <Wand2 className="w-8 h-8" />
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Image Generation Toggle */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+            <ImageIcon className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <p className="font-medium text-slate-900">AI Image Generation</p>
+            <p className="text-sm text-slate-500">Generate actual poster/banner image using Gemini AI (FREE)</p>
+          </div>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={generateImage} 
+            onChange={(e) => setGenerateImage(e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500"></div>
+        </label>
+      </div>
+
       {/* Content Types */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-slate-100">
           <TabsTrigger value="pamphlet" className="py-3 data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
             <FileImage className="w-4 h-4 mr-2" />
-            Admission Pamphlet
+            Admission
           </TabsTrigger>
           <TabsTrigger value="topper" className="py-3 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <Trophy className="w-4 h-4 mr-2" />
-            Topper Banner
+            Topper
           </TabsTrigger>
           <TabsTrigger value="event" className="py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
             <Calendar className="w-4 h-4 mr-2" />
-            Event Poster
+            Event
           </TabsTrigger>
           <TabsTrigger value="activity" className="py-3 data-[state=active]:bg-rose-600 data-[state=active]:text-white">
             <Megaphone className="w-4 h-4 mr-2" />
-            Activity Banner
+            Activity
           </TabsTrigger>
         </TabsList>
 
         {/* Admission Pamphlet Form */}
         <TabsContent value="pamphlet">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
                 <FileImage className="w-6 h-6 text-indigo-600" />
@@ -166,6 +208,7 @@ export default function AIContentStudio() {
                     onChange={(e) => setPamphletForm(p => ({ ...p, school_name: e.target.value }))}
                     placeholder="ABC Public School"
                     required
+                    data-testid="pamphlet-school-name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -214,9 +257,9 @@ export default function AIContentStudio() {
                   </select>
                 </div>
               </div>
-              <Button type="submit" className="btn-primary" disabled={loading}>
+              <Button type="submit" className="btn-primary" disabled={loading} data-testid="generate-pamphlet-btn">
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                Generate Pamphlet Content
+                {generateImage ? 'Generate Pamphlet + Image' : 'Generate Pamphlet Text'}
               </Button>
             </form>
           </div>
@@ -224,7 +267,7 @@ export default function AIContentStudio() {
 
         {/* Topper Banner Form */}
         <TabsContent value="topper">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
                 <Trophy className="w-6 h-6 text-amber-600" />
@@ -299,7 +342,7 @@ export default function AIContentStudio() {
               </div>
               <Button type="submit" className="bg-amber-600 hover:bg-amber-700" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trophy className="w-4 h-4 mr-2" />}
-                Generate Topper Banner
+                {generateImage ? 'Generate Banner + Image' : 'Generate Banner Text'}
               </Button>
             </form>
           </div>
@@ -307,7 +350,7 @@ export default function AIContentStudio() {
 
         {/* Event Poster Form */}
         <TabsContent value="event">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
                 <Calendar className="w-6 h-6 text-emerald-600" />
@@ -378,7 +421,7 @@ export default function AIContentStudio() {
               </div>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Calendar className="w-4 h-4 mr-2" />}
-                Generate Event Poster
+                {generateImage ? 'Generate Poster + Image' : 'Generate Poster Text'}
               </Button>
             </form>
           </div>
@@ -386,7 +429,7 @@ export default function AIContentStudio() {
 
         {/* Activity Banner Form */}
         <TabsContent value="activity">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center">
                 <Megaphone className="w-6 h-6 text-rose-600" />
@@ -441,7 +484,7 @@ export default function AIContentStudio() {
               </div>
               <Button type="submit" className="bg-rose-600 hover:bg-rose-700" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Megaphone className="w-4 h-4 mr-2" />}
-                Generate Activity Banner
+                {generateImage ? 'Generate Banner + Image' : 'Generate Banner Text'}
               </Button>
             </form>
           </div>
@@ -450,7 +493,7 @@ export default function AIContentStudio() {
 
       {/* Result Dialog */}
       <Dialog open={showResultDialog} onOpenChange={setShowResultDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-purple-600" />
@@ -458,29 +501,66 @@ export default function AIContentStudio() {
             </DialogTitle>
           </DialogHeader>
           {generatedContent && (
-            <div className="space-y-4 mt-4">
-              <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
-                <div className="prose prose-sm max-w-none">
+            <div className="space-y-6 mt-4">
+              {/* Generated Image */}
+              {generatedContent.image_base64 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-purple-600" />
+                      Generated Image
+                    </h4>
+                    <Button onClick={handleDownloadImage} variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
+                  <div className="relative bg-slate-100 rounded-xl p-2 overflow-hidden">
+                    <img 
+                      src={`data:image/png;base64,${generatedContent.image_base64}`}
+                      alt="Generated content"
+                      className="w-full h-auto rounded-lg shadow-lg max-h-[400px] object-contain mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Text Content */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-slate-900">Text Content</h4>
+                  <Button onClick={handleCopy} variant="outline" size="sm">
+                    {copied ? <Check className="w-4 h-4 mr-2 text-emerald-600" /> : <Copy className="w-4 h-4 mr-2" />}
+                    {copied ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
                   <pre className="whitespace-pre-wrap font-sans text-slate-700 text-sm leading-relaxed">
                     {generatedContent.text_content}
                   </pre>
                 </div>
               </div>
               
-              <div className="flex gap-3">
-                <Button onClick={handleCopy} variant="outline" className="flex-1">
-                  {copied ? <Check className="w-4 h-4 mr-2 text-emerald-600" /> : <Copy className="w-4 h-4 mr-2" />}
-                  {copied ? 'Copied!' : 'Copy Content'}
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-slate-200">
+                <Button onClick={() => setShowResultDialog(false)} variant="outline" className="flex-1">
+                  Close
                 </Button>
-                <Button onClick={() => setShowResultDialog(false)} className="btn-primary flex-1">
-                  <Download className="w-4 h-4 mr-2" />
-                  Use This Content
-                </Button>
+                {generatedContent.image_base64 && (
+                  <Button onClick={handleDownloadImage} className="btn-primary flex-1">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Image
+                  </Button>
+                )}
               </div>
               
-              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+              {/* Tips */}
+              <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
                 <p className="text-sm text-amber-800">
-                  <strong>Tip:</strong> Copy this content and use it in Canva, Photoshop, or any design tool to create visual pamphlets and banners.
+                  <strong>💡 Tips:</strong> 
+                  {generatedContent.image_base64 
+                    ? ' Download the image and share on WhatsApp, Facebook, or print directly!'
+                    : ' Copy the text and use it in Canva or any design tool.'}
                 </p>
               </div>
             </div>
@@ -492,11 +572,11 @@ export default function AIContentStudio() {
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-6 border border-slate-200">
         <h3 className="font-semibold text-slate-900 mb-3">💡 How to Use</h3>
         <ol className="text-sm text-slate-600 space-y-2">
-          <li>1. Select the type of content you want to generate</li>
-          <li>2. Fill in the required details about your school</li>
-          <li>3. Click Generate - AI will create professional content</li>
-          <li>4. Copy the content and use it in your design tools (Canva, Photoshop)</li>
-          <li>5. Print or share digitally on WhatsApp, Social Media</li>
+          <li><span className="font-medium text-slate-900">1.</span> Select the type of content (Admission, Topper, Event, Activity)</li>
+          <li><span className="font-medium text-slate-900">2.</span> Fill in your school details</li>
+          <li><span className="font-medium text-slate-900">3.</span> Enable "AI Image Generation" toggle for visual output</li>
+          <li><span className="font-medium text-slate-900">4.</span> Click Generate - AI will create text + image!</li>
+          <li><span className="font-medium text-slate-900">5.</span> Download image directly or copy text for editing</li>
         </ol>
       </div>
     </div>
