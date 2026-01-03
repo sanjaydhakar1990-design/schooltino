@@ -2187,6 +2187,168 @@ async def teacher_ai_assistant(request: TeacherAIRequest, current_user: dict = D
     
     return {"response": responses.get(request.type, responses["general"])}
 
+# ==================== TEACHER SYLLABUS & AI DAILY PLAN ====================
+
+@api_router.get("/teacher/syllabus")
+async def get_teacher_syllabus(current_user: dict = Depends(get_current_user)):
+    """Get syllabus progress for teacher's classes"""
+    # Get classes assigned to this teacher
+    my_classes = await db.classes.find(
+        {"class_teacher_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(20)
+    
+    # If no specific classes, return all for school
+    if not my_classes:
+        school_id = current_user.get("school_id")
+        my_classes = await db.classes.find(
+            {"school_id": school_id},
+            {"_id": 0}
+        ).to_list(20)
+    
+    # Get syllabus for each class
+    syllabus_list = []
+    for cls in my_classes:
+        syllabus = await db.syllabus.find_one(
+            {"class_id": cls["id"]},
+            {"_id": 0}
+        )
+        if syllabus:
+            syllabus_list.append(syllabus)
+        else:
+            # Create default syllabus entry
+            syllabus_list.append({
+                "id": str(uuid.uuid4()),
+                "class_id": cls["id"],
+                "class_name": cls.get("name", "Unknown"),
+                "section": cls.get("section", ""),
+                "subject": "General",
+                "total_chapters": 15,
+                "completed_chapters": 0,
+                "current_topic": "Not Started",
+                "progress": 0,
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "test_results": {"avg_score": 0, "top_score": 0, "lowest_score": 0}
+            })
+    
+    return syllabus_list
+
+@api_router.put("/teacher/syllabus/{syllabus_id}")
+async def update_syllabus(syllabus_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Update syllabus progress"""
+    result = await db.syllabus.update_one(
+        {"id": syllabus_id},
+        {"$set": {
+            **data,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "updated_by": current_user["id"]
+        }},
+        upsert=True
+    )
+    return {"message": "Syllabus updated", "id": syllabus_id}
+
+@api_router.get("/teacher/ai-daily-plan")
+async def get_ai_daily_plan(current_user: dict = Depends(get_current_user)):
+    """AI-generated daily teaching plan"""
+    today = datetime.now(timezone.utc)
+    teacher_name = current_user.get("name", "Teacher").split()[0]
+    
+    # Get teacher's classes
+    my_classes = await db.classes.find(
+        {"class_teacher_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(10)
+    
+    # Generate AI plan (mock for now - can integrate with actual AI)
+    today_classes = []
+    times = ["8:00 AM", "9:00 AM", "10:30 AM", "11:30 AM", "1:00 PM", "2:00 PM"]
+    for idx, cls in enumerate(my_classes[:6]):
+        today_classes.append({
+            "time": times[idx] if idx < len(times) else f"{8+idx}:00 AM",
+            "class": f"{cls.get('name', 'Class')} - {cls.get('section', 'A')}",
+            "topic": "Continue from last class",
+            "duration": "45 min"
+        })
+    
+    # Get weak students from this teacher's classes
+    class_ids = [c["id"] for c in my_classes]
+    
+    # For demo, create mock weak students data
+    weak_students = []
+    students = await db.students.find(
+        {"class_id": {"$in": class_ids}, "status": "active"},
+        {"_id": 0, "password": 0}
+    ).to_list(100)
+    
+    # Identify students with low test scores (mock logic)
+    for student in students[:5]:  # Limit to 5 weak students
+        weak_students.append({
+            "id": student["id"],
+            "name": student["name"],
+            "class": f"{student.get('class_name', 'Class')}",
+            "weak_topics": ["Topic 1", "Topic 2"],
+            "avg_score": 45,
+            "last_test": 42,
+            "attendance": 80,
+            "ai_strategy": "Focus on conceptual clarity. Use visual aids and practice worksheets.",
+            "improvement_plan": [
+                "Daily 15-min revision",
+                "Peer learning sessions",
+                "Weekly progress check"
+            ]
+        })
+    
+    return {
+        "today_plan": {
+            "greeting": f"Good Morning, {teacher_name}! 🌅",
+            "today_classes": today_classes,
+            "focus_areas": [
+                "Check yesterday's homework",
+                "Prepare for upcoming unit test",
+                "Review weak students' progress"
+            ],
+            "ai_tip": f"💡 Today is {today.strftime('%A')} - Great day for interactive learning activities!"
+        },
+        "tomorrow_suggestions": [
+            {"class": c.get("name", "Class"), "suggestion": "Review previous topics", "priority": "medium"}
+            for c in my_classes[:3]
+        ],
+        "weak_students": weak_students
+    }
+
+@api_router.get("/teacher/weak-students")
+async def get_weak_students(current_user: dict = Depends(get_current_user)):
+    """Get weak students for teacher's classes with AI strategies"""
+    my_classes = await db.classes.find(
+        {"class_teacher_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(10)
+    
+    class_ids = [c["id"] for c in my_classes]
+    
+    # Get students with weak performance (demo data)
+    weak_students = await db.weak_students.find(
+        {"class_id": {"$in": class_ids}},
+        {"_id": 0}
+    ).to_list(20)
+    
+    return weak_students
+
+@api_router.post("/teacher/weak-students/{student_id}/strategy")
+async def save_weak_student_strategy(student_id: str, strategy: dict, current_user: dict = Depends(get_current_user)):
+    """Save AI-generated or custom strategy for weak student"""
+    result = await db.weak_students.update_one(
+        {"student_id": student_id},
+        {"$set": {
+            "ai_strategy": strategy.get("ai_strategy"),
+            "improvement_plan": strategy.get("improvement_plan"),
+            "updated_by": current_user["id"],
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    return {"message": "Strategy saved", "student_id": student_id}
+
 # ==================== STUDYTINO - STUDENT PORTAL ROUTES ====================
 
 class StudentDashboardStats(BaseModel):
