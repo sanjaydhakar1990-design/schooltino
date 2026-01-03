@@ -138,10 +138,27 @@ function AppRoutes() {
         }
       />
 
-      {/* Catch all - redirect to dashboard */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Catch all - Smart redirect based on role */}
+      <Route path="*" element={<SmartRedirect />} />
     </Routes>
   );
+}
+
+// Smart redirect based on user role
+function SmartRedirect() {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  const role = user.role;
+  if (['teacher', 'admission_staff', 'clerk', 'staff'].includes(role)) {
+    return <Navigate to="/teacher-dashboard" replace />;
+  } else if (role === 'student') {
+    return <Navigate to="/student-dashboard" replace />;
+  }
+  return <Navigate to="/dashboard" replace />;
 }
 
 function App() {
