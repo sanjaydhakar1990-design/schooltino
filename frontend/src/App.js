@@ -24,6 +24,8 @@ import VoiceAssistant from './pages/VoiceAssistant';
 import ImageGallery from './pages/ImageGallery';
 import SMSCenter from './pages/SMSCenter';
 import WebsiteIntegration from './pages/WebsiteIntegration';
+import LeaveManagement from './pages/LeaveManagement';
+import CCTVDashboard from './pages/CCTVDashboard';
 
 // Components
 import Layout from './components/Layout';
@@ -103,6 +105,8 @@ function AppRoutes() {
         <Route path="gallery" element={<ImageGallery />} />
         <Route path="sms" element={<SMSCenter />} />
         <Route path="website" element={<WebsiteIntegration />} />
+        <Route path="leave" element={<LeaveManagement />} />
+        <Route path="cctv" element={<CCTVDashboard />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="teacher-dashboard" element={<TeacherDashboard />} />
