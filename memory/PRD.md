@@ -1,12 +1,33 @@
-# Schooltino v3.5 - Complete AI School Management System
+# Schooltino v3.6 - Complete AI School Management System
 
 ## Connected to OneTino EduOne Ecosystem
 **OneTino.com** → EduOne → **Schooltino** | **TeachTino** | **StudyTino** | **CoachTino**
 
 ---
 
-## Current Version: 3.5.0
+## Current Version: 3.6.0
 **Last Updated:** January 3, 2026
+
+---
+
+## 🔐 Test Login Credentials
+
+### Schooltino (Director/Admin)
+- **Email:** `director@schooltino.com`
+- **Password:** `admin123`
+- **Login Tab:** Admin
+
+### TeachTino (Teacher)
+- **Email:** `teacher@schooltino.com`
+- **Password:** `teacher123`
+- **Login Tab:** Teacher
+
+### StudyTino (Student)
+- **Student ID:** `STD-2026-285220`
+- **Password:** `KPbeHdZf`
+- **Login Tab:** Student → "Student ID + Password"
+
+**Login URL:** https://schooltino.preview.emergentagent.com/login
 
 ---
 
