@@ -40,6 +40,8 @@ export const Sidebar = () => {
     { path: '/fees', icon: Wallet, label: 'fees' },
     { path: '/notices', icon: Bell, label: 'notices' },
     { path: '/ai-paper', icon: Sparkles, label: 'ai_paper' },
+    { path: '/ai-content', icon: Sparkles, label: 'ai_content', roles: ['director', 'principal', 'vice_principal'] },
+    { path: '/teacher-dashboard', icon: GraduationCap, label: 'teachtino', roles: ['teacher', 'director', 'principal', 'vice_principal'] },
     { path: '/audit-logs', icon: ClipboardList, label: 'audit_logs', roles: ['director', 'principal', 'admin'] },
     { path: '/settings', icon: Settings, label: 'settings' },
   ];
