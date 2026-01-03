@@ -1,22 +1,7 @@
-# Schooltino - Smart School Management System PRD
+# Schooltino - Complete School Management System PRD
 
 ## Vision Statement
 **"AI + CCTV + Apps से school को automatic, secure, paperless, data-driven banana - Director को remotely full control, teachers का load kam, students का tracking + learning improve."**
-
----
-
-## Product Overview
-
-### Core Apps
-1. **Schooltino** - Director/Principal Admin Panel ✅ (Phase 1 Complete)
-2. **Teachtino** - Teacher App (Phase 2)
-3. **Studytino** - Student + Parent App (Phase 3)
-
-### Target Users
-- School Directors & Principals
-- Teachers & Staff
-- Students & Parents
-- School Administrators in India
 
 ---
 
@@ -24,135 +9,218 @@
 
 ### Implemented Features
 
-#### 1. Authentication System
+#### 1. Authentication & User Management ✅
 - JWT-based secure login
-- Role-based access (Director, Principal, Teacher, Accountant)
-- Multi-language support (Hindi/English)
+- **Role-based access control:**
+  - Director (Super Admin)
+  - Co-Director
+  - Principal
+  - Vice Principal
+  - Accountant
+  - Exam Controller
+  - Teacher
+  - Librarian
+  - Clerk
 
-#### 2. School Management
+#### 2. User Account Lifecycle ✅
+- **Director creates all accounts** (email + password)
+- **Principal can create** (needs Director approval)
+- **Account statuses:**
+  - Active
+  - Pending (awaiting approval)
+  - Suspended (temporary block)
+  - Deactivated (permanent)
+  - Rejected
+
+#### 3. User Management Powers ✅
+| Action | Director | Principal | Vice Principal |
+|--------|----------|-----------|----------------|
+| Create User | ✅ Instant | ✅ Needs approval | ❌ |
+| Suspend | ✅ | ✅ | ✅ |
+| Unsuspend | ✅ | ✅ | ❌ |
+| Deactivate | ✅ | ❌ | ❌ |
+| Reactivate | ✅ | ❌ | ❌ |
+| Transfer Account | ✅ | ❌ | ❌ |
+
+#### 4. Suspend Feature ✅
+- Suspend reasons: Fees Pending, Misconduct, Document Pending, Other
+- Suspend until date (optional)
+- Auto-block login
+- Unsuspend to reactivate
+
+#### 5. Transfer Account Feature ✅
+- Teacher change पर same ID नए व्यक्ति को transfer
+- Syllabus/data continue रहता है
+- Audit log में record
+
+#### 6. Core Modules ✅
 - Multi-school support
-- School profile with board type (CBSE, ICSE, State)
-- School selection for all operations
-
-#### 3. Student Management
-- CRUD operations for students
-- Admission number tracking
-- Class/Section assignment
-- Parent details (Father/Mother name)
-- Contact & address management
-- Search & filter by class
-
-#### 4. Staff Management
-- Employee management with designations
-- Teacher, Accountant, Librarian roles
-- Qualification & salary tracking
-- Department assignment
-
-#### 5. Classes & Sections
-- Class creation (Nursery to Class 12)
-- Multiple sections (A, B, C, D, E)
-- Class teacher assignment
-- Student count tracking
-
-#### 6. Attendance System
-- Manual attendance marking
-- Bulk attendance for entire class
-- Status: Present/Absent/Late
-- Daily attendance statistics
-- Date-wise filtering
-
-#### 7. Fee Management
-- Fee plan creation (Monthly, Quarterly, Annual)
-- Invoice generation
-- Payment recording (Cash/Online/Cheque)
-- Receipt generation
-- Discount management
-- Collection statistics
-
-#### 8. Notice Board
-- Create announcements
-- Priority levels (Urgent, High, Normal, Low)
-- Target audience selection (All, Teachers, Students, Parents)
-- Valid till date
-
-#### 9. AI Paper Generator
-- OpenAI GPT integration
-- Subject & chapter selection
-- Question types (MCQ, Short, Long, Fill blanks)
-- Difficulty levels
-- Auto answer key generation
-- Print/Download support
-
-#### 10. Audit Logs
-- Track all system activities
-- User action logging
-- Module-wise filtering
-
-#### 11. Dashboard
-- Total students/staff/classes count
-- Today's attendance chart
-- Fee collection statistics
-- Recent notices
-- Recent activities
+- Students CRUD
+- Staff CRUD
+- Classes & Sections
+- Attendance (manual)
+- Fee Plans, Invoices, Payments
+- Notices with priority
+- AI Paper Generator (OpenAI)
+- Audit Logs
+- Dashboard with charts
+- Hindi/English bilingual
 
 ---
 
-## Phase 2 - CCTV AI Attendance (PLANNED)
+## Phase 2 - Enhanced Login & Portals (PLANNED)
 
-### Features
-- Gate camera face recognition
-- Auto attendance on entry
-- Period-wise attendance snapshots
-- Late entry detection
-- Unauthorized exit alerts
+### 2.1 Three Login Portals
 
-### Technical Requirements
-- On-premises AI server
-- RTSP camera integration
-- Face recognition model
-- Event-based cloud sync
+| Portal | URL | Users |
+|--------|-----|-------|
+| **AdminTino** | /admin | Director, Principal, Vice Principal, Co-Director |
+| **TeachTino** | /teach | Teachers, Staff |
+| **StudyTino** | /study | Students, Parents |
 
----
+### 2.2 Login Methods
+- Mobile OTP (recommended)
+- Email + Password
+- Student ID + DOB/OTP (for students)
+- Staff ID + Password
 
-## Phase 3 - Behavior AI & Incidents (PLANNED)
-
-### Features
-- Movement tracking (zone entry/exit)
-- Behavior detection (running, fighting, crowding)
-- AI voice warning system
-- Escalation to teacher/principal
-- Incident clip capture
-- Heatmap analytics
-
-### Alert Escalation
-1. Level 1: AI warns student (speaker)
-2. Level 2: Class teacher notification
-3. Level 3: Principal + clip
-4. Level 4: Director + incident package
+### 2.3 Self-Registration (Request Mode)
+- Teacher/Staff signup → "Request Access"
+- Status: Pending
+- Director/Principal approve/reject
+- Bulk CSV upload option
 
 ---
 
-## Phase 4 - DigiSchool (FUTURE VISION) 🚀
+## Phase 3 - Leave Management (PLANNED)
 
-### AI Teacher Clone System
-- Teacher-approved AI content delivery
+### 3.1 Student Leave (StudyTino)
+```
+Student/Parent apply → Class Teacher approve → Principal approve (final)
+```
+- Leave types: Sick, Personal, Emergency, Other
+- Half-day option
+- Attachment support (medical slip)
+- Auto-mark in attendance
+
+### 3.2 Teacher Leave (TeachTino)
+```
+Teacher apply → Principal approve → Director approve (final)
+```
+- Substitute teacher assignment (AI suggest)
+- Leave calendar
+- Leave balance tracking
+
+### 3.3 Leave Statuses
+- Draft
+- Submitted
+- Pending (Teacher/Principal/Director)
+- Approved
+- Rejected
+- Cancelled
+
+---
+
+## Phase 4 - Enhanced Notice System (PLANNED)
+
+### 4.1 Notice Creation Flow
+1. Draft notice (text/PDF/voice → AI convert)
+2. Select audience (All, Teachers, Students, Class-specific)
+3. Set expiry (start date - end date)
+4. **2-step verification** (OTP/passkey)
+5. Publish → Notifications (in-app, SMS, WhatsApp)
+
+### 4.2 Notice Features
+- School seal + signature template
+- AI drafting from voice/text
+- Teacher can create class-limited notices only
+- Auto-archive after expiry
+- Full audit logs
+
+---
+
+## Phase 5 - AI Assistants (PLANNED)
+
+### 5.1 Three AI Buttons in Director Dashboard
+1. **AdminTino** - School operations assistant
+   - Staff management
+   - Reports generation
+   - Schedule optimization
+   
+2. **TeachTino** - Teaching assistant
+   - Syllabus plans
+   - Paper generation
+   - Teaching aids
+   
+3. **StudyTino** - Student support
+   - Homework help
+   - Doubt solving (safe mode)
+   - Study plans
+
+### 5.2 AI Safety Rules
+- All outputs require human confirmation
+- No direct publish without verification
+- Audit log for all AI actions
+
+---
+
+## Phase 6 - Student Admission & Gate (PLANNED)
+
+### 6.1 Admission Workflow
+1. Admin uploads student data
+2. System generates: **Unique Student ID** (STD-2026-000345)
+3. **Temporary password** created
+4. First login → mandatory password change
+5. OTP verify (parent mobile)
+
+### 6.2 Student Account Lifecycle
+- **Active** (normal)
+- **Suspended** (fees pending / discipline)
+- **Deactivated** (TC issued / left school)
+- **Reactivated** (Director only)
+
+### 6.3 Gate Verification (Hardware Integration)
+- QR/Barcode/RFID card scan
+- Real-time status check:
+  - Active → Allow entry
+  - Suspended/Deactivated → Deny entry
+- Generic message on denial (privacy)
+- Full access log
+
+---
+
+## Phase 7 - CCTV AI Integration (FUTURE)
+
+### 7.1 CCTV Coverage Zones
+- Entry Gate
+- Corridors
+- Classrooms (optional)
+- Office area
+- Boundary/exit points
+
+### 7.2 AI Capabilities
+- Face recognition attendance
+- Movement tracking
+- Behavior detection
+- Voice warning system
+- Incident escalation
+
+---
+
+## Phase 8 - DigiSchool Vision (FUTURE)
+
+### 8.1 AI Teacher Clone
+- Teacher-approved AI content
 - 3D imagination-based teaching
 - LCD/Projector integration
-- Visual learning with AI animations
-- Personalized learning pace
+- ElevenLabs voice synthesis
+- HeyGen avatars
 
-### Smart Classroom Features
-- AI-controlled LCD displays
-- Projector integration
+### 8.2 Smart Classroom
+- AI-controlled displays
 - Interactive 3D lessons
 - Real-time doubt solving
-- Automated lesson plans
-
-### Integration Points
-- ElevenLabs for voice synthesis
-- HeyGen for AI avatars (future)
-- 3D visualization engine
-- Smart display APIs
+- Personalized learning pace
 
 ---
 
@@ -166,85 +234,52 @@
 - **AI:** OpenAI GPT (Emergent Integration)
 
 ### Database Collections
-- users, schools, classes, students, staff
-- attendance_daily, fee_plans, fee_invoices, fee_payments
-- notices, audit_logs, generated_papers
-
-### API Prefix
-All backend routes: `/api/*`
-
----
-
-## User Roles & Permissions
-
-| Role | Permissions |
-|------|-------------|
-| Director | Full access + CCTV control + Incident approvals |
-| Principal | Staff/student ops + Academic control + Limited CCTV |
-| Vice Principal | Academic + limited admin |
-| Teacher | Own classes only |
-| Accountant | Fee modules only |
-| Exam Controller | Exams & results |
+- users (with status, suspension_reason, etc.)
+- schools
+- classes
+- students
+- staff
+- attendance_daily
+- fee_plans, fee_invoices, fee_payments
+- notices
+- audit_logs
+- generated_papers
 
 ---
 
-## What's Been Implemented (Jan 2026)
+## API Endpoints
 
-### Backend (100% Working)
-- ✅ Auth endpoints (register, login, me)
-- ✅ Schools CRUD
-- ✅ Classes CRUD
-- ✅ Students CRUD
-- ✅ Staff CRUD
-- ✅ Attendance (single + bulk)
-- ✅ Fee Plans, Invoices, Payments
-- ✅ Notices CRUD
-- ✅ Dashboard stats
-- ✅ Audit logs
-- ✅ AI Paper Generator
+### Auth & Users
+```
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
 
-### Frontend (85% Working)
-- ✅ Login/Register page
-- ✅ Sidebar navigation
-- ✅ Dashboard with charts
-- ✅ Students management
-- ✅ Staff management
-- ✅ Classes management
-- ✅ Attendance marking
-- ✅ Fee management
-- ✅ Notices
-- ✅ AI Paper Generator
-- ✅ Settings with school creation
-- ✅ Hindi/English language toggle
-- ✅ Audit logs viewer
+POST /api/users/create
+GET  /api/users/school/{school_id}
+GET  /api/users/pending/{school_id}
+POST /api/users/{id}/approve
+POST /api/users/{id}/reject
+POST /api/users/{id}/suspend
+POST /api/users/{id}/unsuspend
+POST /api/users/{id}/deactivate
+POST /api/users/{id}/reactivate
+POST /api/users/{id}/transfer
+```
 
----
-
-## Prioritized Backlog
-
-### P0 (Critical - Next Sprint)
-1. Add OpenAI API key in .env for AI Paper Generator
-2. Test complete user flow with real data
-3. Mobile responsive improvements
-
-### P1 (Important)
-1. Teachtino (Teacher App) - separate frontend
-2. Studytino (Student/Parent App)
-3. Exam module with marks entry
-4. Result analytics
-
-### P2 (Nice to Have)
-1. CCTV integration preparation
-2. Transport module
-3. Library management
-4. Hostel/Mess management
-
-### P3 (Future - DigiSchool)
-1. AI Teacher Clone system
-2. LCD/Projector API integration
-3. 3D lesson visualization
-4. ElevenLabs voice integration
-5. HeyGen avatar integration
+### Core Modules
+```
+/api/schools/*
+/api/classes/*
+/api/students/*
+/api/staff/*
+/api/attendance/*
+/api/fees/*
+/api/notices/*
+/api/audit-logs/*
+/api/ai/generate-paper
+/api/dashboard/stats
+```
 
 ---
 
@@ -253,7 +288,7 @@ All backend routes: `/api/*`
 ```env
 # Backend (.env)
 MONGO_URL="mongodb://localhost:27017"
-DB_NAME="test_database"
+DB_NAME="schooltino_db"
 JWT_SECRET="your-secret-key"
 OPENAI_API_KEY="sk-your-openai-key"
 
@@ -263,14 +298,55 @@ REACT_APP_BACKEND_URL="https://your-domain.com"
 
 ---
 
+## Copy-Paste Requirement (For Developers)
+
+```
+"SchoolTino me 3 portals banao: Admin (Director/Principal/Vice/Co), 
+TeachTino (teachers/staff), StudyTino (students/parents). 
+
+Director is Super Admin - accounts create/approve/disable Director karega. 
+Self-signup request mode ho jisme teacher/staff request bheje aur 
+Director/authorized admin approve kare. CSV bulk import + Data mapping wizard ho.
+
+User statuses: Active, Pending, Suspended, Deactivated. 
+Suspend me reason + duration required. 
+Transfer account feature for teacher change.
+
+Notice system me AI drafting + seal/sign template + audience targeting + 
+start/end expiry + notifications + 2-step verification before publish + audit logs.
+
+Teacher class-limited notices + paper generator (PDF + answer key).
+
+Leave Management: Student/Parent apply → Class Teacher → Principal approve.
+Teacher apply → Principal → Director approve.
+
+Director panel me 3 AI assistant buttons: AdminTino/TeachTino/StudyTino."
+```
+
+---
+
 ## Next Action Items
 
-1. **Immediate:** Add OpenAI API key to `/app/backend/.env`
-2. **Test:** Complete flow - Register → School → Class → Staff → Student → Attendance → Fees
-3. **Phase 2 Planning:** Start Teachtino (Teacher App) design
-4. **DigiSchool R&D:** Research LCD/Projector APIs and AI avatar solutions
+### Immediate (This Sprint)
+1. ✅ User Management with full powers
+2. ✅ Suspend/Unsuspend/Deactivate/Reactivate
+3. ✅ Account Transfer feature
+4. Test all features end-to-end
+
+### Next Sprint
+1. Leave Management module
+2. Enhanced Notice system (2-step, expiry)
+3. Self-registration request mode
+4. Mobile responsive improvements
+
+### Future Sprints
+1. Three separate portals (Admin/Teach/Study)
+2. Mobile OTP login
+3. Student ID auto-generation
+4. Gate integration APIs
+5. AI Assistants
 
 ---
 
 *Last Updated: January 2026*
-*Version: 1.0.0 (Phase 1 MVP)*
+*Version: 1.1.0 (Phase 1 Complete + User Management Enhanced)*
