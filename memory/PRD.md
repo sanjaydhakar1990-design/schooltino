@@ -1,11 +1,11 @@
-# Schooltino v3.7 - Complete AI School Management System
+# Schooltino v4.0 - Complete AI School Management System
 
 ## Connected to OneTino EduOne Ecosystem
 **OneTino.com** → EduOne → **Schooltino** | **TeachTino** | **StudyTino** | **CoachTino**
 
 ---
 
-## Current Version: 3.8.0
+## Current Version: 4.0.0
 **Last Updated:** January 3, 2026
 
 ---
@@ -22,19 +22,78 @@
 - **Email:** `teacher@schooltino.com`
 - **Password:** `teacher123`
 - **Login Tab:** Teacher
-- **Dashboard:** TeachTino Dashboard (Teaching focused) - **NEW v3.8!**
+- **Dashboard:** TeachTino Dashboard (Teaching focused)
 
 ### StudyTino (Student)
 - **Student ID:** `STD-2026-285220`
 - **Password:** `KPbeHdZf`
 - **Login Tab:** Student → "Student ID + Password"
-- **Dashboard:** StudyTino (Student portal - Coming Soon)
+- **Dashboard:** StudyTino (Student portal) - **NEW v4.0!**
 
 **Login URL:** https://schooltino.preview.emergentagent.com/login
 
 ---
 
-## ✅ TeachTino Dashboard v3.8 Features (NEW!)
+## ✅ StudyTino Dashboard v4.0 Features (NEW!)
+
+### 📱 PWA Install Button
+- Install button in header for Students/Parents
+- Direct app download to phone/desktop
+- Low-network friendly
+
+### 📊 Today at a Glance (3 Cards)
+- New Notices count with badge
+- Homework Pending count
+- Leave Status (Pending/Approved/No Leave)
+
+### 📢 Latest Notice (Big Card)
+- Notice title & content
+- Posted by, Valid till date
+- Audience badge (All/Class)
+- Download attachment button
+- Mark as read
+
+### 📚 Homework Section (2 Tabs)
+- Today's homework
+- This Week's homework
+- Subject, Teacher, Due date
+- Status: Pending/Done
+
+### ⚡ Quick Actions (6 Buttons)
+- Apply Leave
+- My Leaves
+- All Notices
+- Homework
+- Study Materials
+- Contact
+
+### 📅 Calendar Strip
+- 7-day horizontal strip
+- Today highlighted
+- Notice markers (purple dot)
+- Homework markers (blue dot)
+- Hindi day names (शनि, रवि, सोम...)
+
+### 🧠 StudyTino AI Helper
+- Safe study assistant (school policies follow)
+- Hindi prompt chips
+- "Is homework ko samjhao"
+- "Topic easy Hindi me"
+- "5 MCQ practice"
+
+### 👤 Profile & Settings
+- Student ID, Class, Father Name
+- Password change option
+- Account status
+
+### 🔒 Blocked Account Handling
+- Clear banner if account blocked
+- Contact office button
+- No sensitive reason shown
+
+---
+
+## ✅ TeachTino Dashboard Features
 
 ### 📱 PWA Install Button
 - Install button in header for Teachers/Staff
