@@ -20,6 +20,10 @@ import UserManagementPage from './pages/UserManagementPage';
 import TeacherDashboard from './pages/TeacherDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import AIContentStudio from './pages/AIContentStudio';
+import VoiceAssistant from './pages/VoiceAssistant';
+import ImageGallery from './pages/ImageGallery';
+import SMSCenter from './pages/SMSCenter';
+import WebsiteIntegration from './pages/WebsiteIntegration';
 
 // Components
 import Layout from './components/Layout';
