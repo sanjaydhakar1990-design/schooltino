@@ -284,7 +284,7 @@ export default function LoginPage() {
 
               <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-200">
                 <p className="text-sm text-amber-800">
-                  <strong>Note:</strong> This setup can only be done once. You'll use this account to create all other staff accounts.
+                  <strong>Note:</strong> This setup can only be done once. You&apos;ll use this account to create all other staff accounts.
                 </p>
               </div>
             </div>
