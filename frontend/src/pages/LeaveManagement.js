@@ -28,7 +28,11 @@ export default function LeaveManagement() {
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [leaveBalance, setLeaveBalance] = useState(null);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState('my-leaves');
+  
+  // Director/Principal/VP should see "Pending Approvals" by default, others see "My Leaves"
+  const isApprover = ['director', 'principal', 'vice_principal'].includes(user?.role);
+  const canApplyLeave = ['teacher', 'staff', 'student'].includes(user?.role);
+  const [activeTab, setActiveTab] = useState(isApprover && !canApplyLeave ? 'pending' : 'my-leaves');
 
   const [form, setForm] = useState({
     leave_type: 'casual',
