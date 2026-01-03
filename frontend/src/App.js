@@ -99,6 +99,10 @@ function AppRoutes() {
         <Route path="notices" element={<NoticesPage />} />
         <Route path="ai-paper" element={<AIPaperPage />} />
         <Route path="ai-content" element={<AIContentStudio />} />
+        <Route path="voice-assistant" element={<VoiceAssistant />} />
+        <Route path="gallery" element={<ImageGallery />} />
+        <Route path="sms" element={<SMSCenter />} />
+        <Route path="website" element={<WebsiteIntegration />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="teacher-dashboard" element={<TeacherDashboard />} />
