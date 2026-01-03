@@ -191,8 +191,10 @@ export default function LeaveManagement() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-slate-100">
-          <TabsTrigger value="my-leaves">My Leaves</TabsTrigger>
-          {['director', 'principal', 'vice_principal', 'teacher'].includes(user?.role) && (
+          {canApplyLeave && (
+            <TabsTrigger value="my-leaves">My Leaves</TabsTrigger>
+          )}
+          {canApproveLeave && (
             <TabsTrigger value="pending">
               Pending Approvals
               {pendingLeaves.length > 0 && (
