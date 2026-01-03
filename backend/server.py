@@ -1863,97 +1863,195 @@ class ContentGenerateRequest(BaseModel):
     school_name: str
     details: Dict[str, Any]  # Dynamic based on content_type
     language: str = "english"
+    generate_image: bool = True  # New: Generate image along with text
 
 class ContentGenerateResponse(BaseModel):
     id: str
     content_type: str
     image_url: Optional[str] = None
+    image_base64: Optional[str] = None  # New: For inline image display
     text_content: str
     created_at: str
 
 @api_router.post("/ai/generate-content", response_model=ContentGenerateResponse)
 async def generate_ai_content(request: ContentGenerateRequest, current_user: dict = Depends(get_current_user)):
-    """Generate AI-powered pamphlets, banners, posters for school"""
+    """Generate AI-powered pamphlets, banners, posters for school with IMAGE"""
     if current_user["role"] not in ["director", "principal", "vice_principal"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    openai_key = os.environ.get("OPENAI_API_KEY")
-    if not openai_key:
-        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="Emergent LLM key not configured")
     
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
+        import base64
         
-        # Generate content based on type
-        prompts = {
-            "admission_pamphlet": f"""Create admission pamphlet content for {request.school_name}:
+        content_id = str(uuid.uuid4())
+        text_content = ""
+        image_base64 = None
+        
+        # Image generation prompts based on content type
+        image_prompts = {
+            "admission_pamphlet": f"""Create a professional and vibrant school admission pamphlet/flyer design for an Indian school.
+School Name: {request.school_name}
+Academic Year: {request.details.get('academic_year', '2025-26')}
+Classes Offered: {request.details.get('classes', 'Nursery to Class 12')}
+Key Features: {request.details.get('features', 'Smart Classes, Sports, Computer Lab, Science Lab')}
+Contact: {request.details.get('contact', '')}
+
+Design Requirements:
+- Modern, colorful design suitable for Indian school
+- Include school name prominently at top
+- Show happy students/school imagery
+- Display "Admissions Open" text
+- Include key features as bullet points or icons
+- Professional and trustworthy look
+- Bright colors like blue, green, orange
+- Include contact information area""",
+
+            "topper_banner": f"""Create a celebratory congratulations banner for a school topper/achiever.
+School Name: {request.school_name}
+Student Name: {request.details.get('student_name', 'Student Name')}
+Class: {request.details.get('class', '')}
+Marks/Percentage: {request.details.get('marks', '95%')}
+Achievement: {request.details.get('achievement', 'Class Topper')}
+
+Design Requirements:
+- Festive, celebratory design
+- Gold/yellow colors for achievement theme
+- "Congratulations" text prominently displayed
+- Space for student photo placeholder (circle)
+- School name and logo area
+- Stars, confetti, trophy imagery
+- Professional Indian school style""",
+
+            "event_poster": f"""Create an attractive event poster for a school function/event.
+School Name: {request.school_name}
+Event Name: {request.details.get('event_name', 'Annual Day')}
+Event Date: {request.details.get('date', '')}
+Venue: {request.details.get('venue', 'School Auditorium')}
+Description: {request.details.get('description', 'You are cordially invited')}
+
+Design Requirements:
+- Eye-catching, festive design
+- Event name prominently displayed
+- Date and venue clearly visible
+- Indian school event theme
+- Colorful and inviting
+- Include decorative elements
+- Professional yet fun design""",
+
+            "activity_banner": f"""Create an announcement banner for a school activity/program.
+School Name: {request.school_name}
+Activity Name: {request.details.get('activity', 'Science Exhibition')}
+Details: {request.details.get('details', 'All students are invited to participate')}
+
+Design Requirements:
+- Informative, engaging design
+- Activity name clearly visible
+- School branding
+- Relevant imagery for the activity
+- Call to action style
+- Bright, appealing colors"""
+        }
+        
+        # Text content prompts
+        text_prompts = {
+            "admission_pamphlet": f"""Create admission pamphlet text content for {request.school_name}:
 - Academic Year: {request.details.get('academic_year', '2025-26')}
 - Classes: {request.details.get('classes', 'Nursery to 12th')}
 - Features: {request.details.get('features', 'Smart Classes, Sports, Labs')}
 - Contact: {request.details.get('contact', '')}
-- Tagline/Slogan: Generate catchy tagline
-- Key Points: Generate 5 key selling points
+Generate: Catchy tagline, 5 key selling points, admission process brief.
+Language: {request.language}. Make it professional.""",
 
-Return in {request.language}. Make it professional and attractive.""",
-
-            "topper_banner": f"""Create congratulatory banner content for school topper:
+            "topper_banner": f"""Create congratulatory text for school topper banner:
 - School: {request.school_name}
-- Student Name: {request.details.get('student_name', '')}
+- Student: {request.details.get('student_name', '')}
 - Class: {request.details.get('class', '')}
-- Percentage/Marks: {request.details.get('marks', '')}
-- Achievement: {request.details.get('achievement', 'Class Topper')}
+- Marks: {request.details.get('marks', '')}
+Generate: Congratulation message, inspirational quote.
+Language: {request.language}.""",
 
-Return in {request.language}. Make it celebratory and inspiring.""",
-
-            "event_poster": f"""Create event poster content for school event:
+            "event_poster": f"""Create event poster text content:
 - School: {request.school_name}
-- Event Name: {request.details.get('event_name', '')}
+- Event: {request.details.get('event_name', '')}
 - Date: {request.details.get('date', '')}
-- Venue: {request.details.get('venue', 'School Auditorium')}
-- Description: {request.details.get('description', '')}
+- Venue: {request.details.get('venue', '')}
+Generate: Invitation text, event highlights.
+Language: {request.language}.""",
 
-Return in {request.language}. Make it engaging and informative.""",
-
-            "activity_banner": f"""Create activity announcement banner for school:
+            "activity_banner": f"""Create activity banner text:
 - School: {request.school_name}
 - Activity: {request.details.get('activity', '')}
 - Details: {request.details.get('details', '')}
-
-Return in {request.language}."""
+Generate: Announcement text, participation details.
+Language: {request.language}."""
         }
         
-        prompt = prompts.get(request.content_type, prompts["admission_pamphlet"])
-        
-        chat = LlmChat(
-            api_key=openai_key,
-            session_id=f"content-{str(uuid.uuid4())[:8]}",
-            system_message="You are a professional content creator for Indian schools. Create engaging, professional content for school materials."
+        # Step 1: Generate text content
+        text_chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"text-{content_id[:8]}",
+            system_message="You are a professional content creator for Indian schools. Create engaging content in the requested language."
         ).with_model("openai", "gpt-4o")
         
-        user_msg = UserMessage(text=prompt)
-        response = await chat.send_message(user_msg)
+        text_prompt = text_prompts.get(request.content_type, text_prompts["admission_pamphlet"])
+        text_msg = UserMessage(text=text_prompt)
+        text_content = await text_chat.send_message(text_msg)
+        
+        # Step 2: Generate image if requested
+        if request.generate_image:
+            try:
+                image_chat = LlmChat(
+                    api_key=emergent_key,
+                    session_id=f"image-{content_id[:8]}",
+                    system_message="You are a professional graphic designer creating school marketing materials."
+                ).with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
+                
+                image_prompt = image_prompts.get(request.content_type, image_prompts["admission_pamphlet"])
+                image_msg = UserMessage(text=image_prompt)
+                
+                img_text, images = await image_chat.send_message_multimodal_response(image_msg)
+                
+                if images and len(images) > 0:
+                    image_base64 = images[0].get('data', '')
+                    logging.info(f"Image generated successfully, base64 length: {len(image_base64)[:10] if image_base64 else 0}...")
+                    
+            except Exception as img_error:
+                logging.error(f"Image generation failed: {str(img_error)}")
+                # Continue without image
         
         content_data = {
-            "id": str(uuid.uuid4()),
+            "id": content_id,
             "content_type": request.content_type,
             "school_name": request.school_name,
             "details": request.details,
-            "text_content": response,
-            "image_url": None,  # Can integrate DALL-E later
+            "text_content": text_content,
+            "image_base64": image_base64,
+            "image_url": None,
             "created_by": current_user["id"],
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         
-        await db.ai_content.insert_one(content_data)
+        # Don't store huge base64 in DB, store separately or just keep reference
+        db_data = {**content_data}
+        db_data["has_image"] = image_base64 is not None
+        db_data.pop("image_base64", None)  # Don't store base64 in main collection
+        
+        await db.ai_content.insert_one(db_data)
         await log_audit(current_user["id"], "generate_content", "ai_content", {
             "type": request.content_type,
-            "school": request.school_name
+            "school": request.school_name,
+            "has_image": image_base64 is not None
         })
         
         return ContentGenerateResponse(
             id=content_data["id"],
             content_type=content_data["content_type"],
             text_content=content_data["text_content"],
+            image_base64=image_base64,
             image_url=content_data["image_url"],
             created_at=content_data["created_at"]
         )
