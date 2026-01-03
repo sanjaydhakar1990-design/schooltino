@@ -382,6 +382,17 @@ def verify_jwt_token(token: str) -> dict:
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     payload = verify_jwt_token(credentials.credentials)
+    
+    # Check if it's a student login
+    if payload.get("role") == "student":
+        student = await db.students.find_one({"id": payload["sub"]}, {"_id": 0, "password": 0})
+        if not student:
+            raise HTTPException(status_code=401, detail="Student not found")
+        # Add role for consistency
+        student["role"] = "student"
+        return student
+    
+    # Regular user (admin, teacher, staff)
     user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
