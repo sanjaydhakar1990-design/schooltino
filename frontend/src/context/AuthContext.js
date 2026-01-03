@@ -54,11 +54,12 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const register = async (userData) => {
-    const response = await axios.post(`${API}/auth/register`, userData);
+  const setupDirector = async (userData) => {
+    const response = await axios.post(`${API}/auth/setup-director`, userData);
     const { access_token, user: newUser } = response.data;
     
     localStorage.setItem('token', access_token);
+    localStorage.setItem('user', JSON.stringify(newUser));
     axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
     
     setToken(access_token);
@@ -89,11 +90,13 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user,
+      setUser,
       token,
+      setToken,
       loading,
       schoolId,
       login,
-      register,
+      setupDirector,
       logout,
       selectSchool,
       hasPermission,
