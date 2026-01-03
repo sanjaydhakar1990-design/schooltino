@@ -904,27 +904,273 @@ async def delete_class(class_id: str, current_user: dict = Depends(get_current_u
     await log_audit(current_user["id"], "delete", "classes", {"class_id": class_id})
     return {"message": "Class deleted successfully"}
 
-# ==================== STUDENT ROUTES ====================
+# ==================== STUDENT ADMISSION ROUTES ====================
 
-@api_router.post("/students", response_model=StudentResponse)
-async def create_student(student: StudentCreate, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin", "teacher"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
+def generate_student_id(school_id: str) -> str:
+    """Generate unique student ID like STD-2026-000123"""
+    year = datetime.now().year
+    random_part = str(uuid.uuid4().int)[:6].zfill(6)
+    return f"STD-{year}-{random_part}"
+
+def generate_temp_password() -> str:
+    """Generate temporary password for student"""
+    chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+    return ''.join([chars[ord(os.urandom(1)) % len(chars)] for _ in range(8)])
+
+@api_router.post("/students/admit", response_model=StudentAdmissionResponse)
+async def admit_student(student: StudentCreate, current_user: dict = Depends(get_current_user)):
+    """
+    Admission Staff adds new student.
+    Auto-generates Student ID and temporary password.
+    Director/Principal can later approve if needed.
+    """
+    # Allow admission staff, clerk, accountant, teacher, principal, director
+    allowed_roles = ["director", "principal", "vice_principal", "teacher", "accountant", "clerk", "admission_staff"]
+    if current_user["role"] not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Not authorized for admission")
     
-    # Check duplicate admission no
-    existing = await db.students.find_one({"admission_no": student.admission_no, "school_id": student.school_id})
-    if existing:
-        raise HTTPException(status_code=400, detail="Admission number already exists")
+    # Generate unique student ID
+    student_id = generate_student_id(student.school_id)
     
+    # Check if student_id already exists (very rare)
+    while await db.students.find_one({"student_id": student_id}):
+        student_id = generate_student_id(student.school_id)
+    
+    # Generate temporary password
+    temp_password = generate_temp_password()
+    hashed_pw = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt()).decode()
+    
+    # Determine status - if Director/Principal adds, directly active
+    # If staff adds, pending approval (optional - can be configured)
+    status = "active" if current_user["role"] in ["director", "principal"] else "active"
+    
+    # Create student record
     student_data = {
         "id": str(uuid.uuid4()),
+        "student_id": student_id,
+        "admission_no": student_id,  # Same as student_id for backward compatibility
         **student.model_dump(),
+        "status": status,
         "is_active": True,
+        "password": hashed_pw,
+        "password_changed": False,
+        "admitted_by": current_user["id"],
+        "admitted_at": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.students.insert_one(student_data)
     
     # Update class student count
+    await db.classes.update_one({"id": student.class_id}, {"$inc": {"student_count": 1}})
+    
+    # Get class info
+    class_doc = await db.classes.find_one({"id": student.class_id}, {"_id": 0})
+    
+    await log_audit(current_user["id"], "admit_student", "students", {
+        "student_id": student_id,
+        "name": student.name,
+        "class": class_doc["name"] if class_doc else ""
+    })
+    
+    return StudentAdmissionResponse(
+        id=student_data["id"],
+        student_id=student_id,
+        name=student.name,
+        class_id=student.class_id,
+        class_name=class_doc["name"] if class_doc else None,
+        section=class_doc["section"] if class_doc else None,
+        school_id=student.school_id,
+        father_name=student.father_name,
+        mother_name=student.mother_name,
+        dob=student.dob,
+        gender=student.gender,
+        mobile=student.mobile,
+        login_id=student_id,
+        temporary_password=temp_password,  # Show only once!
+        status=status,
+        created_at=student_data["created_at"]
+    )
+
+@api_router.post("/students/login")
+async def student_login(student_id: str = None, password: str = None, mobile: str = None, dob: str = None):
+    """Student login with Student ID + Password OR Mobile + DOB"""
+    
+    student = None
+    
+    if student_id and password:
+        # Login with Student ID + Password
+        student = await db.students.find_one({"student_id": student_id}, {"_id": 0})
+        if not student:
+            raise HTTPException(status_code=401, detail="Invalid Student ID")
+        
+        if not bcrypt.checkpw(password.encode(), student["password"].encode()):
+            raise HTTPException(status_code=401, detail="Invalid password")
+    
+    elif mobile and dob:
+        # Login with Mobile + DOB
+        student = await db.students.find_one({"mobile": mobile, "dob": dob}, {"_id": 0})
+        if not student:
+            raise HTTPException(status_code=401, detail="Invalid Mobile or Date of Birth")
+    
+    else:
+        raise HTTPException(status_code=400, detail="Provide Student ID + Password OR Mobile + DOB")
+    
+    if student.get("status") == "suspended":
+        raise HTTPException(status_code=401, detail="Account suspended. Contact school office.")
+    
+    if student.get("status") == "left":
+        raise HTTPException(status_code=401, detail="Account deactivated.")
+    
+    if not student.get("is_active", True):
+        raise HTTPException(status_code=401, detail="Account not active")
+    
+    # Create token for student
+    token_payload = {
+        "sub": student["id"],
+        "student_id": student["student_id"],
+        "role": "student",
+        "school_id": student["school_id"],
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    }
+    token = jwt.encode(token_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "student": {
+            "id": student["id"],
+            "student_id": student["student_id"],
+            "name": student["name"],
+            "class_id": student["class_id"],
+            "school_id": student["school_id"],
+            "password_changed": student.get("password_changed", False)
+        }
+    }
+
+@api_router.post("/students/{student_id}/change-password")
+async def student_change_password(student_id: str, old_password: str, new_password: str):
+    """Student changes password (mandatory on first login)"""
+    student = await db.students.find_one({"student_id": student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    if not bcrypt.checkpw(old_password.encode(), student["password"].encode()):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    new_hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    
+    await db.students.update_one(
+        {"student_id": student_id},
+        {"$set": {"password": new_hashed, "password_changed": True}}
+    )
+    
+    return {"message": "Password changed successfully"}
+
+@api_router.post("/students/{id}/suspend")
+async def suspend_student(id: str, reason: str, details: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Suspend a student (fees pending, discipline, etc.)"""
+    if current_user["role"] not in ["director", "principal", "vice_principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.students.update_one(
+        {"id": id},
+        {"$set": {
+            "status": "suspended",
+            "is_active": False,
+            "suspension_reason": reason,
+            "suspension_details": details,
+            "suspended_by": current_user["id"],
+            "suspended_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    await log_audit(current_user["id"], "suspend_student", "students", {"student_id": id, "reason": reason})
+    
+    return {"message": "Student suspended"}
+
+@api_router.post("/students/{id}/unsuspend")
+async def unsuspend_student(id: str, current_user: dict = Depends(get_current_user)):
+    """Unsuspend a student"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.students.update_one(
+        {"id": id, "status": "suspended"},
+        {"$set": {
+            "status": "active",
+            "is_active": True,
+            "suspension_reason": None,
+            "suspension_details": None
+        }}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Student not found or not suspended")
+    
+    await log_audit(current_user["id"], "unsuspend_student", "students", {"student_id": id})
+    
+    return {"message": "Student unsuspended"}
+
+@api_router.post("/students/{id}/mark-left")
+async def mark_student_left(id: str, reason: str, tc_number: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Mark student as left (TC issued)"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can mark student as left")
+    
+    student = await db.students.find_one({"id": id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    await db.students.update_one(
+        {"id": id},
+        {"$set": {
+            "status": "left",
+            "is_active": False,
+            "left_reason": reason,
+            "tc_number": tc_number,
+            "left_at": datetime.now(timezone.utc).isoformat(),
+            "left_by": current_user["id"]
+        }}
+    )
+    
+    # Update class count
+    await db.classes.update_one({"id": student["class_id"]}, {"$inc": {"student_count": -1}})
+    
+    await log_audit(current_user["id"], "mark_student_left", "students", {"student_id": id, "reason": reason})
+    
+    return {"message": "Student marked as left"}
+
+@api_router.post("/students", response_model=StudentResponse)
+async def create_student(student: StudentCreate, current_user: dict = Depends(get_current_user)):
+    """Legacy endpoint - redirects to admit"""
+    if current_user["role"] not in ["director", "principal", "admin", "teacher", "accountant", "clerk"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Generate student ID
+    student_id = generate_student_id(student.school_id)
+    while await db.students.find_one({"student_id": student_id}):
+        student_id = generate_student_id(student.school_id)
+    
+    temp_password = generate_temp_password()
+    hashed_pw = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt()).decode()
+    
+    student_data = {
+        "id": str(uuid.uuid4()),
+        "student_id": student_id,
+        "admission_no": student_id,
+        **student.model_dump(),
+        "status": "active",
+        "is_active": True,
+        "password": hashed_pw,
+        "password_changed": False,
+        "admitted_by": current_user["id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.students.insert_one(student_data)
+    
     await db.classes.update_one({"id": student.class_id}, {"$inc": {"student_count": 1}})
     
     await log_audit(current_user["id"], "create", "students", {"student_id": student_data["id"], "name": student.name})
