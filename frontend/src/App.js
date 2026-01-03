@@ -17,7 +17,7 @@ import AIPaperPage from './pages/AIPaperPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
 import UserManagementPage from './pages/UserManagementPage';
-import TeacherDashboard from './pages/TeacherDashboard';
+import TeachTinoDashboard from './pages/TeachTinoDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import AIContentStudio from './pages/AIContentStudio';
 import VoiceAssistant from './pages/VoiceAssistant';
@@ -109,8 +109,17 @@ function AppRoutes() {
         <Route path="cctv" element={<CCTVDashboard />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="teacher-dashboard" element={<TeacherDashboard />} />
       </Route>
+
+      {/* TeachTino Portal - Standalone for Teachers */}
+      <Route
+        path="/teacher-dashboard"
+        element={
+          <ProtectedRoute>
+            <TeachTinoDashboard />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Student Portal - Standalone */}
       <Route
