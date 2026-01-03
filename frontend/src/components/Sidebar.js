@@ -19,7 +19,9 @@ import {
   UserPlus,
   Mic,
   Image,
-  MessageSquare
+  MessageSquare,
+  Calendar,
+  Video
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -41,12 +43,14 @@ export const Sidebar = () => {
     { path: '/staff', icon: UserCog, label: 'staff' },
     { path: '/classes', icon: GraduationCap, label: 'classes' },
     { path: '/attendance', icon: CalendarCheck, label: 'attendance' },
+    { path: '/leave', icon: Calendar, label: 'leave_management' },
     { path: '/fees', icon: Wallet, label: 'fees' },
     { path: '/notices', icon: Bell, label: 'notices' },
     { path: '/sms', icon: MessageSquare, label: 'sms_center', roles: ['director', 'principal', 'vice_principal', 'accountant'] },
     { path: '/gallery', icon: Image, label: 'gallery' },
     { path: '/ai-paper', icon: Sparkles, label: 'ai_paper' },
     { path: '/ai-content', icon: Sparkles, label: 'ai_content', roles: ['director', 'principal', 'vice_principal'] },
+    { path: '/cctv', icon: Video, label: 'cctv_dashboard', roles: ['director', 'principal', 'vice_principal', 'security'] },
     { path: '/website', icon: Globe, label: 'website_integration', roles: ['director', 'principal'] },
     { path: '/teacher-dashboard', icon: GraduationCap, label: 'teachtino', roles: ['teacher', 'director', 'principal', 'vice_principal'] },
     { path: '/audit-logs', icon: ClipboardList, label: 'audit_logs', roles: ['director', 'principal', 'admin'] },
