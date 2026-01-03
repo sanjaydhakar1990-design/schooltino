@@ -60,6 +60,9 @@ export default function LoginPage() {
   const getRedirectPath = (role) => {
     switch (role) {
       case 'teacher':
+      case 'admission_staff':
+      case 'clerk':
+      case 'staff':
         return '/teacher-dashboard';
       case 'student':
         return '/student-dashboard';
@@ -67,6 +70,7 @@ export default function LoginPage() {
       case 'principal':
       case 'vice_principal':
       case 'admin':
+      case 'accountant':
       default:
         return '/dashboard';
     }
