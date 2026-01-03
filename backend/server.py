@@ -515,8 +515,23 @@ async def login(credentials: UserLogin):
     
     return TokenResponse(access_token=token, user=user_response)
 
-@api_router.get("/auth/me", response_model=UserResponse)
+@api_router.get("/auth/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
+    # For students, return student-specific data
+    if current_user.get("role") == "student":
+        return {
+            "id": current_user["id"],
+            "name": current_user["name"],
+            "role": "student",
+            "student_id": current_user.get("student_id"),
+            "class_id": current_user.get("class_id"),
+            "school_id": current_user.get("school_id"),
+            "mobile": current_user.get("mobile"),
+            "father_name": current_user.get("father_name"),
+            "mother_name": current_user.get("mother_name")
+        }
+    
+    # For regular users
     return UserResponse(
         id=current_user["id"],
         email=current_user["email"],
