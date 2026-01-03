@@ -56,14 +56,31 @@ export default function LoginPage() {
     }
   };
 
+  // Role-based redirect after login
+  const getRedirectPath = (role) => {
+    switch (role) {
+      case 'teacher':
+        return '/teacher-dashboard';
+      case 'student':
+        return '/student-dashboard';
+      case 'director':
+      case 'principal':
+      case 'vice_principal':
+      case 'admin':
+      default:
+        return '/dashboard';
+    }
+  };
+
   const handleAdminLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      navigate('/dashboard');
+      const userData = await login(formData.email, formData.password);
+      const redirectPath = getRedirectPath(userData.role);
+      navigate(redirectPath);
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed. Check credentials.');
     } finally {
