@@ -1,11 +1,11 @@
-# Schooltino v3.6 - Complete AI School Management System
+# Schooltino v3.7 - Complete AI School Management System
 
 ## Connected to OneTino EduOne Ecosystem
 **OneTino.com** → EduOne → **Schooltino** | **TeachTino** | **StudyTino** | **CoachTino**
 
 ---
 
-## Current Version: 3.6.0
+## Current Version: 3.7.0
 **Last Updated:** January 3, 2026
 
 ---
@@ -16,18 +16,67 @@
 - **Email:** `director@schooltino.com`
 - **Password:** `admin123`
 - **Login Tab:** Admin
+- **Dashboard:** Admin Dashboard with all management features
 
 ### TeachTino (Teacher)
 - **Email:** `teacher@schooltino.com`
 - **Password:** `teacher123`
 - **Login Tab:** Teacher
+- **Dashboard:** TeachTino Dashboard (Teaching focused)
 
 ### StudyTino (Student)
 - **Student ID:** `STD-2026-285220`
 - **Password:** `KPbeHdZf`
 - **Login Tab:** Student → "Student ID + Password"
+- **Dashboard:** StudyTino (Student portal - Coming Soon)
 
 **Login URL:** https://schooltino.preview.emergentagent.com/login
+
+---
+
+## ✅ TeachTino Dashboard Features (NEW!)
+
+### Top Bar
+- School name + Teacher name with role badge
+- Search (student/notice/leave)
+- Notifications, Voice command, Settings
+- Period indicator
+
+### Today at a Glance (4 Cards)
+- My Classes count
+- Pending Approvals (leave requests)
+- Notices (draft/sent)
+- Tasks (pending work)
+
+### Approval Inbox
+- Student leave requests with Approve/Reject buttons
+- Class teacher sees only their class's requests
+
+### My Classes (Grid)
+- Class cards with student count
+- Click to open Class Hub (Students, Leaves, Notices, Homework, Papers)
+
+### Quick Actions (6 Buttons)
+- Send Notice
+- Upload Homework
+- Generate Paper (AI)
+- Student Profile
+- Apply Leave
+- Report Issue
+
+### TeachTino AI Assistant
+- Hindi prompt chips for common tasks
+- Lesson plan generator
+- Question paper creator
+- Worksheet maker
+
+### Notices & Homework Tabs
+- Draft/Sent notices with Edit/Resend
+- Homework tracking (coming soon)
+
+### My Leave
+- Leave balance
+- Application status (Pending/Approved/Rejected)
 
 ---
 
