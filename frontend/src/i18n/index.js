@@ -45,6 +45,8 @@ const resources = {
       "fees": "Fees",
       "notices": "Notices",
       "ai_paper": "AI Paper Generator",
+      "ai_content": "AI Content Studio",
+      "teachtino": "TeachTino",
       "settings": "Settings",
       "audit_logs": "Audit Logs",
       
@@ -218,6 +220,8 @@ const resources = {
       "fees": "शुल्क",
       "notices": "सूचनाएं",
       "ai_paper": "AI पेपर जनरेटर",
+      "ai_content": "AI कंटेंट स्टूडियो",
+      "teachtino": "टीचटीनो",
       "settings": "सेटिंग्स",
       "audit_logs": "ऑडिट लॉग",
       
