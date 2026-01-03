@@ -5,7 +5,7 @@
 
 ---
 
-## Current Version: 3.7.0
+## Current Version: 3.8.0
 **Last Updated:** January 3, 2026
 
 ---
@@ -22,7 +22,7 @@
 - **Email:** `teacher@schooltino.com`
 - **Password:** `teacher123`
 - **Login Tab:** Teacher
-- **Dashboard:** TeachTino Dashboard (Teaching focused)
+- **Dashboard:** TeachTino Dashboard (Teaching focused) - **NEW v3.8!**
 
 ### StudyTino (Student)
 - **Student ID:** `STD-2026-285220`
@@ -34,49 +34,67 @@
 
 ---
 
-## ✅ TeachTino Dashboard Features (NEW!)
+## ✅ TeachTino Dashboard v3.8 Features (NEW!)
 
-### Top Bar
-- School name + Teacher name with role badge
-- Search (student/notice/leave)
-- Notifications, Voice command, Settings
-- Period indicator
+### 📱 PWA Install Button
+- Install button in header for Teachers/Staff
+- Direct app download to phone/desktop
+- Works offline after installation
 
-### Today at a Glance (4 Cards)
+### 🧠 AI Daily Teaching Plan
+- Good Morning greeting with AI badge
+- Today's classes timeline with topics
+- आज के Focus Areas (Hindi)
+- AI Tip of the day
+
+### 📅 Tomorrow Preparation (AI Suggestions)
+- Priority-based suggestions
+- Class-wise preparation tips
+- High/Medium priority marking
+
+### 📚 Syllabus Progress Tracking
+- Subject-wise progress per class
+- Chapter completion tracking
+- Current topic indicator
+- Progress percentage bar
+- Test results summary (Avg/Top/Lowest scores)
+
+### ⚠️ Weak Students AI Module
+- AI-identified weak students list
+- Weak topics highlighting
+- Average & Last test scores
+- AI-generated improvement strategy
+- Action buttons: Contact Parent, Create Worksheet
+
+### 📊 Today at a Glance
 - My Classes count
-- Pending Approvals (leave requests)
-- Notices (draft/sent)
-- Tasks (pending work)
+- Pending Approvals
+- Notices
+- Weak Students count
 
-### Approval Inbox
-- Student leave requests with Approve/Reject buttons
-- Class teacher sees only their class's requests
+### 📚 My Classes Grid
+- Click to open Class Hub
+- Student count per class
+- Section details
 
-### My Classes (Grid)
-- Class cards with student count
-- Click to open Class Hub (Students, Leaves, Notices, Homework, Papers)
-
-### Quick Actions (6 Buttons)
+### ⚡ Quick Actions
 - Send Notice
 - Upload Homework
 - Generate Paper (AI)
 - Student Profile
 - Apply Leave
-- Report Issue
+- View Reports
 
-### TeachTino AI Assistant
-- Hindi prompt chips for common tasks
+### 🤖 TeachTino AI Assistant
+- Hindi prompt chips
 - Lesson plan generator
-- Question paper creator
+- Paper creator
 - Worksheet maker
+- Save & Share options
 
-### Notices & Homework Tabs
-- Draft/Sent notices with Edit/Resend
-- Homework tracking (coming soon)
-
-### My Leave
+### 🗓️ My Leave
 - Leave balance
-- Application status (Pending/Approved/Rejected)
+- Application status tracking
 
 ---
 
