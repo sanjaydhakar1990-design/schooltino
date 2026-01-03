@@ -990,7 +990,7 @@ export default function StudyTinoDashboard() {
                 <span className="text-sm font-medium">{profile?.admission_no}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-slate-500">Father's Name</span>
+                <span className="text-sm text-slate-500">Father Name</span>
                 <span className="text-sm font-medium">{profile?.father_name}</span>
               </div>
               <div className="flex justify-between">
