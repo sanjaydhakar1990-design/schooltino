@@ -396,25 +396,39 @@ def generate_receipt_no():
 
 # ==================== AUTH ROUTES ====================
 
-@api_router.post("/auth/register", response_model=TokenResponse)
-async def register(user: UserRegister):
-    # Check if user exists
-    existing = await db.users.find_one({"email": user.email})
-    if existing:
+# PUBLIC REGISTRATION IS DISABLED
+# Only Director can create users via /api/users/create
+# Initial Director is created via /api/auth/setup-director (one-time only)
+
+@api_router.post("/auth/setup-director", response_model=TokenResponse)
+async def setup_director(user: UserRegister):
+    """
+    One-time setup to create the first Director account.
+    After first Director is created, this endpoint is disabled.
+    """
+    # Check if any Director already exists
+    existing_director = await db.users.find_one({"role": "director"})
+    if existing_director:
+        raise HTTPException(status_code=403, detail="Director already exists. Contact existing Director to create accounts.")
+    
+    # Check if email already exists
+    existing_email = await db.users.find_one({"email": user.email})
+    if existing_email:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     # Hash password
     hashed_pw = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt()).decode()
     
-    # Create user
+    # Create Director user
     user_data = {
         "id": str(uuid.uuid4()),
         "email": user.email,
         "password": hashed_pw,
         "name": user.name,
-        "role": user.role,
+        "role": "director",  # Force role to director
         "mobile": user.mobile,
         "school_id": user.school_id,
+        "status": "active",
         "is_active": True,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
@@ -433,7 +447,18 @@ async def register(user: UserRegister):
         created_at=user_data["created_at"]
     )
     
+    await log_audit(user_data["id"], "setup_director", "auth", {"name": user.name, "email": user.email})
+    
     return TokenResponse(access_token=token, user=user_response)
+
+@api_router.get("/auth/check-setup")
+async def check_setup():
+    """Check if initial Director setup is needed"""
+    existing_director = await db.users.find_one({"role": "director"})
+    return {
+        "setup_required": existing_director is None,
+        "message": "Director setup required" if not existing_director else "System ready"
+    }
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
