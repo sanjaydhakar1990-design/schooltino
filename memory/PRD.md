@@ -5,7 +5,7 @@
 
 ---
 
-## Current Version: 2.0.0
+## Current Version: 2.1.0
 **Last Updated:** January 3, 2026
 
 ---
@@ -19,37 +19,36 @@
 - **PUBLIC REGISTRATION DISABLED** - Only Director can create users
 - Initial Director setup via one-time `/api/auth/setup-director` endpoint
 - Role-based access control (RBAC)
+- **Role-based redirect** - Users go to their respective dashboards
 
-#### 2. Three Login Portals ✅
-| Portal | Users | Access |
-|--------|-------|--------|
-| **Schooltino Admin** | Director, Principal, Vice Principal | Full admin access |
-| **TeachTino** | Teachers, Staff | Class management, attendance |
-| **StudyTino** | Students, Parents | View profile, fees, notices |
+#### 2. Three Login Portals (ONE APP) ✅
+| Portal | Users | Redirect After Login |
+|--------|-------|---------------------|
+| **Schooltino Admin** | Director, Principal, Vice Principal | /dashboard |
+| **TeachTino** | Teachers, Staff | /teacher-dashboard |
+| **StudyTino** | Students, Parents | /student-dashboard |
+
+All portals accessible from same PWA install!
 
 #### 3. Student Login Methods ✅
 - Student ID + Password
 - Parent Mobile + DOB
 
 #### 4. User Account Lifecycle ✅
-- **Director creates all accounts** (email + password)
-- **Principal can create** (needs Director approval)
-- **Account statuses:** Active, Pending, Suspended, Deactivated, Rejected
-- Suspend with reason (Fees Pending, Misconduct, Document Pending)
-- Account Transfer feature (for teacher changes)
+- Director creates all accounts
+- Account statuses: Active, Pending, Suspended, Deactivated
+- Account Transfer feature
 
 #### 5. Student Admission Flow ✅
 - Auto-generated Student ID (STD-YYYY-XXXXXX)
 - Auto-generated temporary password
-- First login → mandatory password change
-- Status tracking: Active, Suspended, Left
 
 #### 6. Core Modules ✅
 - Multi-school support
 - Students CRUD with search/filter
 - Staff CRUD
 - Classes & Sections management
-- Attendance (manual marking, bulk)
+- Attendance (manual marking)
 - Fee Plans, Invoices, Payments
 - Notices with priority levels
 - Dashboard with statistics
@@ -57,69 +56,19 @@
 - Hindi/English bilingual UI
 
 #### 7. AI Features ✅
-- **AI Paper Generator** - Generate question papers using OpenAI GPT
-- **AI Content Studio** - Generate professional content for:
-  - Admission Pamphlets
-  - Topper Banners
-  - Event Posters
-  - Activity Banners
+- **AI Paper Generator** - Generate question papers
+- **AI Content Studio** 🆕
+  - Generate Admission Pamphlets
+  - Generate Topper Banners
+  - Generate Event Posters  
+  - Generate Activity Banners
+  - **ACTUAL IMAGE GENERATION using Gemini Nano Banana (FREE!)**
+  - Download generated images directly
 
 #### 8. PWA Support ✅
 - Installable on mobile and desktop
 - manifest.json configured
 - Service worker for offline support
-- App shortcuts (Dashboard, Students, Attendance)
-
----
-
-## 🚀 Phase 2 - Enhanced Features (PLANNED)
-
-### 2.1 Leave Management System
-```
-Student Leave: Parent apply → Class Teacher → Principal approve
-Teacher Leave: Teacher apply → Principal → Director approve
-```
-- Leave types: Sick, Personal, Emergency
-- Half-day option
-- Attachment support
-- Leave balance tracking
-
-### 2.2 Enhanced Notice System
-- AI drafting from voice/text
-- 2-step verification (OTP) before publish
-- Audience targeting (All, Teachers, Class-specific)
-- Expiry dates
-- Auto-archive
-
-### 2.3 Self-Registration (Request Mode)
-- Teacher/Staff can request access
-- Status: Pending → Approved/Rejected by Director
-- Bulk CSV upload option
-
----
-
-## 🔮 Phase 3 - AI Assistants (FUTURE)
-
-### AI Buttons on Director Dashboard
-1. **AdminTino** - School operations assistant
-2. **TeachTino AI** - Teaching assistant
-3. **StudyTino AI** - Student support (safe mode)
-
----
-
-## 🏢 Phase 4 - CCTV & Hardware (FUTURE)
-
-### Gate Verification System
-- QR/Barcode/RFID card scan
-- Real-time status check
-- Active → Allow, Suspended → Deny
-- Access logging
-
-### CCTV AI Capabilities
-- Face recognition attendance
-- Movement tracking
-- Behavior detection
-- Incident escalation
 
 ---
 
@@ -132,12 +81,8 @@ Teacher Leave: Teacher apply → Principal → Director approve
 | Backend | FastAPI (Python) |
 | Database | MongoDB |
 | Auth | JWT |
-| AI | OpenAI GPT (via emergentintegrations) |
-
-### Database Collections
-- users, schools, classes, students, staff
-- attendance, fee_plans, fee_invoices, fee_payments
-- notices, audit_logs, generated_papers, ai_content
+| AI Text | OpenAI GPT-4o (via emergentintegrations) |
+| AI Image | Gemini Nano Banana (via emergentintegrations - FREE) |
 
 ### Key API Endpoints
 ```
@@ -145,24 +90,18 @@ Teacher Leave: Teacher apply → Principal → Director approve
 POST /api/auth/setup-director (one-time)
 POST /api/auth/login
 GET  /api/auth/check-setup
-GET  /api/auth/me
 
 # User Management
 POST /api/users/create
-POST /api/users/{id}/suspend
-POST /api/users/{id}/unsuspend
-POST /api/users/{id}/deactivate
-POST /api/users/{id}/reactivate
-POST /api/users/{id}/transfer
+POST /api/users/{id}/suspend|unsuspend|deactivate
 
 # Students
-POST /api/students/admit (auto-generates ID + password)
+POST /api/students/admit
 POST /api/students/login
-GET  /api/students
 
 # AI Features
 POST /api/ai/generate-paper
-POST /api/ai/generate-content
+POST /api/ai/generate-content (with generate_image: true for IMAGE!)
 
 # Portals
 GET /api/teacher/dashboard
@@ -171,82 +110,49 @@ GET /api/student/dashboard
 
 ---
 
-## Test Credentials
+## Test Results
 
+### Latest Test Run: iteration_4.json
+- **Backend:** 27/27 tests passed (100%)
+- **Frontend:** All flows working (100%)
+- **AI Image Generation:** Verified - ~1.2MB base64 images generated
+
+### Test Credentials
 | Role | Email | Password |
 |------|-------|----------|
 | Director | director@schooltino.com | admin123 |
 
 ---
 
-## File Structure
-```
-/app/
-├── backend/
-│   ├── .env (MONGO_URL, JWT_SECRET, OPENAI_API_KEY)
-│   └── server.py
-├── frontend/
-│   ├── public/
-│   │   ├── manifest.json (PWA)
-│   │   └── service-worker.js
-│   └── src/
-│       ├── pages/
-│       │   ├── LoginPage.js (3 portal tabs)
-│       │   ├── DashboardPage.js
-│       │   ├── UserManagementPage.js
-│       │   ├── StudentsPage.js
-│       │   ├── AIContentStudio.js
-│       │   ├── TeacherDashboard.js
-│       │   └── StudentDashboard.js
-│       └── context/
-│           └── AuthContext.js
-├── tests/
-│   └── test_schooltino_backend.py
-└── test_reports/
-    ├── iteration_2.json
-    └── iteration_3.json (Latest - 100% pass)
-```
-
----
-
 ## Changelog
 
-### v2.0.0 (January 3, 2026)
-- ✅ **Security Fix:** Public registration disabled
-- ✅ **New:** AI Content Studio (pamphlets, banners, posters)
-- ✅ **New:** TeachTino Dashboard
-- ✅ **New:** StudyTino Dashboard
-- ✅ **New:** PWA Support (installable app)
-- ✅ **New:** 3-portal login page (Admin/Teacher/Student)
-- ✅ **Fix:** Student login with ID+Password or Mobile+DOB
-- ✅ **Test:** 100% backend tests passing (20/20)
+### v2.1.0 (January 3, 2026)
+- ✅ **AI IMAGE GENERATION** using Gemini Nano Banana (FREE!)
+- ✅ Actual pamphlet/banner images generated and downloadable
+- ✅ Role-based redirect after login
+- ✅ Image toggle switch in AI Content Studio
+- ✅ All 27 tests passing
 
-### v1.1.0 (January 2, 2026)
-- User Management with full powers
-- Suspend/Unsuspend/Deactivate/Reactivate
-- Account Transfer feature
-- Student Admission with auto-ID
+### v2.0.0 (January 3, 2026)
+- Security: Public registration disabled
+- AI Content Studio (text only)
+- TeachTino & StudyTino dashboards
+- PWA Support
+- 3-portal login page
 
 ### v1.0.0 (Initial)
 - Basic authentication
-- Core modules (Students, Staff, Classes)
-- Dashboard, Fees, Notices, Attendance
+- Core modules
 
 ---
 
 ## Next Action Items
 
 ### Immediate (This Sprint)
-1. ✅ Security: Disable public registration
-2. ✅ AI Content Studio
-3. ✅ PWA Conversion
-4. ✅ TeachTino & StudyTino portals
-
-### Next Sprint
-1. 🔲 Leave Management module
-2. 🔲 Enhanced Notice system (2-step verification)
-3. 🔲 Self-registration request mode
-4. 🔲 Mobile responsive improvements
+1. ✅ AI Image Generation (DONE!)
+2. ✅ Role-based redirect (DONE!)
+3. 🔲 Leave Management module
+4. 🔲 Enhanced Notice system
 
 ### Backlog
 - OTP-based login
