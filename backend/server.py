@@ -2166,6 +2166,26 @@ async def get_class_students(class_id: str, current_user: dict = Depends(get_cur
     
     return students
 
+class TeacherAIRequest(BaseModel):
+    prompt: str
+    type: str = "general"  # general, lesson_plan, paper, worksheet
+
+@api_router.post("/ai/teacher-assistant")
+async def teacher_ai_assistant(request: TeacherAIRequest, current_user: dict = Depends(get_current_user)):
+    """TeachTino AI Assistant - Helps teachers with lesson plans, papers, worksheets"""
+    if current_user["role"] not in ["teacher", "principal", "vice_principal", "director", "staff"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # For now, return a mock response - can be integrated with actual AI later
+    responses = {
+        "lesson_plan": f"📚 Lesson Plan for: {request.prompt}\n\n1. Introduction (5 mins)\n2. Main Content (25 mins)\n3. Activity (15 mins)\n4. Summary (5 mins)",
+        "paper": f"📝 Question Paper: {request.prompt}\n\nSection A: MCQ (10 marks)\nSection B: Short Answer (20 marks)\nSection C: Long Answer (20 marks)",
+        "worksheet": f"📄 Worksheet: {request.prompt}\n\n1. Fill in the blanks\n2. Match the following\n3. Short questions\n4. Activity",
+        "general": f"TeachTino AI Response for: {request.prompt}\n\nThis is a helpful response from your teaching assistant."
+    }
+    
+    return {"response": responses.get(request.type, responses["general"])}
+
 # ==================== STUDYTINO - STUDENT PORTAL ROUTES ====================
 
 class StudentDashboardStats(BaseModel):
