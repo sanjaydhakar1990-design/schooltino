@@ -2320,6 +2320,662 @@ async def get_student_notices(current_user: dict = Depends(get_current_user)):
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+# ==================== IMAGE UPLOAD & GALLERY ====================
+
+class ImageUploadResponse(BaseModel):
+    id: str
+    filename: str
+    url: str
+    category: str
+    uploaded_at: str
+
+@api_router.post("/images/upload", response_model=ImageUploadResponse)
+async def upload_image(
+    file: UploadFile = File(...),
+    category: str = Form(default="gallery"),  # gallery, event, notice, student, staff
+    title: Optional[str] = Form(default=None),
+    description: Optional[str] = Form(default=None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload image to school gallery"""
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, WebP, GIF images allowed")
+    
+    # Generate unique filename
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    unique_filename = f"{uuid.uuid4().hex}.{ext}"
+    file_path = UPLOAD_DIR / "images" / unique_filename
+    
+    # Save file
+    async with aiofiles.open(file_path, 'wb') as f:
+        content = await file.read()
+        await f.write(content)
+    
+    # Store in DB
+    image_data = {
+        "id": str(uuid.uuid4()),
+        "filename": unique_filename,
+        "original_name": file.filename,
+        "url": f"/api/images/{unique_filename}",
+        "category": category,
+        "title": title or file.filename,
+        "description": description,
+        "school_id": current_user.get("school_id"),
+        "uploaded_by": current_user["id"],
+        "uploaded_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.images.insert_one(image_data)
+    await log_audit(current_user["id"], "upload", "images", {"filename": unique_filename, "category": category})
+    
+    return ImageUploadResponse(
+        id=image_data["id"],
+        filename=unique_filename,
+        url=image_data["url"],
+        category=category,
+        uploaded_at=image_data["uploaded_at"]
+    )
+
+@api_router.get("/images/{filename}")
+async def get_image(filename: str):
+    """Serve uploaded image"""
+    file_path = UPLOAD_DIR / "images" / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(file_path)
+
+@api_router.get("/images")
+async def list_images(
+    category: Optional[str] = None,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    """List all uploaded images"""
+    query = {"school_id": current_user.get("school_id")}
+    if category:
+        query["category"] = category
+    
+    images = await db.images.find(query, {"_id": 0}).sort("uploaded_at", -1).to_list(limit)
+    return images
+
+@api_router.delete("/images/{image_id}")
+async def delete_image(image_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an image"""
+    image = await db.images.find_one({"id": image_id})
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    # Delete file
+    file_path = UPLOAD_DIR / "images" / image["filename"]
+    if file_path.exists():
+        file_path.unlink()
+    
+    await db.images.delete_one({"id": image_id})
+    return {"message": "Image deleted"}
+
+# ==================== QR CODE GENERATOR ====================
+
+@api_router.get("/qr/student/{student_id}")
+async def generate_student_qr(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate QR code for student ID card"""
+    student = await db.students.find_one({"id": student_id}, {"_id": 0, "password": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # QR data contains student info
+    qr_data = f"SCHOOLTINO|STUDENT|{student['student_id']}|{student['name']}|{student.get('class_id', '')}"
+    
+    # Generate QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=2)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return {
+        "student_id": student["student_id"],
+        "name": student["name"],
+        "qr_code": qr_base64,
+        "qr_data": qr_data
+    }
+
+@api_router.get("/qr/staff/{staff_id}")
+async def generate_staff_qr(staff_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate QR code for staff ID card"""
+    staff = await db.staff.find_one({"id": staff_id}, {"_id": 0})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    
+    qr_data = f"SCHOOLTINO|STAFF|{staff['id']}|{staff['name']}|{staff.get('role', '')}"
+    
+    qr = qrcode.QRCode(version=1, box_size=10, border=2)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return {
+        "staff_id": staff["id"],
+        "name": staff["name"],
+        "qr_code": qr_base64
+    }
+
+# ==================== SMS & NOTIFICATION SYSTEM ====================
+
+class SMSRequest(BaseModel):
+    recipient_type: str  # all_parents, class, individual
+    class_id: Optional[str] = None
+    student_id: Optional[str] = None
+    mobile: Optional[str] = None
+    message: str
+    template: Optional[str] = None  # fee_reminder, attendance_alert, notice, custom
+
+class SMSResponse(BaseModel):
+    id: str
+    recipients_count: int
+    status: str
+    sent_at: str
+
+@api_router.post("/sms/send", response_model=SMSResponse)
+async def send_sms(request: SMSRequest, current_user: dict = Depends(get_current_user)):
+    """Send SMS to parents/guardians (Mock - ready for Twilio integration)"""
+    if current_user["role"] not in ["director", "principal", "vice_principal", "accountant"]:
+        raise HTTPException(status_code=403, detail="Not authorized to send SMS")
+    
+    recipients = []
+    
+    if request.recipient_type == "all_parents":
+        students = await db.students.find(
+            {"school_id": current_user.get("school_id"), "status": "active"},
+            {"_id": 0, "parent_mobile": 1, "name": 1}
+        ).to_list(1000)
+        recipients = [s for s in students if s.get("parent_mobile")]
+        
+    elif request.recipient_type == "class" and request.class_id:
+        students = await db.students.find(
+            {"class_id": request.class_id, "status": "active"},
+            {"_id": 0, "parent_mobile": 1, "name": 1}
+        ).to_list(100)
+        recipients = [s for s in students if s.get("parent_mobile")]
+        
+    elif request.recipient_type == "individual":
+        if request.student_id:
+            student = await db.students.find_one({"id": request.student_id}, {"_id": 0, "parent_mobile": 1, "name": 1})
+            if student and student.get("parent_mobile"):
+                recipients = [student]
+        elif request.mobile:
+            recipients = [{"parent_mobile": request.mobile, "name": "Individual"}]
+    
+    # Log SMS (Mock - would integrate with Twilio/MSG91 in production)
+    sms_log = {
+        "id": str(uuid.uuid4()),
+        "message": request.message,
+        "template": request.template,
+        "recipients_count": len(recipients),
+        "recipients": [r.get("parent_mobile") for r in recipients],
+        "status": "sent",  # Mock status
+        "sent_by": current_user["id"],
+        "school_id": current_user.get("school_id"),
+        "sent_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.sms_logs.insert_one(sms_log)
+    await log_audit(current_user["id"], "send_sms", "sms", {"recipients": len(recipients), "template": request.template})
+    
+    return SMSResponse(
+        id=sms_log["id"],
+        recipients_count=len(recipients),
+        status="sent",
+        sent_at=sms_log["sent_at"]
+    )
+
+@api_router.get("/sms/templates")
+async def get_sms_templates():
+    """Get predefined SMS templates"""
+    return {
+        "templates": [
+            {
+                "id": "fee_reminder",
+                "name": "Fee Reminder",
+                "message": "Dear Parent, This is a reminder that fee of Rs. {amount} for {student_name} is pending. Please pay by {due_date}. - {school_name}"
+            },
+            {
+                "id": "attendance_alert",
+                "name": "Attendance Alert",
+                "message": "Dear Parent, Your ward {student_name} was marked {status} on {date}. - {school_name}"
+            },
+            {
+                "id": "exam_notice",
+                "name": "Exam Notice",
+                "message": "Dear Parent, Exams for {student_name} will begin from {date}. Please ensure regular attendance. - {school_name}"
+            },
+            {
+                "id": "result_declared",
+                "name": "Result Declared",
+                "message": "Dear Parent, Results for {exam_name} are now available. {student_name} scored {marks}. - {school_name}"
+            }
+        ]
+    }
+
+# ==================== REPORT CARD GENERATOR ====================
+
+class ReportCardRequest(BaseModel):
+    student_id: str
+    exam_name: str
+    subjects: List[Dict[str, Any]]  # [{subject, marks_obtained, total_marks, grade}]
+    remarks: Optional[str] = None
+    class_teacher_name: Optional[str] = None
+
+class ReportCardResponse(BaseModel):
+    id: str
+    student_id: str
+    student_name: str
+    class_name: str
+    exam_name: str
+    total_marks: int
+    obtained_marks: int
+    percentage: float
+    grade: str
+    subjects: List[Dict[str, Any]]
+    created_at: str
+
+@api_router.post("/reports/generate", response_model=ReportCardResponse)
+async def generate_report_card(request: ReportCardRequest, current_user: dict = Depends(get_current_user)):
+    """Generate student report card"""
+    student = await db.students.find_one({"id": request.student_id}, {"_id": 0, "password": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get class info
+    class_info = await db.classes.find_one({"id": student.get("class_id")}, {"_id": 0})
+    
+    # Calculate totals
+    total_marks = sum(s.get("total_marks", 100) for s in request.subjects)
+    obtained_marks = sum(s.get("marks_obtained", 0) for s in request.subjects)
+    percentage = round((obtained_marks / total_marks) * 100, 2) if total_marks > 0 else 0
+    
+    # Calculate grade
+    if percentage >= 90:
+        grade = "A+"
+    elif percentage >= 80:
+        grade = "A"
+    elif percentage >= 70:
+        grade = "B+"
+    elif percentage >= 60:
+        grade = "B"
+    elif percentage >= 50:
+        grade = "C"
+    elif percentage >= 40:
+        grade = "D"
+    else:
+        grade = "F"
+    
+    report_card = {
+        "id": str(uuid.uuid4()),
+        "student_id": student["id"],
+        "student_name": student["name"],
+        "student_roll": student.get("admission_no", ""),
+        "class_id": student.get("class_id"),
+        "class_name": f"{class_info['name']} - {class_info.get('section', '')}" if class_info else "",
+        "exam_name": request.exam_name,
+        "subjects": request.subjects,
+        "total_marks": total_marks,
+        "obtained_marks": obtained_marks,
+        "percentage": percentage,
+        "grade": grade,
+        "remarks": request.remarks,
+        "class_teacher_name": request.class_teacher_name,
+        "school_id": current_user.get("school_id"),
+        "created_by": current_user["id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.report_cards.insert_one(report_card)
+    await log_audit(current_user["id"], "generate", "report_cards", {"student": student["name"], "exam": request.exam_name})
+    
+    return ReportCardResponse(
+        id=report_card["id"],
+        student_id=report_card["student_id"],
+        student_name=report_card["student_name"],
+        class_name=report_card["class_name"],
+        exam_name=report_card["exam_name"],
+        total_marks=report_card["total_marks"],
+        obtained_marks=report_card["obtained_marks"],
+        percentage=report_card["percentage"],
+        grade=report_card["grade"],
+        subjects=report_card["subjects"],
+        created_at=report_card["created_at"]
+    )
+
+@api_router.get("/reports/student/{student_id}")
+async def get_student_reports(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all report cards for a student"""
+    reports = await db.report_cards.find({"student_id": student_id}, {"_id": 0}).sort("created_at", -1).to_list(20)
+    return reports
+
+# ==================== WEBSITE INTEGRATION API ====================
+# Public API endpoints for school websites to fetch data
+
+@api_router.get("/public/school/{school_id}/info")
+async def get_public_school_info(school_id: str):
+    """Public API - Get school info for external website"""
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    # Return only public info
+    return {
+        "name": school.get("name"),
+        "address": school.get("address"),
+        "city": school.get("city"),
+        "state": school.get("state"),
+        "board": school.get("board_type"),
+        "logo_url": school.get("logo_url"),
+        "contact": school.get("contact"),
+        "email": school.get("email"),
+        "website": school.get("website")
+    }
+
+@api_router.get("/public/school/{school_id}/notices")
+async def get_public_notices(school_id: str, limit: int = 10):
+    """Public API - Get active notices for external website"""
+    notices = await db.notices.find(
+        {"school_id": school_id, "is_active": True, "is_public": True},
+        {"_id": 0, "id": 1, "title": 1, "content": 1, "priority": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(limit)
+    return {"notices": notices}
+
+@api_router.get("/public/school/{school_id}/events")
+async def get_public_events(school_id: str, limit: int = 10):
+    """Public API - Get upcoming events for external website"""
+    events = await db.events.find(
+        {"school_id": school_id, "is_public": True},
+        {"_id": 0}
+    ).sort("event_date", 1).to_list(limit)
+    return {"events": events}
+
+@api_router.get("/public/school/{school_id}/gallery")
+async def get_public_gallery(school_id: str, limit: int = 20):
+    """Public API - Get school gallery images for external website"""
+    images = await db.images.find(
+        {"school_id": school_id, "category": {"$in": ["gallery", "event"]}},
+        {"_id": 0, "id": 1, "url": 1, "title": 1, "category": 1, "uploaded_at": 1}
+    ).sort("uploaded_at", -1).to_list(limit)
+    return {"images": images}
+
+@api_router.get("/public/school/{school_id}/results")
+async def get_public_results(school_id: str, exam_name: Optional[str] = None):
+    """Public API - Get published results for external website"""
+    query = {"school_id": school_id, "is_published": True}
+    if exam_name:
+        query["exam_name"] = exam_name
+    
+    results = await db.report_cards.find(
+        query,
+        {"_id": 0, "student_name": 1, "class_name": 1, "exam_name": 1, "percentage": 1, "grade": 1}
+    ).sort("percentage", -1).to_list(100)
+    return {"results": results}
+
+# ==================== AI VOICE ASSISTANT ====================
+
+class VoiceCommandRequest(BaseModel):
+    command: str  # Text from speech-to-text
+    context: Optional[Dict[str, Any]] = None  # Current page, selected items
+
+class VoiceCommandResponse(BaseModel):
+    action: str  # navigate, create, read, update, confirm
+    message: str
+    data: Optional[Dict[str, Any]] = None
+    requires_confirmation: bool = False
+
+@api_router.post("/ai/voice-command", response_model=VoiceCommandResponse)
+async def process_voice_command(request: VoiceCommandRequest, current_user: dict = Depends(get_current_user)):
+    """Process voice command from AI assistant"""
+    command = request.command.lower().strip()
+    
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="AI key not configured")
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        system_prompt = f"""You are an AI assistant for Schooltino school management system. 
+The current user is {current_user['name']} with role {current_user['role']}.
+
+Based on the voice command, determine the action and respond in JSON format:
+{{
+    "action": "navigate|create|read|update|delete|generate|confirm",
+    "target": "dashboard|students|staff|attendance|fees|notices|reports|ai-content",
+    "message": "Human readable response",
+    "data": {{any relevant data}},
+    "requires_confirmation": true/false
+}}
+
+Common commands:
+- "dashboard dikhao" → navigate to dashboard
+- "attendance mark karo" → navigate to attendance
+- "student add karo" → navigate to students with create mode
+- "fee reminder bhejo" → navigate to SMS with fee template
+- "pamphlet banao" → navigate to AI content studio
+- "notice publish karo" → navigate to notices
+- "report card banao" → navigate to reports
+
+Respond in Hinglish (Hindi + English mix)."""
+
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"voice-{current_user['id'][:8]}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+        
+        user_msg = UserMessage(text=f"Voice command: {request.command}")
+        response = await chat.send_message(user_msg)
+        
+        # Parse JSON response
+        import json
+        import re
+        json_match = re.search(r'\{[\s\S]*\}', response)
+        if json_match:
+            result = json.loads(json_match.group())
+        else:
+            result = {
+                "action": "error",
+                "message": response,
+                "requires_confirmation": False
+            }
+        
+        return VoiceCommandResponse(
+            action=result.get("action", "unknown"),
+            message=result.get("message", "Command processed"),
+            data=result.get("data"),
+            requires_confirmation=result.get("requires_confirmation", False)
+        )
+        
+    except Exception as e:
+        logging.error(f"Voice command error: {str(e)}")
+        return VoiceCommandResponse(
+            action="error",
+            message=f"Sorry, couldn't process command: {str(e)}",
+            requires_confirmation=False
+        )
+
+# ==================== AI IMAGE FROM UPLOADED PHOTOS ====================
+
+@api_router.post("/ai/generate-from-image")
+async def generate_content_from_image(
+    image_id: str = Form(...),
+    content_type: str = Form(default="admission_pamphlet"),
+    school_name: str = Form(...),
+    additional_text: Optional[str] = Form(default=None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate AI content using uploaded school image"""
+    if current_user["role"] not in ["director", "principal", "vice_principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get uploaded image
+    image = await db.images.find_one({"id": image_id})
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    # Read image file
+    file_path = UPLOAD_DIR / "images" / image["filename"]
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image file not found")
+    
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="AI key not configured")
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        
+        # Read image as base64
+        with open(file_path, "rb") as f:
+            image_bytes = f.read()
+            image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+        
+        # Generate with image reference
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"img-gen-{str(uuid.uuid4())[:8]}",
+            system_message="You are a professional graphic designer. Create school promotional material."
+        ).with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
+        
+        prompt = f"""Using the school image provided, create a professional {content_type} design for {school_name}.
+{additional_text or ''}
+Make it attractive, professional, and suitable for Indian schools."""
+
+        msg = UserMessage(
+            text=prompt,
+            file_contents=[ImageContent(image_base64)]
+        )
+        
+        text_response, generated_images = await chat.send_message_multimodal_response(msg)
+        
+        result_image = None
+        if generated_images and len(generated_images) > 0:
+            result_image = generated_images[0].get('data', '')
+        
+        return {
+            "success": True,
+            "text_content": text_response,
+            "generated_image": result_image,
+            "source_image_id": image_id
+        }
+        
+    except Exception as e:
+        logging.error(f"AI image generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate: {str(e)}")
+
+# ==================== PARENT COMMUNICATION ====================
+
+class MessageRequest(BaseModel):
+    recipient_type: str  # parent, teacher, admin
+    recipient_id: Optional[str] = None
+    student_id: Optional[str] = None  # For parent messages
+    subject: str
+    message: str
+
+@api_router.post("/messages/send")
+async def send_message(request: MessageRequest, current_user: dict = Depends(get_current_user)):
+    """Send internal message"""
+    message_data = {
+        "id": str(uuid.uuid4()),
+        "sender_id": current_user["id"],
+        "sender_name": current_user["name"],
+        "sender_role": current_user["role"],
+        "recipient_type": request.recipient_type,
+        "recipient_id": request.recipient_id,
+        "student_id": request.student_id,
+        "subject": request.subject,
+        "message": request.message,
+        "is_read": False,
+        "school_id": current_user.get("school_id"),
+        "sent_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.messages.insert_one(message_data)
+    
+    return {"success": True, "message_id": message_data["id"]}
+
+@api_router.get("/messages/inbox")
+async def get_inbox(current_user: dict = Depends(get_current_user)):
+    """Get user's inbox messages"""
+    messages = await db.messages.find(
+        {"recipient_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("sent_at", -1).to_list(50)
+    return {"messages": messages}
+
+@api_router.get("/messages/sent")
+async def get_sent_messages(current_user: dict = Depends(get_current_user)):
+    """Get user's sent messages"""
+    messages = await db.messages.find(
+        {"sender_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("sent_at", -1).to_list(50)
+    return {"messages": messages}
+
+# ==================== WEBSITE SYNC SETTINGS ====================
+
+class WebsiteSyncRequest(BaseModel):
+    website_url: str
+    api_key: Optional[str] = None
+    sync_notices: bool = True
+    sync_events: bool = True
+    sync_gallery: bool = True
+    sync_results: bool = False
+
+@api_router.post("/website/configure")
+async def configure_website_sync(request: WebsiteSyncRequest, current_user: dict = Depends(get_current_user)):
+    """Configure website sync settings"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can configure website sync")
+    
+    school_id = current_user.get("school_id")
+    
+    config = {
+        "school_id": school_id,
+        "website_url": request.website_url,
+        "api_key": request.api_key or str(uuid.uuid4()),
+        "sync_notices": request.sync_notices,
+        "sync_events": request.sync_events,
+        "sync_gallery": request.sync_gallery,
+        "sync_results": request.sync_results,
+        "configured_by": current_user["id"],
+        "configured_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Upsert config
+    await db.website_config.update_one(
+        {"school_id": school_id},
+        {"$set": config},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": "Website sync configured successfully",
+        "api_key": config["api_key"],
+        "embed_code": f'<script src="https://schooltino.com/widget.js" data-school="{school_id}" data-key="{config["api_key"]}"></script>'
+    }
+
+@api_router.get("/website/config")
+async def get_website_config(current_user: dict = Depends(get_current_user)):
+    """Get website sync configuration"""
+    config = await db.website_config.find_one(
+        {"school_id": current_user.get("school_id")},
+        {"_id": 0}
+    )
+    return config or {"configured": False}
+
 # ==================== APP CONFIG ====================
 
 app.include_router(api_router)
