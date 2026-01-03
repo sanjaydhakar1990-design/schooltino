@@ -2976,6 +2976,409 @@ async def get_website_config(current_user: dict = Depends(get_current_user)):
     )
     return config or {"configured": False}
 
+# ==================== LEAVE MANAGEMENT SYSTEM ====================
+
+class LeaveRequest(BaseModel):
+    leave_type: str  # sick, personal, emergency, casual
+    from_date: str
+    to_date: str
+    reason: str
+    half_day: bool = False
+    attachment_url: Optional[str] = None
+
+class LeaveResponse(BaseModel):
+    id: str
+    applicant_id: str
+    applicant_name: str
+    applicant_type: str  # student, teacher, staff
+    leave_type: str
+    from_date: str
+    to_date: str
+    days: int
+    reason: str
+    status: str  # pending, approved, rejected
+    approved_by: Optional[str] = None
+    created_at: str
+
+@api_router.post("/leave/apply", response_model=LeaveResponse)
+async def apply_leave(request: LeaveRequest, current_user: dict = Depends(get_current_user)):
+    """Apply for leave - Student/Teacher/Staff"""
+    # Calculate days
+    from_dt = datetime.strptime(request.from_date, "%Y-%m-%d")
+    to_dt = datetime.strptime(request.to_date, "%Y-%m-%d")
+    days = (to_dt - from_dt).days + 1
+    if request.half_day:
+        days = 0.5
+    
+    # Determine applicant type
+    applicant_type = "staff"
+    if current_user["role"] == "teacher":
+        applicant_type = "teacher"
+    elif current_user["role"] == "student":
+        applicant_type = "student"
+    
+    leave_data = {
+        "id": str(uuid.uuid4()),
+        "applicant_id": current_user["id"],
+        "applicant_name": current_user["name"],
+        "applicant_type": applicant_type,
+        "applicant_role": current_user["role"],
+        "leave_type": request.leave_type,
+        "from_date": request.from_date,
+        "to_date": request.to_date,
+        "days": days,
+        "half_day": request.half_day,
+        "reason": request.reason,
+        "attachment_url": request.attachment_url,
+        "status": "pending",
+        "approved_by": None,
+        "approved_at": None,
+        "school_id": current_user.get("school_id"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.leaves.insert_one(leave_data)
+    await log_audit(current_user["id"], "apply", "leaves", {
+        "type": request.leave_type,
+        "days": days
+    })
+    
+    return LeaveResponse(
+        id=leave_data["id"],
+        applicant_id=leave_data["applicant_id"],
+        applicant_name=leave_data["applicant_name"],
+        applicant_type=leave_data["applicant_type"],
+        leave_type=leave_data["leave_type"],
+        from_date=leave_data["from_date"],
+        to_date=leave_data["to_date"],
+        days=leave_data["days"],
+        reason=leave_data["reason"],
+        status=leave_data["status"],
+        approved_by=leave_data["approved_by"],
+        created_at=leave_data["created_at"]
+    )
+
+@api_router.get("/leave/my-leaves")
+async def get_my_leaves(current_user: dict = Depends(get_current_user)):
+    """Get current user's leave applications"""
+    leaves = await db.leaves.find(
+        {"applicant_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return leaves
+
+@api_router.get("/leave/pending")
+async def get_pending_leaves(current_user: dict = Depends(get_current_user)):
+    """Get pending leave applications for approval"""
+    if current_user["role"] not in ["director", "principal", "vice_principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized to view pending leaves")
+    
+    query = {"status": "pending", "school_id": current_user.get("school_id")}
+    
+    # Teachers can only approve student leaves
+    if current_user["role"] == "teacher":
+        query["applicant_type"] = "student"
+    
+    leaves = await db.leaves.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return leaves
+
+@api_router.post("/leave/{leave_id}/approve")
+async def approve_leave(leave_id: str, current_user: dict = Depends(get_current_user)):
+    """Approve a leave application"""
+    if current_user["role"] not in ["director", "principal", "vice_principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    leave = await db.leaves.find_one({"id": leave_id})
+    if not leave:
+        raise HTTPException(status_code=404, detail="Leave not found")
+    
+    # Teachers can only approve student leaves
+    if current_user["role"] == "teacher" and leave["applicant_type"] != "student":
+        raise HTTPException(status_code=403, detail="Teachers can only approve student leaves")
+    
+    await db.leaves.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "approved",
+            "approved_by": current_user["id"],
+            "approved_by_name": current_user["name"],
+            "approved_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await log_audit(current_user["id"], "approve", "leaves", {"leave_id": leave_id})
+    return {"success": True, "message": "Leave approved"}
+
+@api_router.post("/leave/{leave_id}/reject")
+async def reject_leave(leave_id: str, reason: str = "", current_user: dict = Depends(get_current_user)):
+    """Reject a leave application"""
+    if current_user["role"] not in ["director", "principal", "vice_principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.leaves.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "rejected",
+            "rejected_by": current_user["id"],
+            "rejected_by_name": current_user["name"],
+            "rejection_reason": reason,
+            "rejected_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await log_audit(current_user["id"], "reject", "leaves", {"leave_id": leave_id})
+    return {"success": True, "message": "Leave rejected"}
+
+@api_router.get("/leave/balance")
+async def get_leave_balance(current_user: dict = Depends(get_current_user)):
+    """Get leave balance for current user"""
+    # Default leave allocation per year
+    allocation = {
+        "sick": 12,
+        "casual": 10,
+        "personal": 5,
+        "emergency": 3
+    }
+    
+    # Calculate used leaves
+    year_start = datetime.now().replace(month=1, day=1).strftime("%Y-%m-%d")
+    used_leaves = await db.leaves.aggregate([
+        {
+            "$match": {
+                "applicant_id": current_user["id"],
+                "status": "approved",
+                "from_date": {"$gte": year_start}
+            }
+        },
+        {
+            "$group": {
+                "_id": "$leave_type",
+                "total_days": {"$sum": "$days"}
+            }
+        }
+    ]).to_list(10)
+    
+    used = {item["_id"]: item["total_days"] for item in used_leaves}
+    
+    balance = {}
+    for leave_type, total in allocation.items():
+        balance[leave_type] = {
+            "total": total,
+            "used": used.get(leave_type, 0),
+            "remaining": total - used.get(leave_type, 0)
+        }
+    
+    return {"balance": balance, "year": datetime.now().year}
+
+# ==================== CCTV DASHBOARD (MOCK) ====================
+
+@api_router.get("/cctv/dashboard")
+async def get_cctv_dashboard(current_user: dict = Depends(get_current_user)):
+    """CCTV Dashboard - Mock data for future hardware integration"""
+    if current_user["role"] not in ["director", "principal", "vice_principal", "security"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Mock CCTV data
+    return {
+        "status": "mock",
+        "message": "CCTV integration ready for hardware connection",
+        "cameras": [
+            {"id": "CAM001", "name": "Main Gate", "status": "online", "location": "Entrance"},
+            {"id": "CAM002", "name": "Playground", "status": "online", "location": "Ground Floor"},
+            {"id": "CAM003", "name": "Corridor A", "status": "online", "location": "Building A"},
+            {"id": "CAM004", "name": "Corridor B", "status": "offline", "location": "Building B"},
+            {"id": "CAM005", "name": "Parking", "status": "online", "location": "Back Side"},
+            {"id": "CAM006", "name": "Cafeteria", "status": "online", "location": "Ground Floor"}
+        ],
+        "alerts": [
+            {"id": "ALT001", "type": "motion", "camera": "Main Gate", "time": "09:15 AM", "status": "reviewed"},
+            {"id": "ALT002", "type": "crowd", "camera": "Playground", "time": "10:30 AM", "status": "pending"},
+            {"id": "ALT003", "type": "restricted_area", "camera": "Parking", "time": "11:45 AM", "status": "pending"}
+        ],
+        "ai_features": {
+            "face_recognition": {"status": "ready", "description": "Identify students/staff from face"},
+            "attendance_tracking": {"status": "ready", "description": "Auto-mark attendance via CCTV"},
+            "behavior_detection": {"status": "planned", "description": "Detect unusual behavior"},
+            "crowd_monitoring": {"status": "ready", "description": "Monitor crowd density"},
+            "gate_access": {"status": "ready", "description": "Control gate based on student status"}
+        },
+        "statistics": {
+            "total_cameras": 6,
+            "online": 5,
+            "offline": 1,
+            "alerts_today": 3,
+            "recordings_gb": 245
+        }
+    }
+
+@api_router.get("/cctv/camera/{camera_id}")
+async def get_camera_feed(camera_id: str, current_user: dict = Depends(get_current_user)):
+    """Get camera feed info (Mock)"""
+    if current_user["role"] not in ["director", "principal", "vice_principal", "security"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    return {
+        "camera_id": camera_id,
+        "status": "mock",
+        "message": "Live feed will be available after hardware integration",
+        "stream_url": None,
+        "last_motion": datetime.now(timezone.utc).isoformat(),
+        "recording": True
+    }
+
+@api_router.get("/cctv/alerts")
+async def get_cctv_alerts(current_user: dict = Depends(get_current_user)):
+    """Get CCTV alerts (Mock)"""
+    return {
+        "alerts": [
+            {
+                "id": "ALT001",
+                "type": "unauthorized_entry",
+                "camera": "Main Gate",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "description": "Unknown person detected at main gate",
+                "status": "pending",
+                "priority": "high"
+            },
+            {
+                "id": "ALT002", 
+                "type": "crowd_alert",
+                "camera": "Playground",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "description": "Crowd density exceeded threshold",
+                "status": "reviewed",
+                "priority": "medium"
+            }
+        ]
+    }
+
+# ==================== ONETINO INTEGRATION API ====================
+
+@api_router.get("/onetino/school-stats")
+async def get_school_stats_for_onetino(current_user: dict = Depends(get_current_user)):
+    """Get school statistics for OneTino EduOne dashboard"""
+    school_id = current_user.get("school_id")
+    
+    # Get counts
+    total_students = await db.students.count_documents({"school_id": school_id, "status": "active"})
+    total_staff = await db.staff.count_documents({"school_id": school_id})
+    total_classes = await db.classes.count_documents({"school_id": school_id})
+    
+    # Get school info
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0})
+    
+    # Recent activity
+    recent_notices = await db.notices.count_documents({
+        "school_id": school_id,
+        "created_at": {"$gte": (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()}
+    })
+    
+    return {
+        "school_id": school_id,
+        "school_name": school.get("name") if school else "Unknown",
+        "statistics": {
+            "total_students": total_students,
+            "total_staff": total_staff,
+            "total_classes": total_classes,
+            "notices_this_week": recent_notices
+        },
+        "subscription": {
+            "plan": "premium",
+            "status": "active",
+            "valid_until": "2026-12-31"
+        },
+        "features_enabled": [
+            "voice_assistant",
+            "ai_content_studio",
+            "sms_center",
+            "website_integration",
+            "cctv_ready"
+        ],
+        "last_activity": datetime.now(timezone.utc).isoformat()
+    }
+
+@api_router.get("/onetino/all-schools")
+async def get_all_schools_for_onetino(api_key: str = None):
+    """Get all schools connected to OneTino (Super Admin API)"""
+    # In production, verify OneTino API key
+    if api_key != "onetino-master-key":
+        # For now, allow without key for testing
+        pass
+    
+    schools = await db.schools.find({}, {"_id": 0}).to_list(100)
+    
+    school_stats = []
+    for school in schools:
+        students = await db.students.count_documents({"school_id": school["id"], "status": "active"})
+        staff = await db.staff.count_documents({"school_id": school["id"]})
+        
+        school_stats.append({
+            "id": school["id"],
+            "name": school.get("name"),
+            "city": school.get("city"),
+            "state": school.get("state"),
+            "students": students,
+            "staff": staff,
+            "status": "active",
+            "subscription": "premium"
+        })
+    
+    return {
+        "total_schools": len(school_stats),
+        "schools": school_stats,
+        "total_students": sum(s["students"] for s in school_stats),
+        "total_staff": sum(s["staff"] for s in school_stats)
+    }
+
+@api_router.get("/onetino/issues")
+async def get_issues_for_onetino(current_user: dict = Depends(get_current_user)):
+    """Get support issues/tickets for OneTino dashboard"""
+    school_id = current_user.get("school_id")
+    
+    # Mock issues for now
+    return {
+        "issues": [
+            {
+                "id": "ISS001",
+                "school_id": school_id,
+                "title": "SMS not sending",
+                "description": "SMS feature showing sent but parents not receiving",
+                "status": "open",
+                "priority": "high",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        ],
+        "stats": {
+            "open": 1,
+            "in_progress": 0,
+            "resolved": 5
+        }
+    }
+
+@api_router.post("/onetino/report-issue")
+async def report_issue_to_onetino(
+    title: str,
+    description: str,
+    priority: str = "medium",
+    current_user: dict = Depends(get_current_user)
+):
+    """Report an issue to OneTino support"""
+    issue = {
+        "id": str(uuid.uuid4()),
+        "school_id": current_user.get("school_id"),
+        "reported_by": current_user["id"],
+        "reporter_name": current_user["name"],
+        "title": title,
+        "description": description,
+        "priority": priority,
+        "status": "open",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.support_issues.insert_one(issue)
+    
+    return {"success": True, "issue_id": issue["id"], "message": "Issue reported to OneTino support"}
+
 # ==================== APP CONFIG ====================
 
 app.include_router(api_router)
