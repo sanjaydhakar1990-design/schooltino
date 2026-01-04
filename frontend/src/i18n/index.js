@@ -56,6 +56,7 @@ const resources = {
       "school_analytics": "School Analytics",
       "permissions": "Permissions",
       "zoom_meetings": "Meetings",
+      "online_exams": "Online Exams",
       "add_school": "Add School",
       "setup_wizard": "Setup Wizard",
       "subscription": "Subscription",
