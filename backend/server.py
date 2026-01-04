@@ -5301,34 +5301,6 @@ async def submit_exam(exam_id: str, submission: ExamSubmission, current_user: di
         total_students=len(all_results)
     )
 
-@api_router.get("/exams/my-results")
-async def get_my_exam_results(current_user: dict = Depends(get_current_user)):
-    """Get student's exam results"""
-    if current_user.get("role") != "student":
-        raise HTTPException(status_code=403, detail="Only students can view their results")
-    
-    results = await db.exam_results.find(
-        {"student_id": current_user.get("id")},
-        {"_id": 0, "answers": 0}
-    ).sort("submitted_at", -1).to_list(100)
-    
-    # Add rank for each result
-    for result in results:
-        all_results = await db.exam_results.find(
-            {"exam_id": result["exam_id"]},
-            {"_id": 0, "score": 1}
-        ).sort("score", -1).to_list(1000)
-        
-        rank = 1
-        for r in all_results:
-            if r["score"] > result["score"]:
-                rank += 1
-        
-        result["rank"] = rank
-        result["total_students"] = len(all_results)
-    
-    return results
-
 @api_router.get("/exams/{exam_id}/results")
 async def get_exam_results(exam_id: str, current_user: dict = Depends(get_current_user)):
     """Teacher views all results for an exam"""
