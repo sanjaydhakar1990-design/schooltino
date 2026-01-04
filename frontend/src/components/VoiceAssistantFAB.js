@@ -1,26 +1,30 @@
 /**
- * Voice Assistant Floating Action Button
+ * Voice Assistant - Ask Tino
  * - Female AI voice using ElevenLabs
  * - Speech-to-Text using Whisper
  * - Confirms actions before executing
  */
 import { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, X, Volume2, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, X, Volume2, Loader2, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function VoiceAssistantFAB() {
+export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
   const { user, schoolId } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setIsOpen = onClose ? (val) => { if(!val) onClose(); } : setInternalOpen;
+  
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
   const [serviceStatus, setServiceStatus] = useState(null);
+  const [conversationHistory, setConversationHistory] = useState([]);
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
