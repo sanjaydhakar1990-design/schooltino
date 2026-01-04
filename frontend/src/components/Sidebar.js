@@ -24,7 +24,9 @@ import {
   Video,
   BarChart3,
   Shield,
-  Building2
+  Building2,
+  Rocket,
+  CreditCard
 } from 'lucide-react';
 
 export const Sidebar = () => {
