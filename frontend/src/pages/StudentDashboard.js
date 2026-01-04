@@ -19,9 +19,10 @@ import {
   Brain, Wand2, Smartphone, Send, PlusCircle, MessageSquare,
   Home, Paperclip, Eye, Archive, AlertCircle, Phone, 
   ChevronLeft, Star, Sparkles, BookMarked, ClipboardList,
-  Users, Lock, UserPlus, Check, CreditCard, Wallet
+  Users, Lock, UserPlus, Check, CreditCard, Wallet, Mic
 } from 'lucide-react';
 import { toast } from 'sonner';
+import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
