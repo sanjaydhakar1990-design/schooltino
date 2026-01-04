@@ -70,6 +70,7 @@ export const Sidebar = () => {
     { path: '/app/fees', icon: Wallet, label: 'fees', permKey: 'fees' },
     { path: '/app/accountant', icon: Calculator, label: 'ai_accountant', permKey: 'fees' },
     { path: '/app/payment-settings', icon: CreditCard, label: 'payment_settings', permKey: 'fees' },
+    { path: '/app/fee-structure', icon: FileText, label: 'fee_structure', permKey: 'fees' },
     { path: '/app/notices', icon: Bell, label: 'notices', permKey: 'notices' },
     { path: '/app/exams', icon: FileText, label: 'online_exams', permKey: 'ai_paper' },
     { path: '/app/meetings', icon: Video, label: 'zoom_meetings', permKey: 'meetings' },

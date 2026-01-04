@@ -42,6 +42,7 @@ import AdminActivityDashboard from './pages/AdminActivityDashboard';
 import FeePaymentPage from './pages/FeePaymentPage';
 import AccountantDashboard from './pages/AccountantDashboard';
 import SchoolPaymentSettings from './pages/SchoolPaymentSettings';
+import FeeStructureManagement from './pages/FeeStructureManagement';
 
 // Components
 import Layout from './components/Layout';
@@ -146,6 +147,7 @@ function AppRoutes() {
         <Route path="activity" element={<AdminActivityDashboard />} />
         <Route path="accountant" element={<AccountantDashboard />} />
         <Route path="payment-settings" element={<SchoolPaymentSettings />} />
+        <Route path="fee-structure" element={<FeeStructureManagement />} />
         <Route path="meetings" element={<ZoomMeetings />} />
         <Route path="school-registration" element={<SchoolRegistrationForm />} />
         <Route path="setup-wizard" element={<SetupWizard />} />
