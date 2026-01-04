@@ -3,7 +3,7 @@
 ## Product Vision
 "AI + CCTV + Apps = Complete Smart School Management"
 
-## Current Status: Phase 1 Complete + New Features Added
+## Current Status: Production Ready ✅
 
 ---
 
@@ -11,94 +11,107 @@
 
 ### Latest Session (Jan 4, 2026)
 
-**1. Comprehensive School Registration Form** ✅
-- 4-step wizard form for registering new schools
-- Captures all details for AI context:
-  - Basic Info: Name, Registration Number, Established Year, Board Type, School Type, Medium, Shift
-  - Contact: Address, City, State, Pincode, Phone, Email, WhatsApp, Website
-  - About School: Motto, Principal Info, About, Vision, Mission, Achievements, Facilities
-  - Social & AI: Facebook, Instagram, YouTube, App Requirements, Custom AI Name
-- Logo and Building Photo upload support
-- AI context endpoint for fetching school details
+**1. Director One-Click Setup System** ✅
+- AI-guided 7-step Setup Wizard
+- Progress tracking with completion percentage
+- Step-by-step AI instructions for each task
+- Auto-detects completed steps
 
-**2. Zoom Meetings Page** ✅ (MOCKED)
-- Schedule new meetings with topic, description, start time, duration, password
-- View upcoming and past meetings
-- Recordings tab (mock data)
-- AI-generated meeting summaries tab (mock data)
-- Join meeting via Zoom URL
-- Copy meeting link functionality
-- Cancel/delete meetings
+**2. Subscription Model** ✅
+- Free Trial: 30 days (AI 3 days only) - FREE
+- Monthly Plan: ₹17,999/month
+- Yearly Plan: ₹14,999/month (17% OFF, ₹35,988 savings)
+- Auto-activation on director signup
 
-**3. TeachTino AI File Upload** ✅
-- Photo upload for AI analysis
-- Video upload for AI analysis
-- Document upload for AI analysis
-- Buttons added to AI Assistant section
+**3. Director Account System** ✅
+- Unique ID generation (UUID-based)
+- Email-based login
+- Password change on first login required
+- Auto free trial activation
 
-**4. Route Order Bug Fix** ✅
-- Fixed /api/meetings/recordings and /api/meetings/summaries 404 error
-- Static routes now defined before dynamic {meeting_id} routes
+**4. Marketing Materials** ✅
+- Main Brochure (Professional English)
+- Comparison Chart (vs Entab, Fedena, SchoolERP + "Your System" blank column)
+- Quick Features Card (Pocket-size)
+- Hindi Pamphlet
+- **Download:** https://schooltino-app.preview.emergentagent.com/api/download/marketing-materials
+
+**5. Comprehensive School Registration Form** ✅
+- 4-step wizard with all school details
+- AI context for better assistance
+- Logo & photo upload
+
+**6. Meetings System** ✅ (MOCKED)
+- Schedule, view, delete meetings
+- Recordings & AI summaries tabs
+- Ready for Google Meet integration
 
 ### Previously Implemented
 
 **Core Features:**
-- Multi-portal system: Schooltino (Admin), TeachTino (Teacher), StudyTino (Student)
+- Multi-portal: Schooltino (Admin), TeachTino (Teacher), StudyTino (Student)
 - Role-Based Access Control (RBAC) with Permission Manager
-- AI Integration: GPT-4o for Teacher/Student AI Assistants
+- AI Integration: GPT-4o for AI Assistants
 - AI Paper Generator, AI Content Studio, Voice Assistant
-- Student Management, Staff Management, Class Management
-- Attendance System, Fee Management, Leave Management
+- Student/Staff/Class Management
+- Attendance, Fees, Leave Management
 - Notices, SMS Center, Image Gallery
 - CCTV Dashboard (mock), Website Integration
 
-**Authentication:**
-- JWT-based authentication
-- Role-specific permissions: Director, Principal, VP, Teacher, Student, etc.
-- Permission Manager for granular access control
+---
+
+## Subscription Plans
+
+| Plan | Duration | Price | AI Access | Features |
+|------|----------|-------|-----------|----------|
+| Free Trial | 30 days | FREE | 3 days | All features |
+| Monthly | 1 month | ₹17,999 | Unlimited | All + Priority Support |
+| Yearly | 12 months | ₹14,999/mo | Unlimited | All + 17% OFF |
 
 ---
 
-## Architecture
+## Setup Wizard Steps
 
-```
-/app/
-├── backend/
-│   ├── server.py       # Main FastAPI application (~4400 lines)
-│   ├── .env            # Environment variables
-│   └── requirements.txt
-├── frontend/
-│   └── src/
-│       ├── pages/
-│       │   ├── SchoolRegistrationForm.js  # NEW - 4-step school form
-│       │   ├── ZoomMeetings.js            # NEW - Meetings page
-│       │   ├── TeachTinoDashboard.js      # Updated - File upload in AI
-│       │   ├── StudentDashboard.js
-│       │   ├── PermissionManager.js
-│       │   └── ... (other pages)
-│       └── components/
-│           └── Sidebar.js                 # Updated - New nav items
-└── memory/
-    └── PRD.md
-```
+1. **School Details** - Name, logo, registration number
+2. **Add Classes** - Create class structure
+3. **Add Staff** - Teachers, principal, etc.
+4. **Add Students** - Student enrollment
+5. **Fee Structure** - Fee categories and amounts
+6. **Connect Website** - Auto-sync with school website
+7. **Setup CCTV** - Camera integration (optional)
+
+---
+
+## Marketing Materials
+
+**Files in ZIP:**
+1. `brochure_main.html` - Full feature brochure
+2. `comparison_chart.html` - Feature comparison with competitors
+3. `quick_features_card.html` - Pocket card for quick pitch
+4. `hindi_pamphlet.html` - Hindi language pamphlet
+
+**Contact:** +91 7879967616 | www.schooltino.in
 
 ---
 
 ## API Endpoints (New)
 
-### Meetings API
-- `GET /api/meetings` - List all meetings
-- `POST /api/meetings` - Create new meeting
-- `GET /api/meetings/recordings` - List recordings
-- `GET /api/meetings/summaries` - List AI summaries
-- `POST /api/meetings/recordings/{id}/summarize` - Generate AI summary
-- `GET /api/meetings/{id}` - Get single meeting
-- `DELETE /api/meetings/{id}` - Cancel meeting
+### Subscription
+- `GET /api/subscription/plans` - List pricing plans
+- `POST /api/subscription/activate` - Activate a plan
+- `GET /api/subscription/current/{school_id}` - Current subscription status
 
-### School API (Extended)
-- `PUT /api/schools/{id}` - Update school details
-- `POST /api/schools/{id}/upload-photo` - Upload logo/building photo
-- `GET /api/schools/{id}/ai-context` - Get school context for AI
+### Setup Wizard
+- `GET /api/setup/wizard` - Get wizard status
+- `GET /api/setup/ai-guide` - AI setup instructions
+- `POST /api/setup/complete-step/{step}` - Mark step complete
+
+### Director
+- `POST /api/auth/create-director` - Create director account
+- `POST /api/auth/change-password` - Change password
+
+### Downloads
+- `GET /api/download/marketing-materials` - Download ZIP
 
 ---
 
@@ -108,51 +121,46 @@
 |------|-------|----------|
 | Director | director@schooltino.com | admin123 |
 | Principal | principal@schooltino.com | principal123 |
-| VP | vp@schooltino.com | vp123456 |
 | Teacher | teacher@schooltino.com | teacher123 |
 | Student | STD-2026-285220 | KPbeHdZf |
 
 ---
 
-## Mocked Features
+## Mocked Features (Ready for Integration)
 
-1. **Zoom API Integration** - Meeting URLs are generated mock URLs, actual Zoom API not connected
-2. **Meeting Recordings** - Returns empty array, needs Zoom API integration
-3. **AI Meeting Summaries** - Returns placeholder data, needs OpenAI integration
-4. **Syllabus Tracking** - Mock NCERT syllabus data
-5. **CCTV Integration** - Mock camera data for future hardware connection
+1. **Meeting System** - Ready for Google Meet API
+2. **CCTV** - Ready for IP camera integration
+3. **Syllabus Tracking** - Ready for NCERT API
 
 ---
 
-## Upcoming Tasks (P0-P2)
+## Upcoming Tasks
 
 ### P0 - High Priority
-- [ ] Real Zoom API Integration (needs Zoom credentials from user)
-- [ ] AI Meeting Summary with actual OpenAI transcription
+- [ ] Google Meet integration (free)
+- [ ] Payment gateway for subscriptions
 
-### P1 - Medium Priority  
-- [ ] Principal's role: Assign classes/subjects to teachers
-- [ ] Admission/Fee approval workflow
-- [ ] Backend refactoring (server.py > 4400 lines)
+### P1 - Medium Priority
+- [ ] Backend refactoring (server.py > 4700 lines)
+- [ ] Real NCERT syllabus integration
 
 ### P2 - Lower Priority
-- [ ] Advanced School Analytics with real data
-- [ ] NCERT syllabus real integration
-- [ ] Leave Management full workflow
+- [ ] OneTino.com master platform
+- [ ] CCTV hardware integration
 
 ---
 
-## Known Technical Debt
+## Technical Stack
 
-1. **Backend Monolith**: `server.py` is >4400 lines and needs refactoring into:
-   - `/routes/` - API endpoints
-   - `/models/` - Pydantic models
-   - `/services/` - Business logic
-   - `/core/` - Config, auth, database
+- **Backend:** FastAPI (Python)
+- **Frontend:** React + Tailwind + Shadcn UI
+- **Database:** MongoDB
+- **AI:** OpenAI GPT-4o (via Emergent LLM Key)
+- **Hosting:** Emergent Platform
 
 ---
 
 ## Deployment
 
-- **Live URL**: https://schooltino.in (custom domain)
-- **Preview URL**: https://schooltino-app.preview.emergentagent.com
+- **Live URL:** https://schooltino.in
+- **Preview URL:** https://schooltino-app.preview.emergentagent.com
