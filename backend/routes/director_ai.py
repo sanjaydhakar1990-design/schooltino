@@ -179,9 +179,10 @@ async def generate_director_insights(db, school_id: str, metrics: dict):
         })
     
     # Check for upcoming events
+    today_str = datetime.now().strftime('%Y-%m-%d')
     upcoming_events = await db.notices.count_documents({
         "school_id": school_id,
-        "event_date": {"$gte": today, "$lte": (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')}
+        "event_date": {"$gte": today_str, "$lte": (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')}
     })
     
     if upcoming_events > 0:
