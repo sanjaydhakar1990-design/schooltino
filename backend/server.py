@@ -6232,6 +6232,8 @@ async def get_admin_overview(school_id: str, current_user: dict = Depends(get_cu
 
 # Include modular routers
 api_router.include_router(ncert_router)
+api_router.include_router(mpbse_router)
+api_router.include_router(syllabus_router)
 
 app.include_router(api_router)
 
