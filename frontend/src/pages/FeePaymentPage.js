@@ -524,12 +524,31 @@ Thank you for your payment!
           </DialogHeader>
           
           <div className="space-y-4 text-center">
-            {/* QR Code Placeholder */}
-            <div className="w-48 h-48 mx-auto bg-slate-100 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-300">
-              <div className="text-center">
-                <QrCode className="w-16 h-16 text-slate-400 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">Scan QR Code</p>
-              </div>
+            {/* Real QR Code for UPI */}
+            <div className="bg-white p-4 rounded-xl border-2 border-green-200 inline-block mx-auto">
+              {paymentInitiated?.upi_url ? (
+                <QRCodeSVG 
+                  value={paymentInitiated.upi_url}
+                  size={180}
+                  level="H"
+                  includeMargin={true}
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                />
+              ) : (
+                <div className="w-[180px] h-[180px] flex items-center justify-center bg-slate-100 rounded">
+                  <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-slate-500">
+              Scan with any UPI app (GPay, PhonePe, Paytm)
+            </p>
+
+            {/* School Name */}
+            <div className="bg-blue-50 rounded-lg p-2">
+              <p className="text-xs text-blue-600">Payment to</p>
+              <p className="font-semibold text-blue-800">{paymentInitiated?.school_name || schoolDetails?.name || 'School'}</p>
             </div>
 
             {/* Amount */}
@@ -540,9 +559,9 @@ Thank you for your payment!
 
             {/* UPI ID */}
             <div className="bg-slate-100 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">UPI ID</p>
+              <p className="text-xs text-slate-500 mb-1">UPI ID (Copy करें)</p>
               <div className="flex items-center justify-center gap-2">
-                <span className="font-mono font-medium">{paymentInitiated?.upi_id || 'school@upi'}</span>
+                <span className="font-mono font-medium text-green-700">{paymentInitiated?.upi_id || schoolDetails?.upi_id || 'school@upi'}</span>
                 <Button variant="ghost" size="icon" onClick={copyUPIId}>
                   <Copy className="w-4 h-4" />
                 </Button>
@@ -569,6 +588,10 @@ Thank you for your payment!
                 )}
               </Button>
             </div>
+
+            <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+              ⚠️ Payment करने के बाद "Payment Done" button click करें
+            </p>
           </div>
         </DialogContent>
       </Dialog>
