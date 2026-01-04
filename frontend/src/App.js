@@ -47,6 +47,8 @@ import AIHistoryPage from './pages/AIHistoryPage';
 import FrontOfficePage from './pages/FrontOfficePage';
 import TransportPage from './pages/TransportPage';
 import HealthModulePage from './pages/HealthModulePage';
+import BiometricPage from './pages/BiometricPage';
+import TimetablePage from './pages/TimetablePage';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
@@ -170,6 +172,8 @@ function AppRoutes() {
         <Route path="front-office" element={<FrontOfficePage />} />
         <Route path="transport" element={<TransportPage />} />
         <Route path="health" element={<HealthModulePage />} />
+        <Route path="biometric" element={<BiometricPage />} />
+        <Route path="timetable" element={<TimetablePage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
