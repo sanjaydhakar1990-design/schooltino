@@ -1318,6 +1318,188 @@ async def get_school(school_id: str, current_user: dict = Depends(get_current_us
         raise HTTPException(status_code=404, detail="School not found")
     return SchoolResponse(**school)
 
+@api_router.put("/schools/{school_id}", response_model=SchoolResponse)
+async def update_school(school_id: str, school: SchoolCreate, current_user: dict = Depends(get_current_user)):
+    """Update school details - only Director can update"""
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    existing = await db.schools.find_one({"id": school_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    update_data = school.model_dump()
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = current_user["id"]
+    
+    await db.schools.update_one({"id": school_id}, {"$set": update_data})
+    await log_audit(current_user["id"], "update", "schools", {"school_id": school_id, "name": school.name})
+    
+    updated = await db.schools.find_one({"id": school_id}, {"_id": 0})
+    return SchoolResponse(**updated)
+
+@api_router.post("/schools/{school_id}/upload-photo")
+async def upload_school_photo(school_id: str, file: UploadFile = File(...), photo_type: str = "logo", current_user: dict = Depends(get_current_user)):
+    """Upload school logo or main photo"""
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG, PNG, WEBP allowed")
+    
+    # Save file
+    file_ext = file.filename.split(".")[-1]
+    file_name = f"school_{school_id}_{photo_type}_{uuid.uuid4().hex[:8]}.{file_ext}"
+    file_path = UPLOAD_DIR / "images" / file_name
+    
+    async with aiofiles.open(file_path, 'wb') as f:
+        content = await file.read()
+        await f.write(content)
+    
+    # Update school with photo URL
+    photo_url = f"/api/uploads/images/{file_name}"
+    field = "logo_url" if photo_type == "logo" else "school_photo_url"
+    
+    await db.schools.update_one({"id": school_id}, {"$set": {field: photo_url}})
+    
+    return {"message": "Photo uploaded", "url": photo_url, "type": photo_type}
+
+@api_router.get("/schools/{school_id}/ai-context")
+async def get_school_ai_context(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get school context for AI to use - all school details in one object"""
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    # Get additional stats
+    student_count = await db.students.count_documents({"school_id": school_id, "is_active": True})
+    staff_count = await db.staff.count_documents({"school_id": school_id, "is_active": True})
+    class_count = await db.classes.count_documents({"school_id": school_id})
+    
+    ai_context = {
+        **school,
+        "stats": {
+            "total_students": student_count,
+            "total_staff": staff_count,
+            "total_classes": class_count
+        },
+        "context_summary": f"""
+School: {school.get('name', 'Unknown')}
+Established: {school.get('established_year', 'N/A')}
+Board: {school.get('board_type', 'N/A')}
+Location: {school.get('city', '')}, {school.get('state', '')}
+Type: {school.get('school_type', 'N/A')}
+Medium: {school.get('medium', 'N/A')}
+Motto: {school.get('motto', 'N/A')}
+About: {school.get('about_school', 'N/A')}
+Vision: {school.get('vision', 'N/A')}
+Mission: {school.get('mission', 'N/A')}
+Principal: {school.get('principal_name', 'N/A')}
+Students: {student_count}
+Staff: {staff_count}
+Classes: {class_count}
+Facilities: {', '.join(school.get('facilities', []))}
+Achievements: {school.get('achievements', 'N/A')}
+Website: {school.get('website_url', 'N/A')}
+"""
+    }
+    
+    return ai_context
+
+# ==================== DIRECTOR CREDENTIALS MANAGEMENT ====================
+
+@api_router.get("/director/all-credentials")
+async def get_all_credentials(current_user: dict = Depends(get_current_user)):
+    """Director can see all login credentials for their school users"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can view all credentials")
+    
+    # Get all users
+    users = await db.users.find({"is_active": True}, {"_id": 0}).to_list(200)
+    
+    credentials = []
+    for u in users:
+        cred = {
+            "id": u["id"],
+            "name": u["name"],
+            "email": u["email"],
+            "role": u["role"],
+            "portal": get_portal_for_role(u["role"]),
+            "status": u.get("status", "active"),
+            "created_at": u.get("created_at")
+        }
+        credentials.append(cred)
+    
+    # Get students with their credentials (show student_id and generated password indicator)
+    students = await db.students.find({"is_active": True}, {"_id": 0, "password": 0}).to_list(500)
+    for s in students:
+        cred = {
+            "id": s["id"],
+            "name": s["name"],
+            "email": s.get("student_id", "N/A"),  # Student ID is the login
+            "role": "student",
+            "portal": "StudyTino",
+            "status": s.get("status", "active"),
+            "student_id": s.get("student_id"),
+            "password_changed": s.get("password_changed", False),
+            "class_id": s.get("class_id"),
+            "created_at": s.get("created_at")
+        }
+        credentials.append(cred)
+    
+    return {
+        "total_users": len(credentials),
+        "credentials": credentials
+    }
+
+def get_portal_for_role(role: str) -> str:
+    """Get the portal name based on user role"""
+    portal_map = {
+        "director": "Schooltino (Admin)",
+        "principal": "Schooltino (Admin)",
+        "vice_principal": "Schooltino (Admin)",
+        "co_director": "Schooltino (Admin)",
+        "accountant": "Schooltino (Admin)",
+        "admission_staff": "Schooltino (Admin)",
+        "clerk": "Schooltino (Admin)",
+        "teacher": "TeachTino",
+        "student": "StudyTino"
+    }
+    return portal_map.get(role, "Schooltino")
+
+@api_router.post("/director/reset-user-password/{user_id}")
+async def reset_user_password(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Director can reset any user's password"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can reset passwords")
+    
+    # Generate new password
+    new_password = generate_temp_password()
+    hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    
+    # Check if it's a user or student
+    user = await db.users.find_one({"id": user_id})
+    if user:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"password": hashed_pw, "password_reset_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        await log_audit(current_user["id"], "reset_password", "users", {"user_id": user_id, "user_name": user["name"]})
+        return {"message": "Password reset", "new_password": new_password, "user_name": user["name"], "email": user["email"]}
+    
+    student = await db.students.find_one({"id": user_id})
+    if student:
+        await db.students.update_one(
+            {"id": user_id},
+            {"$set": {"password": hashed_pw, "password_changed": False}}
+        )
+        await log_audit(current_user["id"], "reset_password", "students", {"student_id": user_id, "student_name": student["name"]})
+        return {"message": "Password reset", "new_password": new_password, "user_name": student["name"], "student_id": student["student_id"]}
+    
+    raise HTTPException(status_code=404, detail="User not found")
+
 # ==================== CLASS ROUTES ====================
 
 @api_router.post("/classes", response_model=ClassResponse)
