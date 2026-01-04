@@ -36,6 +36,8 @@ export default function StudyTinoDashboard() {
   const [homework, setHomework] = useState([]);
   const [leaveStatus, setLeaveStatus] = useState(null);
   const [alerts, setAlerts] = useState([]);
+  const [syllabus, setSyllabus] = useState([]);
+  const [upcomingExams, setUpcomingExams] = useState([]);
   
   // PWA Install
   const [deferredPrompt, setDeferredPrompt] = useState(null);
