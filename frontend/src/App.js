@@ -36,6 +36,9 @@ import SubscriptionPage from './pages/SubscriptionPage';
 import TeachTinoLogin from './pages/TeachTinoLogin';
 import StudyTinoLogin from './pages/StudyTinoLogin';
 import OnlineExamSystem from './pages/OnlineExamSystem';
+import CCTVManagement from './pages/CCTVManagement';
+import StorageBackup from './pages/StorageBackup';
+import AdminActivityDashboard from './pages/AdminActivityDashboard';
 
 // Components
 import Layout from './components/Layout';
