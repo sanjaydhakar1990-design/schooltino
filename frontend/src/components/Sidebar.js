@@ -26,7 +26,8 @@ import {
   Shield,
   Building2,
   Rocket,
-  CreditCard
+  CreditCard,
+  FileText
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -66,6 +67,7 @@ export const Sidebar = () => {
     { path: '/app/leave', icon: Calendar, label: 'leave_management', permKey: 'leave_management' },
     { path: '/app/fees', icon: Wallet, label: 'fees', permKey: 'fees' },
     { path: '/app/notices', icon: Bell, label: 'notices', permKey: 'notices' },
+    { path: '/app/exams', icon: FileText, label: 'online_exams', permKey: 'ai_paper' },
     { path: '/app/meetings', icon: Video, label: 'zoom_meetings', permKey: 'meetings' },
     { path: '/app/sms', icon: MessageSquare, label: 'sms_center', permKey: 'sms_center' },
     { path: '/app/gallery', icon: Image, label: 'gallery', permKey: 'gallery' },
