@@ -162,10 +162,85 @@ export default function TeachTinoDashboard() {
 
   const fetchSyllabusData = async () => {
     try {
-      const res = await axios.get(`${API}/teacher/syllabus`);
-      setSyllabusData(res.data || []);
+      // Fetch real NCERT syllabus data
+      const [class8Res, class9Res, class10Res] = await Promise.all([
+        axios.get(`${API}/ncert/syllabus/8?subject=Mathematics`).catch(() => null),
+        axios.get(`${API}/ncert/syllabus/9?subject=Mathematics`).catch(() => null),
+        axios.get(`${API}/ncert/syllabus/10?subject=Mathematics`).catch(() => null)
+      ]);
+
+      const syllabusWithProgress = [];
+      
+      if (class8Res?.data) {
+        const data = class8Res.data;
+        syllabusWithProgress.push({
+          id: '1',
+          class_name: 'Class 8',
+          section: 'A',
+          subject: data.subject,
+          book: data.data?.book || 'Mathematics - 8',
+          total_chapters: data.data?.chapters?.length || 15,
+          chapters: data.data?.chapters || [],
+          completed_chapters: 8,
+          current_topic: 'Algebraic Expressions',
+          progress: 53,
+          last_updated: new Date().toISOString().split('T')[0],
+          test_results: { avg_score: 72, top_score: 95, lowest_score: 45 }
+        });
+      }
+      
+      if (class9Res?.data) {
+        const data = class9Res.data;
+        syllabusWithProgress.push({
+          id: '2',
+          class_name: 'Class 9',
+          section: 'B',
+          subject: data.subject,
+          book: data.data?.book || 'Mathematics - 9',
+          total_chapters: data.data?.chapters?.length || 18,
+          chapters: data.data?.chapters || [],
+          completed_chapters: 10,
+          current_topic: 'Polynomials',
+          progress: 56,
+          last_updated: new Date().toISOString().split('T')[0],
+          test_results: { avg_score: 68, top_score: 92, lowest_score: 38 }
+        });
+      }
+      
+      if (class10Res?.data) {
+        const data = class10Res.data;
+        syllabusWithProgress.push({
+          id: '3',
+          class_name: 'Class 10',
+          section: 'A',
+          subject: data.subject,
+          book: data.data?.book || 'Mathematics - 10',
+          total_chapters: data.data?.chapters?.length || 15,
+          chapters: data.data?.chapters || [],
+          completed_chapters: 6,
+          current_topic: 'Quadratic Equations',
+          progress: 40,
+          last_updated: new Date().toISOString().split('T')[0],
+          test_results: { avg_score: 75, top_score: 98, lowest_score: 52 }
+        });
+      }
+
+      setSyllabusData(syllabusWithProgress.length > 0 ? syllabusWithProgress : [
+        {
+          id: '1',
+          class_name: 'Class 8',
+          section: 'A',
+          subject: 'Mathematics',
+          total_chapters: 15,
+          completed_chapters: 8,
+          current_topic: 'Algebraic Expressions',
+          progress: 53,
+          last_updated: '2026-01-02',
+          test_results: { avg_score: 72, top_score: 95, lowest_score: 45 }
+        }
+      ]);
     } catch (error) {
-      // Mock data for demo
+      // Fallback mock data
       setSyllabusData([
         {
           id: '1',
