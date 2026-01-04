@@ -2488,28 +2488,60 @@ async def generate_paper(request: PaperGenerateRequest, current_user: dict = Dep
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
         
-        # Calculate marks distribution based on question types
-        marks_distribution = []
-        if 'mcq' in request.question_types:
-            marks_distribution.append(("MCQ", 1, int(request.total_marks * 0.2)))  # 20% for MCQs
-        if 'fill_blank' in request.question_types:
-            marks_distribution.append(("Fill in the Blanks", 1, int(request.total_marks * 0.1)))  # 10%
-        if 'short' in request.question_types:
-            marks_distribution.append(("Short Answer", 2, int(request.total_marks * 0.3)))  # 30%
-        if 'long' in request.question_types:
-            marks_distribution.append(("Long Answer", 5, int(request.total_marks * 0.4)))  # 40%
+        # Calculate marks distribution based on question types with proper percentages
+        type_config = {
+            'mcq': ("MCQ (Multiple Choice)", 1, 0.15),
+            'fill_blank': ("Fill in the Blanks", 1, 0.10),
+            'short': ("Short Answer (2-3 lines)", 2, 0.25),
+            'long': ("Long Answer (detailed)", 5, 0.25),
+            'diagram': ("Diagram Based Questions", 3, 0.15),
+            'hots': ("HOTS (Higher Order Thinking)", 4, 0.10)
+        }
         
-        # If only some types selected, adjust distribution
-        if len(marks_distribution) == 1:
-            marks_distribution[0] = (marks_distribution[0][0], marks_distribution[0][1], request.total_marks)
-        elif len(marks_distribution) == 2:
-            half = request.total_marks // 2
-            marks_distribution[0] = (marks_distribution[0][0], marks_distribution[0][1], half)
-            marks_distribution[1] = (marks_distribution[1][0], marks_distribution[1][1], request.total_marks - half)
+        marks_distribution = []
+        total_percentage = sum(type_config[t][2] for t in request.question_types if t in type_config)
+        
+        for qtype in request.question_types:
+            if qtype in type_config:
+                name, per_q, pct = type_config[qtype]
+                adjusted_pct = pct / total_percentage if total_percentage > 0 else pct
+                marks_for_type = max(per_q, int(request.total_marks * adjusted_pct))
+                marks_distribution.append((name, per_q, marks_for_type, qtype))
+        
+        # Adjust to ensure total matches exactly
+        current_total = sum(m[2] for m in marks_distribution)
+        if marks_distribution and current_total != request.total_marks:
+            diff = request.total_marks - current_total
+            # Add/subtract from the last item
+            last = marks_distribution[-1]
+            marks_distribution[-1] = (last[0], last[1], max(last[1], last[2] + diff), last[3])
         
         # Build distribution string
-        dist_str = "\n".join([f"- {name}: {marks} marks total ({marks//per_q} questions × {per_q} marks each)" 
-                             for name, per_q, marks in marks_distribution])
+        dist_str = "\n".join([
+            f"- {name}: {marks} marks total ({marks//per_q if marks >= per_q else 1} questions × {per_q} marks each)" 
+            for name, per_q, marks, _ in marks_distribution
+        ])
+        
+        # Build question type examples for the prompt
+        question_examples = []
+        for name, per_q, marks, qtype in marks_distribution:
+            if qtype == 'diagram':
+                question_examples.append(f'''{{
+            "type": "diagram",
+            "question": "Draw a well-labelled diagram of [topic]. Label at least 5 parts.",
+            "answer": "Diagram should show: [list of required labels and parts]",
+            "marks": 3,
+            "difficulty": "medium",
+            "diagram_required": true
+        }}''')
+            elif qtype == 'hots':
+                question_examples.append(f'''{{
+            "type": "hots",
+            "question": "Analyze/Compare/Evaluate... [higher order thinking question]",
+            "answer": "Expected analysis with reasoning...",
+            "marks": 4,
+            "difficulty": "hard"
+        }}''')
         
         system_prompt = f"""You are an expert question paper generator for Indian schools following NCERT 2024-25 syllabus.
 Generate questions for {request.class_name} students in {request.subject} subject.
@@ -2526,27 +2558,37 @@ Question Types and Marks:
 
 STRICT RULES:
 1. You MUST generate questions that add up to EXACTLY {request.total_marks} marks
-2. Each MCQ = 1 mark, Fill blank = 1 mark, Short answer = 2 marks, Long answer = 5 marks
+2. Marks per question type:
+   - MCQ = 1 mark
+   - Fill in the blank = 1 mark  
+   - Short answer = 2 marks
+   - Long answer = 5 marks
+   - Diagram based = 3 marks (MUST require drawing a diagram)
+   - HOTS = 4 marks (MUST be analysis/evaluation type)
 3. Generate questions ONLY from the specified chapter(s)
-4. Use NCERT 2024-25 rationalized syllabus content
-5. Do NOT include questions from deleted/rationalized topics
-6. Ensure all questions are from {request.class_name} level only
+4. Use NCERT 2024-25 rationalized syllabus content only
+5. Do NOT include questions from deleted/old syllabus topics
+6. Ensure all questions are appropriate for {request.class_name} level
+7. For DIAGRAM questions: Ask to "Draw and label" or "Draw a neat diagram showing..."
+8. For HOTS questions: Use words like "Analyze", "Compare", "Evaluate", "Justify", "Predict"
+9. EVERY question MUST have a clear, complete answer in the answer key
+10. Double-check that marks sum to EXACTLY {request.total_marks}
 
 Return ONLY valid JSON (no extra text):
 {{
     "questions": [
         {{
             "type": "mcq",
-            "question": "question text",
+            "question": "Clear question text?",
             "options": ["a) option1", "b) option2", "c) option3", "d) option4"],
-            "answer": "correct option",
+            "answer": "a) correct option with explanation",
             "marks": 1,
             "difficulty": "easy"
         }},
         {{
             "type": "short",
-            "question": "question text",
-            "answer": "expected answer in 2-3 sentences",
+            "question": "Question text",
+            "answer": "Complete answer in 2-3 sentences with all key points",
             "marks": 2,
             "difficulty": "medium"
         }},
