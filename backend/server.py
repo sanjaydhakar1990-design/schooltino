@@ -4605,7 +4605,7 @@ async def delete_meeting(meeting_id: str, current_user: dict = Depends(get_curre
 
 @api_router.get("/subscription/plans")
 async def get_subscription_plans():
-    """Get available subscription plans"""
+    """Get available subscription plans - Affordable pricing for Indian schools"""
     return {
         "plans": [
             {
@@ -4616,42 +4616,70 @@ async def get_subscription_plans():
                 "price_display": "FREE",
                 "features": [
                     "All features for 30 days",
-                    "AI features for 3 days",
-                    "Unlimited students & staff",
+                    "AI features for 7 days",
+                    "Up to 500 students",
                     "Email support"
                 ],
-                "ai_note": "AI features available for first 3 days only"
+                "ai_note": "AI features available for first 7 days"
             },
             {
-                "id": "monthly",
-                "name": "Monthly Plan",
-                "duration": "1 Month",
-                "price": 17999,
-                "price_display": "₹17,999/month",
+                "id": "starter",
+                "name": "Starter",
+                "duration": "Per Year",
+                "price": 9999,
+                "price_display": "₹9,999/year",
+                "monthly_equivalent": "₹833/month",
                 "features": [
-                    "All features unlimited",
-                    "AI features unlimited",
-                    "Priority support",
-                    "Monthly billing"
-                ]
-            },
-            {
-                "id": "yearly",
-                "name": "Yearly Plan",
-                "duration": "12 Months",
-                "price": 179988,
-                "price_display": "₹14,999/month",
-                "original_price": "₹17,999/month",
-                "savings": "₹35,988/year (17% OFF)",
-                "features": [
-                    "All features unlimited",
-                    "AI features unlimited",
-                    "Priority support",
-                    "Pay yearly, save more"
+                    "Up to 500 students",
+                    "All basic features",
+                    "5 AI paper generations/month",
+                    "Email support",
+                    "Mobile app access"
                 ],
-                "badge": "BEST VALUE"
+                "ideal_for": "Small Schools"
+            },
+            {
+                "id": "professional",
+                "name": "Professional",
+                "duration": "Per Year",
+                "price": 24999,
+                "price_display": "₹24,999/year",
+                "monthly_equivalent": "₹2,083/month",
+                "features": [
+                    "Up to 2000 students",
+                    "All features unlimited",
+                    "50 AI paper generations/month",
+                    "Voice AI Assistant",
+                    "Biometric integration",
+                    "Priority support",
+                    "WhatsApp notifications"
+                ],
+                "badge": "MOST POPULAR",
+                "ideal_for": "Medium Schools"
+            },
+            {
+                "id": "enterprise",
+                "name": "Enterprise",
+                "duration": "Per Year",
+                "price": 49999,
+                "price_display": "₹49,999/year",
+                "monthly_equivalent": "₹4,166/month",
+                "features": [
+                    "Unlimited students",
+                    "All features unlimited",
+                    "Unlimited AI features",
+                    "GPS Vehicle Tracking",
+                    "CCTV Integration",
+                    "Dedicated support",
+                    "Custom branding",
+                    "API access",
+                    "On-premise option"
+                ],
+                "badge": "BEST VALUE",
+                "ideal_for": "Large Schools & Chains"
             }
-        ]
+        ],
+        "comparison_note": "50% cheaper than competitors with 3x more AI features!"
     }
 
 @api_router.post("/subscription/activate")
