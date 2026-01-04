@@ -27,13 +27,15 @@ export default function AIPaperPage() {
     language: 'english'
   });
 
-  const subjects = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Studies', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography'];
+  const subjects = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'Economics', 'Political Science', 'EVS'];
   const classNames = ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
   const questionTypes = [
-    { id: 'mcq', label: t('mcq') },
-    { id: 'short', label: t('short_answer') },
-    { id: 'long', label: t('long_answer') },
-    { id: 'fill_blank', label: t('fill_blanks') }
+    { id: 'mcq', label: t('mcq'), marks: 1 },
+    { id: 'fill_blank', label: t('fill_blanks'), marks: 1 },
+    { id: 'short', label: t('short_answer'), marks: 2 },
+    { id: 'long', label: t('long_answer'), marks: 5 },
+    { id: 'diagram', label: 'Diagram Based', marks: 3 },
+    { id: 'hots', label: 'HOTS (Higher Order)', marks: 4 }
   ];
 
   const handleChange = (e) => {
