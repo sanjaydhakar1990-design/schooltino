@@ -1289,6 +1289,9 @@ export default function StudyTinoDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Voice Assistant Modal - Ask Tino */}
+      <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
   );
 }
