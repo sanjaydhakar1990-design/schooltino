@@ -788,6 +788,64 @@ Your Login Credentials:
         </div>
       </section>
 
+      {/* Portals Section - TeachTino & StudyTino */}
+      <section className="py-16 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Already a User? <span className="text-indigo-600">Login to Your Portal</span>
+            </h2>
+            <p className="text-slate-600">Teachers and Students have their own dedicated portals</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* TeachTino Card */}
+            <a 
+              href="/teachtino"
+              className="group bg-white rounded-2xl p-8 border-2 border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <GraduationCap className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-emerald-800">TeachTino</h3>
+                  <p className="text-emerald-600">Teacher Portal</p>
+                </div>
+              </div>
+              <p className="text-slate-600 mb-4">
+                Create lesson plans, question papers, track attendance, and manage your classroom with AI assistance.
+              </p>
+              <div className="flex items-center text-emerald-600 font-medium">
+                Teacher Login <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </a>
+            
+            {/* StudyTino Card */}
+            <a 
+              href="/studytino"
+              className="group bg-white rounded-2xl p-8 border-2 border-blue-200 hover:border-blue-400 hover:shadow-xl transition-all"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <BookOpen className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-blue-800">StudyTino</h3>
+                  <p className="text-blue-600">Student & Parent Portal</p>
+                </div>
+              </div>
+              <p className="text-slate-600 mb-4">
+                Track homework, get AI study help, view results, and stay connected with school updates.
+              </p>
+              <div className="flex items-center text-blue-600 font-medium">
+                Student Login <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
