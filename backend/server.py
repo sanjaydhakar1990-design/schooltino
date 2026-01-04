@@ -48,7 +48,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str
     name: str
-    role: str = "teacher"  # director, principal, vice_principal, teacher, accountant, exam_controller
+    role: str = "teacher"  # director, principal, vice_principal, co_director, teacher, accountant, admission_staff, clerk
     mobile: Optional[str] = None
     school_id: Optional[str] = None
 
@@ -64,11 +64,113 @@ class UserResponse(BaseModel):
     mobile: Optional[str] = None
     school_id: Optional[str] = None
     created_at: str
+    permissions: Optional[dict] = None
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+# Permission Models
+class PermissionUpdate(BaseModel):
+    user_id: str
+    permissions: dict  # {"dashboard": True, "students": False, "fees": True, etc.}
+
+class UserPermissions(BaseModel):
+    # Admin Panel Sections
+    dashboard: bool = False
+    school_analytics: bool = False
+    user_management: bool = False  # Can create Principal, VP, Co-Director only
+    students: bool = False  # View students
+    student_admission: bool = False  # Can admit students
+    staff: bool = False
+    classes: bool = False
+    class_assignment: bool = False  # Assign teachers to classes
+    attendance: bool = False
+    leave_management: bool = False
+    leave_approval: bool = False
+    fees: bool = False
+    fee_collection: bool = False  # Cash collection
+    fee_approval: bool = False  # Approve cash payments
+    notices: bool = False
+    notice_create: bool = False
+    sms_center: bool = False
+    gallery: bool = False
+    ai_paper: bool = False
+    ai_content: bool = False
+    cctv: bool = False
+    website_integration: bool = False
+    audit_logs: bool = False
+    settings: bool = False
+    meetings: bool = False  # Zoom meetings
+    reports: bool = False  # View all reports
+
+# Default permissions for each role
+DEFAULT_PERMISSIONS = {
+    "director": {
+        "dashboard": True, "school_analytics": True, "user_management": True,
+        "students": True, "student_admission": True, "staff": True, "classes": True,
+        "class_assignment": True, "attendance": True, "leave_management": True,
+        "leave_approval": True, "fees": True, "fee_collection": True, "fee_approval": True,
+        "notices": True, "notice_create": True, "sms_center": True, "gallery": True,
+        "ai_paper": True, "ai_content": True, "cctv": True, "website_integration": True,
+        "audit_logs": True, "settings": True, "meetings": True, "reports": True
+    },
+    "principal": {
+        "dashboard": True, "school_analytics": True, "user_management": False,
+        "students": True, "student_admission": False, "staff": True, "classes": True,
+        "class_assignment": True, "attendance": True, "leave_management": True,
+        "leave_approval": True, "fees": True, "fee_collection": False, "fee_approval": True,
+        "notices": True, "notice_create": True, "sms_center": True, "gallery": True,
+        "ai_paper": True, "ai_content": True, "cctv": True, "website_integration": False,
+        "audit_logs": True, "settings": False, "meetings": True, "reports": True
+    },
+    "vice_principal": {
+        "dashboard": True, "school_analytics": True, "user_management": False,
+        "students": True, "student_admission": False, "staff": True, "classes": True,
+        "class_assignment": False, "attendance": True, "leave_management": True,
+        "leave_approval": True, "fees": True, "fee_collection": False, "fee_approval": False,
+        "notices": True, "notice_create": True, "sms_center": False, "gallery": True,
+        "ai_paper": True, "ai_content": False, "cctv": True, "website_integration": False,
+        "audit_logs": False, "settings": False, "meetings": True, "reports": True
+    },
+    "co_director": {
+        "dashboard": True, "school_analytics": True, "user_management": False,
+        "students": True, "student_admission": False, "staff": True, "classes": True,
+        "class_assignment": False, "attendance": True, "leave_management": True,
+        "leave_approval": False, "fees": True, "fee_collection": False, "fee_approval": False,
+        "notices": True, "notice_create": True, "sms_center": True, "gallery": True,
+        "ai_paper": True, "ai_content": True, "cctv": True, "website_integration": False,
+        "audit_logs": True, "settings": False, "meetings": True, "reports": True
+    },
+    "admission_staff": {
+        "dashboard": True, "school_analytics": False, "user_management": False,
+        "students": True, "student_admission": True, "staff": False, "classes": False,
+        "class_assignment": False, "attendance": False, "leave_management": False,
+        "leave_approval": False, "fees": False, "fee_collection": False, "fee_approval": False,
+        "notices": False, "notice_create": False, "sms_center": False, "gallery": False,
+        "ai_paper": False, "ai_content": False, "cctv": False, "website_integration": False,
+        "audit_logs": False, "settings": False, "meetings": False, "reports": False
+    },
+    "accountant": {
+        "dashboard": True, "school_analytics": False, "user_management": False,
+        "students": True, "student_admission": False, "staff": False, "classes": False,
+        "class_assignment": False, "attendance": False, "leave_management": False,
+        "leave_approval": False, "fees": True, "fee_collection": True, "fee_approval": False,
+        "notices": False, "notice_create": False, "sms_center": False, "gallery": False,
+        "ai_paper": False, "ai_content": False, "cctv": False, "website_integration": False,
+        "audit_logs": False, "settings": False, "meetings": False, "reports": False
+    },
+    "clerk": {
+        "dashboard": True, "school_analytics": False, "user_management": False,
+        "students": True, "student_admission": False, "staff": False, "classes": False,
+        "class_assignment": False, "attendance": True, "leave_management": False,
+        "leave_approval": False, "fees": False, "fee_collection": False, "fee_approval": False,
+        "notices": True, "notice_create": False, "sms_center": False, "gallery": True,
+        "ai_paper": False, "ai_content": False, "cctv": False, "website_integration": False,
+        "audit_logs": False, "settings": False, "meetings": False, "reports": False
+    }
+}
 
 # School Models
 class SchoolCreate(BaseModel):
