@@ -1,0 +1,405 @@
+# /app/backend/routes/fee_payment.py
+"""
+Student Fee Payment System
+- UPI/Credit Card/Debit Card payments
+- Direct school account transfer
+- Auto receipt generation
+- Payment history
+"""
+
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from typing import Optional, List, Dict
+from datetime import datetime, timezone
+import uuid
+import os
+import sys
+sys.path.append('/app/backend')
+
+from motor.motor_asyncio import AsyncIOMotorClient
+
+# Database connection
+mongo_url = os.environ.get('MONGO_URL')
+db_name = os.environ.get('DB_NAME', 'test_database')
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
+
+router = APIRouter(prefix="/fee-payment", tags=["Fee Payment"])
+
+
+# ==================== MODELS ====================
+
+class InitiatePaymentRequest(BaseModel):
+    student_id: str
+    school_id: str
+    amount: float
+    fee_type: str  # tuition, exam, transport, uniform, books, other
+    month: Optional[str] = None  # e.g., "2024-12"
+    payment_method: str  # upi, credit_card, debit_card, net_banking
+    description: Optional[str] = None
+
+class PaymentVerifyRequest(BaseModel):
+    payment_id: str
+    razorpay_payment_id: Optional[str] = None
+    razorpay_order_id: Optional[str] = None
+    razorpay_signature: Optional[str] = None
+    status: str  # success, failed
+
+class FeeStructure(BaseModel):
+    school_id: str
+    class_id: str
+    fee_type: str
+    amount: float
+    due_day: int = 10
+    late_fee: float = 0
+    description: Optional[str] = None
+
+
+# ==================== HELPER FUNCTIONS ====================
+
+def generate_receipt_number():
+    """Generate unique receipt number"""
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    unique = str(uuid.uuid4())[:6].upper()
+    return f"RCP-{timestamp}-{unique}"
+
+def generate_payment_id():
+    """Generate unique payment ID"""
+    return f"PAY-{uuid.uuid4().hex[:12].upper()}"
+
+
+# ==================== FEE STRUCTURE APIs ====================
+
+@router.get("/structure/{school_id}/{class_id}")
+async def get_fee_structure(school_id: str, class_id: str):
+    """
+    Get fee structure for a class
+    """
+    fees = await db.fee_structures.find(
+        {"school_id": school_id, "class_id": class_id, "is_active": True},
+        {"_id": 0}
+    ).to_list(50)
+    
+    if not fees:
+        # Return default fee structure
+        fees = [
+            {"fee_type": "tuition", "amount": 2500, "due_day": 10, "description": "Monthly Tuition Fee"},
+            {"fee_type": "exam", "amount": 500, "due_day": 15, "description": "Examination Fee"},
+            {"fee_type": "transport", "amount": 1500, "due_day": 10, "description": "Transport Fee"},
+            {"fee_type": "uniform", "amount": 2000, "due_day": 0, "description": "Uniform Fee (One-time)"},
+            {"fee_type": "books", "amount": 3000, "due_day": 0, "description": "Books & Stationery"}
+        ]
+    
+    return {
+        "school_id": school_id,
+        "class_id": class_id,
+        "fee_structure": fees,
+        "total_monthly": sum(f["amount"] for f in fees if f.get("due_day", 0) > 0)
+    }
+
+
+# ==================== STUDENT FEE STATUS ====================
+
+@router.get("/status/{student_id}")
+async def get_student_fee_status(student_id: str):
+    """
+    Get complete fee status for a student
+    Shows pending, paid, and upcoming fees
+    """
+    # Get student details
+    student = await db.students.find_one({"id": student_id}, {"_id": 0})
+    if not student:
+        student = await db.students.find_one({"student_id": student_id}, {"_id": 0})
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get all payments for this student
+    payments = await db.fee_payments.find(
+        {"student_id": student.get("id", student_id)},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Get pending invoices
+    pending_invoices = await db.fee_invoices.find(
+        {"student_id": student.get("id", student_id), "status": {"$in": ["pending", "partial", "overdue"]}},
+        {"_id": 0}
+    ).to_list(50)
+    
+    # Calculate totals
+    total_paid = sum(p.get("amount", 0) for p in payments if p.get("status") == "success")
+    total_pending = sum(inv.get("final_amount", inv.get("amount", 0)) - inv.get("paid_amount", 0) for inv in pending_invoices)
+    
+    # Current month dues
+    current_month = datetime.now().strftime('%Y-%m')
+    current_month_due = sum(
+        inv.get("final_amount", inv.get("amount", 0)) - inv.get("paid_amount", 0)
+        for inv in pending_invoices
+        if inv.get("month", "") == current_month
+    )
+    
+    return {
+        "student_id": student_id,
+        "student_name": student.get("name", "Student"),
+        "class_id": student.get("class_id"),
+        "summary": {
+            "total_paid_this_year": total_paid,
+            "total_pending": total_pending,
+            "current_month_due": current_month_due,
+            "last_payment_date": payments[0].get("created_at") if payments else None
+        },
+        "pending_invoices": pending_invoices[:10],
+        "recent_payments": payments[:10]
+    }
+
+
+# ==================== INITIATE PAYMENT ====================
+
+@router.post("/initiate")
+async def initiate_payment(request: InitiatePaymentRequest):
+    """
+    Initiate a fee payment
+    Creates payment record and returns payment details
+    For UPI - returns UPI intent URL
+    For Cards - returns Razorpay order ID
+    """
+    # Get student
+    student = await db.students.find_one({"id": request.student_id}, {"_id": 0})
+    if not student:
+        student = await db.students.find_one({"student_id": request.student_id}, {"_id": 0})
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get school for payment details
+    school = await db.schools.find_one({"id": request.school_id}, {"_id": 0})
+    school_name = school.get("name", "School") if school else "School"
+    school_upi = school.get("upi_id", "school@upi") if school else "school@upi"
+    
+    payment_id = generate_payment_id()
+    
+    # Create payment record
+    payment_record = {
+        "id": payment_id,
+        "student_id": student.get("id", request.student_id),
+        "student_name": student.get("name", "Student"),
+        "school_id": request.school_id,
+        "school_name": school_name,
+        "amount": request.amount,
+        "fee_type": request.fee_type,
+        "month": request.month,
+        "payment_method": request.payment_method,
+        "description": request.description or f"{request.fee_type.title()} Fee Payment",
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.fee_payments.insert_one(payment_record)
+    
+    # Generate payment URL/details based on method
+    payment_response = {
+        "payment_id": payment_id,
+        "amount": request.amount,
+        "student_name": student.get("name"),
+        "school_name": school_name,
+        "fee_type": request.fee_type,
+        "status": "initiated"
+    }
+    
+    if request.payment_method == "upi":
+        # UPI Intent URL
+        upi_url = f"upi://pay?pa={school_upi}&pn={school_name}&am={request.amount}&cu=INR&tn={payment_id}"
+        payment_response["upi_url"] = upi_url
+        payment_response["upi_id"] = school_upi
+        payment_response["qr_data"] = upi_url  # For QR code generation
+        
+    elif request.payment_method in ["credit_card", "debit_card", "net_banking"]:
+        # For Razorpay integration (mocked for now)
+        razorpay_order_id = f"order_{uuid.uuid4().hex[:16]}"
+        payment_response["razorpay_order_id"] = razorpay_order_id
+        payment_response["razorpay_key"] = os.environ.get("RAZORPAY_KEY_ID", "rzp_test_demo")
+        
+        # Update payment record with order ID
+        await db.fee_payments.update_one(
+            {"id": payment_id},
+            {"$set": {"razorpay_order_id": razorpay_order_id}}
+        )
+    
+    return payment_response
+
+
+# ==================== VERIFY PAYMENT ====================
+
+@router.post("/verify")
+async def verify_payment(request: PaymentVerifyRequest):
+    """
+    Verify payment completion and generate receipt
+    """
+    # Get payment record
+    payment = await db.fee_payments.find_one({"id": request.payment_id}, {"_id": 0})
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    if payment["status"] == "success":
+        return {
+            "success": True,
+            "message": "Payment already verified",
+            "receipt_number": payment.get("receipt_number")
+        }
+    
+    # Update payment status
+    if request.status == "success":
+        receipt_number = generate_receipt_number()
+        
+        update_data = {
+            "status": "success",
+            "receipt_number": receipt_number,
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        if request.razorpay_payment_id:
+            update_data["razorpay_payment_id"] = request.razorpay_payment_id
+        if request.razorpay_signature:
+            update_data["razorpay_signature"] = request.razorpay_signature
+        
+        await db.fee_payments.update_one(
+            {"id": request.payment_id},
+            {"$set": update_data}
+        )
+        
+        # Create receipt record
+        receipt = {
+            "id": str(uuid.uuid4()),
+            "receipt_number": receipt_number,
+            "payment_id": request.payment_id,
+            "student_id": payment["student_id"],
+            "student_name": payment.get("student_name", "Student"),
+            "school_id": payment["school_id"],
+            "school_name": payment.get("school_name", "School"),
+            "amount": payment["amount"],
+            "fee_type": payment["fee_type"],
+            "month": payment.get("month"),
+            "payment_method": payment["payment_method"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.fee_receipts.insert_one(receipt)
+        
+        return {
+            "success": True,
+            "message": "Payment verified successfully!",
+            "receipt_number": receipt_number,
+            "receipt": {
+                "receipt_number": receipt_number,
+                "amount": payment["amount"],
+                "fee_type": payment["fee_type"],
+                "student_name": payment.get("student_name"),
+                "school_name": payment.get("school_name"),
+                "payment_date": datetime.now(timezone.utc).isoformat(),
+                "payment_method": payment["payment_method"]
+            }
+        }
+    else:
+        await db.fee_payments.update_one(
+            {"id": request.payment_id},
+            {"$set": {
+                "status": "failed",
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "success": False,
+            "message": "Payment failed. Please try again.",
+            "payment_id": request.payment_id
+        }
+
+
+# ==================== GET RECEIPT ====================
+
+@router.get("/receipt/{receipt_number}")
+async def get_receipt(receipt_number: str):
+    """
+    Get receipt details for download/print
+    """
+    receipt = await db.fee_receipts.find_one(
+        {"receipt_number": receipt_number},
+        {"_id": 0}
+    )
+    
+    if not receipt:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+    
+    # Get school details for receipt header
+    school = await db.schools.find_one({"id": receipt["school_id"]}, {"_id": 0})
+    
+    receipt["school_details"] = {
+        "name": school.get("name") if school else receipt.get("school_name"),
+        "address": school.get("address") if school else "",
+        "phone": school.get("phone") if school else "",
+        "email": school.get("email") if school else "",
+        "logo_url": school.get("logo_url") if school else ""
+    }
+    
+    return receipt
+
+
+# ==================== PAYMENT HISTORY ====================
+
+@router.get("/history/{student_id}")
+async def get_payment_history(student_id: str, limit: int = 20):
+    """
+    Get payment history for a student
+    """
+    payments = await db.fee_payments.find(
+        {"student_id": student_id, "status": "success"},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return {
+        "student_id": student_id,
+        "payments": payments,
+        "total_count": len(payments)
+    }
+
+
+# ==================== SCHOOL PAYMENT SETTINGS ====================
+
+@router.post("/school-settings")
+async def update_school_payment_settings(
+    school_id: str,
+    upi_id: Optional[str] = None,
+    bank_name: Optional[str] = None,
+    account_number: Optional[str] = None,
+    ifsc_code: Optional[str] = None,
+    account_holder_name: Optional[str] = None,
+    razorpay_key_id: Optional[str] = None
+):
+    """
+    Update school's payment receiving settings
+    """
+    update_data = {}
+    if upi_id:
+        update_data["upi_id"] = upi_id
+    if bank_name:
+        update_data["bank_name"] = bank_name
+    if account_number:
+        update_data["account_number"] = account_number
+    if ifsc_code:
+        update_data["ifsc_code"] = ifsc_code
+    if account_holder_name:
+        update_data["account_holder_name"] = account_holder_name
+    if razorpay_key_id:
+        update_data["razorpay_key_id"] = razorpay_key_id
+    
+    if update_data:
+        await db.schools.update_one(
+            {"id": school_id},
+            {"$set": update_data}
+        )
+    
+    return {
+        "success": True,
+        "message": "Payment settings updated successfully"
+    }
