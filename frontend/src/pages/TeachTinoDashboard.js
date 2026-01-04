@@ -881,7 +881,7 @@ export default function TeachTinoDashboard() {
         {/* ==================== QUICK ACTIONS ==================== */}
         <section>
           <h2 className="text-lg font-semibold text-slate-800 mb-4">⚡ Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             <Button 
               onClick={() => setShowNoticeDialog(true)}
               className="h-24 flex-col gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200"
@@ -891,13 +891,17 @@ export default function TeachTinoDashboard() {
               <span className="text-sm">Send Notice</span>
             </Button>
             
-            <Button className="h-24 flex-col gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200" variant="outline">
+            <Button 
+              onClick={() => navigate('/app/exams')}
+              className="h-24 flex-col gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200"
+              variant="outline"
+            >
               <FileText className="w-6 h-6" />
-              <span className="text-sm">Upload Homework</span>
+              <span className="text-sm">Online Exams</span>
             </Button>
             
             <Button 
-              onClick={() => navigate('/ai-paper')}
+              onClick={() => navigate('/app/ai-paper')}
               className="h-24 flex-col gap-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200"
               variant="outline"
             >
@@ -906,12 +910,21 @@ export default function TeachTinoDashboard() {
             </Button>
             
             <Button 
-              onClick={() => navigate('/students')}
+              onClick={() => navigate('/app/attendance')}
               className="h-24 flex-col gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
               variant="outline"
             >
+              <CheckCircle2 className="w-6 h-6" />
+              <span className="text-sm">Mark Attendance</span>
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/app/students')}
+              className="h-24 flex-col gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200"
+              variant="outline"
+            >
               <User className="w-6 h-6" />
-              <span className="text-sm">Student Profile</span>
+              <span className="text-sm">Students</span>
             </Button>
             
             <Button 
@@ -923,9 +936,22 @@ export default function TeachTinoDashboard() {
               <span className="text-sm">Apply Leave</span>
             </Button>
             
-            <Button className="h-24 flex-col gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200" variant="outline">
+            <Button 
+              onClick={() => navigate('/app/meetings')}
+              className="h-24 flex-col gap-2 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200"
+              variant="outline"
+            >
+              <Video className="w-6 h-6" />
+              <span className="text-sm">Meetings</span>
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/app/ai-content')}
+              className="h-24 flex-col gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
+              variant="outline"
+            >
               <BarChart3 className="w-6 h-6" />
-              <span className="text-sm">View Reports</span>
+              <span className="text-sm">AI Content</span>
             </Button>
           </div>
         </section>
