@@ -35,7 +35,8 @@ import {
   Heart,
   DoorOpen,
   Fingerprint,
-  Clock
+  Clock,
+  Brain
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
