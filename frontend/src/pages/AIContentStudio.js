@@ -66,6 +66,54 @@ export default function AIContentStudio() {
     language: 'english'
   });
 
+  // Advanced content writing form
+  const [contentWritingForm, setContentWritingForm] = useState({
+    content_type: 'notice',
+    title: '',
+    target_audience: 'parents',
+    tone: 'formal',
+    length: 'medium',
+    key_points: '',
+    include_call_to_action: true,
+    language: 'english'
+  });
+
+  const contentTypes = [
+    { value: 'notice', label: 'School Notice' },
+    { value: 'circular', label: 'Circular' },
+    { value: 'letter', label: 'Parent Letter' },
+    { value: 'announcement', label: 'Announcement' },
+    { value: 'report', label: 'Progress Report Summary' },
+    { value: 'newsletter', label: 'Newsletter Content' },
+    { value: 'invitation', label: 'Event Invitation' },
+    { value: 'appreciation', label: 'Appreciation Letter' },
+    { value: 'reminder', label: 'Fee/Event Reminder' },
+    { value: 'speech', label: 'Speech/Address' }
+  ];
+
+  const audienceOptions = [
+    { value: 'parents', label: 'Parents' },
+    { value: 'students', label: 'Students' },
+    { value: 'teachers', label: 'Teachers' },
+    { value: 'all', label: 'All Stakeholders' },
+    { value: 'community', label: 'Community/Public' }
+  ];
+
+  const toneOptions = [
+    { value: 'formal', label: 'Formal & Professional' },
+    { value: 'friendly', label: 'Warm & Friendly' },
+    { value: 'urgent', label: 'Urgent & Important' },
+    { value: 'celebratory', label: 'Celebratory & Positive' },
+    { value: 'informative', label: 'Informative & Neutral' }
+  ];
+
+  const lengthOptions = [
+    { value: 'short', label: 'Short (50-100 words)' },
+    { value: 'medium', label: 'Medium (150-250 words)' },
+    { value: 'long', label: 'Long (300-500 words)' },
+    { value: 'detailed', label: 'Detailed (500+ words)' }
+  ];
+
   const generateContent = async (contentType, formData) => {
     setLoading(true);
     try {
