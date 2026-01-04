@@ -400,7 +400,37 @@ NCERT_SYLLABUS_DATA["11"] = {
         "Physics": {"book": "Physics Part I & II", "chapters": []},
         "Chemistry": {"book": "Chemistry Part I & II", "chapters": []},
         "Mathematics": {"book": "Mathematics", "chapters": []},
-        "Biology": {"book": "Biology", "chapters": []},
+        "Biology": {
+            "book": "Biology (NCERT 2024-25 Rationalized)",
+            "units": [
+                {"unit": "I", "name": "Diversity of Living Organisms", "marks": 15},
+                {"unit": "II", "name": "Structural Organization in Plants and Animals", "marks": 10},
+                {"unit": "III", "name": "Cell: Structure and Function", "marks": 15},
+                {"unit": "IV", "name": "Plant Physiology", "marks": 12},
+                {"unit": "V", "name": "Human Physiology", "marks": 18}
+            ],
+            "chapters": [
+                {"number": 1, "name": "The Living World", "unit": "I", "marks": 4, "type": "lesson", "topics": ["Biodiversity", "Need for classification", "Taxonomy", "Taxonomic categories", "Taxonomical aids", "Herbarium", "Botanical gardens", "Museums", "Zoological parks", "Keys"]},
+                {"number": 2, "name": "Biological Classification", "unit": "I", "marks": 4, "type": "lesson", "topics": ["Five kingdom classification", "Monera", "Protista", "Fungi", "Kingdom Plantae", "Kingdom Animalia", "Viruses", "Viroids", "Lichens"]},
+                {"number": 3, "name": "Plant Kingdom", "unit": "I", "marks": 4, "type": "lesson", "topics": ["Algae", "Bryophytes", "Pteridophytes", "Gymnosperms", "Angiosperms", "Plant life cycles", "Alternation of generations"]},
+                {"number": 4, "name": "Animal Kingdom", "unit": "I", "marks": 3, "type": "lesson", "topics": ["Basis of classification", "Levels of organisation", "Symmetry", "Diploblastic and triploblastic", "Coelom", "Segmentation", "Phylum characteristics", "Classification of animals"]},
+                {"number": 5, "name": "Morphology of Flowering Plants", "unit": "II", "marks": 4, "type": "lesson", "topics": ["Root", "Stem", "Leaf", "Inflorescence", "Flower", "Fruit", "Seed", "Fabaceae", "Solanaceae", "Liliaceae"]},
+                {"number": 6, "name": "Anatomy of Flowering Plants", "unit": "II", "marks": 3, "type": "lesson", "topics": ["Tissues", "Meristematic tissues", "Permanent tissues", "Tissue system", "Anatomy of dicot and monocot root", "Anatomy of dicot and monocot stem", "Anatomy of leaf", "Secondary growth"]},
+                {"number": 7, "name": "Structural Organisation in Animals", "unit": "II", "marks": 3, "type": "lesson", "topics": ["Animal tissues", "Epithelial tissue", "Connective tissue", "Muscle tissue", "Neural tissue", "Morphology of Earthworm", "Morphology of Cockroach", "Morphology of Frog"]},
+                {"number": 8, "name": "Cell - The Unit of Life", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Cell theory", "Cell overview", "Prokaryotic cells", "Eukaryotic cells", "Cell membrane", "Cell wall", "Endomembrane system", "Mitochondria", "Plastids", "Ribosomes", "Cytoskeleton", "Cilia and flagella", "Centrosome", "Nucleus"]},
+                {"number": 9, "name": "Biomolecules", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Carbohydrates", "Lipids", "Proteins", "Nucleic acids", "Enzymes", "Metabolic basis of living", "Living state"]},
+                {"number": 10, "name": "Cell Cycle and Cell Division", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Cell cycle", "M Phase", "Mitosis", "Meiosis", "Significance of mitosis and meiosis"]},
+                {"number": 11, "name": "Photosynthesis in Higher Plants", "unit": "IV", "marks": 4, "type": "lesson", "topics": ["Photosynthesis", "Early experiments", "Site of photosynthesis", "Pigments involved", "Light reaction", "Electron transport", "Chemiosmosis", "Biosynthetic phase", "C3 pathway", "C4 pathway", "Photorespiration", "Factors affecting photosynthesis"]},
+                {"number": 12, "name": "Respiration in Plants", "unit": "IV", "marks": 4, "type": "lesson", "topics": ["Cellular respiration", "Glycolysis", "Fermentation", "Aerobic respiration", "TCA cycle", "Electron transport system", "Oxidative phosphorylation", "Respiratory quotient"]},
+                {"number": 13, "name": "Plant Growth and Development", "unit": "IV", "marks": 4, "type": "lesson", "topics": ["Growth", "Differentiation", "Development", "Plant growth regulators", "Auxins", "Gibberellins", "Cytokinins", "Ethylene", "Abscisic acid", "Photoperiodism", "Vernalisation"]},
+                {"number": 14, "name": "Breathing and Exchange of Gases", "unit": "V", "marks": 3, "type": "lesson", "topics": ["Respiratory organs", "Human respiratory system", "Mechanism of breathing", "Exchange of gases", "Transport of gases", "Regulation of respiration", "Respiratory disorders"]},
+                {"number": 15, "name": "Body Fluids and Circulation", "unit": "V", "marks": 3, "type": "lesson", "topics": ["Blood", "Lymph", "Circulatory pathways", "Human circulatory system", "Cardiac cycle", "ECG", "Double circulation", "Regulation of cardiac activity", "Disorders of circulatory system"]},
+                {"number": 16, "name": "Excretory Products and their Elimination", "unit": "V", "marks": 3, "type": "lesson", "topics": ["Human excretory system", "Urine formation", "Function of tubules", "Mechanism of concentration", "Regulation of kidney function", "Micturition", "Role of other organs", "Disorders of excretory system"]},
+                {"number": 17, "name": "Locomotion and Movement", "unit": "V", "marks": 3, "type": "lesson", "topics": ["Types of movement", "Muscle", "Skeletal system", "Axial skeleton", "Appendicular skeleton", "Joints", "Disorders of muscular and skeletal system"]},
+                {"number": 18, "name": "Neural Control and Coordination", "unit": "V", "marks": 3, "type": "lesson", "topics": ["Neural system", "Human neural system", "Neuron structure", "Nerve impulse", "Synapse", "Central neural system", "Reflex action", "Sensory reception", "Eye", "Ear"]},
+                {"number": 19, "name": "Chemical Coordination and Integration", "unit": "V", "marks": 3, "type": "lesson", "topics": ["Endocrine glands and hormones", "Human endocrine system", "Hypothalamus", "Pituitary gland", "Pineal gland", "Thyroid gland", "Parathyroid gland", "Thymus", "Adrenal gland", "Pancreas", "Gonads", "Mechanism of hormone action"]}
+            ]
+        },
         "English": {"book": "Hornbill & Snapshots", "chapters": []},
         "Hindi": {"book": "आरोह & वितान", "chapters": []}
     }
