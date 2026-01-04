@@ -30,7 +30,7 @@
 - **Login Tab:** Student → "Student ID + Password"
 - **Dashboard:** StudyTino (Student portal) - **NEW v4.0!**
 
-**Login URL:** https://schooltino.preview.emergentagent.com/login
+**Login URL:** https://schooltino-app.preview.emergentagent.com/login
 
 ---
 
