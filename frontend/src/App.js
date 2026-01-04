@@ -41,6 +41,7 @@ import StorageBackup from './pages/StorageBackup';
 import AdminActivityDashboard from './pages/AdminActivityDashboard';
 import FeePaymentPage from './pages/FeePaymentPage';
 import AccountantDashboard from './pages/AccountantDashboard';
+import SchoolPaymentSettings from './pages/SchoolPaymentSettings';
 
 // Components
 import Layout from './components/Layout';
