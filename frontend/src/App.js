@@ -35,6 +35,7 @@ import SetupWizard from './pages/SetupWizard';
 import SubscriptionPage from './pages/SubscriptionPage';
 import TeachTinoLogin from './pages/TeachTinoLogin';
 import StudyTinoLogin from './pages/StudyTinoLogin';
+import OnlineExamSystem from './pages/OnlineExamSystem';
 
 // Components
 import Layout from './components/Layout';
@@ -138,6 +139,7 @@ function AppRoutes() {
         <Route path="school-registration" element={<SchoolRegistrationForm />} />
         <Route path="setup-wizard" element={<SetupWizard />} />
         <Route path="subscription" element={<SubscriptionPage />} />
+        <Route path="exams" element={<OnlineExamSystem />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
