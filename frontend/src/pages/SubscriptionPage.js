@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -16,18 +16,22 @@ import {
   HeadphonesIcon,
   Star,
   ArrowRight,
-  BadgePercent
+  BadgePercent,
+  IndianRupee
 } from 'lucide-react';
 import { toast } from 'sonner';
+import useRazorpay from 'react-razorpay';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function SubscriptionPage() {
   const { user, schoolId } = useAuth();
+  const [Razorpay] = useRazorpay();
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState([]);
   const [currentSub, setCurrentSub] = useState(null);
   const [activating, setActivating] = useState(null);
+  const [paymentConfig, setPaymentConfig] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -35,12 +39,17 @@ export default function SubscriptionPage() {
 
   const fetchData = async () => {
     try {
-      const [plansRes, subRes] = await Promise.all([
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const [plansRes, subRes, configRes] = await Promise.all([
         axios.get(`${API}/subscription/plans`),
-        schoolId ? axios.get(`${API}/subscription/current/${schoolId}`) : Promise.resolve({ data: null })
+        schoolId ? axios.get(`${API}/subscription/current/${schoolId}`, { headers }) : Promise.resolve({ data: null }),
+        axios.get(`${API}/payments/config`)
       ]);
       setPlans(plansRes.data.plans);
       setCurrentSub(subRes.data);
+      setPaymentConfig(configRes.data);
     } catch (error) {
       console.error('Error fetching subscription data:', error);
     } finally {
@@ -48,17 +57,108 @@ export default function SubscriptionPage() {
     }
   };
 
+  const handlePayment = useCallback(async (planType) => {
+    if (!schoolId) {
+      toast.error('Please complete school registration first');
+      return;
+    }
+
+    // Check if Razorpay is configured
+    if (!paymentConfig?.configured) {
+      toast.error('Payment gateway not configured. Please contact support.');
+      return;
+    }
+
+    setActivating(planType);
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Create order
+      const orderRes = await axios.post(`${API}/payments/create-order`, {
+        plan_type: planType,
+        school_id: schoolId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const { order_id, amount, key_id } = orderRes.data;
+
+      const options = {
+        key: key_id,
+        amount: amount,
+        currency: "INR",
+        name: "Schooltino",
+        description: `${planType === 'monthly' ? 'Monthly' : 'Yearly'} Subscription`,
+        order_id: order_id,
+        handler: async (response) => {
+          try {
+            // Verify payment
+            const verifyRes = await axios.post(`${API}/payments/verify`, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              school_id: schoolId,
+              plan_type: planType
+            }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (verifyRes.data.success) {
+              toast.success('Payment successful! Subscription activated.');
+              fetchData();
+            }
+          } catch (error) {
+            toast.error('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone || ''
+        },
+        theme: {
+          color: "#4F46E5"
+        },
+        modal: {
+          ondismiss: () => {
+            setActivating(null);
+            toast.info('Payment cancelled');
+          }
+        }
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.open();
+      
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to initiate payment');
+    } finally {
+      setActivating(null);
+    }
+  }, [Razorpay, schoolId, user, paymentConfig]);
+
   const handleActivate = async (planId) => {
     if (!schoolId) {
       toast.error('Please complete school registration first');
       return;
     }
 
+    // For paid plans, use Razorpay
+    if (planId !== 'free_trial' && paymentConfig?.configured) {
+      handlePayment(planId);
+      return;
+    }
+
+    // For free trial or if Razorpay not configured
     setActivating(planId);
     try {
+      const token = localStorage.getItem('token');
       await axios.post(`${API}/subscription/activate`, {
         plan_type: planId,
         school_id: schoolId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Plan activated successfully!');
       fetchData();
