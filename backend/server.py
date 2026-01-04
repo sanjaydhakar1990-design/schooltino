@@ -717,6 +717,124 @@ async def check_setup():
         "message": "Director setup required" if not existing_director else "System ready"
     }
 
+
+# ==================== QUICK SCHOOL REGISTRATION (No OTP) ====================
+
+class QuickSchoolSetup(BaseModel):
+    """Quick setup for new school - creates school + director in one API"""
+    school_name: str
+    school_address: Optional[str] = None
+    school_phone: Optional[str] = None
+    school_email: Optional[str] = None
+    school_board: str = "CBSE"  # CBSE, ICSE, State Board, etc.
+    director_name: str
+    director_email: EmailStr
+    director_password: str
+    director_mobile: Optional[str] = None
+
+@api_router.post("/auth/quick-school-setup")
+async def quick_school_setup(data: QuickSchoolSetup):
+    """
+    Quick registration for new school - NO OTP required!
+    Creates:
+    1. School record
+    2. Director account for that school
+    Returns login token immediately
+    """
+    # Check if director email already exists
+    existing_email = await db.users.find_one({"email": data.director_email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered. Please login or use different email.")
+    
+    # Generate unique school ID
+    school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
+    
+    # Create School
+    school_data = {
+        "id": school_id,
+        "name": data.school_name,
+        "address": data.school_address or "",
+        "phone": data.school_phone or "",
+        "email": data.school_email or data.director_email,
+        "board": data.school_board,
+        "is_active": True,
+        "is_trial": True,
+        "trial_start_date": datetime.now(timezone.utc).isoformat(),
+        "trial_days": 30,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.schools.insert_one(school_data)
+    
+    # Hash password
+    hashed_pw = bcrypt.hashpw(data.director_password.encode(), bcrypt.gensalt()).decode()
+    
+    # Create Director
+    director_id = str(uuid.uuid4())
+    director_data = {
+        "id": director_id,
+        "email": data.director_email,
+        "password": hashed_pw,
+        "name": data.director_name,
+        "role": "director",
+        "mobile": data.director_mobile or "",
+        "school_id": school_id,
+        "status": "active",
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(director_data)
+    
+    # Generate token for immediate login
+    token = create_jwt_token(director_data)
+    
+    # Log the registration
+    await log_audit(director_id, "quick_school_setup", "auth", {
+        "school_id": school_id,
+        "school_name": data.school_name,
+        "director_name": data.director_name,
+        "director_email": data.director_email
+    })
+    
+    user_response = UserResponse(
+        id=director_data["id"],
+        email=director_data["email"],
+        name=director_data["name"],
+        role=director_data["role"],
+        mobile=director_data.get("mobile"),
+        school_id=director_data["school_id"],
+        created_at=director_data["created_at"]
+    )
+    
+    return {
+        "success": True,
+        "message": f"School '{data.school_name}' created successfully! 🎉",
+        "school": {
+            "id": school_id,
+            "name": data.school_name,
+            "board": data.school_board,
+            "is_trial": True,
+            "trial_days": 30
+        },
+        "director": {
+            "id": director_id,
+            "name": data.director_name,
+            "email": data.director_email,
+            "role": "director"
+        },
+        "access_token": token,
+        "token_type": "bearer",
+        "login_url": "/login",
+        "dashboard_url": "/app/dashboard"
+    }
+
+
+@api_router.get("/auth/schools-list")
+async def get_registered_schools():
+    """Get list of all registered schools (for admin/support)"""
+    schools = await db.schools.find({}, {"_id": 0, "id": 1, "name": 1, "email": 1, "phone": 1, "is_trial": 1, "created_at": 1}).to_list(100)
+    return {"schools": schools, "total": len(schools)}
+
+
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
