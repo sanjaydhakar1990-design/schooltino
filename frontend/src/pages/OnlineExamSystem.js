@@ -99,38 +99,14 @@ export default function OnlineExamSystem() {
   const fetchExams = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/exams`);
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/exams`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setExams(res.data || []);
     } catch (error) {
-      // Mock data
-      setExams([
-        {
-          id: '1',
-          title: 'Mathematics Unit Test - Chapter 5',
-          subject: 'Mathematics',
-          class_name: 'Class 10-A',
-          duration: 45,
-          total_marks: 50,
-          total_questions: 25,
-          status: 'active',
-          created_by: 'Mr. Sharma',
-          start_time: new Date().toISOString(),
-          end_time: new Date(Date.now() + 86400000).toISOString()
-        },
-        {
-          id: '2',
-          title: 'Science Mock Test',
-          subject: 'Science',
-          class_name: 'Class 10-A',
-          duration: 60,
-          total_marks: 100,
-          total_questions: 50,
-          status: 'active',
-          created_by: 'Mrs. Gupta',
-          start_time: new Date().toISOString(),
-          end_time: new Date(Date.now() + 172800000).toISOString()
-        }
-      ]);
+      console.error('Error fetching exams:', error);
+      setExams([]);
     } finally {
       setLoading(false);
     }
@@ -138,22 +114,14 @@ export default function OnlineExamSystem() {
 
   const fetchMyResults = async () => {
     try {
-      const res = await axios.get(`${API}/exams/my-results`);
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/exams/my-results`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setMyResults(res.data || []);
     } catch (error) {
-      setMyResults([
-        {
-          id: 'r1',
-          exam_title: 'Hindi Grammar Test',
-          subject: 'Hindi',
-          score: 42,
-          total_marks: 50,
-          percentage: 84,
-          submitted_at: new Date(Date.now() - 86400000).toISOString(),
-          rank: 5,
-          total_students: 45
-        }
-      ]);
+      console.error('Error fetching results:', error);
+      setMyResults([]);
     }
   };
 
