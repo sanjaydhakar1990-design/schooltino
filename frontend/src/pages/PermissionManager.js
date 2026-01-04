@@ -84,13 +84,18 @@ export default function PermissionManager() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/users`);
+      // First get current user's school_id
+      const meRes = await axios.get(`${API}/auth/me`);
+      const schoolId = meRes.data.school_id || 'default';
+      
+      const res = await axios.get(`${API}/users/school/${schoolId}`);
       // Filter out teachers (they use TeachTino) and current director
       const adminUsers = res.data.filter(u => 
         ['principal', 'vice_principal', 'co_director', 'accountant', 'admission_staff', 'clerk'].includes(u.role)
       );
       setUsers(adminUsers);
     } catch (error) {
+      console.error('Fetch users error:', error);
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
