@@ -107,7 +107,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Navigate to="/app/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="school-analytics" element={<SchoolAnalytics />} />
         <Route path="users" element={<UserManagementPage />} />
@@ -133,6 +133,16 @@ function AppRoutes() {
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
+      
+      {/* Old routes redirect to /app */}
+      <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="/students" element={<Navigate to="/app/students" replace />} />
+      <Route path="/staff" element={<Navigate to="/app/staff" replace />} />
+      <Route path="/classes" element={<Navigate to="/app/classes" replace />} />
+      <Route path="/fees" element={<Navigate to="/app/fees" replace />} />
+      <Route path="/attendance" element={<Navigate to="/app/attendance" replace />} />
+      <Route path="/notices" element={<Navigate to="/app/notices" replace />} />
+      <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
 
       {/* TeachTino Portal - Standalone for Teachers */}
       <Route
