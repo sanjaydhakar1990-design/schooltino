@@ -4703,6 +4703,20 @@ async def get_ai_setup_guide(current_user: dict = Depends(get_current_user)):
         "remaining_steps": len(incomplete_steps)
     }
 
+# ==================== MARKETING MATERIALS DOWNLOAD ====================
+
+@api_router.get("/download/marketing-materials")
+async def download_marketing_materials():
+    """Download marketing materials ZIP file"""
+    zip_path = UPLOAD_DIR / "marketing_materials.zip"
+    if not zip_path.exists():
+        raise HTTPException(status_code=404, detail="Marketing materials not found")
+    return FileResponse(
+        path=str(zip_path),
+        filename="Schooltino_Marketing_Materials.zip",
+        media_type="application/zip"
+    )
+
 # ==================== DIRECTOR UNIQUE ID GENERATION ====================
 
 @api_router.post("/auth/create-director")
