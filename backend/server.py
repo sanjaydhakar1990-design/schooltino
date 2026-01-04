@@ -6351,6 +6351,7 @@ api_router.include_router(syllabus_progress_router)
 api_router.include_router(fee_payment_router)
 api_router.include_router(ai_accountant_router)
 api_router.include_router(fee_management_router)
+api_router.include_router(voice_assistant_router)
 
 app.include_router(api_router)
 
