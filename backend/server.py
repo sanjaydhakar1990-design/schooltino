@@ -976,6 +976,240 @@ async def get_user_details(user_id: str, current_user: dict = Depends(get_curren
     
     return user
 
+# ==================== PERMISSION MANAGEMENT ROUTES ====================
+
+@api_router.get("/users/{user_id}/permissions")
+async def get_user_permissions(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get permissions for a user"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # If custom permissions exist, return those, else return default for role
+    if "permissions" in user and user["permissions"]:
+        return {"user_id": user_id, "permissions": user["permissions"], "role": user["role"]}
+    
+    # Return default permissions for role
+    default_perms = DEFAULT_PERMISSIONS.get(user["role"], {})
+    return {"user_id": user_id, "permissions": default_perms, "role": user["role"], "is_default": True}
+
+@api_router.put("/users/{user_id}/permissions")
+async def update_user_permissions(user_id: str, perm_data: dict, current_user: dict = Depends(get_current_user)):
+    """Director updates permissions for a user"""
+    # Only Director can update permissions
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can update permissions")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Cannot modify Director's own permissions
+    if user["role"] == "director":
+        raise HTTPException(status_code=400, detail="Cannot modify Director permissions")
+    
+    # Update permissions
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "permissions": perm_data.get("permissions", {}),
+            "permissions_updated_at": datetime.now(timezone.utc).isoformat(),
+            "permissions_updated_by": current_user["id"]
+        }}
+    )
+    
+    await log_audit(current_user["id"], "update_permissions", "users", {
+        "user_id": user_id,
+        "user_name": user["name"],
+        "permissions": perm_data.get("permissions", {})
+    })
+    
+    return {"message": "Permissions updated successfully", "user_id": user_id}
+
+@api_router.post("/users/{user_id}/grant-full-access")
+async def grant_full_access(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Director grants full admin access to a user (like Co-Director)"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can grant full access")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Grant all permissions except user_management and settings
+    full_access = DEFAULT_PERMISSIONS["director"].copy()
+    full_access["user_management"] = False  # Only Director can create users
+    full_access["settings"] = False  # Only Director can change settings
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "permissions": full_access,
+            "full_access_granted": True,
+            "full_access_granted_at": datetime.now(timezone.utc).isoformat(),
+            "full_access_granted_by": current_user["id"]
+        }}
+    )
+    
+    await log_audit(current_user["id"], "grant_full_access", "users", {
+        "user_id": user_id,
+        "user_name": user["name"]
+    })
+    
+    return {"message": f"Full access granted to {user['name']}", "user_id": user_id}
+
+@api_router.post("/users/{user_id}/revoke-access")
+async def revoke_access(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Director revokes all special permissions, resets to default role permissions"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can revoke access")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Reset to default permissions for role
+    default_perms = DEFAULT_PERMISSIONS.get(user["role"], {})
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "permissions": default_perms,
+            "full_access_granted": False,
+            "permissions_updated_at": datetime.now(timezone.utc).isoformat(),
+            "permissions_updated_by": current_user["id"]
+        }}
+    )
+    
+    await log_audit(current_user["id"], "revoke_access", "users", {
+        "user_id": user_id,
+        "user_name": user["name"]
+    })
+    
+    return {"message": f"Access revoked for {user['name']}, reset to default permissions", "user_id": user_id}
+
+@api_router.get("/permissions/my")
+async def get_my_permissions(current_user: dict = Depends(get_current_user)):
+    """Get current user's permissions"""
+    # Director has all permissions
+    if current_user["role"] == "director":
+        return {"permissions": DEFAULT_PERMISSIONS["director"], "role": "director", "is_director": True}
+    
+    # Check if custom permissions exist
+    if "permissions" in current_user and current_user["permissions"]:
+        return {"permissions": current_user["permissions"], "role": current_user["role"], "is_director": False}
+    
+    # Return default permissions for role
+    default_perms = DEFAULT_PERMISSIONS.get(current_user["role"], {})
+    return {"permissions": default_perms, "role": current_user["role"], "is_director": False, "is_default": True}
+
+# ==================== TEACHER-CLASS ASSIGNMENT ROUTES ====================
+
+@api_router.post("/teachers/{teacher_id}/assign-class")
+async def assign_teacher_to_class(teacher_id: str, assignment: dict, current_user: dict = Depends(get_current_user)):
+    """Principal assigns teacher to class and subject"""
+    # Check permission
+    user_perms = current_user.get("permissions", DEFAULT_PERMISSIONS.get(current_user["role"], {}))
+    if current_user["role"] not in ["director", "principal"] and not user_perms.get("class_assignment"):
+        raise HTTPException(status_code=403, detail="Not authorized to assign teachers")
+    
+    teacher = await db.users.find_one({"id": teacher_id, "role": "teacher"}, {"_id": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    class_id = assignment.get("class_id")
+    subject = assignment.get("subject")
+    is_class_teacher = assignment.get("is_class_teacher", False)
+    
+    # Update teacher's assignment
+    await db.users.update_one(
+        {"id": teacher_id},
+        {"$set": {
+            "assigned_classes": assignment.get("class_ids", [class_id] if class_id else []),
+            "assigned_subjects": assignment.get("subjects", [subject] if subject else []),
+            "is_class_teacher": is_class_teacher,
+            "class_teacher_of": class_id if is_class_teacher else None,
+            "assignment_updated_at": datetime.now(timezone.utc).isoformat(),
+            "assignment_updated_by": current_user["id"]
+        }}
+    )
+    
+    # If class teacher, update class record too
+    if is_class_teacher and class_id:
+        await db.classes.update_one(
+            {"id": class_id},
+            {"$set": {
+                "class_teacher_id": teacher_id,
+                "class_teacher_name": teacher["name"]
+            }}
+        )
+    
+    await log_audit(current_user["id"], "assign_teacher", "teachers", {
+        "teacher_id": teacher_id,
+        "teacher_name": teacher["name"],
+        "class_id": class_id,
+        "subject": subject,
+        "is_class_teacher": is_class_teacher
+    })
+    
+    return {"message": f"Teacher {teacher['name']} assigned successfully"}
+
+@api_router.get("/teachers/{teacher_id}/assignments")
+async def get_teacher_assignments(teacher_id: str, current_user: dict = Depends(get_current_user)):
+    """Get teacher's class and subject assignments"""
+    teacher = await db.users.find_one({"id": teacher_id, "role": "teacher"}, {"_id": 0, "password": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    return {
+        "teacher_id": teacher_id,
+        "teacher_name": teacher["name"],
+        "assigned_classes": teacher.get("assigned_classes", []),
+        "assigned_subjects": teacher.get("assigned_subjects", []),
+        "is_class_teacher": teacher.get("is_class_teacher", False),
+        "class_teacher_of": teacher.get("class_teacher_of")
+    }
+
+@api_router.delete("/teachers/{teacher_id}/remove-assignment/{class_id}")
+async def remove_teacher_from_class(teacher_id: str, class_id: str, current_user: dict = Depends(get_current_user)):
+    """Principal removes teacher from a class"""
+    user_perms = current_user.get("permissions", DEFAULT_PERMISSIONS.get(current_user["role"], {}))
+    if current_user["role"] not in ["director", "principal"] and not user_perms.get("class_assignment"):
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    teacher = await db.users.find_one({"id": teacher_id}, {"_id": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    # Remove class from teacher's assignments
+    current_classes = teacher.get("assigned_classes", [])
+    if class_id in current_classes:
+        current_classes.remove(class_id)
+    
+    update_data = {"assigned_classes": current_classes}
+    
+    # If was class teacher of this class, remove that too
+    if teacher.get("class_teacher_of") == class_id:
+        update_data["is_class_teacher"] = False
+        update_data["class_teacher_of"] = None
+        # Update class record
+        await db.classes.update_one(
+            {"id": class_id},
+            {"$set": {"class_teacher_id": None, "class_teacher_name": None}}
+        )
+    
+    await db.users.update_one({"id": teacher_id}, {"$set": update_data})
+    
+    await log_audit(current_user["id"], "remove_teacher_assignment", "teachers", {
+        "teacher_id": teacher_id,
+        "class_id": class_id
+    })
+    
+    return {"message": "Teacher removed from class"}
+
 # ==================== SCHOOL ROUTES ====================
 
 @api_router.post("/schools", response_model=SchoolResponse)
