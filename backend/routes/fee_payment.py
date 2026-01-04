@@ -286,6 +286,43 @@ async def verify_payment(request: PaymentVerifyRequest):
         }
         await db.fee_receipts.insert_one(receipt)
         
+        # ========== AUTO-UPDATE STUDENT FEE STATUS ==========
+        # Update student's payment history and fee status
+        student_id = payment["student_id"]
+        month = payment.get("month", datetime.now().strftime('%Y-%m'))
+        
+        await db.students.update_one(
+            {"$or": [{"id": student_id}, {"student_id": student_id}]},
+            {
+                "$push": {"payment_history": {
+                    "payment_id": request.payment_id,
+                    "receipt_number": receipt_number,
+                    "amount": payment["amount"],
+                    "fee_type": payment["fee_type"],
+                    "month": month,
+                    "paid_at": datetime.now(timezone.utc).isoformat()
+                }},
+                "$inc": {"total_paid_amount": payment["amount"]},
+                "$set": {
+                    "last_payment_date": datetime.now(timezone.utc).isoformat(),
+                    "last_payment_amount": payment["amount"],
+                    f"fee_status.{month.replace('-', '_')}": "paid"
+                }
+            }
+        )
+        
+        # Update any pending invoices for this month
+        await db.fee_invoices.update_many(
+            {"student_id": student_id, "month": month, "status": {"$in": ["pending", "partial", "overdue"]}},
+            {"$set": {
+                "status": "paid",
+                "paid_amount": payment["amount"],
+                "paid_at": datetime.now(timezone.utc).isoformat(),
+                "receipt_number": receipt_number
+            }}
+        )
+        # ========== END AUTO-UPDATE ==========
+        
         return {
             "success": True,
             "message": "Payment verified successfully!",
