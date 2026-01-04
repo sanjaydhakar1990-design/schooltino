@@ -51,6 +51,9 @@ from routes.ai_accountant import router as ai_accountant_router
 from routes.fee_management import router as fee_management_router
 from routes.voice_assistant import router as voice_assistant_router
 from routes.ai_history import router as ai_history_router
+from routes.front_office import router as front_office_router
+from routes.health_module import router as health_router
+from routes.transport import router as transport_router
 
 # ==================== MODELS ====================
 
@@ -6496,6 +6499,9 @@ api_router.include_router(ai_accountant_router)
 api_router.include_router(fee_management_router)
 api_router.include_router(voice_assistant_router)
 api_router.include_router(ai_history_router)
+api_router.include_router(front_office_router)
+api_router.include_router(health_router)
+api_router.include_router(transport_router)
 
 app.include_router(api_router)
 
