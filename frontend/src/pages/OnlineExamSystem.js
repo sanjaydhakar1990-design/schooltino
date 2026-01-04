@@ -161,13 +161,20 @@ export default function OnlineExamSystem() {
 
     setSubmitting(true);
     try {
-      await axios.post(`${API}/exams`, examForm);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/exams`, {
+        ...examForm,
+        school_id: user?.school_id || 'default'
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Exam created successfully!');
       setShowCreateDialog(false);
       resetExamForm();
       fetchExams();
     } catch (error) {
-      // Mock success
+      console.error('Error creating exam:', error);
+      toast.error(error.response?.data?.detail || 'Failed to create exam');
       toast.success('Exam created! (Demo Mode)');
       setExams([{
         id: Date.now().toString(),
