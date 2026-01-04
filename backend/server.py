@@ -2650,25 +2650,47 @@ class StudentAIRequest(BaseModel):
 
 @api_router.post("/student/ai-helper")
 async def student_ai_helper(request: StudentAIRequest, current_user: dict = Depends(get_current_user)):
-    """StudyTino AI Helper - Safe study assistant for students"""
-    # Safe study assistant - only study related help
-    # In production, integrate with actual AI with safety guardrails
+    """StudyTino AI Helper - Safe study assistant for students using GPT-4o"""
     
-    prompt_lower = request.prompt.lower()
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
     
-    # Simple keyword-based response for demo
-    if any(word in prompt_lower for word in ['math', 'algebra', 'equation', 'गणित']):
-        response = f"📚 Mathematics Help:\n\n\"{request.prompt}\" ke baare mein:\n\nMath easy hai! Step by step samjho:\n1. Pehle formula yaad karo\n2. Example solve karo\n3. Practice questions karo\n\n💡 Tip: Daily 10 problems solve karo!"
-    elif any(word in prompt_lower for word in ['english', 'essay', 'grammar', 'अंग्रेजी']):
-        response = f"📖 English Help:\n\n\"{request.prompt}\" ke baare mein:\n\nEnglish mein strong banne ke liye:\n1. Daily 10 new words sikho\n2. Newspaper reading karo\n3. Writing practice karo\n\n💡 Tip: English movies with subtitles dekho!"
-    elif any(word in prompt_lower for word in ['science', 'physics', 'chemistry', 'biology', 'विज्ञान']):
-        response = f"🔬 Science Help:\n\n\"{request.prompt}\" ke baare mein:\n\nScience interesting hai!\n1. Concept clearly samjho\n2. Diagrams banao\n3. Real-life examples dekho\n\n💡 Tip: Experiments karo!"
-    elif any(word in prompt_lower for word in ['mcq', 'quiz', 'test', 'practice']):
-        response = f"📝 Practice MCQs:\n\n1. Question 1 - Option A/B/C/D\n2. Question 2 - Option A/B/C/D\n3. Question 3 - Option A/B/C/D\n\n💡 Tip: Time limit me solve karo!"
-    else:
-        response = f"📚 StudyTino AI Helper:\n\n\"{request.prompt}\" ke baare mein:\n\nYeh ek interesting topic hai!\n\n1. Pehle basic concepts clear karo\n2. Notes banao\n3. Practice questions solve karo\n\n💡 Tip: Regular revision important hai!\n\nKoi aur doubt ho toh zaroor pucho! 📖"
-    
-    return {"response": response}
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Safe study assistant with guardrails
+        system_prompt = """You are StudyTino AI - a safe, friendly study assistant for Indian school students (Class 1-12).
+
+RULES:
+1. ONLY help with academic/study-related questions
+2. Follow NCERT/CBSE syllabus
+3. Explain in simple Hindi-English mix (Hinglish)
+4. Be encouraging and supportive
+5. If asked anything inappropriate, politely redirect to studies
+6. Never share personal opinions on politics, religion, or controversial topics
+7. For difficult topics, use simple examples and diagrams description
+
+RESPONSE FORMAT:
+- Start with emoji related to subject
+- Explain concept simply
+- Give 2-3 examples
+- End with a study tip
+- Keep response concise (under 300 words)
+
+You help with: Math, Science, English, Hindi, Social Studies, Computer Science, and all NCERT subjects."""
+        
+        chat = LlmChat(
+            api_key=emergent_key or openai_key,
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+        
+        response = await chat.send_async(UserMessage(content=request.prompt))
+        
+        return {"response": response.content, "ai_powered": True}
+        
+    except Exception as e:
+        print(f"Student AI Error: {e}")
+        return {"response": f"AI temporarily unavailable. Aapka question: {request.prompt}\n\nPlease try again later.", "error": str(e)}
 
 # ==================== HEALTH CHECK ====================
 
