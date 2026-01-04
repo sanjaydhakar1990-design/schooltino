@@ -33,6 +33,8 @@ import SchoolRegistrationForm from './pages/SchoolRegistrationForm';
 import ZoomMeetings from './pages/ZoomMeetings';
 import SetupWizard from './pages/SetupWizard';
 import SubscriptionPage from './pages/SubscriptionPage';
+import TeachTinoLogin from './pages/TeachTinoLogin';
+import StudyTinoLogin from './pages/StudyTinoLogin';
 
 // Components
 import Layout from './components/Layout';
