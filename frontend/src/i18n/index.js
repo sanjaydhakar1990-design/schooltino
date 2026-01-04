@@ -235,6 +235,7 @@ const resources = {
       "cctv_dashboard": "CCTV डैशबोर्ड",
       "website_integration": "वेबसाइट कनेक्ट",
       "teachtino": "टीचटीनो",
+      "school_analytics": "स्कूल रिपोर्ट्स",
       "settings": "सेटिंग्स",
       "audit_logs": "ऑडिट लॉग",
       
