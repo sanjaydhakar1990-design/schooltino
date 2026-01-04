@@ -47,6 +47,10 @@ import FeeStructureManagement from './pages/FeeStructureManagement';
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
 
+// New Pages
+import StaffDirectory from './pages/StaffDirectory';
+import ProfilePage from './pages/ProfilePage';
+
 // Components
 import Layout from './components/Layout';
 
@@ -151,6 +155,8 @@ function AppRoutes() {
         <Route path="accountant" element={<AccountantDashboard />} />
         <Route path="payment-settings" element={<SchoolPaymentSettings />} />
         <Route path="fee-structure" element={<FeeStructureManagement />} />
+        <Route path="staff-directory" element={<StaffDirectory />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="meetings" element={<ZoomMeetings />} />
         <Route path="school-registration" element={<SchoolRegistrationForm />} />
         <Route path="setup-wizard" element={<SetupWizard />} />
