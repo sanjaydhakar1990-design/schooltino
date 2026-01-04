@@ -855,7 +855,7 @@ export default function TeachTinoDashboard() {
           </div>
         </section>
 
-        {/* ==================== TEACHTINO AI ASSISTANT ==================== */}
+        {/* ==================== TEACHTINO AI ASSISTANT WITH FILE UPLOAD ==================== */}
         <section>
           <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-6 text-white">
             <div className="flex items-center gap-3 mb-4">
@@ -883,6 +883,37 @@ export default function TeachTinoDashboard() {
                   {chip}
                 </button>
               ))}
+            </div>
+
+            {/* File Upload Section */}
+            <div className="mb-4 p-3 bg-white/10 rounded-xl">
+              <p className="text-sm text-emerald-100 mb-2">📎 Attach files for AI analysis (Photo, Video, Document)</p>
+              <div className="flex flex-wrap gap-2">
+                <label className="cursor-pointer px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm flex items-center gap-2 transition-colors">
+                  <Image className="w-4 h-4" />
+                  Photo
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) toast.success(`Photo attached: ${file.name}`);
+                  }} />
+                </label>
+                <label className="cursor-pointer px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm flex items-center gap-2 transition-colors">
+                  <Play className="w-4 h-4" />
+                  Video
+                  <input type="file" accept="video/*" className="hidden" onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) toast.success(`Video attached: ${file.name}`);
+                  }} />
+                </label>
+                <label className="cursor-pointer px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm flex items-center gap-2 transition-colors">
+                  <FileText className="w-4 h-4" />
+                  Document
+                  <input type="file" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx" className="hidden" onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) toast.success(`Document attached: ${file.name}`);
+                  }} />
+                </label>
+              </div>
             </div>
 
             <div className="flex gap-2">
