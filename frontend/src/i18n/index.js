@@ -54,6 +54,7 @@ const resources = {
       "website_integration": "Website Integration",
       "teachtino": "TeachTino",
       "school_analytics": "School Analytics",
+      "permissions": "Permissions",
       "settings": "Settings",
       "audit_logs": "Audit Logs",
       
