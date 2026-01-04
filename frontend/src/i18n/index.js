@@ -60,6 +60,7 @@ const resources = {
       "permissions": "Permissions",
       "zoom_meetings": "Meetings",
       "online_exams": "Online Exams",
+      "ai_accountant": "AI Accountant",
       "add_school": "Add School",
       "setup_wizard": "Setup Wizard",
       "subscription": "Subscription",
