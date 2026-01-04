@@ -541,6 +541,175 @@ export default function AIContentStudio() {
             </form>
           </div>
         </TabsContent>
+
+        {/* AI Writer - Advanced Content Writing */}
+        <TabsContent value="writing">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Wand2 className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">AI Content Writer</h3>
+                <p className="text-sm text-slate-500">Generate professional notices, letters, circulars & more with advanced parameters</p>
+              </div>
+            </div>
+            
+            <form onSubmit={(e) => { 
+              e.preventDefault(); 
+              generateContent('content_writing', {
+                ...contentWritingForm,
+                school_name: pamphletForm.school_name || 'School'
+              }); 
+            }} className="space-y-6">
+              {/* Content Type Selection */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {contentTypes.map(type => (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => setContentWritingForm(p => ({ ...p, content_type: type.value }))}
+                    className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                      contentWritingForm.content_type === type.value 
+                        ? 'border-purple-500 bg-purple-50 text-purple-700' 
+                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                    }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Title/Subject */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Title / Subject *</Label>
+                  <Input
+                    value={contentWritingForm.title}
+                    onChange={(e) => setContentWritingForm(p => ({ ...p, title: e.target.value }))}
+                    placeholder="e.g., Annual Day Celebration Notice, Fee Reminder for December..."
+                    required
+                    data-testid="writing-title"
+                  />
+                </div>
+
+                {/* Target Audience */}
+                <div className="space-y-2">
+                  <Label>Target Audience</Label>
+                  <select
+                    value={contentWritingForm.target_audience}
+                    onChange={(e) => setContentWritingForm(p => ({ ...p, target_audience: e.target.value }))}
+                    className="w-full h-10 rounded-lg border border-slate-200 px-3"
+                  >
+                    {audienceOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tone */}
+                <div className="space-y-2">
+                  <Label>Tone of Writing</Label>
+                  <select
+                    value={contentWritingForm.tone}
+                    onChange={(e) => setContentWritingForm(p => ({ ...p, tone: e.target.value }))}
+                    className="w-full h-10 rounded-lg border border-slate-200 px-3"
+                  >
+                    {toneOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Length */}
+                <div className="space-y-2">
+                  <Label>Content Length</Label>
+                  <select
+                    value={contentWritingForm.length}
+                    onChange={(e) => setContentWritingForm(p => ({ ...p, length: e.target.value }))}
+                    className="w-full h-10 rounded-lg border border-slate-200 px-3"
+                  >
+                    {lengthOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Language */}
+                <div className="space-y-2">
+                  <Label>Language</Label>
+                  <select
+                    value={contentWritingForm.language}
+                    onChange={(e) => setContentWritingForm(p => ({ ...p, language: e.target.value }))}
+                    className="w-full h-10 rounded-lg border border-slate-200 px-3"
+                  >
+                    <option value="english">English</option>
+                    <option value="hindi">Hindi</option>
+                    <option value="hinglish">Hinglish</option>
+                  </select>
+                </div>
+
+                {/* Key Points */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Key Points to Include</Label>
+                  <Textarea
+                    value={contentWritingForm.key_points}
+                    onChange={(e) => setContentWritingForm(p => ({ ...p, key_points: e.target.value }))}
+                    placeholder="Enter key points separated by comma or new line. AI will elaborate these points professionally.&#10;&#10;Example:&#10;- Event date: 25th December&#10;- Time: 10 AM&#10;- Dress code: Formal&#10;- Parents are invited"
+                    rows={4}
+                  />
+                </div>
+
+                {/* Include Call to Action */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="cta"
+                    checked={contentWritingForm.include_call_to_action}
+                    onChange={(e) => setContentWritingForm(p => ({ ...p, include_call_to_action: e.target.checked }))}
+                    className="w-4 h-4 rounded border-slate-300"
+                  />
+                  <Label htmlFor="cta" className="cursor-pointer">Include Call-to-Action (e.g., "Please confirm attendance")</Label>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button type="submit" className="bg-purple-600 hover:bg-purple-700 flex-1" disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Wand2 className="w-4 h-4 mr-2" />}
+                  Generate Professional Content
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => setContentWritingForm({
+                    content_type: 'notice',
+                    title: '',
+                    target_audience: 'parents',
+                    tone: 'formal',
+                    length: 'medium',
+                    key_points: '',
+                    include_call_to_action: true,
+                    language: 'english'
+                  })}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+              </div>
+            </form>
+
+            {/* Tips Section */}
+            <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
+              <h4 className="font-semibold text-purple-800 mb-2">💡 Pro Tips for Better Results:</h4>
+              <ul className="text-sm text-purple-700 space-y-1">
+                <li>• Be specific with the title - include event name, date, or purpose</li>
+                <li>• Add key points for AI to elaborate professionally</li>
+                <li>• Choose the right tone based on content type</li>
+                <li>• Use "Urgent" tone for fee reminders or important deadlines</li>
+                <li>• Use "Celebratory" tone for achievements and event invitations</li>
+              </ul>
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Result Dialog */}
