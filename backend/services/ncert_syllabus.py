@@ -283,65 +283,89 @@ NCERT_SYLLABUS_DATA = {
         }
     },
     
-    # Class 12 (Senior Secondary)
+    # Class 12 (Senior Secondary) - NCERT 2024-25
     "12": {
         "subjects": {
             "Physics": {
-                "book": "Physics Part I & II",
+                "book": "Physics Part I & II (NCERT 2024-25)",
+                "units": [
+                    {"unit": "I", "name": "Electrostatics", "marks": 16},
+                    {"unit": "II", "name": "Current Electricity", "marks": 0},
+                    {"unit": "III", "name": "Magnetic Effects of Current", "marks": 17},
+                    {"unit": "IV", "name": "EMI and AC", "marks": 0},
+                    {"unit": "V", "name": "Optics", "marks": 18},
+                    {"unit": "VI", "name": "Dual Nature of Radiation", "marks": 12},
+                    {"unit": "VII", "name": "Atoms and Nuclei", "marks": 7},
+                    {"unit": "VIII", "name": "Electronic Devices", "marks": 0}
+                ],
                 "chapters": [
-                    {"number": 1, "name": "Electric Charges and Fields", "type": "lesson", "topics": ["Coulomb's law", "Electric field", "Gauss's law", "Dipole"]},
-                    {"number": 2, "name": "Electrostatic Potential and Capacitance", "type": "lesson", "topics": ["Potential", "Equipotential surfaces", "Capacitors", "Energy stored"]},
-                    {"number": 3, "name": "Current Electricity", "type": "lesson", "topics": ["Ohm's law", "Drift velocity", "Kirchhoff's laws", "Wheatstone bridge"]},
-                    {"number": 4, "name": "Moving Charges and Magnetism", "type": "lesson", "topics": ["Magnetic force", "Biot-Savart law", "Ampere's law", "Solenoid"]},
-                    {"number": 5, "name": "Magnetism and Matter", "type": "lesson", "topics": ["Bar magnet", "Earth's magnetism", "Magnetic properties of materials"]},
-                    {"number": 6, "name": "Electromagnetic Induction", "type": "lesson", "topics": ["Faraday's laws", "Lenz's law", "Eddy currents", "Self and mutual inductance"]},
-                    {"number": 7, "name": "Alternating Current", "type": "lesson", "topics": ["AC generator", "Transformer", "LC oscillations", "Power in AC circuits"]},
-                    {"number": 8, "name": "Electromagnetic Waves", "type": "lesson", "topics": ["Displacement current", "EM spectrum", "Properties"]},
-                    {"number": 9, "name": "Ray Optics and Optical Instruments", "type": "lesson", "topics": ["Reflection", "Refraction", "TIR", "Lenses", "Microscope", "Telescope"]},
-                    {"number": 10, "name": "Wave Optics", "type": "lesson", "topics": ["Huygens principle", "Interference", "Diffraction", "Polarization"]},
-                    {"number": 11, "name": "Dual Nature of Radiation and Matter", "type": "lesson", "topics": ["Photoelectric effect", "de Broglie waves", "Davisson-Germer experiment"]},
-                    {"number": 12, "name": "Atoms", "type": "lesson", "topics": ["Rutherford model", "Bohr model", "Hydrogen spectrum"]},
-                    {"number": 13, "name": "Nuclei", "type": "lesson", "topics": ["Nuclear size", "Binding energy", "Radioactivity", "Nuclear reactions"]},
-                    {"number": 14, "name": "Semiconductor Electronics", "type": "lesson", "topics": ["p-n junction", "Diode", "Transistor", "Logic gates"]}
+                    {"number": 1, "name": "Electric Charges and Fields", "unit": "I", "marks": 8, "type": "lesson", "topics": ["Electric charge", "Coulomb's law", "Electric field", "Electric field lines", "Electric flux", "Gauss's theorem", "Electric dipole", "Applications of Gauss's theorem"]},
+                    {"number": 2, "name": "Electrostatic Potential and Capacitance", "unit": "I", "marks": 8, "type": "lesson", "topics": ["Electric potential", "Potential difference", "Electric potential due to point charge", "Dipole", "Equipotential surfaces", "Capacitors", "Combination of capacitors", "Energy stored in capacitor"]},
+                    {"number": 3, "name": "Current Electricity", "unit": "II", "marks": 8, "type": "lesson", "topics": ["Electric current", "Ohm's law", "Drift velocity", "Resistance", "Resistivity", "V-I characteristics", "Electrical energy", "Power", "Kirchhoff's laws", "Wheatstone bridge", "Meter bridge", "Potentiometer"]},
+                    {"number": 4, "name": "Moving Charges and Magnetism", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Magnetic force", "Motion in magnetic field", "Velocity selector", "Cyclotron", "Biot-Savart law", "Ampere's circuital law", "Solenoid", "Force between parallel conductors", "Torque on current loop", "Moving coil galvanometer"]},
+                    {"number": 5, "name": "Magnetism and Matter", "unit": "III", "marks": 4, "type": "lesson", "topics": ["Bar magnet", "Magnetic field lines", "Earth's magnetism", "Magnetic elements", "Tangent galvanometer", "Vibration magnetometer", "Magnetic properties of materials", "Hysteresis"]},
+                    {"number": 6, "name": "Electromagnetic Induction", "unit": "IV", "marks": 4, "type": "lesson", "topics": ["Magnetic flux", "Faraday's laws", "Induced EMF", "Lenz's law", "Eddy currents", "Self inductance", "Mutual inductance"]},
+                    {"number": 7, "name": "Alternating Current", "unit": "IV", "marks": 4, "type": "lesson", "topics": ["AC generator", "Mean and RMS values", "AC circuit with R, L, C", "LCR circuit", "Resonance", "Power in AC", "Transformer", "LC oscillations"]},
+                    {"number": 8, "name": "Electromagnetic Waves", "unit": "IV", "marks": 3, "type": "lesson", "topics": ["Displacement current", "Electromagnetic waves", "EM spectrum", "Properties", "Uses"]},
+                    {"number": 9, "name": "Ray Optics and Optical Instruments", "unit": "V", "marks": 9, "type": "lesson", "topics": ["Reflection at spherical surfaces", "Refraction", "Total internal reflection", "Refraction at spherical surfaces", "Lenses", "Power of lens", "Refraction through prism", "Dispersion", "Microscope", "Telescope"]},
+                    {"number": 10, "name": "Wave Optics", "unit": "V", "marks": 6, "type": "lesson", "topics": ["Huygens principle", "Refraction and reflection of plane waves", "Interference", "Young's double slit", "Diffraction", "Resolving power", "Polarisation"]},
+                    {"number": 11, "name": "Dual Nature of Radiation and Matter", "unit": "VI", "marks": 6, "type": "lesson", "topics": ["Photoelectric effect", "Einstein's equation", "Particle nature of light", "Wave nature of matter", "de Broglie relation", "Davisson-Germer experiment"]},
+                    {"number": 12, "name": "Atoms", "unit": "VII", "marks": 3, "type": "lesson", "topics": ["Alpha particle scattering", "Rutherford model", "Bohr model", "Energy levels", "Hydrogen spectrum"]},
+                    {"number": 13, "name": "Nuclei", "unit": "VII", "marks": 4, "type": "lesson", "topics": ["Composition of nucleus", "Atomic masses", "Size of nucleus", "Mass-energy relation", "Nuclear binding energy", "Nuclear force", "Radioactivity", "Nuclear reactions"]},
+                    {"number": 14, "name": "Semiconductor Electronics", "unit": "VIII", "marks": 6, "type": "lesson", "topics": ["Energy bands", "Intrinsic and extrinsic semiconductors", "p-n junction", "Junction diode", "Diode as rectifier", "Zener diode", "LED", "Solar cell", "Transistor", "Logic gates"]}
                 ]
             },
             "Chemistry": {
-                "book": "Chemistry Part I & II",
+                "book": "Chemistry Part I & II (NCERT 2024-25)",
+                "units": [
+                    {"unit": "1", "name": "Solutions", "marks": 7},
+                    {"unit": "2", "name": "Electrochemistry", "marks": 9},
+                    {"unit": "3", "name": "Chemical Kinetics", "marks": 7},
+                    {"unit": "4", "name": "d- and f-Block Elements", "marks": 7},
+                    {"unit": "5", "name": "Coordination Compounds", "marks": 7},
+                    {"unit": "6", "name": "Haloalkanes", "marks": 6},
+                    {"unit": "7", "name": "Alcohols, Phenols, Ethers", "marks": 6},
+                    {"unit": "8", "name": "Aldehydes, Ketones, Carboxylic Acids", "marks": 8},
+                    {"unit": "9", "name": "Amines", "marks": 6},
+                    {"unit": "10", "name": "Biomolecules", "marks": 7}
+                ],
                 "chapters": [
-                    {"number": 1, "name": "The Solid State", "type": "lesson", "topics": ["Crystal lattices", "Unit cells", "Defects", "Electrical properties"]},
-                    {"number": 2, "name": "Solutions", "type": "lesson", "topics": ["Concentration", "Colligative properties", "Abnormal molar mass"]},
-                    {"number": 3, "name": "Electrochemistry", "type": "lesson", "topics": ["Electrolytic cells", "Galvanic cells", "Nernst equation", "Batteries"]},
-                    {"number": 4, "name": "Chemical Kinetics", "type": "lesson", "topics": ["Rate of reaction", "Order", "Arrhenius equation", "Collision theory"]},
-                    {"number": 5, "name": "Surface Chemistry", "type": "lesson", "topics": ["Adsorption", "Catalysis", "Colloids", "Emulsions"]},
-                    {"number": 6, "name": "General Principles and Processes of Isolation of Elements", "type": "lesson", "topics": ["Ores", "Concentration", "Reduction", "Refining"]},
-                    {"number": 7, "name": "The p-Block Elements", "type": "lesson", "topics": ["Group 15-18 elements", "Properties", "Compounds"]},
-                    {"number": 8, "name": "The d and f Block Elements", "type": "lesson", "topics": ["Transition elements", "Lanthanoids", "Actinoids"]},
-                    {"number": 9, "name": "Coordination Compounds", "type": "lesson", "topics": ["Werner's theory", "Nomenclature", "Isomerism", "Bonding"]},
-                    {"number": 10, "name": "Haloalkanes and Haloarenes", "type": "lesson", "topics": ["Nomenclature", "Reactions", "Environmental effects"]},
-                    {"number": 11, "name": "Alcohols, Phenols and Ethers", "type": "lesson", "topics": ["Preparation", "Properties", "Reactions"]},
-                    {"number": 12, "name": "Aldehydes, Ketones and Carboxylic Acids", "type": "lesson", "topics": ["Nomenclature", "Reactions", "Uses"]},
-                    {"number": 13, "name": "Amines", "type": "lesson", "topics": ["Classification", "Preparation", "Properties", "Diazonium salts"]},
-                    {"number": 14, "name": "Biomolecules", "type": "lesson", "topics": ["Carbohydrates", "Proteins", "Enzymes", "Vitamins", "Nucleic acids"]},
-                    {"number": 15, "name": "Polymers", "type": "lesson", "topics": ["Classification", "Polymerization", "Natural and synthetic polymers"]},
-                    {"number": 16, "name": "Chemistry in Everyday Life", "type": "lesson", "topics": ["Drugs", "Food additives", "Cleansing agents"]}
+                    {"number": 1, "name": "Solutions", "unit": "1", "marks": 7, "type": "lesson", "topics": ["Types of solutions", "Solubility", "Concentration units", "Vapour pressure", "Raoult's law", "Colligative properties", "Relative lowering of vapour pressure", "Elevation of boiling point", "Depression of freezing point", "Osmotic pressure", "Van't Hoff factor"]},
+                    {"number": 2, "name": "Electrochemistry", "unit": "2", "marks": 9, "type": "lesson", "topics": ["Electrolytic cells", "Electrolysis", "Galvanic cells", "EMF", "Standard electrode potential", "Nernst equation", "Gibbs energy and EMF", "Conductance", "Kohlrausch's law", "Electrolysis laws", "Batteries", "Fuel cells", "Corrosion"]},
+                    {"number": 3, "name": "Chemical Kinetics", "unit": "3", "marks": 7, "type": "lesson", "topics": ["Rate of reaction", "Factors affecting rate", "Rate law", "Order of reaction", "Molecularity", "Integrated rate equations", "Half-life", "Pseudo first order", "Temperature dependence", "Arrhenius equation", "Collision theory"]},
+                    {"number": 4, "name": "d- and f-Block Elements", "unit": "4", "marks": 7, "type": "lesson", "topics": ["Position in periodic table", "Electronic configuration", "General properties", "Transition elements characteristics", "Important compounds", "Lanthanoids", "Actinoids", "Applications"]},
+                    {"number": 5, "name": "Coordination Compounds", "unit": "5", "marks": 7, "type": "lesson", "topics": ["Werner's theory", "Ligands", "Coordination number", "Nomenclature", "Isomerism", "Bonding theories", "VBT", "CFT", "Colour", "Magnetic properties", "Applications"]},
+                    {"number": 6, "name": "Haloalkanes and Haloarenes", "unit": "6", "marks": 6, "type": "lesson", "topics": ["Classification", "Nomenclature", "Preparation", "Physical properties", "Chemical reactions", "SN1 and SN2 mechanisms", "Optical rotation", "Polyhalogen compounds", "Environmental effects"]},
+                    {"number": 7, "name": "Alcohols, Phenols and Ethers", "unit": "7", "marks": 6, "type": "lesson", "topics": ["Classification", "Nomenclature", "Preparation methods", "Physical properties", "Chemical reactions", "Acidic nature", "Electrophilic substitution", "Ethers preparation and reactions"]},
+                    {"number": 8, "name": "Aldehydes, Ketones and Carboxylic Acids", "unit": "8", "marks": 8, "type": "lesson", "topics": ["Nomenclature", "Nature of carbonyl group", "Preparation", "Physical properties", "Chemical reactions", "Nucleophilic addition", "Oxidation", "Reduction", "Aldol condensation", "Cannizzaro reaction", "Carboxylic acids properties"]},
+                    {"number": 9, "name": "Amines", "unit": "9", "marks": 6, "type": "lesson", "topics": ["Classification", "Nomenclature", "Preparation", "Physical properties", "Chemical reactions", "Basic character", "Electrophilic substitution", "Diazonium salts"]},
+                    {"number": 10, "name": "Biomolecules", "unit": "10", "marks": 7, "type": "lesson", "topics": ["Carbohydrates", "Classification", "Glucose", "Fructose", "Polysaccharides", "Proteins", "Amino acids", "Peptide bond", "Primary and secondary structure", "Enzymes", "Vitamins", "Nucleic acids", "DNA", "RNA"]}
                 ]
             },
             "Mathematics": {
-                "book": "Mathematics Part I & II",
+                "book": "Mathematics Part I & II (NCERT 2024-25)",
+                "units": [
+                    {"unit": "I", "name": "Relations and Functions", "marks": 8},
+                    {"unit": "II", "name": "Algebra", "marks": 10},
+                    {"unit": "III", "name": "Calculus", "marks": 35},
+                    {"unit": "IV", "name": "Vectors and 3D", "marks": 14},
+                    {"unit": "V", "name": "Linear Programming", "marks": 5},
+                    {"unit": "VI", "name": "Probability", "marks": 8}
+                ],
                 "chapters": [
-                    {"number": 1, "name": "Relations and Functions", "type": "lesson", "topics": ["Types of relations", "Types of functions", "Composition", "Inverse"]},
-                    {"number": 2, "name": "Inverse Trigonometric Functions", "type": "lesson", "topics": ["Principal values", "Properties", "Graphs"]},
-                    {"number": 3, "name": "Matrices", "type": "lesson", "topics": ["Types", "Operations", "Transpose", "Symmetric matrices"]},
-                    {"number": 4, "name": "Determinants", "type": "lesson", "topics": ["Properties", "Cofactors", "Adjoint", "Inverse", "Applications"]},
-                    {"number": 5, "name": "Continuity and Differentiability", "type": "lesson", "topics": ["Continuity", "Differentiability", "Chain rule", "Implicit differentiation"]},
-                    {"number": 6, "name": "Application of Derivatives", "type": "lesson", "topics": ["Rate of change", "Tangents", "Maxima and minima", "Approximations"]},
-                    {"number": 7, "name": "Integrals", "type": "lesson", "topics": ["Indefinite integrals", "Methods of integration", "Definite integrals"]},
-                    {"number": 8, "name": "Application of Integrals", "type": "lesson", "topics": ["Area under curves", "Area between curves"]},
-                    {"number": 9, "name": "Differential Equations", "type": "lesson", "topics": ["Order and degree", "Formation", "Solution methods"]},
-                    {"number": 10, "name": "Vector Algebra", "type": "lesson", "topics": ["Types", "Operations", "Scalar and vector products"]},
-                    {"number": 11, "name": "Three Dimensional Geometry", "type": "lesson", "topics": ["Direction cosines", "Equations of line and plane", "Angle between lines"]},
-                    {"number": 12, "name": "Linear Programming", "type": "lesson", "topics": ["Mathematical formulation", "Graphical method", "Different types of problems"]},
-                    {"number": 13, "name": "Probability", "type": "lesson", "topics": ["Conditional probability", "Bayes' theorem", "Random variables", "Binomial distribution"]}
+                    {"number": 1, "name": "Relations and Functions", "unit": "I", "marks": 4, "type": "lesson", "topics": ["Types of relations", "Reflexive", "Symmetric", "Transitive", "Equivalence relations", "Types of functions", "One-one", "Onto", "Composition of functions", "Invertible functions"]},
+                    {"number": 2, "name": "Inverse Trigonometric Functions", "unit": "I", "marks": 4, "type": "lesson", "topics": ["Definition", "Range", "Domain", "Principal value branch", "Graphs", "Elementary properties"]},
+                    {"number": 3, "name": "Matrices", "unit": "II", "marks": 5, "type": "lesson", "topics": ["Concept", "Types of matrices", "Operations", "Transpose", "Symmetric matrices", "Skew symmetric", "Elementary operations", "Invertible matrices"]},
+                    {"number": 4, "name": "Determinants", "unit": "II", "marks": 5, "type": "lesson", "topics": ["Determinant of matrix", "Properties", "Area of triangle", "Minors and cofactors", "Adjoint and inverse", "Applications", "Cramer's rule"]},
+                    {"number": 5, "name": "Continuity and Differentiability", "unit": "III", "marks": 8, "type": "lesson", "topics": ["Continuity", "Differentiability", "Derivatives of composite functions", "Chain rule", "Implicit functions", "Inverse trigonometric", "Exponential", "Logarithmic functions", "Logarithmic differentiation", "Derivatives of parametric", "Second order derivatives"]},
+                    {"number": 6, "name": "Application of Derivatives", "unit": "III", "marks": 7, "type": "lesson", "topics": ["Rate of change", "Increasing and decreasing functions", "Tangents and normals", "Approximations", "Maxima and minima", "First and second derivative tests"]},
+                    {"number": 7, "name": "Integrals", "unit": "III", "marks": 10, "type": "lesson", "topics": ["Integration as inverse of differentiation", "Standard integrals", "Integration by substitution", "By partial fractions", "By parts", "Definite integrals", "Properties", "Fundamental theorem of calculus"]},
+                    {"number": 8, "name": "Application of Integrals", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Area under simple curves", "Area between curves", "Area of circles", "Parabolas", "Ellipses"]},
+                    {"number": 9, "name": "Differential Equations", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Definition", "Order and degree", "General and particular solutions", "Formation", "Methods of solving", "Variable separable", "Homogeneous", "Linear differential equations"]},
+                    {"number": 10, "name": "Vector Algebra", "unit": "IV", "marks": 5, "type": "lesson", "topics": ["Vectors and scalars", "Magnitude", "Direction cosines", "Types of vectors", "Position vector", "Addition", "Scalar multiplication", "Section formula", "Scalar product", "Vector product"]},
+                    {"number": 11, "name": "Three Dimensional Geometry", "unit": "IV", "marks": 9, "type": "lesson", "topics": ["Direction cosines", "Direction ratios", "Equation of line", "Angle between lines", "Shortest distance", "Equation of plane", "Distance of point from plane", "Angle between planes"]},
+                    {"number": 12, "name": "Linear Programming", "unit": "V", "marks": 5, "type": "lesson", "topics": ["Introduction", "LPP definition", "Mathematical formulation", "Graphical method", "Feasible region", "Optimal solution", "Different types of LPP"]},
+                    {"number": 13, "name": "Probability", "unit": "VI", "marks": 8, "type": "lesson", "topics": ["Conditional probability", "Multiplication theorem", "Independent events", "Total probability", "Bayes' theorem", "Random variable", "Probability distribution", "Mean", "Variance", "Binomial distribution"]}
                 ]
             },
             "Biology": {
