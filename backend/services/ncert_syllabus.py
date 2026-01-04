@@ -392,6 +392,50 @@ NCERT_SYLLABUS_DATA = {
                     {"number": 12, "name": "Ecosystem", "unit": "X", "marks": 3, "type": "lesson", "topics": ["Ecosystem structure", "Productivity", "Primary productivity", "Secondary productivity", "Decomposition", "Energy flow", "Food chains", "Food webs", "Ecological pyramids", "Pyramid of number", "Pyramid of biomass", "Pyramid of energy"]},
                     {"number": 13, "name": "Biodiversity and Conservation", "unit": "X", "marks": 3, "type": "lesson", "topics": ["Biodiversity concept", "Genetic diversity", "Species diversity", "Ecosystem diversity", "Patterns of biodiversity", "Importance of species diversity", "Loss of biodiversity", "Biodiversity conservation", "In-situ conservation", "Ex-situ conservation", "Hotspots", "Sacred groves", "Biosphere reserves", "National parks", "Wildlife sanctuaries"]}
                 ]
+            },
+            "English": {
+                "book": "Flamingo & Vistas (NCERT 2024-25)",
+                "chapters": [
+                    {"number": 1, "name": "The Last Lesson", "marks": 5, "type": "prose", "topics": ["French language", "Patriotism", "Loss of language", "Alphonse Daudet", "Education value", "Last day of French"]},
+                    {"number": 2, "name": "Lost Spring", "marks": 5, "type": "prose", "topics": ["Child labour", "Rag picking", "Bangle making", "Poverty cycle", "Social issues", "Anees Jung"]},
+                    {"number": 3, "name": "Deep Water", "marks": 5, "type": "prose", "topics": ["William Douglas", "Fear of water", "Overcoming fear", "Determination", "Swimming learning", "Personal narrative"]},
+                    {"number": 4, "name": "The Rattrap", "marks": 5, "type": "prose", "topics": ["Selma Lagerlof", "Human kindness", "Transformation", "Christmas story", "Rattrap metaphor", "Trust and honor"]},
+                    {"number": 5, "name": "Indigo", "marks": 5, "type": "prose", "topics": ["Louis Fischer", "Mahatma Gandhi", "Champaran movement", "Civil disobedience", "Peasant struggle", "British exploitation"]},
+                    {"number": 6, "name": "Poets and Pancakes", "marks": 4, "type": "prose", "topics": ["Asokamitran", "Gemini Studios", "Film industry", "Indian cinema", "Behind scenes", "Humor and satire"]},
+                    {"number": 7, "name": "The Interview", "marks": 4, "type": "prose", "topics": ["Umberto Eco", "Interview format", "Writing process", "Celebrity interviews", "Modern communication", "Literary discussion"]},
+                    {"number": 8, "name": "Going Places", "marks": 4, "type": "prose", "topics": ["A R Barton", "Adolescent dreams", "Reality vs fantasy", "Hero worship", "Working class", "Sophie's imagination"]},
+                    {"number": 9, "name": "My Mother at Sixty-Six", "marks": 3, "type": "poem", "topics": ["Kamala Das", "Ageing mother", "Fear of loss", "Parent-child bond", "Mortality", "Poetic imagery"]},
+                    {"number": 10, "name": "An Elementary School Classroom in a Slum", "marks": 3, "type": "poem", "topics": ["Stephen Spender", "Poverty education", "Social inequality", "Dreams and reality", "Hope for change", "Slum children"]},
+                    {"number": 11, "name": "Keeping Quiet", "marks": 3, "type": "poem", "topics": ["Pablo Neruda", "Silence and reflection", "Peace message", "Self-introspection", "Unity of mankind", "War and violence"]},
+                    {"number": 12, "name": "A Thing of Beauty", "marks": 3, "type": "poem", "topics": ["John Keats", "Beauty eternal", "Joy forever", "Nature beauty", "Human connection", "Romantic poetry"]},
+                    {"number": 13, "name": "A Roadside Stand", "marks": 3, "type": "poem", "topics": ["Robert Frost", "Rural poverty", "City vs country", "Unfulfilled hopes", "Economic disparity", "Human indifference"]},
+                    {"number": 14, "name": "Aunt Jennifer's Tigers", "marks": 3, "type": "poem", "topics": ["Adrienne Rich", "Women oppression", "Art as freedom", "Marriage constraint", "Feminist poetry", "Symbolism"]}
+                ]
+            },
+            "Hindi": {
+                "book": "आरोह भाग-2 & वितान भाग-2 (NCERT 2024-25)",
+                "chapters": [
+                    {"number": 1, "name": "आत्म-परिचय, एक गीत", "marks": 4, "type": "poem", "topics": ["हरिवंश राय बच्चन", "आत्मकथा", "जीवन दर्शन", "संघर्ष", "आशावाद"]},
+                    {"number": 2, "name": "पतंग", "marks": 3, "type": "poem", "topics": ["आलोक धन्वा", "बचपन", "उड़ान", "स्वतंत्रता", "कल्पना"]},
+                    {"number": 3, "name": "कविता के बहाने, बात सीधी थी पर", "marks": 3, "type": "poem", "topics": ["कुंवर नारायण", "काव्य सृजन", "भाषा", "अभिव्यक्ति", "काव्य शास्त्र"]},
+                    {"number": 4, "name": "कैमरे में बंद अपाहिज", "marks": 3, "type": "poem", "topics": ["रघुवीर सहाय", "मीडिया आलोचना", "विकलांगता", "संवेदनहीनता", "व्यंग्य"]},
+                    {"number": 5, "name": "सहर्ष स्वीकारा है", "marks": 3, "type": "poem", "topics": ["गजानन माधव मुक्तिबोध", "जीवन स्वीकृति", "संघर्ष", "आत्मचिंतन", "दार्शनिकता"]},
+                    {"number": 6, "name": "उषा", "marks": 3, "type": "poem", "topics": ["शमशेर बहादुर सिंह", "प्रकृति चित्रण", "सुबह", "बिम्ब विधान", "सौंदर्य"]},
+                    {"number": 7, "name": "बादल राग", "marks": 3, "type": "poem", "topics": ["सूर्यकांत त्रिपाठी निराला", "प्रकृति", "क्रांति", "विद्रोह", "छायावाद"]},
+                    {"number": 8, "name": "कवितावली (उत्तर कांड)", "marks": 3, "type": "poem", "topics": ["तुलसीदास", "राम भक्ति", "सामाजिक यथार्थ", "भक्ति काव्य", "लोक कल्याण"]},
+                    {"number": 9, "name": "रुबाइयाँ, गज़ल", "marks": 3, "type": "poem", "topics": ["फ़िराक़ गोरखपुरी", "उर्दू काव्य", "प्रेम", "जीवन दर्शन", "सौंदर्य"]},
+                    {"number": 10, "name": "छोटा मेरा खेत, बगुलों के पंख", "marks": 3, "type": "poem", "topics": ["उमाशंकर जोशी", "काव्य सृजन", "प्रकृति", "गुजराती कविता", "बिम्ब"]},
+                    {"number": 11, "name": "भक्तिन", "marks": 4, "type": "prose", "topics": ["महादेवी वर्मा", "स्त्री जीवन", "सेवा भाव", "ग्रामीण जीवन", "संस्मरण"]},
+                    {"number": 12, "name": "बाजार दर्शन", "marks": 4, "type": "prose", "topics": ["जैनेंद्र कुमार", "उपभोक्तावाद", "बाजार", "मानवीय मूल्य", "निबंध"]},
+                    {"number": 13, "name": "काले मेघा पानी दे", "marks": 4, "type": "prose", "topics": ["धर्मवीर भारती", "सूखा", "ग्रामीण जीवन", "आस्था", "प्रकृति"]},
+                    {"number": 14, "name": "पहलवान की ढोलक", "marks": 4, "type": "prose", "topics": ["फणीश्वरनाथ रेणु", "ग्रामीण जीवन", "महामारी", "साहस", "लोक संस्कृति"]},
+                    {"number": 15, "name": "चार्ली चैप्लिन यानी हम सब", "marks": 4, "type": "prose", "topics": ["विष्णु खरे", "हास्य कला", "फिल्म", "मानवता", "व्यंग्य"]},
+                    {"number": 16, "name": "नमक", "marks": 4, "type": "prose", "topics": ["रज़िया सज्जाद ज़हीर", "विभाजन", "सीमाएं", "मानवीय संबंध", "भावुकता"]},
+                    {"number": 17, "name": "शिरीष के फूल", "marks": 3, "type": "prose", "topics": ["हजारी प्रसाद द्विवेदी", "प्रकृति निबंध", "जीवन दर्शन", "ललित निबंध", "सौंदर्य"]},
+                    {"number": 18, "name": "श्रम विभाजन और जाति प्रथा", "marks": 4, "type": "prose", "topics": ["भीमराव आंबेडकर", "जातिवाद", "समाज सुधार", "समानता", "श्रम"]},
+                    {"number": 19, "name": "सिल्वर वैडिंग", "marks": 3, "type": "prose", "topics": ["मनोहर श्याम जोशी", "परिवार", "संबंध", "व्यंग्य", "मध्यवर्गीय जीवन"]},
+                    {"number": 20, "name": "जूझ", "marks": 3, "type": "prose", "topics": ["आनंद यादव", "शिक्षा संघर्ष", "आत्मकथा", "ग्रामीण जीवन", "प्रेरणा"]}
+                ]
             }
         }
     }
