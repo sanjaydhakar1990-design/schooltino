@@ -49,6 +49,7 @@ from routes.syllabus_progress import router as syllabus_progress_router
 from routes.fee_payment import router as fee_payment_router
 from routes.ai_accountant import router as ai_accountant_router
 from routes.fee_management import router as fee_management_router
+from routes.voice_assistant import router as voice_assistant_router
 
 # ==================== MODELS ====================
 
