@@ -2631,20 +2631,43 @@ VERIFY: Sum of all question marks = {request.total_marks}"""
         actual_total = sum(q.get("marks", 0) for q in questions)
         
         # If marks don't match, try to adjust
+        max_retries = 2
+        retry_count = 0
+        
+        while actual_total != request.total_marks and retry_count < max_retries:
+            retry_count += 1
+            logging.info(f"Paper marks mismatch: {actual_total} vs {request.total_marks}. Retry {retry_count}")
+            
+            # Retry with more specific prompt
+            retry_prompt = f"""The paper you generated has {actual_total} marks but I need EXACTLY {request.total_marks} marks.
+Please regenerate with the correct number of questions. Current distribution needs adjustment.
+Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no less."""
+            
+            retry_msg = UserMessage(text=retry_prompt)
+            response = await chat.send_message(retry_msg)
+            
+            json_match = re.search(r'\{[\s\S]*\}', response)
+            if json_match:
+                questions_data = json.loads(json_match.group())
+                questions = questions_data.get("questions", [])
+                actual_total = sum(q.get("marks", 0) for q in questions)
+        
+        # Only as last resort, adjust marks (but with better questions)
         if actual_total != request.total_marks and questions:
-            # Calculate difference
             diff = request.total_marks - actual_total
             
-            if diff > 0:
-                # Need more marks - add simple MCQs
-                for i in range(diff):
+            if diff > 0 and diff <= 5:
+                # Need more marks - adjust last question's marks instead of adding fake questions
+                if questions and questions[-1].get("type") in ["short", "long"]:
+                    questions[-1]["marks"] = questions[-1].get("marks", 2) + diff
+                else:
+                    # Add a single meaningful question
                     questions.append({
-                        "type": "mcq",
-                        "question": f"Additional question {i+1}: Define the key term from this chapter.",
-                        "options": ["a) Option A", "b) Option B", "c) Option C", "d) Option D"],
-                        "answer": "Please verify with chapter content",
-                        "marks": 1,
-                        "difficulty": "easy"
+                        "type": "short" if diff <= 3 else "long",
+                        "question": f"Explain the key concepts from this chapter that you found most important. ({diff} marks)",
+                        "answer": "Student should explain main concepts covered in the chapter with examples.",
+                        "marks": diff,
+                        "difficulty": "medium"
                     })
             elif diff < 0:
                 # Too many marks - remove from end until balanced
