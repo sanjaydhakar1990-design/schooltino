@@ -884,7 +884,37 @@ NCERT_SYLLABUS_DATA["9"] = {
                 {"number": 15, "name": "Sound", "unit": "III", "marks": 3, "type": "lesson", "topics": ["Production of sound", "Propagation of sound", "Sound waves", "Characteristics of sound wave", "Speed of sound", "Reflection of sound", "Echo", "Reverberation", "Uses of ultrasound", "Structure of human ear"]}
             ]
         },
-        "Social Science": {"book": "Social Science - 9", "chapters": []}
+        "Social Science": {
+            "book": "Social Science - 9 (NCERT 2024-25)",
+            "units": [
+                {"unit": "History", "name": "India and the Contemporary World - I", "marks": 20},
+                {"unit": "Geography", "name": "Contemporary India - I", "marks": 20},
+                {"unit": "Civics", "name": "Democratic Politics - I", "marks": 20},
+                {"unit": "Economics", "name": "Economics", "marks": 20}
+            ],
+            "chapters": [
+                {"number": 1, "name": "The French Revolution", "unit": "History", "marks": 5, "type": "lesson", "topics": ["French society", "Outbreak of revolution", "France becomes republic", "Reign of Terror", "Role of women", "Abolition of slavery", "Revolution and everyday life"]},
+                {"number": 2, "name": "Socialism in Europe and the Russian Revolution", "unit": "History", "marks": 5, "type": "lesson", "topics": ["Age of social change", "Liberals", "Radicals", "Conservatives", "Industrial revolution", "Coming of socialism", "Russian Revolution", "Global influence"]},
+                {"number": 3, "name": "Nazism and the Rise of Hitler", "unit": "History", "marks": 5, "type": "lesson", "topics": ["Birth of Weimar Republic", "Hitler's rise to power", "Nazi worldview", "Youth in Nazi Germany", "Ordinary people and crimes against humanity"]},
+                {"number": 4, "name": "Forest Society and Colonialism", "unit": "History", "marks": 5, "type": "lesson", "topics": ["Deforestation", "Rise of commercial forestry", "Rebellion in forest", "Forest transformations in Java"]},
+                {"number": 5, "name": "Pastoralists in the Modern World", "unit": "History", "marks": 5, "type": "lesson", "topics": ["Pastoral nomads", "Colonial rule and pastoral life", "Pastoralism in Africa"]},
+                {"number": 6, "name": "India - Size and Location", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Location", "Size", "India and the world", "India's neighbours"]},
+                {"number": 7, "name": "Physical Features of India", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Major physiographic divisions", "Himalayan mountains", "Northern plains", "Peninsular plateau", "Indian desert", "Coastal plains", "Islands"]},
+                {"number": 8, "name": "Drainage", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Drainage systems", "Himalayan rivers", "Peninsular rivers", "Lakes", "Role of rivers in economy", "River pollution"]},
+                {"number": 9, "name": "Climate", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Factors affecting climate", "Indian monsoon", "Seasons in India", "Distribution of rainfall", "Monsoon as a unifying bond"]},
+                {"number": 10, "name": "Natural Vegetation and Wildlife", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Types of vegetation", "Tropical forests", "Tropical deciduous forests", "Thorny bushes", "Mountain vegetation", "Mangrove forests", "Wildlife"]},
+                {"number": 11, "name": "Population", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Population size and distribution", "Population growth", "Population composition", "Adolescent population", "NPP 2000"]},
+                {"number": 12, "name": "What is Democracy? Why Democracy?", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["What is democracy", "Features of democracy", "Why democracy", "Broader meaning of democracy"]},
+                {"number": 13, "name": "Constitutional Design", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["Democratic constitution in South Africa", "Making of Indian Constitution", "Guiding values of Indian Constitution", "Preamble"]},
+                {"number": 14, "name": "Electoral Politics", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["Why elections", "What makes an election democratic", "Indian system of elections", "What makes elections in India democratic", "Challenges to free and fair elections"]},
+                {"number": 15, "name": "Working of Institutions", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["How is major policy decision taken", "Parliament", "Political executive", "Judiciary"]},
+                {"number": 16, "name": "Democratic Rights", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["Life without rights", "Rights in democracy", "Fundamental rights", "Expanding scope of rights"]},
+                {"number": 17, "name": "The Story of Village Palampur", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["Organisation of production", "Farming in Palampur", "Non-farm activities"]},
+                {"number": 18, "name": "People as Resource", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["Economic activities", "Quality of population", "Education", "Health", "Unemployment"]},
+                {"number": 19, "name": "Poverty as a Challenge", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["Who is poor", "Poverty estimation", "Vulnerable groups", "Interstate disparities", "Global poverty", "Causes of poverty", "Anti-poverty measures"]},
+                {"number": 20, "name": "Food Security in India", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["What is food security", "Who are food insecure", "Food security in India", "Buffer stock", "PDS", "Role of cooperatives"]}
+            ]
+        }
     }
 }
 
