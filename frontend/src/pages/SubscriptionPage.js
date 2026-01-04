@@ -152,7 +152,7 @@ export default function SubscriptionPage() {
     } finally {
       setActivating(null);
     }
-  }, [Razorpay, schoolId, user, paymentConfig]);
+  }, [Razorpay, razorpayLoading, razorpayError, schoolId, user, paymentConfig]);
 
   const handleActivate = async (planId) => {
     if (!schoolId) {
