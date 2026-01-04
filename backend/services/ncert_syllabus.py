@@ -384,30 +384,142 @@ for class_num in ["2", "3", "4", "5"]:
         }
     }
 
-for class_num in ["7", "8", "9"]:
+# Class 7-8 placeholder
+for class_num in ["7", "8"]:
     NCERT_SYLLABUS_DATA[class_num] = {
         "subjects": {
             "Hindi": {"book": f"वसंत भाग-{int(class_num)-5}", "chapters": []},
-            "English": {"book": "Honeycomb" if class_num == "7" else "Honeydew" if class_num == "8" else "Beehive", "chapters": []},
+            "English": {"book": "Honeycomb" if class_num == "7" else "Honeydew", "chapters": []},
             "Mathematics": {"book": f"Mathematics - {class_num}", "chapters": []},
             "Science": {"book": f"Science - {class_num}", "chapters": []},
             "Social Science": {"book": f"Social Science - {class_num}", "chapters": []}
         }
     }
 
-NCERT_SYLLABUS_DATA["11"] = {
+# Class 9 - NCERT 2024-25 Syllabus
+NCERT_SYLLABUS_DATA["9"] = {
     "subjects": {
-        "Physics": {"book": "Physics Part I & II", "chapters": []},
-        "Chemistry": {"book": "Chemistry Part I & II", "chapters": []},
-        "Mathematics": {"book": "Mathematics", "chapters": []},
-        "Biology": {
-            "book": "Biology (NCERT 2024-25 Rationalized)",
+        "Hindi": {"book": "क्षितिज भाग-1 & कृतिका भाग-1", "chapters": []},
+        "English": {"book": "Beehive & Moments", "chapters": []},
+        "Mathematics": {
+            "book": "Mathematics (NCERT 2024-25)",
             "units": [
-                {"unit": "I", "name": "Diversity of Living Organisms", "marks": 15},
-                {"unit": "II", "name": "Structural Organization in Plants and Animals", "marks": 10},
-                {"unit": "III", "name": "Cell: Structure and Function", "marks": 15},
-                {"unit": "IV", "name": "Plant Physiology", "marks": 12},
-                {"unit": "V", "name": "Human Physiology", "marks": 18}
+                {"unit": "I", "name": "Number Systems", "marks": 10},
+                {"unit": "II", "name": "Algebra", "marks": 20},
+                {"unit": "III", "name": "Coordinate Geometry", "marks": 4},
+                {"unit": "IV", "name": "Geometry", "marks": 27},
+                {"unit": "V", "name": "Mensuration", "marks": 13},
+                {"unit": "VI", "name": "Statistics & Probability", "marks": 6}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Number Systems", "unit": "I", "marks": 10, "type": "lesson", "topics": ["Natural numbers", "Whole numbers", "Integers", "Rational numbers", "Irrational numbers", "Real numbers", "Decimal expansion", "Number line", "Laws of exponents", "Rationalizing denominators"]},
+                {"number": 2, "name": "Polynomials", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Polynomials in one variable", "Zeroes of polynomial", "Remainder theorem", "Factorisation", "Algebraic identities"]},
+                {"number": 3, "name": "Coordinate Geometry", "unit": "III", "marks": 4, "type": "lesson", "topics": ["Cartesian system", "Plotting points", "Coordinates of a point", "Quadrants", "Abscissa and ordinate"]},
+                {"number": 4, "name": "Linear Equations in Two Variables", "unit": "II", "marks": 7, "type": "lesson", "topics": ["Linear equations", "Solution of linear equation", "Graph of linear equation", "Equations of lines parallel to axes"]},
+                {"number": 5, "name": "Introduction to Euclid's Geometry", "unit": "IV", "marks": 4, "type": "lesson", "topics": ["Euclid's definitions", "Axioms", "Postulates", "Equivalent versions of fifth postulate"]},
+                {"number": 6, "name": "Lines and Angles", "unit": "IV", "marks": 6, "type": "lesson", "topics": ["Basic terms", "Intersecting and non-intersecting lines", "Pairs of angles", "Parallel lines and transversal", "Angle sum property of triangle"]},
+                {"number": 7, "name": "Triangles", "unit": "IV", "marks": 8, "type": "lesson", "topics": ["Congruence of triangles", "Criteria for congruence", "Properties of triangles", "Inequalities in triangles"]},
+                {"number": 8, "name": "Quadrilaterals", "unit": "IV", "marks": 5, "type": "lesson", "topics": ["Angle sum property", "Types of quadrilaterals", "Properties of parallelogram", "Mid-point theorem"]},
+                {"number": 9, "name": "Areas of Parallelograms and Triangles", "unit": "IV", "marks": 4, "type": "lesson", "topics": ["Figures on same base and between same parallels", "Area of parallelogram", "Area of triangle"]},
+                {"number": 10, "name": "Circles", "unit": "IV", "marks": 5, "type": "lesson", "topics": ["Circle definitions", "Chords", "Arcs", "Angles subtended by chords", "Cyclic quadrilaterals"]},
+                {"number": 11, "name": "Constructions", "unit": "IV", "marks": 5, "type": "lesson", "topics": ["Basic constructions", "Construction of bisectors", "Construction of triangles"]},
+                {"number": 12, "name": "Heron's Formula", "unit": "V", "marks": 6, "type": "lesson", "topics": ["Area of triangle using Heron's formula", "Application to quadrilaterals"]},
+                {"number": 13, "name": "Surface Areas and Volumes", "unit": "V", "marks": 7, "type": "lesson", "topics": ["Surface area of cuboid, cube, cylinder, cone, sphere", "Volume of cuboid, cube, cylinder, cone, sphere"]},
+                {"number": 14, "name": "Statistics", "unit": "VI", "marks": 4, "type": "lesson", "topics": ["Collection of data", "Presentation of data", "Graphical representation", "Bar graphs", "Histograms", "Frequency polygons", "Mean, Median, Mode"]},
+                {"number": 15, "name": "Probability", "unit": "VI", "marks": 2, "type": "lesson", "topics": ["Probability - experimental approach", "Events", "Outcomes"]}
+            ]
+        },
+        "Science": {
+            "book": "Science (NCERT 2024-25)",
+            "units": [
+                {"unit": "I", "name": "Matter - Its Nature and Behaviour", "marks": 25},
+                {"unit": "II", "name": "Organization in the Living World", "marks": 22},
+                {"unit": "III", "name": "Motion, Force and Work", "marks": 27},
+                {"unit": "IV", "name": "Food Production", "marks": 6}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Matter in Our Surroundings", "unit": "I", "marks": 6, "type": "lesson", "topics": ["Physical nature of matter", "Characteristics of particles", "States of matter", "Interconversion of states", "Evaporation"]},
+                {"number": 2, "name": "Is Matter Around Us Pure", "unit": "I", "marks": 6, "type": "lesson", "topics": ["Mixtures", "Solutions", "Suspensions", "Colloids", "Separation techniques", "Physical and chemical changes", "Types of pure substances", "Compounds and mixtures"]},
+                {"number": 3, "name": "Atoms and Molecules", "unit": "I", "marks": 7, "type": "lesson", "topics": ["Laws of chemical combination", "Atoms", "Atomic mass", "Molecules", "Ions", "Chemical formulae", "Molecular mass", "Mole concept"]},
+                {"number": 4, "name": "Structure of the Atom", "unit": "I", "marks": 6, "type": "lesson", "topics": ["Charged particles", "Thomson's model", "Rutherford's model", "Bohr's model", "Electrons distributed in shells", "Valency", "Atomic number", "Mass number", "Isotopes"]},
+                {"number": 5, "name": "The Fundamental Unit of Life", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Cell theory", "Cell - basic unit", "Structural organization of cell", "Plasma membrane", "Cell wall", "Nucleus", "Cytoplasm", "Cell organelles"]},
+                {"number": 6, "name": "Tissues", "unit": "II", "marks": 5, "type": "lesson", "topics": ["Plant tissues", "Meristematic tissue", "Permanent tissue", "Animal tissues", "Epithelial tissue", "Connective tissue", "Muscular tissue", "Nervous tissue"]},
+                {"number": 7, "name": "Diversity in Living Organisms", "unit": "II", "marks": 5, "type": "lesson", "topics": ["Basis of classification", "Classification and evolution", "Hierarchy of classification", "Plantae", "Animalia", "Five kingdom classification"]},
+                {"number": 8, "name": "Why Do We Fall Ill", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Health and its failure", "Disease and its causes", "Infectious diseases", "Means of spread", "Principles of treatment", "Principles of prevention"]},
+                {"number": 9, "name": "Natural Resources", "unit": "IV", "marks": 3, "type": "lesson", "topics": ["Air", "Water", "Soil", "Biogeochemical cycles", "Water cycle", "Nitrogen cycle", "Carbon cycle", "Oxygen cycle", "Ozone layer"]},
+                {"number": 10, "name": "Improvement in Food Resources", "unit": "IV", "marks": 3, "type": "lesson", "topics": ["Improvement in crop yields", "Crop variety improvement", "Crop production management", "Crop protection management", "Animal husbandry"]},
+                {"number": 11, "name": "Motion", "unit": "III", "marks": 7, "type": "lesson", "topics": ["Describing motion", "Distance and displacement", "Uniform and non-uniform motion", "Speed", "Velocity", "Acceleration", "Graphical representation", "Equations of motion", "Uniform circular motion"]},
+                {"number": 12, "name": "Force and Laws of Motion", "unit": "III", "marks": 7, "type": "lesson", "topics": ["Balanced and unbalanced forces", "First law of motion", "Inertia", "Mass", "Second law of motion", "Third law of motion", "Conservation of momentum"]},
+                {"number": 13, "name": "Gravitation", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Gravitation", "Universal law of gravitation", "Importance of universal law", "Free fall", "Acceleration due to gravity", "Mass and weight", "Thrust and pressure", "Pressure in fluids", "Buoyancy", "Archimedes principle", "Relative density"]},
+                {"number": 14, "name": "Work and Energy", "unit": "III", "marks": 5, "type": "lesson", "topics": ["Work", "Energy", "Forms of energy", "Kinetic energy", "Potential energy", "Law of conservation of energy", "Power", "Commercial unit of energy"]},
+                {"number": 15, "name": "Sound", "unit": "III", "marks": 3, "type": "lesson", "topics": ["Production of sound", "Propagation of sound", "Sound waves", "Characteristics of sound wave", "Speed of sound", "Reflection of sound", "Echo", "Reverberation", "Uses of ultrasound", "Structure of human ear"]}
+            ]
+        },
+        "Social Science": {"book": "Social Science - 9", "chapters": []}
+    }
+}
+
+# Class 10 - NCERT 2024-25 Syllabus
+NCERT_SYLLABUS_DATA["10"] = {
+    "subjects": {
+        "Hindi": {"book": "क्षितिज भाग-2 & कृतिका भाग-2", "chapters": []},
+        "English": {"book": "First Flight & Footprints Without Feet", "chapters": []},
+        "Mathematics": {
+            "book": "Mathematics (NCERT 2024-25)",
+            "units": [
+                {"unit": "I", "name": "Number Systems", "marks": 6},
+                {"unit": "II", "name": "Algebra", "marks": 20},
+                {"unit": "III", "name": "Coordinate Geometry", "marks": 6},
+                {"unit": "IV", "name": "Geometry", "marks": 15},
+                {"unit": "V", "name": "Trigonometry", "marks": 12},
+                {"unit": "VI", "name": "Mensuration", "marks": 10},
+                {"unit": "VII", "name": "Statistics and Probability", "marks": 11}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Real Numbers", "unit": "I", "marks": 6, "type": "lesson", "topics": ["Euclid's division lemma", "Fundamental theorem of arithmetic", "Revisiting irrational numbers", "Revisiting rational numbers", "HCF and LCM"]},
+                {"number": 2, "name": "Polynomials", "unit": "II", "marks": 4, "type": "lesson", "topics": ["Geometrical meaning of zeroes", "Relationship between zeroes and coefficients", "Division algorithm for polynomials"]},
+                {"number": 3, "name": "Pair of Linear Equations in Two Variables", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Graphical method", "Algebraic methods", "Substitution method", "Elimination method", "Cross-multiplication method", "Equations reducible to pair of linear equations"]},
+                {"number": 4, "name": "Quadratic Equations", "unit": "II", "marks": 5, "type": "lesson", "topics": ["Standard form", "Solution by factorisation", "Solution by completing square", "Nature of roots", "Quadratic formula"]},
+                {"number": 5, "name": "Arithmetic Progressions", "unit": "II", "marks": 5, "type": "lesson", "topics": ["Introduction to AP", "nth term of AP", "Sum of first n terms of AP"]},
+                {"number": 6, "name": "Coordinate Geometry", "unit": "III", "marks": 6, "type": "lesson", "topics": ["Distance formula", "Section formula", "Area of triangle"]},
+                {"number": 7, "name": "Triangles", "unit": "IV", "marks": 8, "type": "lesson", "topics": ["Similar figures", "Similarity of triangles", "Criteria for similarity", "Areas of similar triangles", "Pythagoras theorem"]},
+                {"number": 8, "name": "Circles", "unit": "IV", "marks": 7, "type": "lesson", "topics": ["Tangent to a circle", "Number of tangents from a point", "Theorems on tangents"]},
+                {"number": 9, "name": "Introduction to Trigonometry", "unit": "V", "marks": 6, "type": "lesson", "topics": ["Trigonometric ratios", "Trigonometric ratios of specific angles", "Trigonometric ratios of complementary angles", "Trigonometric identities"]},
+                {"number": 10, "name": "Some Applications of Trigonometry", "unit": "V", "marks": 6, "type": "lesson", "topics": ["Heights and distances", "Angle of elevation", "Angle of depression", "Applications"]},
+                {"number": 11, "name": "Areas Related to Circles", "unit": "VI", "marks": 5, "type": "lesson", "topics": ["Perimeter and area of circle", "Areas of sector and segment", "Areas of combinations of figures"]},
+                {"number": 12, "name": "Surface Areas and Volumes", "unit": "VI", "marks": 5, "type": "lesson", "topics": ["Surface area of combination of solids", "Volume of combination of solids", "Conversion of solid from one shape to another", "Frustum of a cone"]},
+                {"number": 13, "name": "Statistics", "unit": "VII", "marks": 6, "type": "lesson", "topics": ["Mean of grouped data", "Mode of grouped data", "Median of grouped data", "Graphical representation of cumulative frequency distribution"]},
+                {"number": 14, "name": "Probability", "unit": "VII", "marks": 5, "type": "lesson", "topics": ["Classical definition of probability", "Probability of an event", "Elementary events", "Complementary events"]}
+            ]
+        },
+        "Science": {
+            "book": "Science (NCERT 2024-25)",
+            "units": [
+                {"unit": "I", "name": "Chemical Substances - Nature and Behaviour", "marks": 25},
+                {"unit": "II", "name": "World of Living", "marks": 25},
+                {"unit": "III", "name": "Natural Phenomena", "marks": 12},
+                {"unit": "IV", "name": "Effects of Current", "marks": 13},
+                {"unit": "V", "name": "Natural Resources", "marks": 5}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Chemical Reactions and Equations", "unit": "I", "marks": 5, "type": "lesson", "topics": ["Chemical equations", "Balanced chemical equations", "Types of chemical reactions", "Combination reaction", "Decomposition reaction", "Displacement reaction", "Double displacement reaction", "Oxidation and reduction", "Effects of oxidation in daily life", "Corrosion", "Rancidity"]},
+                {"number": 2, "name": "Acids, Bases and Salts", "unit": "I", "marks": 5, "type": "lesson", "topics": ["Acids and bases indicators", "Reactions of acids and bases", "Acids and bases in water", "Strength of acid and base", "Importance of pH", "Salts", "pH of salts", "Chemicals from common salt", "Plaster of Paris"]},
+                {"number": 3, "name": "Metals and Non-metals", "unit": "I", "marks": 5, "type": "lesson", "topics": ["Physical properties", "Chemical properties", "Reactivity series", "Ionic compounds", "Occurrence of metals", "Extraction of metals", "Refining of metals", "Corrosion"]},
+                {"number": 4, "name": "Carbon and its Compounds", "unit": "I", "marks": 5, "type": "lesson", "topics": ["Bonding in carbon", "Covalent bond", "Versatile nature of carbon", "Saturated and unsaturated compounds", "Chains branches and rings", "Homologous series", "Nomenclature", "Chemical properties", "Ethanol", "Ethanoic acid", "Soaps and detergents"]},
+                {"number": 5, "name": "Periodic Classification of Elements", "unit": "I", "marks": 5, "type": "lesson", "topics": ["Early attempts", "Mendeleev's periodic table", "Modern periodic table", "Position of elements", "Trends in periodic table", "Metallic and non-metallic character"]},
+                {"number": 6, "name": "Life Processes", "unit": "II", "marks": 7, "type": "lesson", "topics": ["Nutrition", "Autotrophic nutrition", "Heterotrophic nutrition", "Nutrition in human beings", "Respiration", "Transportation", "Excretion"]},
+                {"number": 7, "name": "Control and Coordination", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Animals - nervous system", "Reflex actions", "Human brain", "Coordination in plants", "Hormones in animals"]},
+                {"number": 8, "name": "How do Organisms Reproduce", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Importance of variation", "Modes of reproduction", "Asexual reproduction", "Sexual reproduction", "Sexual reproduction in flowering plants", "Reproduction in human beings", "Reproductive health"]},
+                {"number": 9, "name": "Heredity and Evolution", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Accumulation of variation", "Heredity", "Inherited traits", "Rules for inheritance", "Sex determination", "Evolution", "Acquired and inherited traits", "Speciation", "Evolution and classification", "Tracing evolutionary relationships", "Human evolution"]},
+                {"number": 10, "name": "Light - Reflection and Refraction", "unit": "III", "marks": 6, "type": "lesson", "topics": ["Reflection of light", "Laws of reflection", "Spherical mirrors", "Image formation", "Mirror formula", "Magnification", "Refraction of light", "Laws of refraction", "Refractive index", "Refraction by spherical lenses", "Lens formula", "Power of lens"]},
+                {"number": 11, "name": "Human Eye and Colourful World", "unit": "III", "marks": 6, "type": "lesson", "topics": ["Human eye", "Power of accommodation", "Defects of vision", "Refraction through prism", "Dispersion of light", "Atmospheric refraction", "Scattering of light", "Tyndall effect"]},
+                {"number": 12, "name": "Electricity", "unit": "IV", "marks": 7, "type": "lesson", "topics": ["Electric current", "Electric potential", "Ohm's law", "Factors affecting resistance", "Resistivity", "Resistors in series and parallel", "Heating effect of electric current", "Electric power"]},
+                {"number": 13, "name": "Magnetic Effects of Electric Current", "unit": "IV", "marks": 6, "type": "lesson", "topics": ["Magnetic field", "Magnetic field due to current", "Force on current carrying conductor", "Electric motor", "Electromagnetic induction", "Electric generator", "Domestic electric circuits"]}
+            ]
+        },
+        "Social Science": {"book": "Social Science - 10", "chapters": []}
+    }
+}
             ],
             "chapters": [
                 {"number": 1, "name": "The Living World", "unit": "I", "marks": 4, "type": "lesson", "topics": ["Biodiversity", "Need for classification", "Taxonomy", "Taxonomic categories", "Taxonomical aids", "Herbarium", "Botanical gardens", "Museums", "Zoological parks", "Keys"]},
