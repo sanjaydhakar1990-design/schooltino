@@ -50,6 +50,7 @@ from routes.fee_payment import router as fee_payment_router
 from routes.ai_accountant import router as ai_accountant_router
 from routes.fee_management import router as fee_management_router
 from routes.voice_assistant import router as voice_assistant_router
+from routes.ai_history import router as ai_history_router
 
 # ==================== MODELS ====================
 
@@ -6471,6 +6472,7 @@ api_router.include_router(fee_payment_router)
 api_router.include_router(ai_accountant_router)
 api_router.include_router(fee_management_router)
 api_router.include_router(voice_assistant_router)
+api_router.include_router(ai_history_router)
 
 app.include_router(api_router)
 
