@@ -37,6 +37,7 @@ export const Sidebar = () => {
 
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
+    { path: '/school-analytics', icon: ClipboardList, label: 'school_analytics', roles: ['director', 'principal', 'vice_principal'] },
     { path: '/voice-assistant', icon: Mic, label: 'voice_assistant', roles: ['director', 'principal', 'vice_principal'] },
     { path: '/users', icon: UserPlus, label: 'users', roles: ['director', 'principal', 'vice_principal'] },
     { path: '/students', icon: Users, label: 'students' },
@@ -52,7 +53,6 @@ export const Sidebar = () => {
     { path: '/ai-content', icon: Sparkles, label: 'ai_content', roles: ['director', 'principal', 'vice_principal'] },
     { path: '/cctv', icon: Video, label: 'cctv_dashboard', roles: ['director', 'principal', 'vice_principal', 'security'] },
     { path: '/website', icon: Globe, label: 'website_integration', roles: ['director', 'principal'] },
-    { path: '/teacher-dashboard', icon: GraduationCap, label: 'teachtino', roles: ['teacher', 'director', 'principal', 'vice_principal'] },
     { path: '/audit-logs', icon: ClipboardList, label: 'audit_logs', roles: ['director', 'principal', 'admin'] },
     { path: '/settings', icon: Settings, label: 'settings' },
   ];
