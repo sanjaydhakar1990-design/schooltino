@@ -976,7 +976,40 @@ NCERT_SYLLABUS_DATA["10"] = {
                 {"number": 13, "name": "Magnetic Effects of Electric Current", "unit": "IV", "marks": 6, "type": "lesson", "topics": ["Magnetic field", "Magnetic field due to current", "Force on current carrying conductor", "Electric motor", "Electromagnetic induction", "Electric generator", "Domestic electric circuits"]}
             ]
         },
-        "Social Science": {"book": "Social Science - 10", "chapters": []}
+        "Social Science": {
+            "book": "Social Science - 10 (NCERT 2024-25)",
+            "units": [
+                {"unit": "History", "name": "India and the Contemporary World - II", "marks": 20},
+                {"unit": "Geography", "name": "Contemporary India - II", "marks": 20},
+                {"unit": "Civics", "name": "Democratic Politics - II", "marks": 20},
+                {"unit": "Economics", "name": "Understanding Economic Development", "marks": 20}
+            ],
+            "chapters": [
+                {"number": 1, "name": "The Rise of Nationalism in Europe", "unit": "History", "marks": 5, "type": "lesson", "topics": ["French Revolution and nationalism", "Making of nationalism in Europe", "Age of Revolutions", "Making of Germany and Italy", "Visualising the nation", "Nationalism and imperialism"]},
+                {"number": 2, "name": "Nationalism in India", "unit": "History", "marks": 6, "type": "lesson", "topics": ["First World War", "Khilafat and Non-Cooperation", "Salt March", "Civil Disobedience Movement", "Sense of collective belonging", "Towards independence"]},
+                {"number": 3, "name": "The Making of a Global World", "unit": "History", "marks": 5, "type": "lesson", "topics": ["Pre-modern world", "Nineteenth century", "Inter-war economy", "Rebuilding world economy"]},
+                {"number": 4, "name": "The Age of Industrialisation", "unit": "History", "marks": 5, "type": "lesson", "topics": ["Before the industrial revolution", "Hand labour and steam power", "Industrialisation in colonies", "Factories come up", "Peculiarities of industrial growth"]},
+                {"number": 5, "name": "Print Culture and the Modern World", "unit": "History", "marks": 5, "type": "lesson", "topics": ["First printed books", "Print comes to Europe", "Print revolution", "Reading mania", "Print culture and French Revolution", "India and print", "Religious reform and public debates"]},
+                {"number": 6, "name": "Resources and Development", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Types of resources", "Development of resources", "Resource planning", "Land resources", "Land use pattern", "Land degradation and conservation", "Soil as a resource", "Soil classification", "Soil erosion and conservation"]},
+                {"number": 7, "name": "Forest and Wildlife Resources", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Flora and fauna in India", "Vanishing forests", "Conservation of forest", "Types and distribution", "Community and conservation"]},
+                {"number": 8, "name": "Water Resources", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Water scarcity", "Multipurpose river projects", "Rainwater harvesting"]},
+                {"number": 9, "name": "Agriculture", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Types of farming", "Cropping pattern", "Major crops", "Food crops", "Non-food crops", "Technological and institutional reforms", "Impact of globalisation"]},
+                {"number": 10, "name": "Minerals and Energy Resources", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["What is a mineral", "Mode of occurrence", "Ferrous minerals", "Non-ferrous minerals", "Non-metallic minerals", "Conservation", "Energy resources", "Conventional and non-conventional"]},
+                {"number": 11, "name": "Manufacturing Industries", "unit": "Geography", "marks": 5, "type": "lesson", "topics": ["Importance of manufacturing", "Industrial location", "Classification of industries", "Agro-based industries", "Mineral-based industries", "Industrial pollution"]},
+                {"number": 12, "name": "Lifelines of National Economy", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Transport", "Roadways", "Railways", "Pipelines", "Waterways", "Airways", "Communication", "International trade", "Tourism"]},
+                {"number": 13, "name": "Power Sharing", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["Belgium and Sri Lanka", "Why power sharing", "Forms of power sharing"]},
+                {"number": 14, "name": "Federalism", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["What is federalism", "What makes India federal", "How is federalism practised", "Decentralisation in India"]},
+                {"number": 15, "name": "Democracy and Diversity", "unit": "Civics", "marks": 4, "type": "lesson", "topics": ["Civil Rights Movement", "Social differences", "Politics of social divisions"]},
+                {"number": 16, "name": "Gender, Religion and Caste", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["Gender and politics", "Religion communalism and politics", "Caste and politics"]},
+                {"number": 17, "name": "Political Parties", "unit": "Civics", "marks": 5, "type": "lesson", "topics": ["Why do we need political parties", "National parties", "State parties", "Challenges to political parties", "How can parties be reformed"]},
+                {"number": 18, "name": "Outcomes of Democracy", "unit": "Civics", "marks": 4, "type": "lesson", "topics": ["How do we assess democracy's outcomes", "Accountable responsive legitimate government", "Economic growth and development", "Reduction of inequality", "Dignity and freedom of citizens"]},
+                {"number": 19, "name": "Development", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["What development promises", "Different people different goals", "Income and other goals", "National development", "How to compare countries", "Income and other criteria", "Public facilities", "Sustainability"]},
+                {"number": 20, "name": "Sectors of the Indian Economy", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["Primary secondary tertiary sectors", "Comparing the three sectors", "Primary to tertiary", "Employment in sectors", "Organised and unorganised sectors", "Public and private sectors"]},
+                {"number": 21, "name": "Money and Credit", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["Money as medium of exchange", "Modern forms of money", "Loan activities", "Two credit situations", "Terms of credit", "Formal sector credit", "Self Help Groups"]},
+                {"number": 22, "name": "Globalisation and the Indian Economy", "unit": "Economics", "marks": 5, "type": "lesson", "topics": ["Production across countries", "Interlinking production", "Foreign trade", "Globalisation", "Factors enabling", "World Trade Organisation", "Impact on India", "Fair globalisation"]},
+                {"number": 23, "name": "Consumer Rights", "unit": "Economics", "marks": 4, "type": "lesson", "topics": ["Consumer in market", "Consumer movement", "Consumer rights", "Consumer protection act", "Consumer awareness"]}
+            ]
+        }
     }
 }
 
