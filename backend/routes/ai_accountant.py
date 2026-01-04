@@ -506,7 +506,7 @@ Keep it concise, practical, and actionable. Use emojis for better readability.
             system_message="You are an expert school accountant providing financial analysis in Hinglish."
         ).with_model("openai", "gpt-4o-mini")
         
-        analysis = chat.send_message(prompt)
+        analysis = await chat.send_message(prompt)
         
         return {
             "success": True,
@@ -571,7 +571,7 @@ School Financial Snapshot:
 Give ONE short insight (max 2 sentences) in Hinglish. Be specific and actionable.
 """
         
-        insight = chat.send_message(prompt)
+        insight = await chat.send_message(prompt)
         
         # Determine type based on financial health
         insight_type = "success" if collected > pending and collected > spent else "warning" if pending > collected else "info"
