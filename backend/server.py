@@ -4199,7 +4199,7 @@ async def create_meeting(meeting: MeetingCreate, current_user: dict = Depends(ge
     await db.meetings.insert_one(meeting_doc)
     await log_audit(current_user["id"], "create", "meetings", {"meeting_id": meeting_id, "topic": meeting.topic})
     
-    del meeting_doc["_id"] if "_id" in meeting_doc else None
+    meeting_doc.pop("_id", None)
     return meeting_doc
 
 @api_router.get("/meetings/{meeting_id}")
