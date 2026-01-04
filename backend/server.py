@@ -54,6 +54,8 @@ from routes.ai_history import router as ai_history_router
 from routes.front_office import router as front_office_router
 from routes.health_module import router as health_router
 from routes.transport import router as transport_router
+from routes.biometric import router as biometric_router
+from routes.timetable import router as timetable_router
 
 # ==================== MODELS ====================
 
@@ -6530,6 +6532,8 @@ api_router.include_router(ai_history_router)
 api_router.include_router(front_office_router)
 api_router.include_router(health_router)
 api_router.include_router(transport_router)
+api_router.include_router(biometric_router)
+api_router.include_router(timetable_router)
 
 app.include_router(api_router)
 
