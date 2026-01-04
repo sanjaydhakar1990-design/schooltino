@@ -20,13 +20,13 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { toast } from 'sonner';
-import useRazorpay from 'react-razorpay';
+import { useRazorpay } from 'react-razorpay';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function SubscriptionPage() {
   const { user, schoolId } = useAuth();
-  const [Razorpay] = useRazorpay();
+  const { error: razorpayError, isLoading: razorpayLoading, Razorpay } = useRazorpay();
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState([]);
   const [currentSub, setCurrentSub] = useState(null);
