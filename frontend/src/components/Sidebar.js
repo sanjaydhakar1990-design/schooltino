@@ -64,6 +64,7 @@ export const Sidebar = () => {
     { path: '/app/permission-manager', icon: Shield, label: 'permissions', permKey: 'user_management', directorOnly: true },
     { path: '/app/students', icon: Users, label: 'students', permKey: 'students' },
     { path: '/app/staff', icon: UserCog, label: 'staff', permKey: 'staff' },
+    { path: '/app/staff-directory', icon: Users, label: 'staff_directory', permKey: 'staff' },
     { path: '/app/classes', icon: GraduationCap, label: 'classes', permKey: 'classes' },
     { path: '/app/attendance', icon: CalendarCheck, label: 'attendance', permKey: 'attendance' },
     { path: '/app/leave', icon: Calendar, label: 'leave_management', permKey: 'leave_management' },
