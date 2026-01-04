@@ -9,56 +9,50 @@
 
 ## What's Been Implemented (Latest Session - 4 Jan 2026)
 
-### 27. AI Conversation History & Undo/Restore ✅ NEW!
+### 29. "Ask Tino" Voice AI in TeachTino & StudyTino ✅ NEW!
+- Voice assistant button added to **TeachTino** (Teacher dashboard)
+- Voice assistant button added to **StudyTino** (Student dashboard)
+- All portals now have "Ask Tino" feature for voice commands
+- AI history saved for all portal interactions
+
+### 30. Front Office / Visitor Management ✅ NEW!
+- **Visitor check-in/check-out** system
+- **Gate pass generation** with badge numbers
+- **Purpose tracking**: Parent visit, Meeting, Delivery, Vendor, Interview
+- **ID proof** recording (Aadhar, PAN, etc.)
+- **Vehicle number** tracking
+- **Student gate pass** for early leave
+- APIs: `/api/front-office/visitors/checkin`, `/checkout`, `/today`, `/history`, `/analytics`
+
+### 31. Transport Management ✅ NEW!
+- **Vehicle management** (Bus, Van, Auto)
+- **Route management** with stops and timings
+- **Student transport assignment**
+- **Live GPS tracking** (SIMULATED - Real GPS pending)
+- Driver/Conductor details
+- Monthly fee tracking
+- APIs: `/api/transport/vehicles`, `/routes`, `/track-all`, `/assign-student`
+
+### 32. Health Module ✅ NEW!
+- **Student health records** (Blood group, Height, Weight, BMI)
+- **Allergy tracking** and chronic conditions
+- **Immunization records** with due date tracking
+- **Medical incident reporting** with severity levels
+- **Health checkup scheduling**
+- **Health analytics** (Blood group distribution, etc.)
+- APIs: `/api/health/records`, `/immunizations`, `/incidents`, `/checkups`, `/analytics`
+
+### 27. AI Conversation History & Undo/Restore ✅
 - **Full AI interaction tracking** - Voice, Paper, Content, Commands
 - **Undo functionality** - Reverse AI actions (create classes, add students)
 - **Restore functionality** - Bring back undone actions
 - **Beautiful UI** with stats cards, search, filter by action type
 - **Hinglish UI messages** - "Koi AI conversation nahi mili"
-- APIs:
-  - `/api/ai-history/save` - Save AI conversation
-  - `/api/ai-history/list/{school_id}` - Get history list
-  - `/api/ai-history/stats/{school_id}` - Get usage stats
-  - `/api/ai-history/undo` - Undo an action
-  - `/api/ai-history/restore/{id}` - Restore undone action
-  - `/api/ai-history/clear/{school_id}` - Clear old history
 
-### 28. AI Paper Generator "Unknown Question" Fix ✅ NEW!
+### 28. AI Paper Generator "Unknown Question" Fix ✅
 - Fixed the issue where AI added "Additional question" with placeholder answers
 - Now uses retry logic with better prompts when marks don't match
 - Adds meaningful questions instead of fake placeholders
-- Improved marks validation with 2 retry attempts
-
-### 24. Complete NCERT 2024-25 Syllabus ✅
-- **685 chapters** across all classes (Nursery to 12th)
-- All subjects with proper marks distribution and units
-- Class 9-10 Social Science: History, Geography, Civics, Economics
-- Class 7-8 Social Science with all chapters
-- Class 11-12: Physics, Chemistry, Maths, Biology, Hindi, English
-- Rationalized syllabus as per CBSE 2024-25 guidelines
-
-### 23. AI Paper Generator Enhanced ✅
-- **Diagram Based Questions** - For science subjects
-- **HOTS Questions** - Higher Order Thinking Skills
-- **Exact marks validation** - 50 marks = exactly 50 marks
-- Complete answer keys for all questions
-- Better prompt engineering for accuracy
-
-### 22. Voice AI Assistant ("Ask Tino") ✅
-- Moved to **top header** (purple button)
-- ElevenLabs female voice (Rachel)
-- OpenAI Whisper Speech-to-Text
-- Voice commands: "Sabhi classes banao", "Attendance dikha", etc.
-- **Now saves history to AI Conversations**
-
-### 25. AI Content Studio Enhanced ✅
-- New **"AI Writer"** tab with 10 content types
-- Advanced parameters: Target Audience, Tone, Length, Key Points
-- Content types: Notice, Circular, Letter, Announcement, Newsletter, etc.
-
-### 26. OneTino Badge Removed ✅
-- "Part of OneTino Ecosystem" badge removed from all pages
-- Clean footer with only Schooltino branding
 
 ---
 
