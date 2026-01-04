@@ -44,6 +44,9 @@ import AccountantDashboard from './pages/AccountantDashboard';
 import SchoolPaymentSettings from './pages/SchoolPaymentSettings';
 import FeeStructureManagement from './pages/FeeStructureManagement';
 
+// Trial Mode Components
+import { TrialBanner, SupportFAB } from './components/TrialMode';
+
 // Components
 import Layout from './components/Layout';
 
@@ -225,7 +228,14 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <LanguageProvider>
+          {/* Trial Banner - Top of page */}
+          <TrialBanner />
+          
           <AppRoutes />
+          
+          {/* Support FAB - Bottom right */}
+          <SupportFAB />
+          
           <Toaster 
             position="top-right" 
             richColors 
