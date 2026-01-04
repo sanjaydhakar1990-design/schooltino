@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 export const TRIAL_CONFIG = {
   isTrialMode: true,
   trialDays: 30,
-  trialStartDate: '2025-01-04', // Adjust this when giving to school
+  trialStartDate: '2025-01-04', // Today's date - Adjust when giving to school
   schoolName: '', // Will be set during setup
   contactPhone: '+91 7879967616',
   contactWhatsApp: '+91 7879967616',
