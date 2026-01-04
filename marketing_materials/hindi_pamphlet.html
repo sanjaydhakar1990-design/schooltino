@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schooltino - Hindi Pamphlet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        
+        .pamphlet {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '🎓';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.1;
+            top: 10px;
+            right: 20px;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: white;
+            color: #ff6b6b;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            background: #edf2f7;
+            transform: translateY(-3px);
+        }
+        
+        .feature-item .icon {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+        
+        .feature-item h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .ai-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 16px;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .ai-banner h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .ai-banner p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .pricing-box {
+            background: #1a1a2e;
+            padding: 25px;
+            border-radius: 16px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .pricing-box h3 {
+            font-size: 16px;
+            color: #a0aec0;
+            margin-bottom: 10px;
+        }
+        
+        .pricing-box .price {
+            font-size: 40px;
+            font-weight: 800;
+        }
+        
+        .pricing-box .price span {
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .pricing-box .trial {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        .cta-section {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: white;
+        }
+        
+        .cta-section h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .pamphlet {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pamphlet">
+        <div class="header">
+            <h1>Schooltino</h1>
+            <p>AI + CCTV + Apps = स्मार्ट स्कूल</p>
+            <div class="badge">🚀 भारत का सबसे एडवांस्ड स्कूल ERP</div>
+        </div>
+        
+        <div class="content">
+            <h2 class="section-title">✨ हमारी सुविधाएं</h2>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="icon">👨‍🎓</div>
+                    <h4>छात्र प्रबंधन</h4>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">👨‍🏫</div>
+                    <h4>शिक्षक पोर्टल</h4>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">💰</div>
+                    <h4>फीस कलेक्शन</h4>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📊</div>
+                    <h4>उपस्थिति ट्रैकिंग</h4>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📝</div>
+                    <h4>परीक्षा और रिजल्ट</h4>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📹</div>
+                    <h4>CCTV इंटीग्रेशन</h4>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📱</div>
+                    <h4>मोबाइल ऐप्स</h4>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🌐</div>
+                    <h4>वेबसाइट सिंक</h4>
+                </div>
+            </div>
+            
+            <div class="ai-banner">
+                <h3>🤖 AI की ताकत से चलता है!</h3>
+                <p>
+                    AI प्रश्नपत्र जनरेटर • AI लेसन प्लान • 
+                    वॉइस असिस्टेंट (हिंदी + इंग्लिश) • स्मार्ट एनालिटिक्स
+                </p>
+            </div>
+            
+            <div class="pricing-box">
+                <h3>विशेष ऑफर</h3>
+                <div class="price">₹14,999<span>/माह</span></div>
+                <div class="trial">🎁 30 दिन FREE ट्रायल</div>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <h3>अभी संपर्क करें!</h3>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <span>📞</span>
+                    <span>+91 XXXXXXXXXX</span>
+                </div>
+                <div class="contact-item">
+                    <span>🌐</span>
+                    <span>www.schooltino.in</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
