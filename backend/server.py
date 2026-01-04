@@ -56,6 +56,7 @@ from routes.health_module import router as health_router
 from routes.transport import router as transport_router
 from routes.biometric import router as biometric_router
 from routes.timetable import router as timetable_router
+from routes.director_ai import router as director_ai_router
 
 # ==================== MODELS ====================
 
@@ -6549,6 +6550,7 @@ api_router.include_router(health_router)
 api_router.include_router(transport_router)
 api_router.include_router(biometric_router)
 api_router.include_router(timetable_router)
+api_router.include_router(director_ai_router)
 
 app.include_router(api_router)
 
