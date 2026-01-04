@@ -2237,15 +2237,18 @@ Respond in Hindi-English mix. Be practical and helpful."""
         }
         
         system_prompt = system_prompts.get(request.type, system_prompts["general"])
+        session_id = f"teacher-{current_user.get('id', 'default')[:8]}-{str(uuid.uuid4())[:8]}"
         
         chat = LlmChat(
             api_key=emergent_key or openai_key,
+            session_id=session_id,
             system_message=system_prompt
         ).with_model("openai", "gpt-4o")
         
-        response = await chat.send_async(UserMessage(content=request.prompt))
+        user_msg = UserMessage(text=request.prompt)
+        response = await chat.send_message(user_msg)
         
-        return {"response": response.content, "type": request.type, "ai_powered": True}
+        return {"response": response, "type": request.type, "ai_powered": True}
         
     except Exception as e:
         print(f"AI Error: {e}")
