@@ -243,6 +243,7 @@ const resources = {
       "notices": "सूचनाएं",
       "ai_paper": "AI पेपर जनरेटर",
       "ai_content": "AI कंटेंट स्टूडियो",
+      "ai_history": "AI हिस्ट्री",
       "voice_assistant": "वॉइस असिस्टेंट",
       "gallery": "फोटो गैलरी",
       "sms_center": "SMS सेंटर",
