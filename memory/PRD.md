@@ -181,13 +181,18 @@
 │   └── server.py (6200+ lines - needs refactoring)
 ├── frontend/
 │   └── src/
+│       ├── components/
+│       │   ├── VoiceAssistantFAB.js  # NEW: Voice AI floating button
+│       │   ├── Layout.js             # Updated: Mobile responsive
+│       │   └── Sidebar.js            # Updated: Mobile toggle
 │       └── pages/
-│           ├── FeePaymentPage.js      # NEW: Student fee payment UI
-│           ├── AccountantDashboard.js # NEW: AI Accountant Dashboard
-│           ├── StudentDashboard.js    # Updated: Fee Pay button
+│           ├── FeePaymentPage.js     # Student fee payment UI
+│           ├── AccountantDashboard.js # AI Accountant Dashboard
+│           ├── StudentDashboard.js   # Updated: Fee Pay button
 │           └── ...
 └── test_reports/
-    └── iteration_12.json
+    ├── iteration_12.json
+    └── iteration_14.json              # NEW: Voice Assistant tests
 ```
 
 ---
