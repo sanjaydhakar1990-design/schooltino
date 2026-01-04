@@ -55,6 +55,8 @@ const resources = {
       "teachtino": "TeachTino",
       "school_analytics": "School Analytics",
       "permissions": "Permissions",
+      "zoom_meetings": "Zoom Meetings",
+      "add_school": "Add School",
       "settings": "Settings",
       "audit_logs": "Audit Logs",
       
