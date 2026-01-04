@@ -852,7 +852,35 @@ NCERT_SYLLABUS_DATA["8"] = {
                 {"number": 18, "name": "Pollution of Air and Water", "marks": 5, "type": "lesson", "topics": ["Air pollution", "Water pollution", "Prevention"]}
             ]
         },
-        "Social Science": {"book": "Social Science - 8", "chapters": []}
+        "Social Science": {
+            "book": "Social Science - 8 (NCERT 2024-25 Theme-Based)",
+            "units": [
+                {"unit": "Theme A", "name": "India and the World - Land and People", "marks": 20},
+                {"unit": "Theme B", "name": "Tapestry of the Past", "marks": 30},
+                {"unit": "Theme C", "name": "Livelihoods, Economy and Society", "marks": 20},
+                {"unit": "Theme D", "name": "Governance and Democracy", "marks": 20}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Natural Resources and Their Use", "unit": "Theme A", "marks": 6, "type": "lesson", "topics": ["Types of resources", "Renewable and non-renewable", "Development of resources", "Resource conservation", "Sustainable development"]},
+                {"number": 2, "name": "How, When and Where", "unit": "Theme B", "marks": 5, "type": "lesson", "topics": ["Importance of dates", "How do we periodise", "What is colonial", "Surveys become important"]},
+                {"number": 3, "name": "From Trade to Territory", "unit": "Theme B", "marks": 5, "type": "lesson", "topics": ["East India Company", "Trade to territory", "Company rule expands", "Setting up administration"]},
+                {"number": 4, "name": "Ruling the Countryside", "unit": "Theme B", "marks": 5, "type": "lesson", "topics": ["Revenue for company", "Permanent settlement", "Mahalwari system", "Ryotwari system"]},
+                {"number": 5, "name": "Tribals, Dikus and the Vision of a Golden Age", "unit": "Theme B", "marks": 4, "type": "lesson", "topics": ["How did tribals live", "How did colonial rule affect", "Tribal chiefs", "Birsa Munda"]},
+                {"number": 6, "name": "When People Rebel 1857 and After", "unit": "Theme B", "marks": 6, "type": "lesson", "topics": ["Policies and the people", "Response of people", "From Meerut to Delhi", "Aftermath"]},
+                {"number": 7, "name": "Weavers, Iron Smelters and Factory Owners", "unit": "Theme C", "marks": 5, "type": "lesson", "topics": ["Indian textiles", "Decline of Indian textiles", "Manchester comes to India", "Factories come up"]},
+                {"number": 8, "name": "Civilising the Native, Educating the Nation", "unit": "Theme B", "marks": 4, "type": "lesson", "topics": ["How tradition changed", "Orientalist tradition", "Anglicist tradition", "Education and women"]},
+                {"number": 9, "name": "Women, Caste and Reform", "unit": "Theme C", "marks": 5, "type": "lesson", "topics": ["Women and reform", "Caste and reform", "Anti-caste movements", "Law and social change"]},
+                {"number": 10, "name": "The Making of the National Movement 1870s-1947", "unit": "Theme B", "marks": 6, "type": "lesson", "topics": ["Emergence of nationalism", "Nationalist movement growth", "Towards freedom", "Last phase of struggle"]},
+                {"number": 11, "name": "India After Independence", "unit": "Theme B", "marks": 5, "type": "lesson", "topics": ["New nation challenges", "Constitution making", "Planning for development", "National unity"]},
+                {"number": 12, "name": "The Indian Constitution", "unit": "Theme D", "marks": 5, "type": "lesson", "topics": ["Why Constitution", "Key features", "Fundamental Rights", "Directive Principles"]},
+                {"number": 13, "name": "Understanding Secularism", "unit": "Theme D", "marks": 4, "type": "lesson", "topics": ["What is secularism", "Indian secularism", "Separation of religion and state", "Constitutional provisions"]},
+                {"number": 14, "name": "Parliament and the Making of Laws", "unit": "Theme D", "marks": 5, "type": "lesson", "topics": ["Why Parliament", "People and representatives", "How Parliament works", "Law making"]},
+                {"number": 15, "name": "Understanding Our Criminal Justice System", "unit": "Theme D", "marks": 4, "type": "lesson", "topics": ["Role of police", "Role of public prosecutor", "Role of judge", "Fair trial"]},
+                {"number": 16, "name": "Understanding Marginalisation", "unit": "Theme C", "marks": 5, "type": "lesson", "topics": ["Who are marginalised", "Social marginalisation", "Economic marginalisation", "Constitutional provisions"]},
+                {"number": 17, "name": "Confronting Marginalisation", "unit": "Theme C", "marks": 4, "type": "lesson", "topics": ["Invoking fundamental rights", "Laws for the marginalised", "Conclusion", "Protection and empowerment"]},
+                {"number": 18, "name": "Public Facilities", "unit": "Theme C", "marks": 4, "type": "lesson", "topics": ["Water as case study", "Public and private", "Government role", "Access to facilities"]}
+            ]
+        }
     }
 }
 
