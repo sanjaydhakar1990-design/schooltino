@@ -795,16 +795,6 @@ async def quick_school_setup(data: QuickSchoolSetup):
         "director_email": data.director_email
     })
     
-    user_response = UserResponse(
-        id=director_data["id"],
-        email=director_data["email"],
-        name=director_data["name"],
-        role=director_data["role"],
-        mobile=director_data.get("mobile"),
-        school_id=director_data["school_id"],
-        created_at=director_data["created_at"]
-    )
-    
     return {
         "success": True,
         "message": f"School '{data.school_name}' created successfully! 🎉",
