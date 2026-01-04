@@ -7,7 +7,7 @@ AI Conversation History and Undo/Restore API
 import os
 import logging
 from typing import Optional, List
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from bson import ObjectId
