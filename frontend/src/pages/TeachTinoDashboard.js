@@ -65,6 +65,7 @@ export default function TeachTinoDashboard() {
   const [selectedClass, setSelectedClass] = useState(null);
   const [showWeakStudentDialog, setShowWeakStudentDialog] = useState(false);
   const [selectedWeakStudent, setSelectedWeakStudent] = useState(null);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   
   // Forms
   const [leaveForm, setLeaveForm] = useState({
