@@ -1336,6 +1336,9 @@ export default function TeachTinoDashboard() {
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      {/* Voice Assistant Modal - Ask Tino */}
+      <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
   );
 }
