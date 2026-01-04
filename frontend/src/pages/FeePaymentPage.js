@@ -7,21 +7,23 @@ import { Input } from '../components/ui/input';
 import { 
   CreditCard, Smartphone, Building2, Receipt, CheckCircle, 
   Loader2, Download, Clock, IndianRupee, QrCode, Copy,
-  AlertCircle, ArrowLeft, Wallet, History, FileText
+  AlertCircle, ArrowLeft, Wallet, History, FileText, School
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function FeePaymentPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [feeStatus, setFeeStatus] = useState(null);
   const [feeStructure, setFeeStructure] = useState([]);
+  const [schoolDetails, setSchoolDetails] = useState(null);
   const [selectedFee, setSelectedFee] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
+  const [showBankDetails, setShowBankDetails] = useState(false);
   const [currentReceipt, setCurrentReceipt] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [paymentInitiated, setPaymentInitiated] = useState(null);
@@ -50,6 +52,19 @@ export default function FeePaymentPage() {
       if (structureRes.ok) {
         const structureData = await structureRes.json();
         setFeeStructure(structureData.fee_structure || []);
+      }
+
+      // Fetch school details for payment info
+      try {
+        const schoolRes = await fetch(`${API}/api/schools/${schoolId}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (schoolRes.ok) {
+          const school = await schoolRes.json();
+          setSchoolDetails(school);
+        }
+      } catch (e) {
+        console.log('School details not available');
       }
     } catch (error) {
       console.error('Error fetching fee data:', error);
