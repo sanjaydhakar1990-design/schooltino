@@ -43,6 +43,8 @@ security = HTTPBearer()
 
 # Import modular routes
 from routes.ncert import router as ncert_router
+from routes.mpbse import router as mpbse_router
+from routes.syllabus import router as syllabus_router
 
 # ==================== MODELS ====================
 
