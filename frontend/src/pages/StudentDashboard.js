@@ -243,6 +243,58 @@ export default function StudyTinoDashboard() {
         { id: '1', type: 'exam', message: 'Unit Test tomorrow - Mathematics', priority: 'high' }
       ]);
 
+      // Fetch Syllabus and Exams
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        
+        // Fetch syllabus based on school's board
+        const syllabusBoard = user?.school_board || 'NCERT'; // Default to NCERT
+        const classNum = user?.class_name?.replace(/[^0-9]/g, '') || '10';
+        
+        const [syllabusRes, examsRes] = await Promise.allSettled([
+          axios.get(`${API}/syllabus/${syllabusBoard}/syllabus/${classNum}`),
+          axios.get(`${API}/exams`, { headers })
+        ]);
+
+        if (syllabusRes.status === 'fulfilled' && syllabusRes.value.data.subjects) {
+          const subjects = syllabusRes.value.data.subjects;
+          const syllabusProgress = Object.entries(subjects).map(([subject, data]) => ({
+            subject,
+            book: data.book,
+            total_chapters: data.chapters?.length || 0,
+            completed_chapters: Math.floor((data.chapters?.length || 0) * 0.4), // Mock progress
+            current_chapter: data.chapters?.[Math.floor((data.chapters?.length || 0) * 0.4)]?.name || 'Chapter 1',
+            chapters: data.chapters?.slice(0, 5) || []
+          }));
+          setSyllabus(syllabusProgress);
+        } else {
+          // Fallback mock syllabus
+          setSyllabus([
+            { subject: 'Mathematics', book: 'गणित - 10', total_chapters: 15, completed_chapters: 6, current_chapter: 'Quadratic Equations' },
+            { subject: 'Science', book: 'विज्ञान - 10', total_chapters: 16, completed_chapters: 7, current_chapter: 'Control and Coordination' },
+            { subject: 'Hindi', book: 'क्षितिज भाग-2', total_chapters: 17, completed_chapters: 8, current_chapter: 'नेताजी का चश्मा' },
+            { subject: 'English', book: 'First Flight', total_chapters: 11, completed_chapters: 5, current_chapter: 'The Hundred Dresses' },
+            { subject: 'Social Science', book: 'सामाजिक विज्ञान', total_chapters: 23, completed_chapters: 10, current_chapter: 'Federalism' }
+          ]);
+        }
+
+        if (examsRes.status === 'fulfilled') {
+          const exams = examsRes.value.data || [];
+          // Filter upcoming exams (not yet attempted)
+          const upcoming = exams.filter(e => !e.already_attempted).slice(0, 3);
+          setUpcomingExams(upcoming);
+        } else {
+          setUpcomingExams([]);
+        }
+      } catch (syllabusError) {
+        console.log('Syllabus fetch fallback');
+        setSyllabus([
+          { subject: 'Mathematics', total_chapters: 15, completed_chapters: 6, current_chapter: 'Quadratic Equations' },
+          { subject: 'Science', total_chapters: 16, completed_chapters: 7, current_chapter: 'Control and Coordination' }
+        ]);
+      }
+
     } catch (error) {
       console.error('Dashboard fetch error:', error);
     } finally {
