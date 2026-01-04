@@ -145,6 +145,7 @@ function AppRoutes() {
         <Route path="storage" element={<StorageBackup />} />
         <Route path="activity" element={<AdminActivityDashboard />} />
         <Route path="accountant" element={<AccountantDashboard />} />
+        <Route path="payment-settings" element={<SchoolPaymentSettings />} />
         <Route path="meetings" element={<ZoomMeetings />} />
         <Route path="school-registration" element={<SchoolRegistrationForm />} />
         <Route path="setup-wizard" element={<SetupWizard />} />
