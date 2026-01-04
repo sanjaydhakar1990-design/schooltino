@@ -118,12 +118,12 @@ export default function AIHistoryPage() {
         body: JSON.stringify({ conversation_id: conversationId, reason: 'User requested undo' })
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Undo failed');
+        throw new Error(data.detail || 'Undo failed');
       }
 
-      const result = await response.json();
       toast.success('Action undo ho gaya! ✅');
       fetchHistory();
       fetchStats();
