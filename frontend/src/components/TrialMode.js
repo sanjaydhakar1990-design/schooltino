@@ -25,7 +25,8 @@ export const TRIAL_CONFIG = {
 export const getTrialDaysRemaining = () => {
   const start = new Date(TRIAL_CONFIG.trialStartDate);
   const now = new Date();
-  const diffTime = (start.getTime() + TRIAL_CONFIG.trialDays * 24 * 60 * 60 * 1000) - now.getTime();
+  const endDate = new Date(start.getTime() + TRIAL_CONFIG.trialDays * 24 * 60 * 60 * 1000);
+  const diffTime = endDate.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return Math.max(0, diffDays);
 };
