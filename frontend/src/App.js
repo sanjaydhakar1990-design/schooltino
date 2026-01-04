@@ -85,6 +85,9 @@ const PublicRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Landing Page - Marketing Home */}
+      <Route path="/" element={<LandingPage />} />
+      
       {/* Public Routes */}
       <Route 
         path="/login" 
@@ -97,7 +100,7 @@ function AppRoutes() {
 
       {/* Protected Routes */}
       <Route
-        path="/"
+        path="/app"
         element={
           <ProtectedRoute>
             <Layout />
