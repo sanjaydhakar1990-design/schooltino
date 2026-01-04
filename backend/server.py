@@ -4270,7 +4270,7 @@ async def summarize_recording(recording_id: str, current_user: dict = Depends(ge
     
     await db.meeting_summaries.insert_one(summary_doc)
     
-    del summary_doc["_id"] if "_id" in summary_doc else None
+    summary_doc.pop("_id", None)
     return summary_doc
 
 @api_router.get("/meetings/summaries")
