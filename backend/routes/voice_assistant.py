@@ -281,7 +281,7 @@ async def text_to_speech(request: TTSRequest):
 @router.post("/process-command", response_model=CommandResponse)
 async def process_voice_command(request: CommandRequest):
     """Process voice command and execute action with confirmation"""
-    from core.database import db
+    db = get_database()
     
     # Detect command from text
     detected_cmd = detect_command(request.command)
@@ -316,6 +316,30 @@ async def process_voice_command(request: CommandRequest):
     
     response_text = result.get("message", "Command executed successfully!")
     audio_b64 = generate_audio_response(response_text)
+    
+    # Save to AI conversation history
+    try:
+        await db.ai_conversations.insert_one({
+            "school_id": request.school_id,
+            "user_id": request.user_id,
+            "user_input": request.command,
+            "ai_response": response_text,
+            "action_type": "voice",
+            "action_data": {
+                "action": action,
+                "affected_ids": result.get("affected_ids", []),
+                "original_state": result.get("original_state")
+            },
+            "status": "completed",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "can_undo": action in ["create_all_classes", "add_student"],
+            "undo_data": {
+                "action": action,
+                "affected_ids": result.get("affected_ids", [])
+            }
+        })
+    except Exception as e:
+        logger.error(f"Failed to save AI history: {e}")
     
     return CommandResponse(
         message=response_text,
