@@ -124,6 +124,8 @@ function AppRoutes() {
         <Route path="cctv" element={<CCTVDashboard />} />
         <Route path="meetings" element={<ZoomMeetings />} />
         <Route path="school-registration" element={<SchoolRegistrationForm />} />
+        <Route path="setup-wizard" element={<SetupWizard />} />
+        <Route path="subscription" element={<SubscriptionPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
