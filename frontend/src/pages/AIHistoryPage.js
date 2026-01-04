@@ -142,9 +142,10 @@ export default function AIHistoryPage() {
         method: 'POST'
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Restore failed');
+        throw new Error(data.detail || 'Restore failed');
       }
 
       toast.success('Action restore ho gaya! ✅');
