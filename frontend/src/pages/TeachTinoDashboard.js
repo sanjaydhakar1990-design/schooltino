@@ -953,6 +953,16 @@ export default function TeachTinoDashboard() {
               <BarChart3 className="w-6 h-6" />
               <span className="text-sm">AI Content</span>
             </Button>
+            
+            <Button 
+              onClick={() => navigate('/app/staff-directory')}
+              className="h-24 flex-col gap-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200"
+              variant="outline"
+              data-testid="staff-directory-button"
+            >
+              <User className="w-6 h-6" />
+              <span className="text-sm">Staff Directory</span>
+            </Button>
           </div>
         </section>
 
