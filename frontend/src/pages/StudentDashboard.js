@@ -900,9 +900,11 @@ export default function StudyTinoDashboard() {
             <Button 
               className="h-20 flex-col gap-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
               variant="outline"
+              onClick={() => navigate('/app/staff-directory')}
+              data-testid="contact-school-button"
             >
               <Phone className="w-5 h-5" />
-              <span className="text-xs">Contact</span>
+              <span className="text-xs">Contact School</span>
             </Button>
           </div>
         </section>
