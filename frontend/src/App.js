@@ -6,6 +6,7 @@ import { LanguageProvider } from './context/LanguageContext';
 
 // Pages
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import StaffPage from './pages/StaffPage';
