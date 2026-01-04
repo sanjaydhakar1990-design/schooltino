@@ -63,6 +63,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
   // Nav items with permission keys
   const navItems = [
     { path: '/app/dashboard', icon: LayoutDashboard, label: 'dashboard', permKey: 'dashboard' },
+    { path: '/app/director-ai', icon: Brain, label: 'director_ai', permKey: 'dashboard', directorOnly: true },
     { path: '/app/setup-wizard', icon: Rocket, label: 'setup_wizard', permKey: 'settings', directorOnly: true },
     { path: '/app/subscription', icon: CreditCard, label: 'subscription', permKey: 'settings', directorOnly: true },
     { path: '/app/school-analytics', icon: BarChart3, label: 'school_analytics', permKey: 'school_analytics' },
