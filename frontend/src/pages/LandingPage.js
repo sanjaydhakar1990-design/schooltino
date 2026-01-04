@@ -169,9 +169,12 @@ Your Login Credentials:
               <button onClick={() => scrollToSection('pricing')} className="text-slate-600 hover:text-indigo-600 transition-colors">
                 Pricing
               </button>
-              <button onClick={() => scrollToSection('register')} className="text-slate-600 hover:text-indigo-600 transition-colors">
-                Register
-              </button>
+              <a href="/teachtino" className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+                TeachTino
+              </a>
+              <a href="/studytino" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                StudyTino
+              </a>
             </div>
             
             <div className="flex items-center gap-3">
