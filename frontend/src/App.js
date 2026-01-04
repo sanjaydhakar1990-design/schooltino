@@ -44,6 +44,9 @@ import AccountantDashboard from './pages/AccountantDashboard';
 import SchoolPaymentSettings from './pages/SchoolPaymentSettings';
 import FeeStructureManagement from './pages/FeeStructureManagement';
 import AIHistoryPage from './pages/AIHistoryPage';
+import FrontOfficePage from './pages/FrontOfficePage';
+import TransportPage from './pages/TransportPage';
+import HealthModulePage from './pages/HealthModulePage';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
