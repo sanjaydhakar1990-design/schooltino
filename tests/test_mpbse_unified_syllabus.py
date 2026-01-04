@@ -208,14 +208,14 @@ class TestUnifiedSyllabusAPIs:
         assert "NCERT" in boards_in_results or "MPBSE" in boards_in_results
         print(f"✓ Unified Search 'quadratic': {data['total']} results from {data['boards_searched']}")
     
-    def test_unified_search_all_boards_photosynthesis(self):
-        """Test /api/syllabus/search/all?query=photosynthesis"""
-        response = requests.get(f"{BASE_URL}/api/syllabus/search/all?query=photosynthesis")
+    def test_unified_search_all_boards_nutrition(self):
+        """Test /api/syllabus/search/all?query=nutrition"""
+        response = requests.get(f"{BASE_URL}/api/syllabus/search/all?query=nutrition")
         assert response.status_code == 200
         
         data = response.json()
         assert data["total"] >= 1
-        print(f"✓ Unified Search 'photosynthesis': {data['total']} results")
+        print(f"✓ Unified Search 'nutrition': {data['total']} results")
     
     def test_unified_invalid_board_returns_404(self):
         """Test /api/syllabus/INVALID/classes returns 404"""
