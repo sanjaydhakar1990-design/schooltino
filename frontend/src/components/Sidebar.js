@@ -30,7 +30,10 @@ import {
   FileText,
   Calculator,
   History,
-  X
+  X,
+  Bus,
+  Heart,
+  DoorOpen
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
