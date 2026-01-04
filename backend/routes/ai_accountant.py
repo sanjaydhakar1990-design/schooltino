@@ -20,7 +20,7 @@ sys.path.append('/app/backend')
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # Emergent LLM Integration
-from emergentintegrations.llm.chat import LlmChat
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 # Database connection
 mongo_url = os.environ.get('MONGO_URL')
@@ -506,7 +506,8 @@ Keep it concise, practical, and actionable. Use emojis for better readability.
             system_message="You are an expert school accountant providing financial analysis in Hinglish."
         ).with_model("openai", "gpt-4o-mini")
         
-        analysis = await chat.send_message(prompt)
+        user_msg = UserMessage(text=prompt)
+        analysis = await chat.send_message(user_msg)
         
         return {
             "success": True,
@@ -571,7 +572,8 @@ School Financial Snapshot:
 Give ONE short insight (max 2 sentences) in Hinglish. Be specific and actionable.
 """
         
-        insight = await chat.send_message(prompt)
+        user_msg = UserMessage(text=prompt)
+        insight = await chat.send_message(user_msg)
         
         # Determine type based on financial health
         insight_type = "success" if collected > pending and collected > spent else "warning" if pending > collected else "info"
