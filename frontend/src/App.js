@@ -183,6 +183,16 @@ function AppRoutes() {
         }
       />
 
+      {/* Fee Payment Page - Student Access */}
+      <Route
+        path="/fee-payment"
+        element={
+          <ProtectedRoute>
+            <FeePaymentPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Catch all - Smart redirect based on role */}
       <Route path="*" element={<SmartRedirect />} />
     </Routes>
