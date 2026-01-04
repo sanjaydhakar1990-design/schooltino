@@ -39,6 +39,8 @@ import OnlineExamSystem from './pages/OnlineExamSystem';
 import CCTVManagement from './pages/CCTVManagement';
 import StorageBackup from './pages/StorageBackup';
 import AdminActivityDashboard from './pages/AdminActivityDashboard';
+import FeePaymentPage from './pages/FeePaymentPage';
+import AccountantDashboard from './pages/AccountantDashboard';
 
 // Components
 import Layout from './components/Layout';
@@ -141,6 +143,7 @@ function AppRoutes() {
         <Route path="cctv-management" element={<CCTVManagement />} />
         <Route path="storage" element={<StorageBackup />} />
         <Route path="activity" element={<AdminActivityDashboard />} />
+        <Route path="accountant" element={<AccountantDashboard />} />
         <Route path="meetings" element={<ZoomMeetings />} />
         <Route path="school-registration" element={<SchoolRegistrationForm />} />
         <Route path="setup-wizard" element={<SetupWizard />} />
