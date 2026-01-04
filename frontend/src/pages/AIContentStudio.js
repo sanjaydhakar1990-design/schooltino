@@ -215,7 +215,7 @@ export default function AIContentStudio() {
 
       {/* Content Types */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-slate-100">
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-slate-100">
           <TabsTrigger value="pamphlet" className="py-3 data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
             <FileImage className="w-4 h-4 mr-2" />
             Admission
@@ -231,6 +231,10 @@ export default function AIContentStudio() {
           <TabsTrigger value="activity" className="py-3 data-[state=active]:bg-rose-600 data-[state=active]:text-white">
             <Megaphone className="w-4 h-4 mr-2" />
             Activity
+          </TabsTrigger>
+          <TabsTrigger value="writing" className="py-3 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <Wand2 className="w-4 h-4 mr-2" />
+            AI Writer
           </TabsTrigger>
         </TabsList>
 
