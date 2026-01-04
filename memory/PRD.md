@@ -9,7 +9,27 @@
 
 ## What's Been Implemented (Latest Session - 4 Jan 2026)
 
-### 24. Complete NCERT 2024-25 Syllabus ✅ NEW!
+### 27. AI Conversation History & Undo/Restore ✅ NEW!
+- **Full AI interaction tracking** - Voice, Paper, Content, Commands
+- **Undo functionality** - Reverse AI actions (create classes, add students)
+- **Restore functionality** - Bring back undone actions
+- **Beautiful UI** with stats cards, search, filter by action type
+- **Hinglish UI messages** - "Koi AI conversation nahi mili"
+- APIs:
+  - `/api/ai-history/save` - Save AI conversation
+  - `/api/ai-history/list/{school_id}` - Get history list
+  - `/api/ai-history/stats/{school_id}` - Get usage stats
+  - `/api/ai-history/undo` - Undo an action
+  - `/api/ai-history/restore/{id}` - Restore undone action
+  - `/api/ai-history/clear/{school_id}` - Clear old history
+
+### 28. AI Paper Generator "Unknown Question" Fix ✅ NEW!
+- Fixed the issue where AI added "Additional question" with placeholder answers
+- Now uses retry logic with better prompts when marks don't match
+- Adds meaningful questions instead of fake placeholders
+- Improved marks validation with 2 retry attempts
+
+### 24. Complete NCERT 2024-25 Syllabus ✅
 - **685 chapters** across all classes (Nursery to 12th)
 - All subjects with proper marks distribution and units
 - Class 9-10 Social Science: History, Geography, Civics, Economics
@@ -17,7 +37,7 @@
 - Class 11-12: Physics, Chemistry, Maths, Biology, Hindi, English
 - Rationalized syllabus as per CBSE 2024-25 guidelines
 
-### 23. AI Paper Generator Enhanced ✅ NEW!
+### 23. AI Paper Generator Enhanced ✅
 - **Diagram Based Questions** - For science subjects
 - **HOTS Questions** - Higher Order Thinking Skills
 - **Exact marks validation** - 50 marks = exactly 50 marks
@@ -29,13 +49,14 @@
 - ElevenLabs female voice (Rachel)
 - OpenAI Whisper Speech-to-Text
 - Voice commands: "Sabhi classes banao", "Attendance dikha", etc.
+- **Now saves history to AI Conversations**
 
-### 25. AI Content Studio Enhanced ✅ NEW!
+### 25. AI Content Studio Enhanced ✅
 - New **"AI Writer"** tab with 10 content types
 - Advanced parameters: Target Audience, Tone, Length, Key Points
 - Content types: Notice, Circular, Letter, Announcement, Newsletter, etc.
 
-### 26. OneTino Badge Removed ✅ NEW!
+### 26. OneTino Badge Removed ✅
 - "Part of OneTino Ecosystem" badge removed from all pages
 - Clean footer with only Schooltino branding
 
