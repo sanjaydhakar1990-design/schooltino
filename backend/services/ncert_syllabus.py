@@ -520,6 +520,93 @@ NCERT_SYLLABUS_DATA["10"] = {
         "Social Science": {"book": "Social Science - 10", "chapters": []}
     }
 }
+
+# Class 11 - NCERT 2024-25 Syllabus (Complete)
+NCERT_SYLLABUS_DATA["11"] = {
+    "subjects": {
+        "Physics": {
+            "book": "Physics Part I & II (NCERT 2024-25)",
+            "units": [
+                {"unit": "I", "name": "Physical World and Measurement", "marks": 23},
+                {"unit": "II", "name": "Kinematics", "marks": 0},
+                {"unit": "III", "name": "Laws of Motion", "marks": 0},
+                {"unit": "IV", "name": "Work, Energy and Power", "marks": 17},
+                {"unit": "V", "name": "Motion of System of Particles", "marks": 0},
+                {"unit": "VI", "name": "Gravitation", "marks": 20},
+                {"unit": "VII", "name": "Properties of Bulk Matter", "marks": 0},
+                {"unit": "VIII", "name": "Thermodynamics", "marks": 0},
+                {"unit": "IX", "name": "Kinetic Theory", "marks": 10},
+                {"unit": "X", "name": "Oscillations and Waves", "marks": 0}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Units and Measurements", "unit": "I", "marks": 5, "type": "lesson", "topics": ["SI units", "Fundamental and derived units", "Measurement of length", "Measurement of mass", "Measurement of time", "Accuracy and precision", "Errors in measurement", "Significant figures", "Dimensions", "Dimensional formulae", "Dimensional analysis"]},
+                {"number": 2, "name": "Motion in a Straight Line", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Position", "Path length", "Displacement", "Average velocity", "Instantaneous velocity", "Acceleration", "Kinematic equations", "Relative velocity"]},
+                {"number": 3, "name": "Motion in a Plane", "unit": "II", "marks": 6, "type": "lesson", "topics": ["Scalars and vectors", "Vector addition", "Resolution of vectors", "Motion in a plane", "Projectile motion", "Uniform circular motion"]},
+                {"number": 4, "name": "Laws of Motion", "unit": "III", "marks": 6, "type": "lesson", "topics": ["Newton's first law", "Momentum", "Newton's second law", "Newton's third law", "Conservation of momentum", "Equilibrium", "Friction", "Circular motion"]},
+                {"number": 5, "name": "Work, Energy and Power", "unit": "IV", "marks": 6, "type": "lesson", "topics": ["Work done by constant force", "Work done by variable force", "Kinetic energy", "Work-energy theorem", "Potential energy", "Conservation of energy", "Power", "Collisions"]},
+                {"number": 6, "name": "System of Particles and Rotational Motion", "unit": "V", "marks": 6, "type": "lesson", "topics": ["Centre of mass", "Motion of centre of mass", "Linear momentum", "Angular velocity", "Torque", "Angular momentum", "Equilibrium of rigid body", "Moment of inertia", "Rolling motion"]},
+                {"number": 7, "name": "Gravitation", "unit": "VI", "marks": 5, "type": "lesson", "topics": ["Kepler's laws", "Universal law of gravitation", "Gravitational constant", "Acceleration due to gravity", "Gravitational potential energy", "Escape velocity", "Orbital velocity", "Satellites"]},
+                {"number": 8, "name": "Mechanical Properties of Solids", "unit": "VII", "marks": 5, "type": "lesson", "topics": ["Elastic behaviour", "Stress and strain", "Hooke's law", "Stress-strain curve", "Elastic moduli", "Poisson's ratio", "Applications"]},
+                {"number": 9, "name": "Mechanical Properties of Fluids", "unit": "VII", "marks": 5, "type": "lesson", "topics": ["Pressure", "Pascal's law", "Atmospheric pressure", "Hydraulic machines", "Streamline flow", "Bernoulli's principle", "Viscosity", "Surface tension"]},
+                {"number": 10, "name": "Thermal Properties of Matter", "unit": "VII", "marks": 5, "type": "lesson", "topics": ["Temperature", "Thermal expansion", "Specific heat capacity", "Calorimetry", "Change of state", "Heat transfer", "Newton's law of cooling"]},
+                {"number": 11, "name": "Thermodynamics", "unit": "VIII", "marks": 5, "type": "lesson", "topics": ["Thermal equilibrium", "Zeroth law", "Heat and work", "First law of thermodynamics", "Specific heat capacity", "Thermodynamic processes", "Heat engines", "Refrigerators", "Second law of thermodynamics"]},
+                {"number": 12, "name": "Kinetic Theory", "unit": "IX", "marks": 5, "type": "lesson", "topics": ["Molecular theory", "Behaviour of gases", "Kinetic theory of ideal gas", "Law of equipartition", "Specific heat capacity", "Mean free path"]},
+                {"number": 13, "name": "Oscillations", "unit": "X", "marks": 5, "type": "lesson", "topics": ["Periodic motion", "Simple harmonic motion", "SHM and uniform circular motion", "Velocity and acceleration in SHM", "Force law", "Energy in SHM", "Simple pendulum", "Damped oscillations", "Forced oscillations"]},
+                {"number": 14, "name": "Waves", "unit": "X", "marks": 5, "type": "lesson", "topics": ["Transverse and longitudinal waves", "Displacement relation", "Speed of travelling wave", "Principle of superposition", "Standing waves", "Beats", "Doppler effect"]}
+            ]
+        },
+        "Chemistry": {
+            "book": "Chemistry Part I & II (NCERT 2024-25)",
+            "units": [
+                {"unit": "1", "name": "Some Basic Concepts of Chemistry", "marks": 7},
+                {"unit": "2", "name": "Structure of Atom", "marks": 9},
+                {"unit": "3", "name": "Classification of Elements", "marks": 6},
+                {"unit": "4", "name": "Chemical Bonding", "marks": 7},
+                {"unit": "5", "name": "Chemical Thermodynamics", "marks": 9},
+                {"unit": "6", "name": "Equilibrium", "marks": 7},
+                {"unit": "7", "name": "Redox Reactions", "marks": 4},
+                {"unit": "8", "name": "Organic Chemistry Basics", "marks": 11},
+                {"unit": "9", "name": "Hydrocarbons", "marks": 10}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Some Basic Concepts of Chemistry", "unit": "1", "marks": 7, "type": "lesson", "topics": ["Importance of chemistry", "Nature of matter", "Properties of matter", "SI units", "Uncertainty in measurement", "Laws of chemical combination", "Dalton's atomic theory", "Atomic and molecular masses", "Mole concept", "Percentage composition", "Stoichiometry"]},
+                {"number": 2, "name": "Structure of Atom", "unit": "2", "marks": 9, "type": "lesson", "topics": ["Discovery of subatomic particles", "Atomic models", "Thomson model", "Rutherford model", "Bohr model", "Dual nature of matter", "Heisenberg uncertainty", "Quantum mechanical model", "Orbitals", "Electronic configuration"]},
+                {"number": 3, "name": "Classification of Elements and Periodicity", "unit": "3", "marks": 6, "type": "lesson", "topics": ["Early classification", "Mendeleev periodic table", "Modern periodic law", "Periodic table structure", "Nomenclature", "Electronic configuration and periodic table", "Periodic trends"]},
+                {"number": 4, "name": "Chemical Bonding and Molecular Structure", "unit": "4", "marks": 7, "type": "lesson", "topics": ["Chemical bond formation", "Ionic bonding", "Bond parameters", "Valence shell electron pair theory", "Hybridisation", "Molecular orbital theory", "Hydrogen bonding"]},
+                {"number": 5, "name": "Chemical Thermodynamics", "unit": "5", "marks": 9, "type": "lesson", "topics": ["Thermodynamic terms", "Applications", "Measurement of energy changes", "Enthalpy change", "Enthalpies of reactions", "Hess's law", "Enthalpies of different reactions", "Spontaneity", "Gibbs energy"]},
+                {"number": 6, "name": "Equilibrium", "unit": "6", "marks": 7, "type": "lesson", "topics": ["Equilibrium in physical processes", "Equilibrium in chemical processes", "Law of mass action", "Equilibrium constant", "Le Chatelier's principle", "Ionic equilibrium", "Acids and bases", "pH scale", "Buffer solutions", "Solubility equilibria"]},
+                {"number": 7, "name": "Redox Reactions", "unit": "7", "marks": 4, "type": "lesson", "topics": ["Classical idea of redox", "Redox reactions in terms of electron transfer", "Oxidation number", "Redox reactions and electrode processes"]},
+                {"number": 8, "name": "Organic Chemistry - Some Basic Principles", "unit": "8", "marks": 11, "type": "lesson", "topics": ["General introduction", "IUPAC nomenclature", "Electronic displacements", "Homolytic and heterolytic fission", "Free radicals", "Carbocations", "Carbanions", "Electrophiles and nucleophiles", "Types of organic reactions", "Purification methods", "Qualitative analysis", "Quantitative analysis"]},
+                {"number": 9, "name": "Hydrocarbons", "unit": "9", "marks": 10, "type": "lesson", "topics": ["Classification", "Alkanes", "Alkenes", "Alkynes", "Aromatic hydrocarbons", "Mechanism of electrophilic substitution", "Carcinogenicity and toxicity"]}
+            ]
+        },
+        "Mathematics": {
+            "book": "Mathematics (NCERT 2024-25)",
+            "chapters": [
+                {"number": 1, "name": "Sets", "marks": 5, "type": "lesson", "topics": ["Sets and their representations", "Empty set", "Finite and infinite sets", "Equal sets", "Subsets", "Power set", "Universal set", "Venn diagrams", "Operations on sets", "Complement of set"]},
+                {"number": 2, "name": "Relations and Functions", "marks": 5, "type": "lesson", "topics": ["Ordered pairs", "Cartesian product", "Relations", "Functions", "Domain and range", "Real valued functions", "Algebra of functions"]},
+                {"number": 3, "name": "Trigonometric Functions", "marks": 6, "type": "lesson", "topics": ["Angles", "Trigonometric functions", "Trigonometric ratios", "Trigonometric identities", "Trigonometric equations"]},
+                {"number": 4, "name": "Complex Numbers and Quadratic Equations", "marks": 4, "type": "lesson", "topics": ["Complex numbers", "Algebra of complex numbers", "Modulus and conjugate", "Argand plane", "Quadratic equations"]},
+                {"number": 5, "name": "Linear Inequalities", "marks": 3, "type": "lesson", "topics": ["Linear inequalities", "Algebraic solutions", "Graphical representation", "Solution of system of inequalities"]},
+                {"number": 6, "name": "Permutations and Combinations", "marks": 4, "type": "lesson", "topics": ["Fundamental principle of counting", "Permutations", "Combinations"]},
+                {"number": 7, "name": "Binomial Theorem", "marks": 3, "type": "lesson", "topics": ["Binomial theorem for positive integers", "General and middle terms"]},
+                {"number": 8, "name": "Sequences and Series", "marks": 5, "type": "lesson", "topics": ["Sequences", "Series", "Arithmetic progression", "Geometric progression", "Sum to n terms", "Arithmetic mean", "Geometric mean"]},
+                {"number": 9, "name": "Straight Lines", "marks": 5, "type": "lesson", "topics": ["Slope of line", "Various forms of equation of line", "General equation", "Distance of point from line"]},
+                {"number": 10, "name": "Conic Sections", "marks": 5, "type": "lesson", "topics": ["Sections of cone", "Circle", "Parabola", "Ellipse", "Hyperbola"]},
+                {"number": 11, "name": "Introduction to Three Dimensional Geometry", "marks": 4, "type": "lesson", "topics": ["Coordinate axes", "Coordinate planes", "Coordinates of point", "Distance between two points", "Section formula"]},
+                {"number": 12, "name": "Limits and Derivatives", "marks": 6, "type": "lesson", "topics": ["Intuitive idea of derivatives", "Limits", "Algebra of limits", "Limits of polynomials", "Limits of rational functions", "Derivatives", "Algebra of derivatives", "Derivative of polynomials"]},
+                {"number": 13, "name": "Statistics", "marks": 4, "type": "lesson", "topics": ["Measures of dispersion", "Range", "Mean deviation", "Variance", "Standard deviation", "Analysis of frequency distributions"]},
+                {"number": 14, "name": "Probability", "marks": 4, "type": "lesson", "topics": ["Random experiments", "Events", "Types of events", "Algebra of events", "Axiomatic approach to probability"]}
+            ]
+        },
+        "Biology": {
+            "book": "Biology (NCERT 2024-25 Rationalized)",
+            "units": [
+                {"unit": "I", "name": "Diversity of Living Organisms", "marks": 15},
+                {"unit": "II", "name": "Structural Organization in Plants and Animals", "marks": 10},
+                {"unit": "III", "name": "Cell: Structure and Function", "marks": 15},
+                {"unit": "IV", "name": "Plant Physiology", "marks": 12},
+                {"unit": "V", "name": "Human Physiology", "marks": 18}
             ],
             "chapters": [
                 {"number": 1, "name": "The Living World", "unit": "I", "marks": 4, "type": "lesson", "topics": ["Biodiversity", "Need for classification", "Taxonomy", "Taxonomic categories", "Taxonomical aids", "Herbarium", "Botanical gardens", "Museums", "Zoological parks", "Keys"]},
