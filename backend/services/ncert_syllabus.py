@@ -740,7 +740,38 @@ NCERT_SYLLABUS_DATA["7"] = {
                 {"number": 18, "name": "Wastewater Story", "marks": 4, "type": "lesson", "topics": ["Sewage", "Treatment", "Sanitation"]}
             ]
         },
-        "Social Science": {"book": "Social Science - 7", "chapters": []}
+        "Social Science": {
+            "book": "Social Science - 7 (NCERT 2024-25)",
+            "units": [
+                {"unit": "History", "name": "Our Pasts - II", "marks": 25},
+                {"unit": "Civics", "name": "Social and Political Life - II", "marks": 25},
+                {"unit": "Geography", "name": "Our Environment", "marks": 25}
+            ],
+            "chapters": [
+                {"number": 1, "name": "Tracing Changes Through a Thousand Years", "unit": "History", "marks": 4, "type": "lesson", "topics": ["New and old terminologies", "Historians and their sources", "New social and political groups", "Region and empire"]},
+                {"number": 2, "name": "New Kings and Kingdoms", "unit": "History", "marks": 4, "type": "lesson", "topics": ["Emergence of new dynasties", "Administration", "Prashastis and land grants", "Cholas"]},
+                {"number": 3, "name": "The Delhi Sultans", "unit": "History", "marks": 4, "type": "lesson", "topics": ["Finding out about Delhi Sultans", "From garrison town to empire", "Expansion", "Administration"]},
+                {"number": 4, "name": "The Mughal Empire", "unit": "History", "marks": 4, "type": "lesson", "topics": ["Who were the Mughals", "Military campaigns", "Akbar's policies", "Mansabdars and jagirdars"]},
+                {"number": 5, "name": "Rulers and Buildings", "unit": "History", "marks": 3, "type": "lesson", "topics": ["Engineering skills and construction", "Building temples and mosques", "Gardens, tombs and forts", "Region and empire"]},
+                {"number": 6, "name": "Towns, Traders and Craftspersons", "unit": "History", "marks": 3, "type": "lesson", "topics": ["Administrative centres", "Temple towns and pilgrimage centres", "Crafts and craftspersons", "Small towns"]},
+                {"number": 7, "name": "Tribes, Nomads and Settled Communities", "unit": "History", "marks": 3, "type": "lesson", "topics": ["Beyond big cities", "Who were tribal people", "How nomads and mobile people lived", "New castes and hierarchies"]},
+                {"number": 8, "name": "On Equality", "unit": "Civics", "marks": 4, "type": "lesson", "topics": ["Equality in Indian democracy", "Inequality and discrimination", "Recognising dignity", "Equality laws"]},
+                {"number": 9, "name": "Role of the Government in Health", "unit": "Civics", "marks": 3, "type": "lesson", "topics": ["Healthcare and equality", "Public and private health services", "Kerala's health model", "Costa Rica's approach"]},
+                {"number": 10, "name": "How the State Government Works", "unit": "Civics", "marks": 4, "type": "lesson", "topics": ["MLAs and constituencies", "Forming government", "Work of legislature", "State executive"]},
+                {"number": 11, "name": "Growing up as Boys and Girls", "unit": "Civics", "marks": 3, "type": "lesson", "topics": ["Being boy or girl", "Valuing housework", "Lives of domestic workers", "Women's work"]},
+                {"number": 12, "name": "Women Change the World", "unit": "Civics", "marks": 3, "type": "lesson", "topics": ["Women's movement", "Education for girls", "Changes in laws", "Stereotypes"]},
+                {"number": 13, "name": "Understanding Media", "unit": "Civics", "marks": 4, "type": "lesson", "topics": ["What is media", "Media and money", "Media and democracy", "Setting agendas"]},
+                {"number": 14, "name": "Markets Around Us", "unit": "Civics", "marks": 3, "type": "lesson", "topics": ["Weekly market", "Shops in neighbourhood", "Shopping complexes and malls", "Chain of markets"]},
+                {"number": 15, "name": "A Shirt in the Market", "unit": "Civics", "marks": 3, "type": "lesson", "topics": ["Putting out system", "Role of merchant", "Market and equality", "Foreign buyer"]},
+                {"number": 16, "name": "Environment", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Environment", "Natural and human environment", "Ecosystem", "Environmental problems"]},
+                {"number": 17, "name": "Inside Our Earth", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Interior of earth", "Rocks and minerals", "Rock cycle", "Types of rocks"]},
+                {"number": 18, "name": "Our Changing Earth", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Lithospheric plates", "Earthquakes", "Volcanoes", "Landforms"]},
+                {"number": 19, "name": "Air", "unit": "Geography", "marks": 3, "type": "lesson", "topics": ["Atmosphere", "Composition of atmosphere", "Weather and climate", "Temperature"]},
+                {"number": 20, "name": "Water", "unit": "Geography", "marks": 3, "type": "lesson", "topics": ["Water cycle", "Ocean circulation", "Tides", "Water conservation"]},
+                {"number": 21, "name": "Human Environment Interactions", "unit": "Geography", "marks": 4, "type": "lesson", "topics": ["Amazon basin", "Ganga-Brahmaputra basin", "Life in tropical regions", "Life in delta regions"]},
+                {"number": 22, "name": "Life in the Deserts", "unit": "Geography", "marks": 3, "type": "lesson", "topics": ["Sahara desert", "Ladakh", "Hot desert life", "Cold desert life"]}
+            ]
+        }
     }
 }
 
