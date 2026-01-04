@@ -9,7 +9,32 @@
 
 ## What's Been Implemented (Latest Session - 4 Jan 2026)
 
-### 29. "Ask Tino" Voice AI in TeachTino & StudyTino ✅ NEW!
+### 33. Biometric Attendance System ✅ NEW!
+- **Fingerprint & Face Recognition** support
+- **Device management** - Add/remove biometric devices
+- **Biometric enrollment** for students, teachers, staff
+- **Live attendance dashboard** with real-time punches
+- **Auto-sync with main attendance** system
+- **Analytics** - 7-day trends, enrollment stats
+- Note: Hardware integration is SIMULATED (connect ZKTeco/eSSL devices for production)
+- APIs: `/api/biometric/devices`, `/enroll`, `/punch`, `/attendance/live`, `/analytics`
+
+### 34. Timetable Auto-Scheduler ✅ NEW!
+- **AI-powered automatic timetable generation**
+- **Subject-Teacher allocation** management
+- **Constraint-based scheduling** - No conflicts
+- **Proxy/Substitute teacher** management
+- **Teacher workload balancing**
+- **Conflict detection** and resolution
+- APIs: `/api/timetable/generate`, `/allocations`, `/proxy`, `/conflicts`
+
+### 35. Pricing Restructured ✅ NEW!
+- **Starter Plan:** ₹9,999/year (Up to 500 students)
+- **Professional Plan:** ₹24,999/year (Up to 2000 students) - MOST POPULAR
+- **Enterprise Plan:** ₹49,999/year (Unlimited students)
+- **50% cheaper** than competitors with 3x more AI features!
+
+### 29. "Ask Tino" Voice AI in TeachTino & StudyTino ✅
 - Voice assistant button added to **TeachTino** (Teacher dashboard)
 - Voice assistant button added to **StudyTino** (Student dashboard)
 - All portals now have "Ask Tino" feature for voice commands
