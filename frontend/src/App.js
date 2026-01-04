@@ -27,6 +27,7 @@ import WebsiteIntegration from './pages/WebsiteIntegration';
 import LeaveManagement from './pages/LeaveManagement';
 import CCTVDashboard from './pages/CCTVDashboard';
 import SchoolAnalytics from './pages/SchoolAnalytics';
+import PermissionManager from './pages/PermissionManager';
 
 // Components
 import Layout from './components/Layout';
