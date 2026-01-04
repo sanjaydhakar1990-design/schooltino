@@ -181,7 +181,7 @@ async def undo_ai_action(request: UndoRequest, school_id: str):
         if conversation.get("status") == "undone":
             raise HTTPException(status_code=400, detail="This action was already undone")
         
-        undo_data = conversation.get("undo_data", {})
+        undo_data = conversation.get("undo_data") or {}
         action = undo_data.get("action")
         restored_data = None
         
