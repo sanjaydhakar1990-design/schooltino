@@ -305,12 +305,18 @@ export default function SchoolRegistrationForm() {
                   className="w-full h-10 rounded-lg border border-slate-200 px-3"
                   data-testid="board-type-select"
                 >
-                  <option value="CBSE">CBSE</option>
+                  <option value="NCERT">NCERT (CBSE)</option>
+                  <option value="MPBSE">MP Board (MPBSE)</option>
                   <option value="ICSE">ICSE</option>
-                  <option value="State Board">State Board</option>
-                  <option value="IB">IB</option>
+                  <option value="RBSE">Rajasthan Board (RBSE)</option>
+                  <option value="UPMSP">UP Board (UPMSP)</option>
+                  <option value="CGBSE">Chhattisgarh Board (CGBSE)</option>
+                  <option value="IB">IB (International)</option>
                   <option value="Cambridge">Cambridge</option>
                 </select>
+                <p className="text-xs text-slate-500">
+                  Syllabus automatically loaded based on board selection
+                </p>
               </div>
 
               <div className="space-y-2">
