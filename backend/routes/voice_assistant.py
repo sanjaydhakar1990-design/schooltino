@@ -267,9 +267,7 @@ async def text_to_speech(request: TTSRequest):
 @router.post("/process-command", response_model=CommandResponse)
 async def process_voice_command(request: CommandRequest):
     """Process voice command and execute action with confirmation"""
-    from core.database import get_database
-    
-    db = await get_database()
+    from core.database import db
     
     # Detect command from text
     detected_cmd = detect_command(request.command)
