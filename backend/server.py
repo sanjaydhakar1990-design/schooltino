@@ -6228,6 +6228,9 @@ async def get_admin_overview(school_id: str, current_user: dict = Depends(get_cu
 
 # ==================== APP CONFIG ====================
 
+# Include modular routers
+api_router.include_router(ncert_router)
+
 app.include_router(api_router)
 
 app.add_middleware(
