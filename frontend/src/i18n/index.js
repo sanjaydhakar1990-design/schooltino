@@ -37,6 +37,7 @@ const resources = {
       
       // Navigation
       "dashboard": "Dashboard",
+      "director_ai": "Director AI",
       "users": "User Accounts",
       "students": "Students",
       "staff": "Staff",
