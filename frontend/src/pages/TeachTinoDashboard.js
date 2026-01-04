@@ -20,7 +20,7 @@ import {
   Briefcase, UserPlus, AlertTriangle, Loader2,
   Brain, Wand2, Download, Share2, Smartphone, TrendingUp,
   Target, BookMarked, BarChart3, AlertCircle, Lightbulb,
-  Play, CheckSquare, Trophy, Star, Zap, Image
+  Play, CheckSquare, Trophy, Star, Zap, Image, Video, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
