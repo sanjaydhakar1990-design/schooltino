@@ -308,7 +308,7 @@ Use emojis to make it engaging.
             system_message="You are an expert teacher creating chapter summaries for students."
         ).with_model("openai", "gpt-4o-mini")
         
-        response = await chat.send_message_async(prompt)
+        response = chat.send_message(prompt)
         summary = response
         
         # Store the generated summary for future reference
