@@ -230,29 +230,23 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
     }
   };
 
-  // Don't show for non-admin users
-  if (!user || !['director', 'principal', 'vice_principal', 'co_director'].includes(user.role)) {
+  // Add to conversation history
+  const addToHistory = (userMsg, aiResponse) => {
+    setConversationHistory(prev => [...prev, { user: userMsg, ai: aiResponse, time: new Date() }]);
+  };
+
+  // Don't render if user not authorized (but modal can still be controlled externally)
+  if (!user || !['director', 'principal', 'vice_principal', 'co_director', 'teacher', 'admin'].includes(user.role)) {
     return null;
   }
 
   return (
     <>
-      {/* Floating Action Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all z-50 flex items-center justify-center"
-        data-testid="voice-assistant-fab"
-        title="Voice Assistant"
-      >
-        <Mic className="w-6 h-6" />
-        <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-      </button>
-
       {/* Voice Assistant Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div 
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col"
             data-testid="voice-assistant-modal"
           >
             {/* Header */}
@@ -260,16 +254,17 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Volume2 className="w-5 h-5" />
+                    <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">AI Voice Assistant</h3>
-                    <p className="text-xs text-white/80">Female Voice • Hindi/English</p>
+                    <h3 className="font-semibold">Ask Tino</h3>
+                    <p className="text-xs text-white/80">AI Assistant • Female Voice</p>
                   </div>
                 </div>
                 <button
                   onClick={() => {
-                    setIsOpen(false);
+                    if(onClose) onClose();
+                    else setInternalOpen(false);
                     stopRecording();
                   }}
                   className="p-2 hover:bg-white/20 rounded-full transition"
