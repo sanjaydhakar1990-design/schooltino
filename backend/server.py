@@ -4143,6 +4143,142 @@ async def get_cctv_alerts(current_user: dict = Depends(get_current_user)):
         ]
     }
 
+# ==================== ZOOM MEETINGS ====================
+
+class MeetingCreate(BaseModel):
+    topic: str
+    description: Optional[str] = None
+    start_time: str
+    duration: int = 60
+    password: Optional[str] = None
+    participants: Optional[str] = None
+    school_id: Optional[str] = None
+    host_id: Optional[str] = None
+    host_name: Optional[str] = None
+
+class MeetingSummaryRequest(BaseModel):
+    recording_id: str
+    transcript: Optional[str] = None
+
+@api_router.get("/meetings")
+async def get_meetings(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all meetings for the school"""
+    query = {"is_active": True}
+    if school_id:
+        query["school_id"] = school_id
+    
+    meetings = await db.meetings.find(query, {"_id": 0}).sort("start_time", -1).to_list(100)
+    return meetings
+
+@api_router.post("/meetings")
+async def create_meeting(meeting: MeetingCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new meeting (Zoom integration placeholder)"""
+    meeting_id = str(uuid.uuid4())
+    
+    # In production, this would call Zoom API
+    # For now, create a mock meeting entry
+    meeting_doc = {
+        "id": meeting_id,
+        "topic": meeting.topic,
+        "description": meeting.description,
+        "start_time": meeting.start_time,
+        "duration": meeting.duration,
+        "password": meeting.password,
+        "participants": meeting.participants,
+        "school_id": meeting.school_id,
+        "host_id": current_user["id"],
+        "host_name": current_user["name"],
+        "join_url": f"https://zoom.us/j/{uuid.uuid4().hex[:10]}",
+        "status": "scheduled",
+        "participants_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"],
+        "is_active": True
+    }
+    
+    await db.meetings.insert_one(meeting_doc)
+    await log_audit(current_user["id"], "create", "meetings", {"meeting_id": meeting_id, "topic": meeting.topic})
+    
+    del meeting_doc["_id"] if "_id" in meeting_doc else None
+    return meeting_doc
+
+@api_router.get("/meetings/{meeting_id}")
+async def get_meeting(meeting_id: str, current_user: dict = Depends(get_current_user)):
+    """Get single meeting details"""
+    meeting = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    return meeting
+
+@api_router.delete("/meetings/{meeting_id}")
+async def delete_meeting(meeting_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete/Cancel a meeting"""
+    meeting = await db.meetings.find_one({"id": meeting_id})
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    
+    await db.meetings.update_one({"id": meeting_id}, {"$set": {"is_active": False, "status": "cancelled"}})
+    await log_audit(current_user["id"], "delete", "meetings", {"meeting_id": meeting_id})
+    
+    return {"message": "Meeting cancelled"}
+
+@api_router.get("/meetings/recordings")
+async def get_recordings(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get meeting recordings"""
+    query = {}
+    if school_id:
+        query["school_id"] = school_id
+    
+    recordings = await db.meeting_recordings.find(query, {"_id": 0}).sort("recorded_date", -1).to_list(50)
+    return recordings
+
+@api_router.post("/meetings/recordings/{recording_id}/summarize")
+async def summarize_recording(recording_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate AI summary for a meeting recording"""
+    recording = await db.meeting_recordings.find_one({"id": recording_id})
+    
+    # Check if summary already exists
+    existing = await db.meeting_summaries.find_one({"recording_id": recording_id})
+    if existing:
+        del existing["_id"]
+        return existing
+    
+    # In production, this would:
+    # 1. Get transcript from Zoom API
+    # 2. Send to OpenAI for summarization
+    # For now, create a mock summary
+    
+    summary_doc = {
+        "id": str(uuid.uuid4()),
+        "recording_id": recording_id,
+        "meeting_topic": recording.get("topic", "Meeting") if recording else "Meeting",
+        "summary": "This meeting covered important discussion points regarding school operations.",
+        "key_points": [
+            "Budget allocation discussed",
+            "New academic calendar proposed",
+            "Staff training schedule finalized"
+        ],
+        "action_items": [
+            "Submit budget proposal by Friday",
+            "Circulate new calendar to all",
+            "Schedule training sessions"
+        ],
+        "sentiment": "Positive - Productive meeting",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_by": current_user["id"]
+    }
+    
+    await db.meeting_summaries.insert_one(summary_doc)
+    
+    del summary_doc["_id"] if "_id" in summary_doc else None
+    return summary_doc
+
+@api_router.get("/meetings/summaries")
+async def get_summaries(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all AI-generated meeting summaries"""
+    summaries = await db.meeting_summaries.find({}, {"_id": 0}).sort("generated_at", -1).to_list(50)
+    return summaries
+
 # ==================== ONETINO INTEGRATION API ====================
 
 @api_router.get("/onetino/school-stats")
