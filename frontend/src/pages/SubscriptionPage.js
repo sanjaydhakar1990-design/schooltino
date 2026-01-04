@@ -69,6 +69,22 @@ export default function SubscriptionPage() {
       return;
     }
 
+    // Check if Razorpay is loaded
+    if (razorpayLoading) {
+      toast.info('Payment gateway is loading. Please wait...');
+      return;
+    }
+
+    if (razorpayError) {
+      toast.error('Failed to load payment gateway. Please refresh the page.');
+      return;
+    }
+
+    if (!Razorpay) {
+      toast.error('Payment gateway not available. Please refresh the page.');
+      return;
+    }
+
     setActivating(planType);
     
     try {
