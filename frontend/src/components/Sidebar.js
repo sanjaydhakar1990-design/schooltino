@@ -29,6 +29,7 @@ import {
   CreditCard,
   FileText,
   Calculator,
+  History,
   X
 } from 'lucide-react';
 
