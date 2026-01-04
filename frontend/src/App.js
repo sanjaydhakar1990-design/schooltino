@@ -26,6 +26,7 @@ import SMSCenter from './pages/SMSCenter';
 import WebsiteIntegration from './pages/WebsiteIntegration';
 import LeaveManagement from './pages/LeaveManagement';
 import CCTVDashboard from './pages/CCTVDashboard';
+import SchoolAnalytics from './pages/SchoolAnalytics';
 
 // Components
 import Layout from './components/Layout';
