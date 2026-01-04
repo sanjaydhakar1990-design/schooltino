@@ -633,16 +633,26 @@ async def get_me(current_user: dict = Depends(get_current_user)):
             "mother_name": current_user.get("mother_name")
         }
     
-    # For regular users
-    return UserResponse(
-        id=current_user["id"],
-        email=current_user["email"],
-        name=current_user["name"],
-        role=current_user["role"],
-        mobile=current_user.get("mobile"),
-        school_id=current_user.get("school_id"),
-        created_at=current_user["created_at"]
-    )
+    # Get permissions for user
+    user_role = current_user["role"]
+    if user_role == "director":
+        permissions = DEFAULT_PERMISSIONS["director"]
+    elif "permissions" in current_user and current_user["permissions"]:
+        permissions = current_user["permissions"]
+    else:
+        permissions = DEFAULT_PERMISSIONS.get(user_role, {})
+    
+    # For regular users - return with permissions
+    return {
+        "id": current_user["id"],
+        "email": current_user["email"],
+        "name": current_user["name"],
+        "role": current_user["role"],
+        "mobile": current_user.get("mobile"),
+        "school_id": current_user.get("school_id"),
+        "created_at": current_user["created_at"],
+        "permissions": permissions
+    }
 
 # ==================== USER MANAGEMENT ROUTES ====================
 
