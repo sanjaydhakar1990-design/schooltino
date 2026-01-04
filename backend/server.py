@@ -41,6 +41,9 @@ app = FastAPI(title="Schooltino API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
+# Import modular routes
+from routes.ncert import router as ncert_router
+
 # ==================== MODELS ====================
 
 # Auth Models
