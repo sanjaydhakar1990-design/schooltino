@@ -238,6 +238,97 @@ Thank you for your payment!
           </CardContent>
         </Card>
 
+        {/* School Payment Details - Important! */}
+        <Card className="border-2 border-blue-200 bg-blue-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <School className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-blue-900">
+                  {schoolDetails?.name || 'School Account'}
+                </p>
+                <p className="text-xs text-blue-600">Payment yahi account me jayega</p>
+              </div>
+            </div>
+            
+            {/* UPI Details */}
+            {(schoolDetails?.upi_id || paymentInitiated?.upi_id) && (
+              <div className="bg-white rounded-lg p-3 mb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Smartphone className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-slate-600">UPI ID:</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-medium text-green-700">
+                      {schoolDetails?.upi_id || paymentInitiated?.upi_id || 'school@upi'}
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6"
+                      onClick={() => {
+                        navigator.clipboard.writeText(schoolDetails?.upi_id || paymentInitiated?.upi_id || '');
+                        toast.success('UPI ID copied!');
+                      }}
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bank Details Toggle */}
+            {schoolDetails?.bank_name && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full text-blue-600"
+                onClick={() => setShowBankDetails(!showBankDetails)}
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                {showBankDetails ? 'Hide' : 'Show'} Bank Details
+              </Button>
+            )}
+
+            {showBankDetails && schoolDetails?.bank_name && (
+              <div className="bg-white rounded-lg p-3 mt-2 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Bank:</span>
+                  <span className="font-medium">{schoolDetails.bank_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">A/C Name:</span>
+                  <span className="font-medium">{schoolDetails.account_holder_name || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">A/C No:</span>
+                  <span className="font-mono">
+                    {schoolDetails.account_number ? 
+                      `${schoolDetails.account_number.slice(0,4)}****${schoolDetails.account_number.slice(-4)}` : 
+                      'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">IFSC:</span>
+                  <span className="font-medium">{schoolDetails.ifsc_code || 'N/A'}</span>
+                </div>
+              </div>
+            )}
+
+            {!schoolDetails?.upi_id && !schoolDetails?.bank_name && (
+              <div className="text-center py-2">
+                <p className="text-xs text-blue-600">
+                  School payment details coming soon...
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Fee Structure */}
         <div>
           <h2 className="font-semibold text-slate-800 mb-3">📋 Select Fee to Pay</h2>
