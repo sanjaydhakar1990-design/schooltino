@@ -4969,6 +4969,444 @@ async def report_issue_to_onetino(
     
     return {"success": True, "issue_id": issue["id"], "message": "Issue reported to OneTino support"}
 
+# ==================== ONLINE EXAM SYSTEM ====================
+
+class ExamQuestion(BaseModel):
+    question: str
+    options: List[str]  # 4 options for MCQ
+    correct_answer: int  # Index of correct option (0-3)
+    marks: int = 1
+
+class ExamCreate(BaseModel):
+    title: str
+    subject: str
+    class_id: str
+    school_id: str
+    duration: int  # in minutes
+    total_marks: int
+    instructions: Optional[str] = None
+    questions: List[ExamQuestion]
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    negative_marking: bool = False
+    negative_marks: float = 0.25  # Marks to deduct per wrong answer
+
+class ExamResponse(BaseModel):
+    id: str
+    title: str
+    subject: str
+    class_id: str
+    class_name: Optional[str] = None
+    school_id: str
+    duration: int
+    total_marks: int
+    total_questions: int
+    instructions: Optional[str] = None
+    status: str  # draft, active, completed
+    created_by: str
+    created_by_name: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    negative_marking: bool = False
+    negative_marks: float = 0.25
+    created_at: str
+
+class ExamSubmission(BaseModel):
+    exam_id: str
+    answers: Dict[str, int]  # {question_index: selected_option_index}
+
+class ExamResultResponse(BaseModel):
+    id: str
+    exam_id: str
+    exam_title: str
+    subject: str
+    student_id: str
+    student_name: str
+    score: float
+    total_marks: int
+    percentage: float
+    correct_answers: int
+    wrong_answers: int
+    unanswered: int
+    time_taken: int  # in seconds
+    submitted_at: str
+    rank: Optional[int] = None
+    total_students: Optional[int] = None
+
+@api_router.post("/exams", response_model=ExamResponse)
+async def create_exam(exam: ExamCreate, current_user: dict = Depends(get_current_user)):
+    """Teacher creates a new exam"""
+    if current_user["role"] not in ["director", "principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized to create exams")
+    
+    # Calculate total marks from questions
+    total_marks = sum(q.marks for q in exam.questions)
+    
+    # Get class info
+    class_doc = await db.classes.find_one({"id": exam.class_id}, {"_id": 0})
+    class_name = f"{class_doc['name']}-{class_doc['section']}" if class_doc else None
+    
+    exam_data = {
+        "id": str(uuid.uuid4()),
+        "title": exam.title,
+        "subject": exam.subject,
+        "class_id": exam.class_id,
+        "class_name": class_name,
+        "school_id": exam.school_id,
+        "duration": exam.duration,
+        "total_marks": total_marks,
+        "total_questions": len(exam.questions),
+        "instructions": exam.instructions,
+        "questions": [q.model_dump() for q in exam.questions],
+        "status": "active",
+        "created_by": current_user["id"],
+        "created_by_name": current_user["name"],
+        "start_time": exam.start_time or datetime.now(timezone.utc).isoformat(),
+        "end_time": exam.end_time or (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+        "negative_marking": exam.negative_marking,
+        "negative_marks": exam.negative_marks,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.exams.insert_one(exam_data)
+    
+    await log_audit(current_user["id"], "create_exam", "exams", {
+        "exam_id": exam_data["id"],
+        "title": exam.title,
+        "subject": exam.subject,
+        "questions": len(exam.questions)
+    })
+    
+    return ExamResponse(
+        id=exam_data["id"],
+        title=exam_data["title"],
+        subject=exam_data["subject"],
+        class_id=exam_data["class_id"],
+        class_name=exam_data["class_name"],
+        school_id=exam_data["school_id"],
+        duration=exam_data["duration"],
+        total_marks=exam_data["total_marks"],
+        total_questions=exam_data["total_questions"],
+        instructions=exam_data["instructions"],
+        status=exam_data["status"],
+        created_by=exam_data["created_by"],
+        created_by_name=exam_data["created_by_name"],
+        start_time=exam_data["start_time"],
+        end_time=exam_data["end_time"],
+        negative_marking=exam_data["negative_marking"],
+        negative_marks=exam_data["negative_marks"],
+        created_at=exam_data["created_at"]
+    )
+
+@api_router.get("/exams")
+async def get_exams(
+    school_id: Optional[str] = None,
+    class_id: Optional[str] = None,
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all exams (for teachers) or available exams (for students)"""
+    query = {}
+    
+    # Students see only active exams for their class
+    if current_user.get("role") == "student":
+        query["class_id"] = current_user.get("class_id")
+        query["status"] = "active"
+        # Check if exam is within valid time
+        now = datetime.now(timezone.utc).isoformat()
+        query["start_time"] = {"$lte": now}
+        query["end_time"] = {"$gte": now}
+    else:
+        # Teachers/Admin can filter
+        if school_id:
+            query["school_id"] = school_id
+        if class_id:
+            query["class_id"] = class_id
+        if status:
+            query["status"] = status
+        # Teachers see their own exams
+        if current_user["role"] == "teacher":
+            query["created_by"] = current_user["id"]
+    
+    exams = await db.exams.find(query, {"_id": 0, "questions": 0}).sort("created_at", -1).to_list(100)
+    
+    # For students, check if already attempted
+    if current_user.get("role") == "student":
+        student_id = current_user.get("id")
+        for exam in exams:
+            result = await db.exam_results.find_one({
+                "exam_id": exam["id"],
+                "student_id": student_id
+            })
+            exam["already_attempted"] = result is not None
+            if result:
+                exam["my_score"] = result.get("score")
+                exam["my_percentage"] = result.get("percentage")
+    
+    return exams
+
+@api_router.get("/exams/{exam_id}")
+async def get_exam(exam_id: str, current_user: dict = Depends(get_current_user)):
+    """Get exam details (with questions for taking exam)"""
+    exam = await db.exams.find_one({"id": exam_id}, {"_id": 0})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    # For students, check if already attempted
+    if current_user.get("role") == "student":
+        result = await db.exam_results.find_one({
+            "exam_id": exam_id,
+            "student_id": current_user.get("id")
+        })
+        if result:
+            raise HTTPException(status_code=400, detail="You have already attempted this exam")
+        
+        # Remove correct answers from questions for students
+        for q in exam.get("questions", []):
+            q.pop("correct_answer", None)
+    
+    return exam
+
+@api_router.post("/exams/{exam_id}/submit", response_model=ExamResultResponse)
+async def submit_exam(exam_id: str, submission: ExamSubmission, current_user: dict = Depends(get_current_user)):
+    """Student submits exam answers"""
+    if current_user.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can submit exams")
+    
+    exam = await db.exams.find_one({"id": exam_id}, {"_id": 0})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    # Check if already attempted
+    existing = await db.exam_results.find_one({
+        "exam_id": exam_id,
+        "student_id": current_user.get("id")
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="You have already submitted this exam")
+    
+    # Calculate score
+    questions = exam.get("questions", [])
+    correct_answers = 0
+    wrong_answers = 0
+    unanswered = 0
+    score = 0
+    
+    for idx, q in enumerate(questions):
+        answer_key = str(idx)
+        if answer_key in submission.answers:
+            if submission.answers[answer_key] == q["correct_answer"]:
+                correct_answers += 1
+                score += q["marks"]
+            else:
+                wrong_answers += 1
+                if exam.get("negative_marking"):
+                    score -= exam.get("negative_marks", 0.25)
+        else:
+            unanswered += 1
+    
+    # Ensure score doesn't go negative
+    score = max(0, score)
+    
+    total_marks = exam["total_marks"]
+    percentage = round((score / total_marks) * 100, 2) if total_marks > 0 else 0
+    
+    # Get student info
+    student = current_user
+    student_name = student.get("name", "Unknown")
+    
+    result_data = {
+        "id": str(uuid.uuid4()),
+        "exam_id": exam_id,
+        "exam_title": exam["title"],
+        "subject": exam["subject"],
+        "class_id": exam["class_id"],
+        "school_id": exam["school_id"],
+        "student_id": current_user.get("id"),
+        "student_name": student_name,
+        "answers": submission.answers,
+        "score": score,
+        "total_marks": total_marks,
+        "percentage": percentage,
+        "correct_answers": correct_answers,
+        "wrong_answers": wrong_answers,
+        "unanswered": unanswered,
+        "time_taken": 0,  # Can be tracked from frontend
+        "submitted_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.exam_results.insert_one(result_data)
+    
+    # Calculate rank
+    all_results = await db.exam_results.find(
+        {"exam_id": exam_id},
+        {"_id": 0, "score": 1}
+    ).sort("score", -1).to_list(1000)
+    
+    rank = 1
+    for r in all_results:
+        if r["score"] > score:
+            rank += 1
+    
+    await log_audit(current_user.get("id"), "submit_exam", "exams", {
+        "exam_id": exam_id,
+        "score": score,
+        "percentage": percentage
+    })
+    
+    return ExamResultResponse(
+        id=result_data["id"],
+        exam_id=exam_id,
+        exam_title=exam["title"],
+        subject=exam["subject"],
+        student_id=result_data["student_id"],
+        student_name=student_name,
+        score=score,
+        total_marks=total_marks,
+        percentage=percentage,
+        correct_answers=correct_answers,
+        wrong_answers=wrong_answers,
+        unanswered=unanswered,
+        time_taken=0,
+        submitted_at=result_data["submitted_at"],
+        rank=rank,
+        total_students=len(all_results)
+    )
+
+@api_router.get("/exams/my-results")
+async def get_my_exam_results(current_user: dict = Depends(get_current_user)):
+    """Get student's exam results"""
+    if current_user.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can view their results")
+    
+    results = await db.exam_results.find(
+        {"student_id": current_user.get("id")},
+        {"_id": 0, "answers": 0}
+    ).sort("submitted_at", -1).to_list(100)
+    
+    # Add rank for each result
+    for result in results:
+        all_results = await db.exam_results.find(
+            {"exam_id": result["exam_id"]},
+            {"_id": 0, "score": 1}
+        ).sort("score", -1).to_list(1000)
+        
+        rank = 1
+        for r in all_results:
+            if r["score"] > result["score"]:
+                rank += 1
+        
+        result["rank"] = rank
+        result["total_students"] = len(all_results)
+    
+    return results
+
+@api_router.get("/exams/{exam_id}/results")
+async def get_exam_results(exam_id: str, current_user: dict = Depends(get_current_user)):
+    """Teacher views all results for an exam"""
+    if current_user["role"] not in ["director", "principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    exam = await db.exams.find_one({"id": exam_id}, {"_id": 0})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    results = await db.exam_results.find(
+        {"exam_id": exam_id},
+        {"_id": 0, "answers": 0}
+    ).sort("score", -1).to_list(1000)
+    
+    # Add ranks
+    for idx, result in enumerate(results):
+        result["rank"] = idx + 1
+        result["total_students"] = len(results)
+    
+    # Calculate statistics
+    if results:
+        scores = [r["score"] for r in results]
+        stats = {
+            "total_submissions": len(results),
+            "highest_score": max(scores),
+            "lowest_score": min(scores),
+            "average_score": round(sum(scores) / len(scores), 2),
+            "pass_count": len([s for s in scores if (s / exam["total_marks"] * 100) >= 40]),
+            "fail_count": len([s for s in scores if (s / exam["total_marks"] * 100) < 40])
+        }
+    else:
+        stats = {
+            "total_submissions": 0,
+            "highest_score": 0,
+            "lowest_score": 0,
+            "average_score": 0,
+            "pass_count": 0,
+            "fail_count": 0
+        }
+    
+    return {
+        "exam": {
+            "id": exam["id"],
+            "title": exam["title"],
+            "subject": exam["subject"],
+            "total_marks": exam["total_marks"],
+            "total_questions": exam["total_questions"]
+        },
+        "stats": stats,
+        "results": results
+    }
+
+@api_router.put("/exams/{exam_id}/status")
+async def update_exam_status(exam_id: str, status: str, current_user: dict = Depends(get_current_user)):
+    """Update exam status (active, completed, draft)"""
+    if current_user["role"] not in ["director", "principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if status not in ["draft", "active", "completed"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    result = await db.exams.update_one(
+        {"id": exam_id},
+        {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    return {"message": f"Exam status updated to {status}"}
+
+@api_router.delete("/exams/{exam_id}")
+async def delete_exam(exam_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an exam"""
+    if current_user["role"] not in ["director", "principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    exam = await db.exams.find_one({"id": exam_id})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    # Check if exam has submissions
+    submissions = await db.exam_results.count_documents({"exam_id": exam_id})
+    if submissions > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete exam with {submissions} submissions. Mark as completed instead.")
+    
+    await db.exams.delete_one({"id": exam_id})
+    
+    await log_audit(current_user["id"], "delete_exam", "exams", {"exam_id": exam_id})
+    
+    return {"message": "Exam deleted successfully"}
+
+@api_router.get("/exams/{exam_id}/leaderboard")
+async def get_exam_leaderboard(exam_id: str, limit: int = 10, current_user: dict = Depends(get_current_user)):
+    """Get top performers for an exam"""
+    results = await db.exam_results.find(
+        {"exam_id": exam_id},
+        {"_id": 0, "student_name": 1, "score": 1, "percentage": 1, "submitted_at": 1}
+    ).sort("score", -1).limit(limit).to_list(limit)
+    
+    for idx, r in enumerate(results):
+        r["rank"] = idx + 1
+    
+    return results
+
 # ==================== APP CONFIG ====================
 
 app.include_router(api_router)
