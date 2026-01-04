@@ -23,7 +23,8 @@ import {
   Calendar,
   Video,
   BarChart3,
-  Shield
+  Shield,
+  Building2
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -51,6 +52,7 @@ export const Sidebar = () => {
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard', permKey: 'dashboard' },
     { path: '/school-analytics', icon: BarChart3, label: 'school_analytics', permKey: 'school_analytics' },
+    { path: '/school-registration', icon: Building2, label: 'add_school', permKey: 'settings', directorOnly: true },
     { path: '/users', icon: UserPlus, label: 'users', permKey: 'user_management' },
     { path: '/permission-manager', icon: Shield, label: 'permissions', permKey: 'user_management', directorOnly: true },
     { path: '/students', icon: Users, label: 'students', permKey: 'students' },
@@ -60,6 +62,7 @@ export const Sidebar = () => {
     { path: '/leave', icon: Calendar, label: 'leave_management', permKey: 'leave_management' },
     { path: '/fees', icon: Wallet, label: 'fees', permKey: 'fees' },
     { path: '/notices', icon: Bell, label: 'notices', permKey: 'notices' },
+    { path: '/meetings', icon: Video, label: 'zoom_meetings', permKey: 'meetings' },
     { path: '/sms', icon: MessageSquare, label: 'sms_center', permKey: 'sms_center' },
     { path: '/gallery', icon: Image, label: 'gallery', permKey: 'gallery' },
     { path: '/ai-paper', icon: Sparkles, label: 'ai_paper', permKey: 'ai_paper' },
