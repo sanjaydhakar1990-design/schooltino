@@ -237,6 +237,7 @@ const resources = {
       "website_integration": "वेबसाइट कनेक्ट",
       "teachtino": "टीचटीनो",
       "school_analytics": "स्कूल रिपोर्ट्स",
+      "permissions": "अनुमतियां",
       "settings": "सेटिंग्स",
       "audit_logs": "ऑडिट लॉग",
       
