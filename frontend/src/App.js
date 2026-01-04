@@ -30,6 +30,8 @@ import SchoolAnalytics from './pages/SchoolAnalytics';
 import PermissionManager from './pages/PermissionManager';
 import SchoolRegistrationForm from './pages/SchoolRegistrationForm';
 import ZoomMeetings from './pages/ZoomMeetings';
+import SetupWizard from './pages/SetupWizard';
+import SubscriptionPage from './pages/SubscriptionPage';
 
 // Components
 import Layout from './components/Layout';
