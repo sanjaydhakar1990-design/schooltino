@@ -45,6 +45,9 @@ security = HTTPBearer()
 from routes.ncert import router as ncert_router
 from routes.mpbse import router as mpbse_router
 from routes.syllabus import router as syllabus_router
+from routes.syllabus_progress import router as syllabus_progress_router
+from routes.fee_payment import router as fee_payment_router
+from routes.ai_accountant import router as ai_accountant_router
 
 # ==================== MODELS ====================
 
@@ -6234,6 +6237,9 @@ async def get_admin_overview(school_id: str, current_user: dict = Depends(get_cu
 api_router.include_router(ncert_router)
 api_router.include_router(mpbse_router)
 api_router.include_router(syllabus_router)
+api_router.include_router(syllabus_progress_router)
+api_router.include_router(fee_payment_router)
+api_router.include_router(ai_accountant_router)
 
 app.include_router(api_router)
 
