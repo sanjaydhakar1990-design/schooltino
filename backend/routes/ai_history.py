@@ -54,6 +54,26 @@ async def get_current_user_from_token(authorization: str = None):
     return {"id": "user123", "school_id": "school123", "role": "director"}
 
 
+def get_db():
+    """Get database instance from server module"""
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from motor.motor_asyncio import AsyncIOMotorClient
+    from dotenv import load_dotenv
+    load_dotenv()
+    mongo_url = os.environ['MONGO_URL']
+    client = AsyncIOMotorClient(mongo_url)
+    return client[os.environ['DB_NAME']]
+
+db = None
+
+def get_database():
+    global db
+    if db is None:
+        db = get_db()
+    return db
+
+
 @router.post("/save")
 async def save_ai_conversation(
     conversation: AIConversation,
@@ -61,7 +81,7 @@ async def save_ai_conversation(
     user_id: str
 ):
     """Save an AI conversation to history"""
-    from core.database import db
+    db = get_database()
     
     try:
         doc = {
@@ -105,7 +125,7 @@ async def get_ai_history(
     action_type: Optional[str] = None
 ):
     """Get AI conversation history for a school"""
-    from core.database import db
+    db = get_database()
     
     try:
         query = {"school_id": school_id}
@@ -143,7 +163,7 @@ async def get_ai_history(
 @router.post("/undo")
 async def undo_ai_action(request: UndoRequest, school_id: str):
     """Undo an AI action if possible"""
-    from core.database import db
+    db = get_database()
     
     try:
         # Find the conversation
@@ -230,7 +250,7 @@ async def undo_ai_action(request: UndoRequest, school_id: str):
 @router.post("/restore/{conversation_id}")
 async def restore_ai_action(conversation_id: str, school_id: str):
     """Restore a previously undone action"""
-    from core.database import db
+    db = get_database()
     
     try:
         conversation = await db.ai_conversations.find_one({
@@ -279,8 +299,7 @@ async def restore_ai_action(conversation_id: str, school_id: str):
 @router.delete("/clear/{school_id}")
 async def clear_ai_history(school_id: str, days_old: int = 30):
     """Clear old AI conversation history"""
-    from core.database import db
-    from datetime import timedelta
+    db = get_database()
     
     try:
         cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days_old)).isoformat()
@@ -305,7 +324,7 @@ async def clear_ai_history(school_id: str, days_old: int = 30):
 @router.get("/stats/{school_id}")
 async def get_ai_usage_stats(school_id: str):
     """Get AI usage statistics"""
-    from core.database import db
+    db = get_database()
     
     try:
         # Count by action type
