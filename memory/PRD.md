@@ -207,4 +207,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Preview URL:** https://schoolai-1.preview.emergentagent.com
+- **Preview URL:** https://schoolpro-10.preview.emergentagent.com
