@@ -58,6 +58,7 @@ export default function StudyTinoDashboard() {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showAIHelper, setShowAIHelper] = useState(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   
   // Selected items
   const [selectedNotice, setSelectedNotice] = useState(null);
