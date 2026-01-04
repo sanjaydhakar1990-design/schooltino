@@ -21,7 +21,9 @@ import {
   Image,
   MessageSquare,
   Calendar,
-  Video
+  Video,
+  BarChart3,
+  Shield
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -35,31 +37,46 @@ export const Sidebar = () => {
     navigate('/login');
   };
 
+  // Get user permissions
+  const permissions = user?.permissions || {};
+  const isDirector = user?.role === 'director';
+
+  // Check if user has permission for a feature
+  const hasPermission = (permKey) => {
+    if (isDirector) return true; // Director has all permissions
+    return permissions[permKey] === true;
+  };
+
+  // Nav items with permission keys
   const navItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
-    { path: '/school-analytics', icon: ClipboardList, label: 'school_analytics', roles: ['director', 'principal', 'vice_principal'] },
-    { path: '/voice-assistant', icon: Mic, label: 'voice_assistant', roles: ['director', 'principal', 'vice_principal'] },
-    { path: '/users', icon: UserPlus, label: 'users', roles: ['director', 'principal', 'vice_principal'] },
-    { path: '/students', icon: Users, label: 'students' },
-    { path: '/staff', icon: UserCog, label: 'staff' },
-    { path: '/classes', icon: GraduationCap, label: 'classes' },
-    { path: '/attendance', icon: CalendarCheck, label: 'attendance' },
-    { path: '/leave', icon: Calendar, label: 'leave_management' },
-    { path: '/fees', icon: Wallet, label: 'fees' },
-    { path: '/notices', icon: Bell, label: 'notices' },
-    { path: '/sms', icon: MessageSquare, label: 'sms_center', roles: ['director', 'principal', 'vice_principal', 'accountant'] },
-    { path: '/gallery', icon: Image, label: 'gallery' },
-    { path: '/ai-paper', icon: Sparkles, label: 'ai_paper' },
-    { path: '/ai-content', icon: Sparkles, label: 'ai_content', roles: ['director', 'principal', 'vice_principal'] },
-    { path: '/cctv', icon: Video, label: 'cctv_dashboard', roles: ['director', 'principal', 'vice_principal', 'security'] },
-    { path: '/website', icon: Globe, label: 'website_integration', roles: ['director', 'principal'] },
-    { path: '/audit-logs', icon: ClipboardList, label: 'audit_logs', roles: ['director', 'principal', 'admin'] },
-    { path: '/settings', icon: Settings, label: 'settings' },
+    { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard', permKey: 'dashboard' },
+    { path: '/school-analytics', icon: BarChart3, label: 'school_analytics', permKey: 'school_analytics' },
+    { path: '/users', icon: UserPlus, label: 'users', permKey: 'user_management' },
+    { path: '/permission-manager', icon: Shield, label: 'permissions', permKey: 'user_management', directorOnly: true },
+    { path: '/students', icon: Users, label: 'students', permKey: 'students' },
+    { path: '/staff', icon: UserCog, label: 'staff', permKey: 'staff' },
+    { path: '/classes', icon: GraduationCap, label: 'classes', permKey: 'classes' },
+    { path: '/attendance', icon: CalendarCheck, label: 'attendance', permKey: 'attendance' },
+    { path: '/leave', icon: Calendar, label: 'leave_management', permKey: 'leave_management' },
+    { path: '/fees', icon: Wallet, label: 'fees', permKey: 'fees' },
+    { path: '/notices', icon: Bell, label: 'notices', permKey: 'notices' },
+    { path: '/sms', icon: MessageSquare, label: 'sms_center', permKey: 'sms_center' },
+    { path: '/gallery', icon: Image, label: 'gallery', permKey: 'gallery' },
+    { path: '/ai-paper', icon: Sparkles, label: 'ai_paper', permKey: 'ai_paper' },
+    { path: '/ai-content', icon: Sparkles, label: 'ai_content', permKey: 'ai_content' },
+    { path: '/voice-assistant', icon: Mic, label: 'voice_assistant', permKey: 'meetings' },
+    { path: '/cctv', icon: Video, label: 'cctv_dashboard', permKey: 'cctv' },
+    { path: '/website', icon: Globe, label: 'website_integration', permKey: 'website_integration' },
+    { path: '/audit-logs', icon: ClipboardList, label: 'audit_logs', permKey: 'audit_logs' },
+    { path: '/settings', icon: Settings, label: 'settings', permKey: 'settings' },
   ];
 
+  // Filter items based on permissions
   const filteredItems = navItems.filter(item => {
-    if (!item.roles) return true;
-    return item.roles.includes(user?.role);
+    // Director-only items
+    if (item.directorOnly && !isDirector) return false;
+    // Check permission
+    return hasPermission(item.permKey);
   });
 
   return (
@@ -72,9 +89,28 @@ export const Sidebar = () => {
           </div>
           <div>
             <h1 className="text-lg font-bold text-white font-heading">Schooltino</h1>
-            <p className="text-xs text-slate-400">Admin Panel</p>
+            <p className="text-xs text-slate-400">
+              {isDirector ? 'Director Panel' : 
+               user?.role === 'principal' ? 'Principal Panel' :
+               user?.role === 'vice_principal' ? 'VP Panel' :
+               user?.role === 'co_director' ? 'Co-Director Panel' :
+               'Admin Panel'}
+            </p>
           </div>
         </div>
+      </div>
+
+      {/* Role Badge */}
+      <div className="px-4 py-2">
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+          isDirector ? 'bg-purple-500/20 text-purple-300' :
+          user?.role === 'principal' ? 'bg-blue-500/20 text-blue-300' :
+          user?.role === 'vice_principal' ? 'bg-emerald-500/20 text-emerald-300' :
+          'bg-slate-500/20 text-slate-300'
+        }`}>
+          <Shield className="w-3 h-3 mr-1" />
+          {user?.role?.replace('_', ' ').toUpperCase()}
+        </span>
       </div>
 
       {/* Navigation */}
@@ -111,12 +147,16 @@ export const Sidebar = () => {
 
         {/* User info */}
         <div className="flex items-center gap-3 px-4 py-2">
-          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+            isDirector ? 'bg-purple-600' :
+            user?.role === 'principal' ? 'bg-blue-600' :
+            'bg-indigo-600'
+          }`}>
             {user?.name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-            <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
+            <p className="text-xs text-slate-400 capitalize">{user?.role?.replace('_', ' ')}</p>
           </div>
         </div>
 
