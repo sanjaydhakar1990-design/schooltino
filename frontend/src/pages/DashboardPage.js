@@ -13,6 +13,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { TrialStatusCard } from '../components/TrialMode';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
