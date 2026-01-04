@@ -172,16 +172,50 @@ DEFAULT_PERMISSIONS = {
     }
 }
 
-# School Models
+# School Models - Comprehensive School Registration
 class SchoolCreate(BaseModel):
+    # Basic Info
     name: str
     address: str
-    board_type: str  # CBSE, ICSE, State Board
+    board_type: str  # CBSE, ICSE, State Board, IB
     city: str
     state: str
+    pincode: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
-    logo_url: Optional[str] = None
+    
+    # Extended Info for AI
+    registration_number: Optional[str] = None  # School registration/affiliation number
+    established_year: Optional[int] = None  # Year school was established
+    website_url: Optional[str] = None  # School website
+    logo_url: Optional[str] = None  # School logo
+    school_photo_url: Optional[str] = None  # Main school building photo
+    
+    # School Details for AI Context
+    school_type: Optional[str] = None  # Primary, Secondary, Senior Secondary, K-12
+    medium: Optional[str] = None  # Hindi, English, Regional
+    shift: Optional[str] = None  # Morning, Day, Both
+    total_capacity: Optional[int] = None  # Max student capacity
+    
+    # About School (for AI context)
+    motto: Optional[str] = None  # School motto
+    principal_name: Optional[str] = None
+    principal_message: Optional[str] = None
+    about_school: Optional[str] = None  # Brief description
+    vision: Optional[str] = None
+    mission: Optional[str] = None
+    achievements: Optional[str] = None  # Notable achievements
+    facilities: Optional[List[str]] = None  # Labs, Library, Sports, etc.
+    
+    # Social & Contact
+    facebook_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    youtube_url: Optional[str] = None
+    whatsapp_number: Optional[str] = None
+    
+    # App Customization
+    app_requirements: Optional[str] = None  # What features school needs most
+    ai_assistant_name: Optional[str] = None  # Custom AI assistant name for this school
 
 class SchoolResponse(BaseModel):
     id: str
@@ -190,9 +224,43 @@ class SchoolResponse(BaseModel):
     board_type: str
     city: str
     state: str
+    pincode: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    
+    # Extended Info
+    registration_number: Optional[str] = None
+    established_year: Optional[int] = None
+    website_url: Optional[str] = None
     logo_url: Optional[str] = None
+    school_photo_url: Optional[str] = None
+    
+    # School Details
+    school_type: Optional[str] = None
+    medium: Optional[str] = None
+    shift: Optional[str] = None
+    total_capacity: Optional[int] = None
+    
+    # About School
+    motto: Optional[str] = None
+    principal_name: Optional[str] = None
+    principal_message: Optional[str] = None
+    about_school: Optional[str] = None
+    vision: Optional[str] = None
+    mission: Optional[str] = None
+    achievements: Optional[str] = None
+    facilities: Optional[List[str]] = None
+    
+    # Social
+    facebook_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    youtube_url: Optional[str] = None
+    whatsapp_number: Optional[str] = None
+    
+    # App Settings
+    app_requirements: Optional[str] = None
+    ai_assistant_name: Optional[str] = None
+    
     created_at: str
     is_active: bool = True
 
