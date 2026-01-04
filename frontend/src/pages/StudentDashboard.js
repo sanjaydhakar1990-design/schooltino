@@ -532,6 +532,38 @@ export default function StudyTinoDashboard() {
           </div>
         </section>
 
+        {/* ==================== ONLINE EXAMS SECTION ==================== */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-slate-800">📝 Online Exams</h2>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-indigo-600"
+              onClick={() => navigate('/app/exams')}
+            >
+              View All <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+          <div 
+            onClick={() => navigate('/app/exams')}
+            className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-white cursor-pointer hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="font-semibold">Take Online Exam</p>
+                  <p className="text-sm text-white/80">Computer lab mein exam do</p>
+                </div>
+              </div>
+              <ChevronRight className="w-6 h-6" />
+            </div>
+          </div>
+        </section>
+
         {/* ==================== SECTION B: LATEST NOTICE (Big Card) ==================== */}
         {notices.length > 0 && (
           <section>
