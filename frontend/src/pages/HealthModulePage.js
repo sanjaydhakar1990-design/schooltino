@@ -276,7 +276,7 @@ export default function HealthModulePage() {
         {/* Incidents Tab */}
         <TabsContent value="incidents" className="mt-4">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Today's Medical Incidents</h3>
+            <h3 className="text-lg font-semibold">Today&apos;s Medical Incidents</h3>
             <Button onClick={() => setShowIncidentDialog(true)} className="bg-red-600 hover:bg-red-700">
               <Plus className="w-4 h-4 mr-2" />
               Report Incident
