@@ -103,6 +103,7 @@ function AppRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="school-analytics" element={<SchoolAnalytics />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="permission-manager" element={<PermissionManager />} />
         <Route path="students" element={<StudentsPage />} />
         <Route path="staff" element={<StaffPage />} />
         <Route path="classes" element={<ClassesPage />} />
