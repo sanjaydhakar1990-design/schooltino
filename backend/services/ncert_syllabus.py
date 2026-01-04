@@ -1181,8 +1181,47 @@ NCERT_SYLLABUS_DATA["11"] = {
                 {"number": 19, "name": "Chemical Coordination and Integration", "unit": "V", "marks": 3, "type": "lesson", "topics": ["Endocrine glands and hormones", "Human endocrine system", "Hypothalamus", "Pituitary gland", "Pineal gland", "Thyroid gland", "Parathyroid gland", "Thymus", "Adrenal gland", "Pancreas", "Gonads", "Mechanism of hormone action"]}
             ]
         },
-        "English": {"book": "Hornbill & Snapshots", "chapters": []},
-        "Hindi": {"book": "आरोह & वितान", "chapters": []}
+        "English": {
+            "book": "Hornbill & Snapshots (NCERT 2024-25)",
+            "chapters": [
+                {"number": 1, "name": "The Portrait of a Lady", "marks": 5, "type": "prose", "topics": ["Grandmother character", "Relationship changes", "Sparrows incident", "Village to city life", "Death and mourning"]},
+                {"number": 2, "name": "We're Not Afraid to Die... if We Can All Be Together", "marks": 5, "type": "prose", "topics": ["Round the world voyage", "Storm at sea", "Family courage", "Survival story", "Leadership"]},
+                {"number": 3, "name": "Discovering Tut: The Saga Continues", "marks": 5, "type": "prose", "topics": ["King Tutankhamun", "CT scan of mummy", "Archaeological discoveries", "Egyptian history", "Modern technology"]},
+                {"number": 4, "name": "The Ailing Planet: The Green Movement's Role", "marks": 5, "type": "prose", "topics": ["Environmental degradation", "Sustainable development", "Green movement", "Holistic view", "Conservation"]},
+                {"number": 5, "name": "The Adventure", "marks": 4, "type": "prose", "topics": ["Parallel universe", "Historical fiction", "Maratha history", "Scientific imagination", "Catastrophe theory"]},
+                {"number": 6, "name": "Silk Road", "marks": 4, "type": "prose", "topics": ["Tibet journey", "Mount Kailash pilgrimage", "Tibetan culture", "Travel writing", "Landscape description"]},
+                {"number": 7, "name": "A Photograph", "marks": 3, "type": "poem", "topics": ["Memory and loss", "Mother's photograph", "Time and change", "Nostalgia", "Silence"]},
+                {"number": 8, "name": "The Laburnum Top", "marks": 3, "type": "poem", "topics": ["Nature poetry", "Goldfinch bird", "Tree imagery", "Life and movement", "Silence and sound"]},
+                {"number": 9, "name": "The Voice of the Rain", "marks": 3, "type": "poem", "topics": ["Water cycle", "Rain's journey", "Nature personification", "Poetry translation", "Walt Whitman"]},
+                {"number": 10, "name": "Childhood", "marks": 3, "type": "poem", "topics": ["Growing up", "Loss of innocence", "Individual identity", "Questioning beliefs", "Self-discovery"]},
+                {"number": 11, "name": "Father to Son", "marks": 3, "type": "poem", "topics": ["Generation gap", "Parent-child relationship", "Communication failure", "Love and distance", "Family bonds"]}
+            ]
+        },
+        "Hindi": {
+            "book": "आरोह & वितान (NCERT 2024-25)",
+            "chapters": [
+                {"number": 1, "name": "नमक का दारोगा", "marks": 4, "type": "prose", "topics": ["प्रेमचंद कहानी", "ईमानदारी", "सरकारी नौकरी", "नैतिकता", "समाज"]},
+                {"number": 2, "name": "मियाँ नसीरुद्दीन", "marks": 4, "type": "prose", "topics": ["व्यक्तित्व चित्रण", "रोटी बनाना", "परंपरा", "कला", "दिल्ली"]},
+                {"number": 3, "name": "अपू के साथ ढाई साल", "marks": 4, "type": "prose", "topics": ["सत्यजित रे", "फिल्म निर्माण", "अपू त्रयी", "सिनेमा", "कला"]},
+                {"number": 4, "name": "विदाई-सम्भाषण", "marks": 3, "type": "prose", "topics": ["बालमुकुंद गुप्त", "लॉर्ड कर्जन", "व्यंग्य", "राजनीति", "औपनिवेशिक शासन"]},
+                {"number": 5, "name": "गलता लोहा", "marks": 4, "type": "prose", "topics": ["शेखर जोशी", "जातिवाद", "समाज सुधार", "लोहार", "मानवता"]},
+                {"number": 6, "name": "स्पीति में बारिश", "marks": 3, "type": "prose", "topics": ["यात्रा वृत्तांत", "स्पीति घाटी", "प्रकृति", "पहाड़", "बारिश"]},
+                {"number": 7, "name": "रजनी", "marks": 3, "type": "prose", "topics": ["मन्नू भंडारी", "शिक्षा व्यवस्था", "नारी शक्ति", "सामाजिक चेतना", "संघर्ष"]},
+                {"number": 8, "name": "जामुन का पेड़", "marks": 3, "type": "prose", "topics": ["कृष्ण चंदर", "व्यंग्य", "नौकरशाही", "हास्य", "सरकारी तंत्र"]},
+                {"number": 9, "name": "भारत माता", "marks": 3, "type": "prose", "topics": ["जवाहरलाल नेहरू", "राष्ट्रीयता", "भारत की अवधारणा", "स्वतंत्रता", "देशभक्ति"]},
+                {"number": 10, "name": "आत्मा का ताप", "marks": 3, "type": "prose", "topics": ["सैयद हैदर रज़ा", "चित्रकला", "कला साधना", "जीवन संघर्ष", "रचनात्मकता"]},
+                {"number": 11, "name": "वे आँखें", "marks": 3, "type": "poem", "topics": ["सुमित्रानंदन पंत", "किसान", "गरीबी", "शोषण", "करुणा"]},
+                {"number": 12, "name": "घर की याद", "marks": 3, "type": "poem", "topics": ["भवानीप्रसाद मिश्र", "परिवार", "माँ", "घर", "विरह"]},
+                {"number": 13, "name": "आओ, मिलकर बचाएँ", "marks": 3, "type": "poem", "topics": ["निर्मला पुतुल", "आदिवासी संस्कृति", "पर्यावरण", "संरक्षण", "प्रकृति"]},
+                {"number": 14, "name": "कबीर", "marks": 4, "type": "poem", "topics": ["कबीर के पद", "साखी", "आध्यात्म", "समाज सुधार", "भक्ति"]},
+                {"number": 15, "name": "मीरा", "marks": 3, "type": "poem", "topics": ["मीरा के पद", "कृष्ण भक्ति", "प्रेम", "समर्पण", "आध्यात्म"]},
+                {"number": 16, "name": "पथिक", "marks": 3, "type": "poem", "topics": ["रामनरेश त्रिपाठी", "प्रकृति", "यात्रा", "सौंदर्य", "छायावाद"]},
+                {"number": 17, "name": "वे देखते हैं", "marks": 3, "type": "poem", "topics": ["अज्ञेय", "आधुनिक कविता", "प्रतीक", "दर्शन", "अस्तित्ववाद"]},
+                {"number": 18, "name": "सबसे खतरनाक", "marks": 3, "type": "poem", "topics": ["पाश", "क्रांतिकारी कविता", "सामाजिक चेतना", "खतरा", "निष्क्रियता"]},
+                {"number": 19, "name": "गजल", "marks": 3, "type": "poem", "topics": ["दुष्यंत कुमार", "गजल", "व्यंग्य", "समाज", "विद्रोह"]},
+                {"number": 20, "name": "हे भूख! मत मचल", "marks": 3, "type": "poem", "topics": ["अरुण कमल", "भूख", "गरीबी", "सामाजिक यथार्थ", "संवेदना"]}
+            ]
+        }
     }
 }
 
