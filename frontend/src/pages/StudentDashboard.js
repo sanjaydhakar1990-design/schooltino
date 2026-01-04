@@ -489,6 +489,17 @@ export default function StudyTinoDashboard() {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Ask Tino Button */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setVoiceModalOpen(true)}
+                className="text-purple-600 bg-purple-100 hover:bg-purple-200"
+                data-testid="ask-tino-btn-studytino"
+              >
+                <Mic className="w-5 h-5" />
+              </Button>
+              
               {!isInstalled && (
                 <Button 
                   variant="ghost" 
