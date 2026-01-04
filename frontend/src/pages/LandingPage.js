@@ -847,6 +847,7 @@ Your Login Credentials:
       </section>
 
       {/* Contact Section */}
+      {/* Have Questions Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl p-8 md:p-12 text-white text-center">
@@ -872,6 +873,82 @@ Your Login Credentials:
                 schooltino.in
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Part of OneTino Ecosystem */}
+      <section className="py-16 bg-gradient-to-b from-slate-50 to-white overflow-visible">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 rounded-full mb-4">
+              <Crown className="w-4 h-4 text-indigo-600" />
+              <span className="text-sm font-medium text-indigo-700">OneTino Ecosystem</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
+              Part of OneTino Ecosystem
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Schooltino is a flagship product of OneTino.com - India's AI-powered business automation platform.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Schooltino Card */}
+            <div className="group relative bg-white rounded-2xl border-2 border-indigo-200 p-6 hover:border-indigo-400 hover:shadow-xl transition-all">
+              <div className="absolute -top-3 right-4">
+                <span className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-full">You are here</span>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                <School className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Schooltino</h3>
+              <p className="text-slate-600 text-sm mb-4">AI-powered school management with CCTV, apps & automation</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">Schools</span>
+                <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">Education</span>
+              </div>
+            </div>
+            
+            {/* Clinictino Card */}
+            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-emerald-300 hover:shadow-xl transition-all opacity-75">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-4">
+                <HeartHandshake className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Clinictino</h3>
+              <p className="text-slate-600 text-sm mb-4">Complete clinic & hospital management with AI diagnostics</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full">Healthcare</span>
+                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">Coming Soon</span>
+              </div>
+            </div>
+            
+            {/* Biztino Card */}
+            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-amber-300 hover:shadow-xl transition-all opacity-75">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mb-4">
+                <Rocket className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Biztino</h3>
+              <p className="text-slate-600 text-sm mb-4">AI business automation for retail, restaurants & enterprises</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs bg-amber-50 text-amber-600 px-2 py-1 rounded-full">Business</span>
+                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">Coming Soon</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* OneTino.com Link */}
+          <div className="mt-10 text-center">
+            <a 
+              href="https://onetino.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+            >
+              <Globe className="w-4 h-4" />
+              Learn more at OneTino.com
+              <ArrowRight className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </section>
