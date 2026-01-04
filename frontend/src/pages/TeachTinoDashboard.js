@@ -512,6 +512,17 @@ export default function TeachTinoDashboard() {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Ask Tino Button */}
+              <Button
+                onClick={() => setVoiceModalOpen(true)}
+                className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg"
+                data-testid="ask-tino-btn-teachtino"
+              >
+                <Mic className="w-4 h-4" />
+                <span>Ask Tino</span>
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              </Button>
+              
               {!isInstalled && (
                 <Button 
                   variant="outline" 
