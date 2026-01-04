@@ -75,6 +75,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8" data-testid="dashboard-page">
+      {/* Trial Status Card */}
+      <TrialStatusCard />
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold font-heading text-slate-900">{t('dashboard')}</h1>
