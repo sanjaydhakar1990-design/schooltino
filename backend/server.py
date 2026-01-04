@@ -530,6 +530,62 @@ class DashboardStats(BaseModel):
     recent_notices: List[Dict[str, Any]]
     recent_activities: List[Dict[str, Any]]
 
+# ==================== SUBSCRIPTION MODELS ====================
+
+class SubscriptionPlan(BaseModel):
+    plan_type: str  # free_trial, monthly, yearly
+    school_id: str
+    
+class SubscriptionResponse(BaseModel):
+    id: str
+    school_id: str
+    plan_type: str  # free_trial, monthly, yearly
+    status: str  # active, expired, cancelled
+    start_date: str
+    end_date: str
+    ai_enabled_until: Optional[str] = None  # AI only 3 days in free trial
+    amount: float
+    created_at: str
+
+# Subscription pricing
+SUBSCRIPTION_PLANS = {
+    "free_trial": {
+        "duration_days": 30,
+        "ai_duration_days": 3,
+        "price": 0,
+        "features": ["all_features", "ai_3_days"]
+    },
+    "monthly": {
+        "duration_days": 30,
+        "ai_duration_days": 30,
+        "price": 17999,
+        "features": ["all_features", "ai_unlimited", "priority_support"]
+    },
+    "yearly": {
+        "duration_days": 365,
+        "ai_duration_days": 365,
+        "price": 179988,  # 14999 * 12
+        "monthly_equivalent": 14999,
+        "features": ["all_features", "ai_unlimited", "priority_support", "discount_17%"]
+    }
+}
+
+# ==================== SETUP WIZARD MODELS ====================
+
+class SetupStep(BaseModel):
+    step_number: int
+    title: str
+    description: str
+    is_completed: bool = False
+    data: Optional[Dict[str, Any]] = None
+
+class SchoolSetupWizard(BaseModel):
+    school_id: str
+    current_step: int = 1
+    total_steps: int = 7
+    steps: List[SetupStep]
+    is_completed: bool = False
+
 # ==================== HELPER FUNCTIONS ====================
 
 def create_jwt_token(user_data: dict) -> str:
