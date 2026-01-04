@@ -28,10 +28,11 @@ import {
   Rocket,
   CreditCard,
   FileText,
-  Calculator
+  Calculator,
+  X
 } from 'lucide-react';
 
-export const Sidebar = () => {
+export const Sidebar = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { language, toggleLanguage } = useLanguage();
