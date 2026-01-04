@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="10" failures="2" skipped="0" tests="13" time="3.407" timestamp="2026-01-04T05:18:30.967574+00:00" hostname="agent-env-95cc257c-6a07-4cec-986a-df0868f642a3"><testcase classname="tests.test_new_features_iter7.TestAuthentication" name="test_director_login" time="0.323"><failure message="AssertionError: assert 'token' in {'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkwODQ3Mi1lMDE1LTRhNzAtODNkMC04Nzk1ZjE3ZDdhMDUiLCJlbWFpbCI6ImRpcmVjdG9yQHNjaG9vbHRpbm8uY29tIiwicm9sZSI6ImRpcmVjdG9yIiwiZXhwIjoxNzY3NTkwMzExfQ.hK7SISHpDnerheAXWdm93HbKOsAauvrwytFZ7IQmb18', 'token_type': 'bearer', 'user': {'created_at': '2026-01-02T10:19:59.351581+00:00', 'email': 'director@schooltino.com', 'id': 'bf908472-e015-4a70-83d0-8795f17d7a05', 'mobile': None, ...}}">tests/test_new_features_iter7.py:24: in test_director_login
+    assert "token" in data
+E   AssertionError: assert 'token' in {'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkwODQ3Mi1lMDE1LTRhNzAtODNkMC04Nzk1ZjE3ZDdhMDUiLCJlbWFpbCI6ImRpcmVjdG9yQHNjaG9vbHRpbm8uY29tIiwicm9sZSI6ImRpcmVjdG9yIiwiZXhwIjoxNzY3NTkwMzExfQ.hK7SISHpDnerheAXWdm93HbKOsAauvrwytFZ7IQmb18', 'token_type': 'bearer', 'user': {'created_at': '2026-01-02T10:19:59.351581+00:00', 'email': 'director@schooltino.com', 'id': 'bf908472-e015-4a70-83d0-8795f17d7a05', 'mobile': None, ...}}</failure></testcase><testcase classname="tests.test_new_features_iter7.TestAuthentication" name="test_teacher_login" time="0.263"><failure message="AssertionError: assert 'token' in {'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNzk5NjY2Ny0zMDNhLTQ5NWItODAxYi01MmEyMzZmM2U0ZDAiLCJlbWFpbCI6InRlYWNoZXJAc2Nob29sdGluby5jb20iLCJyb2xlIjoidGVhY2hlciIsImV4cCI6MTc2NzU5MDMxMX0.qnZjNjiS4Yd6Vr-U-dkNQKIdlU-TOdHhY7NsxSf0VH0', 'token_type': 'bearer', 'user': {'created_at': '2026-01-03T12:05:42.435908+00:00', 'email': 'teacher@schooltino.com', 'id': '37996667-303a-495b-801b-52a236f3e4d0', 'mobile': '9876543210', ...}}">tests/test_new_features_iter7.py:37: in test_teacher_login
+    assert "token" in data
+E   AssertionError: assert 'token' in {'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNzk5NjY2Ny0zMDNhLTQ5NWItODAxYi01MmEyMzZmM2U0ZDAiLCJlbWFpbCI6InRlYWNoZXJAc2Nob29sdGluby5jb20iLCJyb2xlIjoidGVhY2hlciIsImV4cCI6MTc2NzU5MDMxMX0.qnZjNjiS4Yd6Vr-U-dkNQKIdlU-TOdHhY7NsxSf0VH0', 'token_type': 'bearer', 'user': {'created_at': '2026-01-03T12:05:42.435908+00:00', 'email': 'teacher@schooltino.com', 'id': '37996667-303a-495b-801b-52a236f3e4d0', 'mobile': '9876543210', ...}}</failure></testcase><testcase classname="tests.test_new_features_iter7.TestZoomMeetings" name="test_get_meetings" time="0.260"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:53: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestZoomMeetings" name="test_create_meeting" time="0.260"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:53: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestZoomMeetings" name="test_get_single_meeting" time="0.260"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:53: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestZoomMeetings" name="test_delete_meeting" time="0.257"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:53: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestZoomMeetings" name="test_get_recordings" time="0.263"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:53: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestZoomMeetings" name="test_get_summaries" time="0.263"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:53: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestSchoolRegistration" name="test_create_school" time="0.263"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:181: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestSchoolRegistration" name="test_get_schools" time="0.262"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:181: in auth_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestTeacherDashboard" name="test_teacher_dashboard_access" time="0.259"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:243: in teacher_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestTeacherDashboard" name="test_teacher_classes" time="0.258"><error message="failed on setup with &quot;KeyError: 'token'&quot;">tests/test_new_features_iter7.py:243: in teacher_token
+    return response.json()["token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'token'</error></testcase><testcase classname="tests.test_new_features_iter7.TestHealthCheck" name="test_api_health" time="0.035" /></testsuite></testsuites>
