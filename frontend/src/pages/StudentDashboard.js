@@ -618,6 +618,101 @@ export default function StudyTinoDashboard() {
           </div>
         </section>
 
+        {/* ==================== SYLLABUS PROGRESS SECTION ==================== */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-slate-800">📖 Syllabus Progress</h2>
+            <span className="text-xs text-slate-500">
+              Board: {user?.school_board || 'NCERT'}
+            </span>
+          </div>
+          
+          {syllabus.length > 0 ? (
+            <div className="space-y-3">
+              {syllabus.slice(0, 4).map((subject, idx) => (
+                <div 
+                  key={idx}
+                  className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold ${
+                        idx === 0 ? 'bg-blue-500' : 
+                        idx === 1 ? 'bg-emerald-500' : 
+                        idx === 2 ? 'bg-purple-500' : 'bg-amber-500'
+                      }`}>
+                        {subject.subject?.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{subject.subject}</p>
+                        <p className="text-xs text-slate-400">{subject.book}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {subject.completed_chapters}/{subject.total_chapters}
+                      </p>
+                      <p className="text-xs text-slate-400">chapters</p>
+                    </div>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        idx === 0 ? 'bg-blue-500' : 
+                        idx === 1 ? 'bg-emerald-500' : 
+                        idx === 2 ? 'bg-purple-500' : 'bg-amber-500'
+                      }`}
+                      style={{ width: `${(subject.completed_chapters / subject.total_chapters) * 100}%` }}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-slate-500">
+                      📍 Current: <span className="font-medium text-slate-700">{subject.current_chapter}</span>
+                    </p>
+                    <span className="text-xs text-emerald-600 font-medium">
+                      {Math.round((subject.completed_chapters / subject.total_chapters) * 100)}% done
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+              <BookOpen className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+              <p className="text-slate-500 text-sm">Syllabus loading...</p>
+            </div>
+          )}
+        </section>
+
+        {/* ==================== UPCOMING EXAMS SECTION ==================== */}
+        {upcomingExams.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-slate-800">📝 Upcoming Online Tests</h2>
+            </div>
+            <div className="space-y-2">
+              {upcomingExams.map((exam) => (
+                <div 
+                  key={exam.id}
+                  onClick={() => navigate('/app/exams')}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl p-4 cursor-pointer hover:shadow-lg transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">{exam.title}</p>
+                      <p className="text-sm text-white/80">{exam.subject} • {exam.duration} min • {exam.total_marks} marks</p>
+                    </div>
+                    <ChevronRight className="w-6 h-6" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* ==================== SECTION B: LATEST NOTICE (Big Card) ==================== */}
         {notices.length > 0 && (
           <section>
