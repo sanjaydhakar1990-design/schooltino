@@ -137,7 +137,7 @@ Your Login Credentials:
   };
 
   const goToDashboard = () => {
-    navigate('/dashboard');
+    navigate('/app/dashboard');
   };
 
   const scrollToSection = (id) => {
