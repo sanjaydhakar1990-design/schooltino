@@ -98,7 +98,16 @@ export const Sidebar = ({ isOpen, onClose }) => {
   });
 
   return (
-    <aside className="sidebar" data-testid="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`} data-testid="sidebar">
+      {/* Mobile Close Button */}
+      <button
+        onClick={onClose}
+        className="lg:hidden absolute top-4 right-4 p-2 text-white hover:bg-slate-800 rounded-lg"
+        data-testid="close-sidebar-btn"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       {/* Logo */}
       <div className="p-6 border-b border-slate-800">
         <div className="flex items-center gap-3">
@@ -138,6 +147,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             <li key={item.path}>
               <NavLink
                 to={item.path}
+                onClick={onClose}
                 className={({ isActive }) =>
                   `sidebar-link ${isActive ? 'active' : ''}`
                 }
