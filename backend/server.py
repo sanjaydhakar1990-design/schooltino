@@ -4202,6 +4202,65 @@ async def create_meeting(meeting: MeetingCreate, current_user: dict = Depends(ge
     meeting_doc.pop("_id", None)
     return meeting_doc
 
+# IMPORTANT: Static routes MUST be defined BEFORE dynamic routes with path parameters
+@api_router.get("/meetings/recordings")
+async def get_recordings(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get meeting recordings"""
+    query = {}
+    if school_id:
+        query["school_id"] = school_id
+    
+    recordings = await db.meeting_recordings.find(query, {"_id": 0}).sort("recorded_date", -1).to_list(50)
+    return recordings
+
+@api_router.get("/meetings/summaries")
+async def get_summaries(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all AI-generated meeting summaries"""
+    summaries = await db.meeting_summaries.find({}, {"_id": 0}).sort("generated_at", -1).to_list(50)
+    return summaries
+
+@api_router.post("/meetings/recordings/{recording_id}/summarize")
+async def summarize_recording(recording_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate AI summary for a meeting recording"""
+    recording = await db.meeting_recordings.find_one({"id": recording_id})
+    
+    # Check if summary already exists
+    existing = await db.meeting_summaries.find_one({"recording_id": recording_id})
+    if existing:
+        existing.pop("_id", None)
+        return existing
+    
+    # In production, this would:
+    # 1. Get transcript from Zoom API
+    # 2. Send to OpenAI for summarization
+    # For now, create a mock summary
+    
+    summary_doc = {
+        "id": str(uuid.uuid4()),
+        "recording_id": recording_id,
+        "meeting_topic": recording.get("topic", "Meeting") if recording else "Meeting",
+        "summary": "This meeting covered important discussion points regarding school operations.",
+        "key_points": [
+            "Budget allocation discussed",
+            "New academic calendar proposed",
+            "Staff training schedule finalized"
+        ],
+        "action_items": [
+            "Submit budget proposal by Friday",
+            "Circulate new calendar to all",
+            "Schedule training sessions"
+        ],
+        "sentiment": "Positive - Productive meeting",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_by": current_user["id"]
+    }
+    
+    await db.meeting_summaries.insert_one(summary_doc)
+    
+    summary_doc.pop("_id", None)
+    return summary_doc
+
+# Dynamic routes with path parameters come AFTER static routes
 @api_router.get("/meetings/{meeting_id}")
 async def get_meeting(meeting_id: str, current_user: dict = Depends(get_current_user)):
     """Get single meeting details"""
@@ -4221,18 +4280,6 @@ async def delete_meeting(meeting_id: str, current_user: dict = Depends(get_curre
     await log_audit(current_user["id"], "delete", "meetings", {"meeting_id": meeting_id})
     
     return {"message": "Meeting cancelled"}
-
-@api_router.get("/meetings/recordings")
-async def get_recordings(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """Get meeting recordings"""
-    query = {}
-    if school_id:
-        query["school_id"] = school_id
-    
-    recordings = await db.meeting_recordings.find(query, {"_id": 0}).sort("recorded_date", -1).to_list(50)
-    return recordings
-
-@api_router.post("/meetings/recordings/{recording_id}/summarize")
 async def summarize_recording(recording_id: str, current_user: dict = Depends(get_current_user)):
     """Generate AI summary for a meeting recording"""
     recording = await db.meeting_recordings.find_one({"id": recording_id})
