@@ -4607,81 +4607,96 @@ async def delete_meeting(meeting_id: str, current_user: dict = Depends(get_curre
 
 @api_router.get("/subscription/plans")
 async def get_subscription_plans():
-    """Get available subscription plans - Affordable pricing for Indian schools"""
+    """Get available subscription plans - Smart pricing for Indian schools"""
     return {
         "plans": [
             {
                 "id": "free_trial",
                 "name": "Free Trial",
-                "duration": "1 Month",
+                "duration": "15 Days",
                 "price": 0,
                 "price_display": "FREE",
                 "features": [
-                    "All features for 30 days",
+                    "All features for 15 days",
                     "AI features for 7 days",
-                    "Up to 500 students",
+                    "Up to 100 students",
                     "Email support"
                 ],
-                "ai_note": "AI features available for first 7 days"
+                "ai_included": True,
+                "ai_note": "AI features available for first 7 days only"
             },
             {
-                "id": "starter",
-                "name": "Starter",
+                "id": "basic",
+                "name": "Basic ERP",
                 "duration": "Per Year",
                 "price": 9999,
                 "price_display": "₹9,999/year",
                 "monthly_equivalent": "₹833/month",
                 "features": [
-                    "Up to 500 students",
-                    "All basic features",
-                    "5 AI paper generations/month",
-                    "Email support",
-                    "Mobile app access"
+                    "Up to 1000 students",
+                    "Attendance Management",
+                    "Fee Collection & Reports",
+                    "Student & Staff Management",
+                    "Timetable Management",
+                    "SMS Notifications (100/month)",
+                    "Basic Reports",
+                    "Email Support"
                 ],
-                "ideal_for": "Small Schools"
+                "ai_included": False,
+                "ideal_for": "Small Schools - Basic Management",
+                "no_ai_note": "AI features not included"
             },
             {
-                "id": "professional",
-                "name": "Professional",
+                "id": "ai_powered",
+                "name": "AI Powered",
                 "duration": "Per Year",
-                "price": 24999,
-                "price_display": "₹24,999/year",
-                "monthly_equivalent": "₹2,083/month",
+                "price": 18000,
+                "price_display": "₹18,000/year",
+                "monthly_equivalent": "₹1,500/month",
                 "features": [
                     "Up to 2000 students",
-                    "All features unlimited",
-                    "50 AI paper generations/month",
-                    "Voice AI Assistant",
-                    "Biometric integration",
-                    "Priority support",
-                    "WhatsApp notifications"
+                    "Everything in Basic ERP",
+                    "AI Paper Generator (Unlimited)",
+                    "AI Voice Assistant (Ask Tino)",
+                    "AI Content Studio",
+                    "AI Accountant Insights",
+                    "Director AI Dashboard",
+                    "Biometric Integration",
+                    "Transport Management",
+                    "Health Module",
+                    "WhatsApp Notifications",
+                    "Priority Support"
                 ],
+                "ai_included": True,
                 "badge": "MOST POPULAR",
-                "ideal_for": "Medium Schools"
+                "ideal_for": "Growing Schools - Full AI Power"
             },
             {
                 "id": "enterprise",
                 "name": "Enterprise",
                 "duration": "Per Year",
-                "price": 49999,
-                "price_display": "₹49,999/year",
-                "monthly_equivalent": "₹4,166/month",
+                "price": 35000,
+                "price_display": "₹35,000/year",
+                "monthly_equivalent": "₹2,917/month",
                 "features": [
                     "Unlimited students",
-                    "All features unlimited",
-                    "Unlimited AI features",
-                    "GPS Vehicle Tracking",
-                    "CCTV Integration",
-                    "Dedicated support",
-                    "Custom branding",
-                    "API access",
-                    "On-premise option"
+                    "Everything in AI Powered",
+                    "CCTV AI Integration",
+                    "Multi-branch Support",
+                    "Custom Branding",
+                    "API Access",
+                    "Dedicated Account Manager",
+                    "On-premise Option",
+                    "24/7 Phone Support",
+                    "Staff Training (2 sessions)"
                 ],
-                "badge": "BEST VALUE",
-                "ideal_for": "Large Schools & Chains"
+                "ai_included": True,
+                "badge": "BEST FOR CHAINS",
+                "ideal_for": "Large Schools & School Chains"
             }
         ],
-        "comparison_note": "50% cheaper than competitors with 3x more AI features!"
+        "comparison_note": "AI features se 3x faster kaam hota hai!",
+        "support_whatsapp": "+91-XXXXXXXXXX"
     }
 
 @api_router.post("/subscription/activate")
