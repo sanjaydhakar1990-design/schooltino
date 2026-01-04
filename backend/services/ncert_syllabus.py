@@ -397,28 +397,433 @@ NCERT_SYLLABUS_DATA = {
     }
 }
 
-# Add more classes (2-5, 7-9, 11)
-for class_num in ["2", "3", "4", "5"]:
-    NCERT_SYLLABUS_DATA[class_num] = {
-        "subjects": {
-            "Hindi": {"book": f"रिमझिम - {class_num}", "chapters": []},
-            "English": {"book": f"Marigold - {class_num}", "chapters": []},
-            "Mathematics": {"book": f"Math-Magic - {class_num}", "chapters": []},
-            "EVS": {"book": f"Looking Around - {class_num}", "chapters": []}
+# Add more classes (2-5) with basic chapters
+NCERT_SYLLABUS_DATA["2"] = {
+    "subjects": {
+        "Hindi": {
+            "book": "रिमझिम - 2",
+            "chapters": [
+                {"number": 1, "name": "ऊँट चला", "marks": 3, "type": "poem", "topics": ["जानवर", "यात्रा"]},
+                {"number": 2, "name": "भालू ने खेली फुटबॉल", "marks": 3, "type": "story", "topics": ["खेल", "जानवर"]},
+                {"number": 3, "name": "म्याऊँ, म्याऊँ!!", "marks": 3, "type": "story", "topics": ["बिल्ली", "आवाज"]},
+                {"number": 4, "name": "अधिक बलवान कौन", "marks": 3, "type": "story", "topics": ["शक्ति", "नैतिकता"]},
+                {"number": 5, "name": "दोस्त की मदद", "marks": 3, "type": "story", "topics": ["मित्रता", "सहायता"]},
+                {"number": 6, "name": "बहुत हुआ", "marks": 3, "type": "poem", "topics": ["प्रकृति", "पक्षी"]},
+                {"number": 7, "name": "मेरी किताब", "marks": 3, "type": "poem", "topics": ["पढ़ाई", "किताबें"]},
+                {"number": 8, "name": "तितली और कली", "marks": 3, "type": "story", "topics": ["तितली", "फूल"]},
+                {"number": 9, "name": "बुलबुल", "marks": 3, "type": "poem", "topics": ["पक्षी", "गीत"]},
+                {"number": 10, "name": "मीठी सारंगी", "marks": 3, "type": "story", "topics": ["संगीत", "वाद्य"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold - 2",
+            "chapters": [
+                {"number": 1, "name": "First Day at School", "marks": 3, "type": "poem", "topics": ["School", "Feelings"]},
+                {"number": 2, "name": "Haldi's Adventure", "marks": 3, "type": "story", "topics": ["Adventure", "Bird"]},
+                {"number": 3, "name": "I am Lucky!", "marks": 3, "type": "poem", "topics": ["Gratitude", "Family"]},
+                {"number": 4, "name": "I Want", "marks": 3, "type": "poem", "topics": ["Wishes", "Dreams"]},
+                {"number": 5, "name": "A Smile", "marks": 3, "type": "poem", "topics": ["Happiness", "Kindness"]},
+                {"number": 6, "name": "The Grasshopper and the Ant", "marks": 3, "type": "story", "topics": ["Fable", "Hard work"]},
+                {"number": 7, "name": "Zoo Manners", "marks": 3, "type": "poem", "topics": ["Zoo", "Manners"]},
+                {"number": 8, "name": "Curlylocks and the Three Bears", "marks": 3, "type": "story", "topics": ["Fairy tale", "Bears"]},
+                {"number": 9, "name": "On My Blackboard I Can Draw", "marks": 3, "type": "poem", "topics": ["Drawing", "Creativity"]},
+                {"number": 10, "name": "Make It Shorter", "marks": 3, "type": "story", "topics": ["Problem solving", "Humor"]}
+            ]
+        },
+        "Mathematics": {
+            "book": "Math-Magic - 2",
+            "chapters": [
+                {"number": 1, "name": "What is Long, What is Round?", "marks": 5, "type": "lesson", "topics": ["Shapes", "Long", "Round"]},
+                {"number": 2, "name": "Counting in Groups", "marks": 5, "type": "lesson", "topics": ["Counting", "Groups", "Tens"]},
+                {"number": 3, "name": "How Much Can You Carry?", "marks": 5, "type": "lesson", "topics": ["Weight", "Heavy", "Light"]},
+                {"number": 4, "name": "Counting in Tens", "marks": 5, "type": "lesson", "topics": ["Place value", "Tens", "Ones"]},
+                {"number": 5, "name": "Patterns", "marks": 5, "type": "lesson", "topics": ["Patterns", "Sequences"]},
+                {"number": 6, "name": "Footprints", "marks": 5, "type": "lesson", "topics": ["Measurement", "Length"]},
+                {"number": 7, "name": "Jugs and Mugs", "marks": 5, "type": "lesson", "topics": ["Capacity", "Measurement"]},
+                {"number": 8, "name": "Tens and Ones", "marks": 5, "type": "lesson", "topics": ["Place value", "Numbers"]},
+                {"number": 9, "name": "My Funday", "marks": 5, "type": "lesson", "topics": ["Time", "Days"]},
+                {"number": 10, "name": "Add Our Points", "marks": 5, "type": "lesson", "topics": ["Addition", "Counting"]},
+                {"number": 11, "name": "Lines and Lines", "marks": 5, "type": "lesson", "topics": ["Lines", "Curves"]},
+                {"number": 12, "name": "Give and Take", "marks": 5, "type": "lesson", "topics": ["Addition", "Subtraction"]},
+                {"number": 13, "name": "The Longest Step", "marks": 5, "type": "lesson", "topics": ["Measurement", "Comparison"]},
+                {"number": 14, "name": "Birds Come, Birds Go", "marks": 5, "type": "lesson", "topics": ["Data handling", "Counting"]},
+                {"number": 15, "name": "How Many Ponytails?", "marks": 5, "type": "lesson", "topics": ["Data", "Counting"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around - 2 (Not applicable for Class 2)",
+            "chapters": []
         }
     }
+}
 
-# Class 7-8 placeholder
-for class_num in ["7", "8"]:
-    NCERT_SYLLABUS_DATA[class_num] = {
-        "subjects": {
-            "Hindi": {"book": f"वसंत भाग-{int(class_num)-5}", "chapters": []},
-            "English": {"book": "Honeycomb" if class_num == "7" else "Honeydew", "chapters": []},
-            "Mathematics": {"book": f"Mathematics - {class_num}", "chapters": []},
-            "Science": {"book": f"Science - {class_num}", "chapters": []},
-            "Social Science": {"book": f"Social Science - {class_num}", "chapters": []}
+NCERT_SYLLABUS_DATA["3"] = {
+    "subjects": {
+        "Hindi": {
+            "book": "रिमझिम - 3",
+            "chapters": [
+                {"number": 1, "name": "कक्कू", "marks": 4, "type": "poem", "topics": ["पक्षी", "आवाज"]},
+                {"number": 2, "name": "शेखीबाज़ मक्खी", "marks": 4, "type": "story", "topics": ["घमंड", "सीख"]},
+                {"number": 3, "name": "चाँद वाली अम्मा", "marks": 4, "type": "poem", "topics": ["दादी", "प्यार"]},
+                {"number": 4, "name": "मन करता है", "marks": 4, "type": "poem", "topics": ["इच्छाएं", "सपने"]},
+                {"number": 5, "name": "बहादुर बित्तो", "marks": 4, "type": "story", "topics": ["साहस", "बहादुरी"]},
+                {"number": 6, "name": "हमसे सब कहते", "marks": 4, "type": "poem", "topics": ["बड़े", "सलाह"]},
+                {"number": 7, "name": "टिपटिपवा", "marks": 4, "type": "story", "topics": ["बारिश", "खेल"]},
+                {"number": 8, "name": "बंदर-बाँट", "marks": 4, "type": "story", "topics": ["न्याय", "चालाकी"]},
+                {"number": 9, "name": "अक्ल बड़ी या भैंस", "marks": 4, "type": "story", "topics": ["बुद्धि", "ताकत"]},
+                {"number": 10, "name": "क्योंजीमल और कैसे कैसलिया", "marks": 4, "type": "story", "topics": ["जिज्ञासा", "सवाल"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold - 3",
+            "chapters": [
+                {"number": 1, "name": "Good Morning", "marks": 4, "type": "poem", "topics": ["Greeting", "Morning"]},
+                {"number": 2, "name": "The Magic Garden", "marks": 4, "type": "story", "topics": ["Garden", "Magic"]},
+                {"number": 3, "name": "Bird Talk", "marks": 4, "type": "poem", "topics": ["Birds", "Communication"]},
+                {"number": 4, "name": "Nina and the Baby Sparrows", "marks": 4, "type": "story", "topics": ["Kindness", "Birds"]},
+                {"number": 5, "name": "Little by Little", "marks": 4, "type": "poem", "topics": ["Growth", "Nature"]},
+                {"number": 6, "name": "The Enormous Turnip", "marks": 4, "type": "story", "topics": ["Teamwork", "Fable"]},
+                {"number": 7, "name": "Sea Song", "marks": 4, "type": "poem", "topics": ["Sea", "Shell"]},
+                {"number": 8, "name": "A Little Fish Story", "marks": 4, "type": "story", "topics": ["Fish", "Adventure"]},
+                {"number": 9, "name": "The Balloon Man", "marks": 4, "type": "poem", "topics": ["Balloons", "Fair"]},
+                {"number": 10, "name": "The Yellow Butterfly", "marks": 4, "type": "story", "topics": ["Butterfly", "Nature"]}
+            ]
+        },
+        "Mathematics": {
+            "book": "Math-Magic - 3",
+            "chapters": [
+                {"number": 1, "name": "Where to Look From", "marks": 5, "type": "lesson", "topics": ["Shapes", "Perspective"]},
+                {"number": 2, "name": "Fun with Numbers", "marks": 5, "type": "lesson", "topics": ["Numbers", "Operations"]},
+                {"number": 3, "name": "Give and Take", "marks": 5, "type": "lesson", "topics": ["Addition", "Subtraction"]},
+                {"number": 4, "name": "Long and Short", "marks": 5, "type": "lesson", "topics": ["Length", "Measurement"]},
+                {"number": 5, "name": "Shapes and Designs", "marks": 5, "type": "lesson", "topics": ["Shapes", "Patterns"]},
+                {"number": 6, "name": "Fun with Give and Take", "marks": 5, "type": "lesson", "topics": ["Word problems", "Operations"]},
+                {"number": 7, "name": "Time Goes On", "marks": 5, "type": "lesson", "topics": ["Time", "Calendar"]},
+                {"number": 8, "name": "Who is Heavier?", "marks": 5, "type": "lesson", "topics": ["Weight", "Comparison"]},
+                {"number": 9, "name": "How Many Times?", "marks": 5, "type": "lesson", "topics": ["Multiplication", "Tables"]},
+                {"number": 10, "name": "Play with Patterns", "marks": 5, "type": "lesson", "topics": ["Patterns", "Symmetry"]},
+                {"number": 11, "name": "Jugs and Mugs", "marks": 5, "type": "lesson", "topics": ["Capacity", "Volume"]},
+                {"number": 12, "name": "Can We Share?", "marks": 5, "type": "lesson", "topics": ["Division", "Sharing"]},
+                {"number": 13, "name": "Smart Charts!", "marks": 5, "type": "lesson", "topics": ["Data", "Charts"]},
+                {"number": 14, "name": "Rupees and Paise", "marks": 5, "type": "lesson", "topics": ["Money", "Currency"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around - 3",
+            "chapters": [
+                {"number": 1, "name": "Poonam's Day Out", "marks": 4, "type": "lesson", "topics": ["Animals", "Observation"]},
+                {"number": 2, "name": "The Plant Fairy", "marks": 4, "type": "lesson", "topics": ["Plants", "Growth"]},
+                {"number": 3, "name": "Water O Water!", "marks": 4, "type": "lesson", "topics": ["Water", "Sources"]},
+                {"number": 4, "name": "Our First School", "marks": 4, "type": "lesson", "topics": ["Family", "Learning"]},
+                {"number": 5, "name": "Chhotu's House", "marks": 4, "type": "lesson", "topics": ["House", "Materials"]},
+                {"number": 6, "name": "Foods We Eat", "marks": 4, "type": "lesson", "topics": ["Food", "Nutrition"]},
+                {"number": 7, "name": "Saying Without Speaking", "marks": 4, "type": "lesson", "topics": ["Communication", "Signs"]},
+                {"number": 8, "name": "Flying High", "marks": 4, "type": "lesson", "topics": ["Birds", "Flying"]},
+                {"number": 9, "name": "It's Raining", "marks": 4, "type": "lesson", "topics": ["Rain", "Weather"]},
+                {"number": 10, "name": "What is Cooking?", "marks": 4, "type": "lesson", "topics": ["Cooking", "Food"]}
+            ]
         }
     }
+}
+
+NCERT_SYLLABUS_DATA["4"] = {
+    "subjects": {
+        "Hindi": {
+            "book": "रिमझिम - 4",
+            "chapters": [
+                {"number": 1, "name": "मन के भोले-भाले बादल", "marks": 4, "type": "poem", "topics": ["बादल", "कल्पना"]},
+                {"number": 2, "name": "जैसा सवाल वैसा जवाब", "marks": 4, "type": "story", "topics": ["बुद्धि", "चतुराई"]},
+                {"number": 3, "name": "किरमिच की गेंद", "marks": 4, "type": "story", "topics": ["खेल", "मेहनत"]},
+                {"number": 4, "name": "पापा जब बच्चे थे", "marks": 4, "type": "story", "topics": ["बचपन", "यादें"]},
+                {"number": 5, "name": "दोस्त की पोशाक", "marks": 4, "type": "story", "topics": ["मित्रता", "त्याग"]},
+                {"number": 6, "name": "नाव बनाओ नाव बनाओ", "marks": 4, "type": "poem", "topics": ["कागज़", "खेल"]},
+                {"number": 7, "name": "दान का हिसाब", "marks": 4, "type": "story", "topics": ["दान", "ईमानदारी"]},
+                {"number": 8, "name": "कौन", "marks": 4, "type": "poem", "topics": ["प्रश्न", "जिज्ञासा"]},
+                {"number": 9, "name": "स्वतंत्रता की ओर", "marks": 4, "type": "lesson", "topics": ["स्वतंत्रता", "इतिहास"]},
+                {"number": 10, "name": "थप्प रोटी थप्प दाल", "marks": 4, "type": "poem", "topics": ["खाना", "रसोई"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold - 4",
+            "chapters": [
+                {"number": 1, "name": "Wake Up!", "marks": 4, "type": "poem", "topics": ["Morning", "Nature"]},
+                {"number": 2, "name": "Neha's Alarm Clock", "marks": 4, "type": "story", "topics": ["Time", "Responsibility"]},
+                {"number": 3, "name": "Noses", "marks": 4, "type": "poem", "topics": ["Body", "Animals"]},
+                {"number": 4, "name": "The Little Fir Tree", "marks": 4, "type": "story", "topics": ["Trees", "Contentment"]},
+                {"number": 5, "name": "Run!", "marks": 4, "type": "poem", "topics": ["Exercise", "Health"]},
+                {"number": 6, "name": "Nasruddin's Aim", "marks": 4, "type": "story", "topics": ["Humor", "Wisdom"]},
+                {"number": 7, "name": "Why?", "marks": 4, "type": "poem", "topics": ["Questions", "Curiosity"]},
+                {"number": 8, "name": "Alice in Wonderland", "marks": 4, "type": "story", "topics": ["Fantasy", "Adventure"]},
+                {"number": 9, "name": "Don't Be Afraid of the Dark", "marks": 4, "type": "poem", "topics": ["Fear", "Courage"]},
+                {"number": 10, "name": "Helen Keller", "marks": 4, "type": "biography", "topics": ["Inspiration", "Disability"]}
+            ]
+        },
+        "Mathematics": {
+            "book": "Math-Magic - 4",
+            "chapters": [
+                {"number": 1, "name": "Building with Bricks", "marks": 5, "type": "lesson", "topics": ["Shapes", "Patterns"]},
+                {"number": 2, "name": "Long and Short", "marks": 5, "type": "lesson", "topics": ["Length", "Measurement"]},
+                {"number": 3, "name": "A Trip to Bhopal", "marks": 5, "type": "lesson", "topics": ["Distance", "Maps"]},
+                {"number": 4, "name": "Tick-Tick-Tick", "marks": 5, "type": "lesson", "topics": ["Time", "Clock"]},
+                {"number": 5, "name": "The Way the World Looks", "marks": 5, "type": "lesson", "topics": ["Perspective", "Maps"]},
+                {"number": 6, "name": "The Junk Seller", "marks": 5, "type": "lesson", "topics": ["Weight", "Money"]},
+                {"number": 7, "name": "Jugs and Mugs", "marks": 5, "type": "lesson", "topics": ["Capacity", "Volume"]},
+                {"number": 8, "name": "Carts and Wheels", "marks": 5, "type": "lesson", "topics": ["Circles", "Patterns"]},
+                {"number": 9, "name": "Halves and Quarters", "marks": 5, "type": "lesson", "topics": ["Fractions", "Parts"]},
+                {"number": 10, "name": "Play with Patterns", "marks": 5, "type": "lesson", "topics": ["Patterns", "Sequences"]},
+                {"number": 11, "name": "Tables and Shares", "marks": 5, "type": "lesson", "topics": ["Multiplication", "Division"]},
+                {"number": 12, "name": "How Heavy? How Light?", "marks": 5, "type": "lesson", "topics": ["Weight", "Balance"]},
+                {"number": 13, "name": "Fields and Fences", "marks": 5, "type": "lesson", "topics": ["Area", "Perimeter"]},
+                {"number": 14, "name": "Smart Charts", "marks": 5, "type": "lesson", "topics": ["Data", "Graphs"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around - 4",
+            "chapters": [
+                {"number": 1, "name": "Going to School", "marks": 4, "type": "lesson", "topics": ["School", "Transport"]},
+                {"number": 2, "name": "Ear to Ear", "marks": 4, "type": "lesson", "topics": ["Listening", "Sounds"]},
+                {"number": 3, "name": "A Day with Nandu", "marks": 4, "type": "lesson", "topics": ["Elephant", "Animals"]},
+                {"number": 4, "name": "The Story of Amrita", "marks": 4, "type": "lesson", "topics": ["Trees", "Environment"]},
+                {"number": 5, "name": "Anita and the Honeybees", "marks": 4, "type": "lesson", "topics": ["Bees", "Honey"]},
+                {"number": 6, "name": "Omana's Journey", "marks": 4, "type": "lesson", "topics": ["Travel", "Geography"]},
+                {"number": 7, "name": "From the Window", "marks": 4, "type": "lesson", "topics": ["Observation", "Surroundings"]},
+                {"number": 8, "name": "Reaching Grandmother's House", "marks": 4, "type": "lesson", "topics": ["Journey", "Family"]},
+                {"number": 9, "name": "Changing Families", "marks": 4, "type": "lesson", "topics": ["Family", "Changes"]},
+                {"number": 10, "name": "Hu Tu Tu, Hu Tu Tu", "marks": 4, "type": "lesson", "topics": ["Games", "Sports"]}
+            ]
+        }
+    }
+}
+
+NCERT_SYLLABUS_DATA["5"] = {
+    "subjects": {
+        "Hindi": {
+            "book": "रिमझिम - 5",
+            "chapters": [
+                {"number": 1, "name": "राख की रस्सी", "marks": 4, "type": "story", "topics": ["बुद्धि", "चतुराई"]},
+                {"number": 2, "name": "फ़सलों के त्योहार", "marks": 4, "type": "lesson", "topics": ["त्योहार", "खेती"]},
+                {"number": 3, "name": "खिलौनेवाला", "marks": 4, "type": "poem", "topics": ["खिलौने", "बचपन"]},
+                {"number": 4, "name": "नन्हा फ़नकार", "marks": 4, "type": "story", "topics": ["कला", "प्रतिभा"]},
+                {"number": 5, "name": "जहाँ चाह वहाँ राह", "marks": 4, "type": "story", "topics": ["इच्छाशक्ति", "सफलता"]},
+                {"number": 6, "name": "चिट्ठी का सफ़र", "marks": 4, "type": "lesson", "topics": ["डाक", "संचार"]},
+                {"number": 7, "name": "डाकिए की कहानी, कँवरसिंह की जुबानी", "marks": 4, "type": "story", "topics": ["डाकिया", "सेवा"]},
+                {"number": 8, "name": "वे दिन भी क्या दिन थे", "marks": 4, "type": "story", "topics": ["विज्ञान", "भविष्य"]},
+                {"number": 9, "name": "एक माँ की बेबसी", "marks": 4, "type": "poem", "topics": ["माँ", "प्रेम"]},
+                {"number": 10, "name": "बिशन की दिलेरी", "marks": 4, "type": "story", "topics": ["साहस", "जानवर"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold - 5",
+            "chapters": [
+                {"number": 1, "name": "Ice Cream Man", "marks": 4, "type": "poem", "topics": ["Summer", "Ice cream"]},
+                {"number": 2, "name": "Wonderful Waste!", "marks": 4, "type": "lesson", "topics": ["Recycling", "Environment"]},
+                {"number": 3, "name": "Teamwork", "marks": 4, "type": "poem", "topics": ["Cooperation", "Unity"]},
+                {"number": 4, "name": "Flying Together", "marks": 4, "type": "story", "topics": ["Birds", "Teamwork"]},
+                {"number": 5, "name": "My Shadow", "marks": 4, "type": "poem", "topics": ["Shadow", "Wonder"]},
+                {"number": 6, "name": "Robinson Crusoe", "marks": 4, "type": "story", "topics": ["Adventure", "Survival"]},
+                {"number": 7, "name": "Crying", "marks": 4, "type": "poem", "topics": ["Emotions", "Expression"]},
+                {"number": 8, "name": "My Elder Brother", "marks": 4, "type": "story", "topics": ["Family", "Relationships"]},
+                {"number": 9, "name": "Sing a Song of People", "marks": 4, "type": "poem", "topics": ["City", "People"]},
+                {"number": 10, "name": "Around the World", "marks": 4, "type": "story", "topics": ["Travel", "Geography"]}
+            ]
+        },
+        "Mathematics": {
+            "book": "Math-Magic - 5",
+            "chapters": [
+                {"number": 1, "name": "The Fish Tale", "marks": 5, "type": "lesson", "topics": ["Large numbers", "Estimation"]},
+                {"number": 2, "name": "Shapes and Angles", "marks": 5, "type": "lesson", "topics": ["Angles", "Shapes"]},
+                {"number": 3, "name": "How Many Squares?", "marks": 5, "type": "lesson", "topics": ["Area", "Squares"]},
+                {"number": 4, "name": "Parts and Wholes", "marks": 5, "type": "lesson", "topics": ["Fractions", "Parts"]},
+                {"number": 5, "name": "Does it Look the Same?", "marks": 5, "type": "lesson", "topics": ["Symmetry", "Reflection"]},
+                {"number": 6, "name": "Be My Multiple, I'll Be Your Factor", "marks": 5, "type": "lesson", "topics": ["Factors", "Multiples"]},
+                {"number": 7, "name": "Can You See the Pattern?", "marks": 5, "type": "lesson", "topics": ["Patterns", "Sequences"]},
+                {"number": 8, "name": "Mapping Your Way", "marks": 5, "type": "lesson", "topics": ["Maps", "Directions"]},
+                {"number": 9, "name": "Boxes and Sketches", "marks": 5, "type": "lesson", "topics": ["3D Shapes", "Nets"]},
+                {"number": 10, "name": "Tenths and Hundredths", "marks": 5, "type": "lesson", "topics": ["Decimals", "Place value"]},
+                {"number": 11, "name": "Area and Its Boundary", "marks": 5, "type": "lesson", "topics": ["Area", "Perimeter"]},
+                {"number": 12, "name": "Smart Charts", "marks": 5, "type": "lesson", "topics": ["Data", "Graphs"]},
+                {"number": 13, "name": "Ways to Multiply and Divide", "marks": 5, "type": "lesson", "topics": ["Multiplication", "Division"]},
+                {"number": 14, "name": "How Big? How Heavy?", "marks": 5, "type": "lesson", "topics": ["Volume", "Weight"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around - 5",
+            "chapters": [
+                {"number": 1, "name": "Super Senses", "marks": 4, "type": "lesson", "topics": ["Senses", "Animals"]},
+                {"number": 2, "name": "A Snake Charmer's Story", "marks": 4, "type": "lesson", "topics": ["Snakes", "Occupation"]},
+                {"number": 3, "name": "From Tasting to Digesting", "marks": 4, "type": "lesson", "topics": ["Digestion", "Food"]},
+                {"number": 4, "name": "Mangoes Round the Year", "marks": 4, "type": "lesson", "topics": ["Preservation", "Food"]},
+                {"number": 5, "name": "Seeds and Seeds", "marks": 4, "type": "lesson", "topics": ["Seeds", "Plants"]},
+                {"number": 6, "name": "Every Drop Counts", "marks": 4, "type": "lesson", "topics": ["Water", "Conservation"]},
+                {"number": 7, "name": "Experiments with Water", "marks": 4, "type": "lesson", "topics": ["Water", "Properties"]},
+                {"number": 8, "name": "A Treat for Mosquitoes", "marks": 4, "type": "lesson", "topics": ["Mosquitoes", "Diseases"]},
+                {"number": 9, "name": "Up You Go!", "marks": 4, "type": "lesson", "topics": ["Mountains", "Climbing"]},
+                {"number": 10, "name": "Walls Tell Stories", "marks": 4, "type": "lesson", "topics": ["History", "Buildings"]}
+            ]
+        }
+    }
+}
+
+# Class 7 - NCERT 2024-25
+NCERT_SYLLABUS_DATA["7"] = {
+    "subjects": {
+        "Hindi": {
+            "book": "वसंत भाग-2",
+            "chapters": [
+                {"number": 1, "name": "हम पंछी उन्मुक्त गगन के", "marks": 4, "type": "poem", "topics": ["स्वतंत्रता", "पक्षी"]},
+                {"number": 2, "name": "दादी माँ", "marks": 4, "type": "story", "topics": ["दादी", "परिवार"]},
+                {"number": 3, "name": "हिमालय की बेटियाँ", "marks": 4, "type": "lesson", "topics": ["नदियाँ", "हिमालय"]},
+                {"number": 4, "name": "कठपुतली", "marks": 4, "type": "poem", "topics": ["स्वतंत्रता", "बंधन"]},
+                {"number": 5, "name": "मिठाईवाला", "marks": 4, "type": "story", "topics": ["प्रेम", "त्याग"]},
+                {"number": 6, "name": "रक्त और हमारा शरीर", "marks": 4, "type": "lesson", "topics": ["रक्त", "स्वास्थ्य"]},
+                {"number": 7, "name": "पापा खो गए", "marks": 4, "type": "play", "topics": ["नाटक", "परिवार"]},
+                {"number": 8, "name": "शाम - एक किसान", "marks": 4, "type": "poem", "topics": ["किसान", "गाँव"]},
+                {"number": 9, "name": "चिड़िया की बच्ची", "marks": 4, "type": "story", "topics": ["स्वतंत्रता", "प्रेम"]},
+                {"number": 10, "name": "अपूर्व अनुभव", "marks": 4, "type": "story", "topics": ["अनुभव", "सीख"]}
+            ]
+        },
+        "English": {
+            "book": "Honeycomb",
+            "chapters": [
+                {"number": 1, "name": "Three Questions", "marks": 5, "type": "story", "topics": ["Wisdom", "Philosophy"]},
+                {"number": 2, "name": "A Gift of Chappals", "marks": 5, "type": "story", "topics": ["Kindness", "Family"]},
+                {"number": 3, "name": "Gopal and the Hilsa Fish", "marks": 5, "type": "story", "topics": ["Humor", "Wit"]},
+                {"number": 4, "name": "The Ashes That Made Trees Bloom", "marks": 5, "type": "story", "topics": ["Japanese folktale", "Kindness"]},
+                {"number": 5, "name": "Quality", "marks": 5, "type": "story", "topics": ["Craftsmanship", "Dedication"]},
+                {"number": 6, "name": "Expert Detectives", "marks": 5, "type": "story", "topics": ["Mystery", "Adventure"]},
+                {"number": 7, "name": "The Invention of Vita-Wonk", "marks": 5, "type": "story", "topics": ["Fantasy", "Invention"]},
+                {"number": 8, "name": "Fire: Friend and Foe", "marks": 5, "type": "lesson", "topics": ["Fire", "Safety"]},
+                {"number": 9, "name": "A Bicycle in Good Repair", "marks": 5, "type": "story", "topics": ["Humor", "Repair"]},
+                {"number": 10, "name": "The Story of Cricket", "marks": 5, "type": "lesson", "topics": ["Cricket", "History"]}
+            ]
+        },
+        "Mathematics": {
+            "book": "Mathematics - 7 (NCERT 2024-25)",
+            "chapters": [
+                {"number": 1, "name": "Integers", "marks": 5, "type": "lesson", "topics": ["Integers", "Operations", "Properties"]},
+                {"number": 2, "name": "Fractions and Decimals", "marks": 5, "type": "lesson", "topics": ["Fractions", "Decimals", "Operations"]},
+                {"number": 3, "name": "Data Handling", "marks": 5, "type": "lesson", "topics": ["Data collection", "Mean", "Median", "Mode", "Bar graphs"]},
+                {"number": 4, "name": "Simple Equations", "marks": 5, "type": "lesson", "topics": ["Variables", "Equations", "Solving equations"]},
+                {"number": 5, "name": "Lines and Angles", "marks": 5, "type": "lesson", "topics": ["Related angles", "Parallel lines", "Transversal"]},
+                {"number": 6, "name": "The Triangle and its Properties", "marks": 5, "type": "lesson", "topics": ["Medians", "Altitudes", "Angle sum", "Exterior angle"]},
+                {"number": 7, "name": "Congruence of Triangles", "marks": 5, "type": "lesson", "topics": ["Congruence", "Criteria", "SSS", "SAS", "ASA", "RHS"]},
+                {"number": 8, "name": "Comparing Quantities", "marks": 5, "type": "lesson", "topics": ["Ratio", "Percentage", "Profit and loss", "Simple interest"]},
+                {"number": 9, "name": "Rational Numbers", "marks": 5, "type": "lesson", "topics": ["Rational numbers", "Operations", "Representation"]},
+                {"number": 10, "name": "Practical Geometry", "marks": 5, "type": "lesson", "topics": ["Constructions", "Triangles"]},
+                {"number": 11, "name": "Perimeter and Area", "marks": 5, "type": "lesson", "topics": ["Perimeter", "Area", "Circles"]},
+                {"number": 12, "name": "Algebraic Expressions", "marks": 5, "type": "lesson", "topics": ["Terms", "Coefficients", "Addition", "Subtraction"]},
+                {"number": 13, "name": "Exponents and Powers", "marks": 5, "type": "lesson", "topics": ["Exponents", "Laws", "Standard form"]},
+                {"number": 14, "name": "Symmetry", "marks": 5, "type": "lesson", "topics": ["Lines of symmetry", "Rotational symmetry"]},
+                {"number": 15, "name": "Visualising Solid Shapes", "marks": 5, "type": "lesson", "topics": ["Plane figures", "Solid shapes", "Nets"]}
+            ]
+        },
+        "Science": {
+            "book": "Science - 7 (NCERT 2024-25)",
+            "chapters": [
+                {"number": 1, "name": "Nutrition in Plants", "marks": 5, "type": "lesson", "topics": ["Autotrophic nutrition", "Photosynthesis", "Other modes"]},
+                {"number": 2, "name": "Nutrition in Animals", "marks": 5, "type": "lesson", "topics": ["Digestion", "Digestive system", "Feeding habits"]},
+                {"number": 3, "name": "Fibre to Fabric", "marks": 4, "type": "lesson", "topics": ["Animal fibres", "Wool", "Silk"]},
+                {"number": 4, "name": "Heat", "marks": 5, "type": "lesson", "topics": ["Temperature", "Conduction", "Convection", "Radiation"]},
+                {"number": 5, "name": "Acids, Bases and Salts", "marks": 5, "type": "lesson", "topics": ["Indicators", "Neutralisation", "Applications"]},
+                {"number": 6, "name": "Physical and Chemical Changes", "marks": 5, "type": "lesson", "topics": ["Physical changes", "Chemical changes", "Rusting"]},
+                {"number": 7, "name": "Weather, Climate and Adaptations", "marks": 5, "type": "lesson", "topics": ["Weather", "Climate", "Adaptations"]},
+                {"number": 8, "name": "Winds, Storms and Cyclones", "marks": 5, "type": "lesson", "topics": ["Air pressure", "Wind", "Cyclones"]},
+                {"number": 9, "name": "Soil", "marks": 4, "type": "lesson", "topics": ["Soil profile", "Soil types", "Properties"]},
+                {"number": 10, "name": "Respiration in Organisms", "marks": 5, "type": "lesson", "topics": ["Cellular respiration", "Breathing", "Respiration in organisms"]},
+                {"number": 11, "name": "Transportation in Animals and Plants", "marks": 5, "type": "lesson", "topics": ["Circulatory system", "Excretion", "Transport in plants"]},
+                {"number": 12, "name": "Reproduction in Plants", "marks": 5, "type": "lesson", "topics": ["Modes of reproduction", "Asexual", "Sexual", "Pollination"]},
+                {"number": 13, "name": "Motion and Time", "marks": 5, "type": "lesson", "topics": ["Speed", "Measurement of time", "Distance-time graph"]},
+                {"number": 14, "name": "Electric Current and its Effects", "marks": 5, "type": "lesson", "topics": ["Symbols", "Heating effect", "Magnetic effect", "Electromagnet"]},
+                {"number": 15, "name": "Light", "marks": 5, "type": "lesson", "topics": ["Reflection", "Plane mirror", "Spherical mirrors", "Lenses"]},
+                {"number": 16, "name": "Water: A Precious Resource", "marks": 4, "type": "lesson", "topics": ["Water cycle", "Ground water", "Conservation"]},
+                {"number": 17, "name": "Forests: Our Lifeline", "marks": 4, "type": "lesson", "topics": ["Forest ecosystem", "Products", "Conservation"]},
+                {"number": 18, "name": "Wastewater Story", "marks": 4, "type": "lesson", "topics": ["Sewage", "Treatment", "Sanitation"]}
+            ]
+        },
+        "Social Science": {"book": "Social Science - 7", "chapters": []}
+    }
+}
+
+# Class 8 - NCERT 2024-25
+NCERT_SYLLABUS_DATA["8"] = {
+    "subjects": {
+        "Hindi": {
+            "book": "वसंत भाग-3",
+            "chapters": [
+                {"number": 1, "name": "ध्वनि", "marks": 4, "type": "poem", "topics": ["प्रकृति", "आवाज"]},
+                {"number": 2, "name": "लाख की चूड़ियाँ", "marks": 4, "type": "story", "topics": ["कला", "परंपरा"]},
+                {"number": 3, "name": "बस की यात्रा", "marks": 4, "type": "story", "topics": ["व्यंग्य", "यात्रा"]},
+                {"number": 4, "name": "दीवानों की हस्ती", "marks": 4, "type": "poem", "topics": ["जीवन", "दर्शन"]},
+                {"number": 5, "name": "चिट्ठियों की अनूठी दुनिया", "marks": 4, "type": "lesson", "topics": ["पत्र", "संचार"]},
+                {"number": 6, "name": "भगवान के डाकिए", "marks": 4, "type": "poem", "topics": ["प्रकृति", "संदेश"]},
+                {"number": 7, "name": "क्या निराश हुआ जाए", "marks": 4, "type": "lesson", "topics": ["आशा", "जीवन"]},
+                {"number": 8, "name": "यह सबसे कठिन समय नहीं", "marks": 4, "type": "poem", "topics": ["आशावाद", "साहस"]},
+                {"number": 9, "name": "कबीर की साखियाँ", "marks": 4, "type": "poem", "topics": ["कबीर", "दोहे"]},
+                {"number": 10, "name": "कामचोर", "marks": 4, "type": "story", "topics": ["व्यंग्य", "आलस्य"]}
+            ]
+        },
+        "English": {
+            "book": "Honeydew",
+            "chapters": [
+                {"number": 1, "name": "The Best Christmas Present in the World", "marks": 5, "type": "story", "topics": ["War", "Peace", "Humanity"]},
+                {"number": 2, "name": "The Tsunami", "marks": 5, "type": "lesson", "topics": ["Natural disaster", "Survival"]},
+                {"number": 3, "name": "Glimpses of the Past", "marks": 5, "type": "lesson", "topics": ["Indian history", "Freedom struggle"]},
+                {"number": 4, "name": "Bepin Choudhury's Lapse of Memory", "marks": 5, "type": "story", "topics": ["Mystery", "Psychology"]},
+                {"number": 5, "name": "The Summit Within", "marks": 5, "type": "lesson", "topics": ["Mountaineering", "Achievement"]},
+                {"number": 6, "name": "This is Jody's Fawn", "marks": 5, "type": "story", "topics": ["Animal care", "Compassion"]},
+                {"number": 7, "name": "A Visit to Cambridge", "marks": 5, "type": "lesson", "topics": ["Stephen Hawking", "Inspiration"]},
+                {"number": 8, "name": "A Short Monsoon Diary", "marks": 5, "type": "lesson", "topics": ["Nature", "Monsoon"]},
+                {"number": 9, "name": "The Great Stone Face - I", "marks": 5, "type": "story", "topics": ["Character", "Values"]},
+                {"number": 10, "name": "The Great Stone Face - II", "marks": 5, "type": "story", "topics": ["Character", "Values"]}
+            ]
+        },
+        "Mathematics": {
+            "book": "Mathematics - 8 (NCERT 2024-25)",
+            "chapters": [
+                {"number": 1, "name": "Rational Numbers", "marks": 5, "type": "lesson", "topics": ["Properties", "Operations", "Representation"]},
+                {"number": 2, "name": "Linear Equations in One Variable", "marks": 5, "type": "lesson", "topics": ["Equations", "Applications"]},
+                {"number": 3, "name": "Understanding Quadrilaterals", "marks": 5, "type": "lesson", "topics": ["Polygons", "Angle sum", "Types"]},
+                {"number": 4, "name": "Practical Geometry", "marks": 5, "type": "lesson", "topics": ["Quadrilateral construction"]},
+                {"number": 5, "name": "Data Handling", "marks": 5, "type": "lesson", "topics": ["Organisation", "Pie charts", "Probability"]},
+                {"number": 6, "name": "Squares and Square Roots", "marks": 5, "type": "lesson", "topics": ["Perfect squares", "Square roots", "Patterns"]},
+                {"number": 7, "name": "Cubes and Cube Roots", "marks": 5, "type": "lesson", "topics": ["Perfect cubes", "Cube roots"]},
+                {"number": 8, "name": "Comparing Quantities", "marks": 5, "type": "lesson", "topics": ["Ratios", "Percentages", "Compound interest"]},
+                {"number": 9, "name": "Algebraic Expressions and Identities", "marks": 5, "type": "lesson", "topics": ["Expressions", "Identities", "Operations"]},
+                {"number": 10, "name": "Visualising Solid Shapes", "marks": 5, "type": "lesson", "topics": ["3D shapes", "Faces", "Edges", "Vertices"]},
+                {"number": 11, "name": "Mensuration", "marks": 5, "type": "lesson", "topics": ["Area", "Surface area", "Volume"]},
+                {"number": 12, "name": "Exponents and Powers", "marks": 5, "type": "lesson", "topics": ["Laws", "Negative exponents", "Standard form"]},
+                {"number": 13, "name": "Direct and Inverse Proportions", "marks": 5, "type": "lesson", "topics": ["Direct proportion", "Inverse proportion"]},
+                {"number": 14, "name": "Factorisation", "marks": 5, "type": "lesson", "topics": ["Factors", "Division of expressions"]},
+                {"number": 15, "name": "Introduction to Graphs", "marks": 5, "type": "lesson", "topics": ["Bar graph", "Pie chart", "Line graph", "Linear graph"]},
+                {"number": 16, "name": "Playing with Numbers", "marks": 5, "type": "lesson", "topics": ["Number patterns", "Divisibility", "Puzzles"]}
+            ]
+        },
+        "Science": {
+            "book": "Science - 8 (NCERT 2024-25)",
+            "chapters": [
+                {"number": 1, "name": "Crop Production and Management", "marks": 5, "type": "lesson", "topics": ["Agricultural practices", "Crop protection"]},
+                {"number": 2, "name": "Microorganisms: Friend and Foe", "marks": 5, "type": "lesson", "topics": ["Types", "Useful microorganisms", "Harmful microorganisms"]},
+                {"number": 3, "name": "Synthetic Fibres and Plastics", "marks": 5, "type": "lesson", "topics": ["Synthetic fibres", "Plastics", "Environment"]},
+                {"number": 4, "name": "Materials: Metals and Non-Metals", "marks": 5, "type": "lesson", "topics": ["Properties", "Reactions", "Uses"]},
+                {"number": 5, "name": "Coal and Petroleum", "marks": 5, "type": "lesson", "topics": ["Fossil fuels", "Formation", "Conservation"]},
+                {"number": 6, "name": "Combustion and Flame", "marks": 5, "type": "lesson", "topics": ["Combustion", "Types of combustion", "Flame"]},
+                {"number": 7, "name": "Conservation of Plants and Animals", "marks": 5, "type": "lesson", "topics": ["Deforestation", "Conservation", "Biodiversity"]},
+                {"number": 8, "name": "Cell - Structure and Functions", "marks": 5, "type": "lesson", "topics": ["Cell structure", "Plant and animal cells", "Organelles"]},
+                {"number": 9, "name": "Reproduction in Animals", "marks": 5, "type": "lesson", "topics": ["Modes of reproduction", "Sexual reproduction", "Asexual reproduction"]},
+                {"number": 10, "name": "Reaching the Age of Adolescence", "marks": 5, "type": "lesson", "topics": ["Adolescence", "Puberty", "Reproductive health"]},
+                {"number": 11, "name": "Force and Pressure", "marks": 5, "type": "lesson", "topics": ["Force", "Pressure", "Atmospheric pressure"]},
+                {"number": 12, "name": "Friction", "marks": 5, "type": "lesson", "topics": ["Friction", "Types", "Increasing and decreasing friction"]},
+                {"number": 13, "name": "Sound", "marks": 5, "type": "lesson", "topics": ["Sound production", "Propagation", "Human ear"]},
+                {"number": 14, "name": "Chemical Effects of Electric Current", "marks": 5, "type": "lesson", "topics": ["Conductors", "Insulators", "Electroplating"]},
+                {"number": 15, "name": "Some Natural Phenomena", "marks": 5, "type": "lesson", "topics": ["Lightning", "Earthquakes"]},
+                {"number": 16, "name": "Light", "marks": 5, "type": "lesson", "topics": ["Reflection", "Multiple images", "Human eye", "Braille"]},
+                {"number": 17, "name": "Stars and the Solar System", "marks": 5, "type": "lesson", "topics": ["Celestial objects", "Solar system", "Constellations"]},
+                {"number": 18, "name": "Pollution of Air and Water", "marks": 5, "type": "lesson", "topics": ["Air pollution", "Water pollution", "Prevention"]}
+            ]
+        },
+        "Social Science": {"book": "Social Science - 8", "chapters": []}
+    }
+}
 
 # Class 9 - NCERT 2024-25 Syllabus
 NCERT_SYLLABUS_DATA["9"] = {
