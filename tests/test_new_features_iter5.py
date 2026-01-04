@@ -8,7 +8,7 @@ import os
 import json
 import base64
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://schooltino-app.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://edutino.preview.emergentagent.com')
 
 # Test credentials
 DIRECTOR_EMAIL = "director@schooltino.com"

@@ -67,7 +67,7 @@
 ## Download Links
 
 - **Marketing Materials ZIP:** 
-  https://schooltino-app.preview.emergentagent.com/api/download/marketing-materials
+  https://edutino.preview.emergentagent.com/api/download/marketing-materials
 
 ---
 
@@ -121,4 +121,4 @@
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
 - **Live URL:** https://schooltino.in
-- **Preview URL:** https://schooltino-app.preview.emergentagent.com
+- **Preview URL:** https://edutino.preview.emergentagent.com

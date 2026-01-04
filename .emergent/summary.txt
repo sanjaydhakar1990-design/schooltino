@@ -1,55 +1,46 @@
 <analysis>**original_problem_statement:**
-The user wants to build a comprehensive, AI-powered school management platform named Schooltino. The vision is to automate school operations using AI + CCTV + Apps. The platform has evolved into an all-in-one system with three main portals (Admin/Director, Teacher, and Student) managed from a single application. The long-term vision is for Schooltino to be a product offered under a master SaaS platform, OneTino.com, which the user already owns. The application should be deployable to a custom domain.
+The user wants to build a comprehensive, AI-powered school management platform named Schooltino. The vision is to automate school operations using AI + CCTV + Apps. The platform has evolved into an all-in-one system with three main portals (Admin/Director, Teacher, and Student). The long-term vision is for Schooltino to be a product offered under a master SaaS platform, OneTino.com.
 
-A significant new request was made to implement a detailed, multi-level permission system, integrate Zoom with AI-powered meeting summaries, and add advanced analytics for tracking teacher and student performance.
+**New requirements added during this session:**
+-   **Marketing & Sales:** Create a public-facing, engaging landing page, professional marketing brochures (with QR codes), and a comparison chart.
+-   **Onboarding & Subscriptions:** Implement a one-click setup wizard for new Directors, an AI-guided onboarding process, and a multi-tiered subscription model (Free Trial, Monthly, Yearly).
+-   **Portal Access:** Create separate, dedicated login pages for TeachTino (teachers) and StudyTino (students/parents) with PWA installation prompts.
+-   **Data & AI:** Enhance the school registration process to capture comprehensive details (address, registration no., photos, etc.) to better inform the AI. Add file/photo/video upload capabilities to the AI assistant features.
+-   **Core Features:** Implement a full online examination system where teachers can create tests and students can take them in a computer lab. Replace Zoom with Google Meet for video conferencing.
+-   **Branding:** Remove Made with Emergent and replace it with A part of OneTino Ecosystem.
 
 **User's preferred language**: Hinglish (A mix of Hindi and English). The next agent MUST respond in Hinglish.
 
 **what currently exists?**
-A full-stack application (FastAPI backend, React frontend) deployed and live on the user's domain (). The application features three distinct, role-based portals:
+The application now has a professional public-facing marketing website at the root URL, which serves as the primary entry point. This landing page showcases features, displays subscription plans, and includes a registration/login form for school directors.
 
-1.  **Schooltino (Admin/Director Portal):** Includes a new Permission Manager UI where the Director can grant/revoke feature access for other roles (Principal, VP, Accountant). The sidebar is now dynamic, showing only the features a user has permission to access. A School Analytics page provides an overview of school performance.
-2.  **TeachTino (Teacher Portal):** A completely new, feature-rich dashboard built from the user's blueprint. It includes an AI Daily Planner, syllabus tracking (mocked), PWA install button, and a real TeachTino AI Assistant powered by GPT-4o via the user's API key.
-3.  **StudyTino (Student Portal):** A brand new student/parent dashboard, also built from a blueprint. It features homework/notice tracking, a calendar, a PWA install button, and a real StudyTino AI Helper connected to GPT-4o.
+The core application is now accessed under the  path and remains a full-stack platform with three role-based portals:
+1.  **Schooltino (Admin/Director Portal):** Accessed via the new landing page. Includes the previously built Permission Manager and new pages for a step-by-step **Setup Wizard**, a **Subscription Management** page, and a comprehensive **School Registration Form**.
+2.  **TeachTino (Teacher Portal):** Now has a dedicated login page (). The AI Assistant within the dashboard has been enhanced with UI for file, photo, and video uploads.
+3.  **StudyTino (Student Portal):** Now has a dedicated login page ().
 
-The mock AI functionality from the previous session has been replaced with live OpenAI GPT-4o integration in both the teacher and student portals.
+Backend functionality has been significantly expanded to support the new features, including APIs for the setup wizard, subscription plans, expanded school data models, and Zoom meeting management. Marketing brochures have been created and are available via a downloadable ZIP file from a dedicated API endpoint. The Made with Emergent branding has been removed.
 
 **Last working item**:
--   **Last item agent was working:** The agent implemented **Phase 1** of a major new feature request: a comprehensive Role-Based Access Control (RBAC) / Permission System. This involved creating backend APIs and database models for permissions, building a Permission Manager UI for the Director, making the frontend sidebar dynamic based on user permissions, and creating new user roles (Principal, Vice Principal, Accountant) for testing. This work addresses the user's need for granular control over who can access what.
--   **Status:** USER VERIFICATION PENDING
--   **Agent Testing Done:** Y (Agent created new users with different roles, tested the Director's ability to view and modify permissions via the new UI, and confirmed the UI components appeared correctly via screenshots.)
--   **Which testing method agent to use?** Frontend testing agent. The agent must perform multi-role testing to validate the permission system.
-    -   **Test Case 1 (Director):** Log in as . Navigate to . Verify that Principal, VP, and Accountant are visible. Click Permissions for the Principal and disable School Analytics. Save.
-    -   **Test Case 2 (Principal - Before):** Log in as . Verify School Analytics is visible in the sidebar.
-    -   **Test Case 3 (Principal - After):** Log in as  again. Verify School Analytics is now hidden from the sidebar and navigating to the URL  is blocked or redirects.
+-   **Last item agent was working:** The user requested two final items: an Online Exam System and the removal of the Made with Emergent branding. The agent successfully removed the branding from  and was about to start the implementation of the Online Exam System.
+-   **Status:** NOT STARTED
+-   **Agent Testing Done:** N/A
+-   **Which testing method agent to use?** both (This is a large feature requiring both frontend and backend testing agents upon completion).
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Validate Phase 1 - Permission System (P0)**
--   **Issue 2: Refactor Monolithic Backend (P2)**
+-   **Issue 1: Refactor Monolithic Backend (P2)**
 
 **Issues Detail:**
--   **Issue 1: Validate Phase 1 - Permission System**
-    -   **Description:** A large and critical RBAC system was just built. It needs thorough testing and validation from the user before proceeding to the next phase. The user needs to confirm that the permission management flow meets their expectations for roles like Principal, VP, and Staff.
-    -   **Attempted fixes:** N/A (New feature)
+-   **Issue 1: Refactor Monolithic Backend**
+    -   **Description:** The  file has grown even larger (now over 4700 lines) and contains all models, routes, and logic. This is a critical technical debt that significantly increases the risk of bugs and slows down development.
+    -   **Attempted fixes:** None. The agent continued adding more code to the monolith.
     -   **Next debug checklist:**
-        1.  Ask the user to test the new permission system by logging in with the provided credentials for Director, Principal, and VP.
-        2.  Guide them on how to change permissions as a Director and see the effect by logging in as the other role.
-        3.  Confirm with the user if the current implementation fulfills the requirements for Phase 1.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the foundation for all future features. Ensuring it's correct will prevent rework and security issues later.
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** None
-
--   **Issue 2: Refactor Monolithic Backend**
-    -   **Description:** The  file is now extremely large (over 3500 lines) and contains all models, routes, and business logic. This is a significant technical debt that makes maintenance and adding new features difficult and risky.
-    -   **Attempted fixes:** None.
-    -   **Next debug checklist:**
-        1.  Propose a plan to the user to refactor the backend.
-        2.  Suggest a standard FastAPI project structure: , , , .
-        3.  Start by migrating a single domain, like  or , into its own route file.
-    -   **Why fix this issue and what will be achieved with the fix?** Refactoring will improve maintainability, reduce the chance of bugs, and make future development much faster and safer. It is critical for the long-term health of the project.
+        1.  Propose a structured plan to the user to refactor the backend into a standard FastAPI project structure: , , , etc.
+        2.  Start by migrating a single, self-contained domain like  or  into its own route file ().
+        3.  Update the main  to import and include the new router.
+        4.  Run regression tests to ensure no functionality is broken.
+    -   **Why fix this issue and what will be achieved with the fix?** Refactoring is crucial for maintainability, stability, and scalability. It will make future development faster, safer, and easier to debug.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** backend
@@ -59,20 +50,24 @@ The mock AI functionality from the previous session has been replaced with live 
 None.
 
 **Upcoming and Future Tasks**
-**Upcoming Tasks (User's Approved Plan):**
--   **P0: Phase 2: Zoom Meeting Integration:**
-    -   **Task:** Implement a feature to schedule and join Zoom meetings from the dashboard.
-    -   **Task:** Integrate an AI service (using the existing OpenAI key) to analyze meeting recordings, generate summaries, and automatically share them with participants.
-    -   **Files to be created/modified:** ,  (or new route file if refactored).
--   **P1: Phase 1 Enhancements & Principal's Role:**
-    -   **Task:** Implement the UI and backend logic for a Principal to assign classes and subjects to teachers.
-    -   **Task:** Implement the backend approval workflow for admissions and cash fee payments managed by staff and approved by the Principal.
-    -   **Task:** Remove the Student ID generation section from the Admin dashboard.
--   **P2: Phase 3: Advanced Analytics & Reports:**
-    -   **Task:** Build out the School Analytics page to show real data on teacher performance, syllabus completion, and weak student analysis, visible to the Director and Principal (with permission).
+
+**Upcoming Tasks:**
+-   **P0: Online Exam System:**
+    -   **Task:** Build the backend models and APIs for creating exams (questions, options, correct answers, marks).
+    -   **Task:** Create a UI for Teachers to build and manage these exams.
+    -   **Task:** Create a UI for Students to log in and take the exams in a controlled environment (e.g., computer lab).
+    -   **Task:** Implement result calculation and display.
+-   **P1: Google Meet Integration (Replaces Zoom):**
+    -   **Task:** The user approved using Google Meet instead of Zoom. An integration playbook has already been fetched.
+    -   **Task:** Use the playbook to implement scheduling and joining Google Meet meetings.
+    -   **Task:** Integrate an AI service to analyze meeting recordings and generate summaries (re-using existing logic).
 -   **P2: Fulfill Mocked Features:**
-    -   **Task:** Implement real NCERT syllabus fetching to replace the current mock data.
+    -   **Task:** Implement real NCERT syllabus fetching to replace mock data in the TeachTino dashboard.
     -   **Task:** Implement the backend for the full Leave Management approval workflow.
+    -   **Task:** Connect the School Analytics page to real database queries instead of returning mock data.
+-   **P2: Principal's Role Enhancements:**
+    -   **Task:** Implement UI and backend for a Principal to assign classes and subjects to teachers.
+    -   **Task:** Implement the backend approval workflow for admissions and fees.
 
 **Future Tasks:**
 -   CCTV Hardware Integration.
@@ -81,102 +76,115 @@ None.
 -   OneTino.com master SaaS platform integration.
 
 **Completed work in this session**
--   **Permission System (Phase 1):** Built a complete role-based access control system, allowing the Director to manage permissions for other roles via a new UI. The sidebar is now dynamic based on permissions.
--   **Real AI Integration:** Replaced all mock AI responses in the TeachTino and StudyTino dashboards with live calls to GPT-4o using the user's provided OpenAI API key.
--   **TeachTino Dashboard Rebuild:** Completely rebuilt the teacher dashboard from scratch based on the user's detailed blueprint, including an AI Daily Planner and PWA install button.
--   **StudyTino Dashboard Rebuild:** Completely rebuilt the student dashboard based on a user blueprint, including an AI Helper and PWA install button.
--   **Admin Dashboard Cleanup:** Removed the incorrect TeachTino link from the Director's sidebar and added a new (currently mock) School Analytics page.
--   **Leave Management UI Fix:** Fixed the role-based view on the Leave Management page.
--   **Deployment Guidance:** Provided detailed, step-by-step instructions for the non-technical user to deploy the app and configure their custom GoDaddy domain.
--   **New Test Users:** Created accounts for Teacher, Student, Principal, Vice Principal, and Accountant roles.
+-   **Marketing Landing Page:** Created a new, comprehensive landing page () which is now the app's entry point ().
+-   **Subscription Model:** Implemented backend logic and a frontend page () for a 3-tier subscription system (Free, Monthly, Yearly).
+-   **Director Onboarding:** Created a multi-step **Setup Wizard** () with an AI assistant to guide new directors through school setup.
+-   **Portal Logins:** Created dedicated login pages for teachers () and students ().
+-   **Marketing Materials:** Generated a set of professional HTML brochures and a comparison chart, updated them with the user's phone number and a QR code, and made them available as a downloadable ZIP file via an API endpoint ().
+-   **Zoom Integration:** Implemented backend APIs and a frontend page () for scheduling and managing Zoom meetings. Fixed a critical routing bug identified by the testing agent.
+-   **File Upload UI:** Added UI components (buttons) to the TeachTino AI Assistant for uploading photos, videos, and documents.
+-   **Comprehensive School Form:** Expanded the backend School model and created a new frontend page () to capture detailed school information.
+-   **Routing Overhaul:** Refactored the entire frontend routing in  to support the new public landing page, with the main application now residing under the  path.
+-   **Branding Update:** Replaced the Made with Emergent badge with Part of OneTino Ecosystem in .
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Massive Backend Monolith**
-    -   **Debug checklist:** The  file is over 3500 lines long and urgently needs to be refactored into a proper FastAPI project structure (, , ).
-    -   **Why to solve this issue and what will be achieved with this?** To improve maintainability, reduce the risk of introducing bugs, and speed up future development. The current state is unsustainable.
+    -   **Debug checklist:** The  file is now over 4700 lines. It needs to be broken down into a standard FastAPI project structure (, , ).
+    -   **Why to solve this issue and what will be achieved with this?** To improve maintainability, reduce bug risk, and enable faster parallel development. The current state is a major liability.
     -   **Should Test frontend/backend/both after fix:** backend
     -   **Is recurring issue?** Y
+
+**Known issue recurrence from previous fork**
+-   **Issue recurrence in previous fork:** Backend monolith ().
+-   **Recurrence count:** 2 (This is the second consecutive fork where this has been a major pending issue).
+-   **Status:** NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Role-Based Access Control (RBAC):** A full permission system was implemented. Permissions are defined in the backend, fetched via , stored in the , and used to conditionally render UI components (like the sidebar) and protect routes.
--   **Live AI Integration:** The application now uses the user's  to make live calls to GPT-4o for the AI assistant features. The  library is used for this.
--   **Dynamic Frontend:** The UI, particularly the main navigation sidebar, is no longer static. It dynamically renders based on the permissions of the logged-in user.
+-   **Public vs. Private Routing:** The application now distinguishes between public-facing pages (Landing, Logins at ) and the protected, authenticated application dashboard (under ).  manages this logic.
+-   **API-Driven Onboarding:** The new Setup Wizard is not static; it fetches its state (, ) from a backend API, allowing users to resume setup later.
+-   **Static File Serving:** The backend was configured with a new endpoint () to serve a static ZIP file using FastAPI's .
+-   **Dynamic Routing Order Fix:** A bug was resolved where dynamic FastAPI routes (e.g., ) were capturing static routes (). The fix involved reordering the route definitions in .
 
 **key DB schema**
--   **users:** {email, password, role, status, name, school_ids, **permissions**}
--   **permissions:** (New) {user_id, permissions: {dashboard: bool, user_management: bool, ...}}
--   **roles:** (New, defined in backend logic) , , , , , .
+-   **schools:** {..., , , , , , , , } (Expanded)
+-   **meetings:** (New) 
+-   **subscriptions:** (New) 
+-   **setup_wizard_status:** (New) 
+-   **users:** The  role can now be created via a public-facing API on the landing page, linked to a new school and a free trial subscription.
 
 **All files of reference**
--   : **CRITICAL FILE.** Heavily modified to add the entire RBAC system, live AI endpoints, and numerous helper APIs. Urgently needs refactoring.
--   : **New.** The UI for the Director to manage user permissions.
--   : **Rewritten.** Now dynamically generates navigation links based on permissions from .
--   : **Rewritten.** The new, feature-rich teacher portal.
--   : **Rewritten.** The new student portal.
--   : Modified to add new routes and permission-based route protection.
--   : Modified to store and provide user permissions application-wide.
+-   : **CRITICAL FILE.** Heavily modified to add APIs for Subscriptions, Setup Wizard, School Updates, Zoom Meetings, and File Downloads. Urgently needs refactoring.
+-   : New marketing and registration entry point for the entire application.
+-   : Completely refactored to handle the new public/private routing structure.
+-   : New interactive onboarding page for directors.
+-   : New page to display pricing plans.
+-   , : New dedicated login portals.
+-   : Directory containing all new HTML-based marketing assets.
 
 **Areas that need refactoring**:
-The  file is a top priority for refactoring. It has become unmanageably large and complex, posing a significant risk to future development and stability. This should be proposed to the user as the next major technical task after the current feature set is validated.
+The  file is the highest priority. It is dangerously large and complex. The agent MUST propose a refactoring plan to the user after completing the next high-priority feature (Online Exam System). Delaying this further will make the project unmanageable.
 
 **key api endpoints**
--    (GET, PUT): Manages user-specific permissions.
--   : Gets default permissions for all roles.
--   : Now returns the user's specific permissions along with their profile.
--    (POST): Now connects to live GPT-4o.
--    (POST): Now connects to live GPT-4o.
--    (GET): New endpoint for syllabus tracking (mocked).
--    (GET): New endpoint for the AI planner (mocked).
+-    (PUT): Updates a school with comprehensive details.
+-    (GET, POST): Lists and creates Zoom meetings.
+-    (GET, DELETE): Fetches or deletes a specific meeting.
+-   , : Lists all recordings/summaries.
+-    (GET): Fetches all available subscription plans.
+-    (GET): Gets the current onboarding status for a school.
+-    (POST): Marks a step in the wizard as complete.
+-    (POST): New public endpoint to create a director and school.
+-    (GET): Serves the marketing materials ZIP file.
 
 **Critical Info for New Agent**
--   **PRIORITY #1: User Verification.** Do not start new work until the user has tested and approved the new Permission System (Phase 1). This is a large, foundational feature. Use the provided credentials to guide them.
--   **Phase-Based Plan:** The user has approved a multi-phase plan. After validating Phase 1, the next step is **Phase 2: Zoom Integration**. Refer to the Upcoming Tasks for the breakdown.
--   **Live Site:** The application is deployed and live on the user's custom domain. Be extra cautious with changes. Thorough testing is mandatory before suggesting deployment.
--   **Technical Debt:** The backend monolith () is a major risk. You should strongly advocate for refactoring it after the current feature phases are delivered, explaining the benefits (stability, speed).
+-   **New Top Priority:** The user's latest request is to build an **Online Exam System**. This should be the immediate focus.
+-   **Routing Structure:** Be aware of the new routing. The public marketing site is at . The authenticated application itself lives under . All internal navigation links must be prefixed with .
+-   **Google Meet, not Zoom:** The user has approved switching to Google Meet. The Zoom integration is complete but should be replaced. A playbook for Google Calendar API (needed for Meet) has already been fetched.
+-   **Technical Debt Crisis:** You MUST address the  monolith. After the exam system, you should strongly advocate for and plan the refactoring work. The stability of the entire project depends on it.
 
 **documents and test reports created in this job**
--   /app/memory/PRD.md (Updated with latest progress)
+-    (Updated with all new features)
+-    (Test report that found the Zoom routing bug)
+-    (4 new HTML files)
+-    (Downloadable asset)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Asks if dashboards match the blueprint, if AI is real, and about domain purchase. (Status: Addressed)
-2.  **user:** Confirms they bought the domain and provided an OpenAI key, asking why mocks are still used. (Status: Addressed, AI is now live)
-3.  **user:** Confirms domain is  and asks for deployment steps, also requesting the Admin dashboard be cleaned up. (Status: Addressed)
-4.  **user:** Asks for clarification on how to edit a CNAME record in GoDaddy. (Status: Addressed)
-5.  **user:** Confirms the website is live and provides a large set of new requirements for a permission system, Zoom integration, and advanced analytics. (Status: In Progress - Phase 1 completed)
-6.  **agent:** Breaks the new request into three phases and asks the user to confirm starting with Phase 1 (Permissions). (Status: Waiting for user confirmation)
-7.  **user:** (Repeated message) Provides the large set of new requirements again. (Status: Addressed by agent's plan)
-8.  **agent:** Acknowledges the repeated message and begins work on Phase 1. (Status: Work Started)
-9.  **user:** (Final message of previous agent) ho gyi live website... - This is a duplicate of the earlier message requesting new features. (Status: Actioned, Phase 1 is complete).
-10. **agent:** The last action was completing the build of the Permission System and creating a summary.
-
-**There are no pending human messages. The next action is to ask the user to verify the completed Phase 1.**
+1.  **user:** Asks for a direct downloadable link for the brochures and to add a QR code to them. (Status: Completed)
+2.  **user:** Requests a new, engaging homepage/landing page that explains the product's value, shows subscription plans, and has a registration form. After login, the user should be taken to the dashboard, not back to the landing page. (Status: Completed)
+3.  **user:** Asks how teachers and students will log in and download the PWA now that the main page is a marketing site. (Status: Completed by creating separate  and  login pages).
+4.  **user:** Requests an Online Exam System for teachers to create tests and students to take them. Also requests removing the Made with Emergent branding. (Status: Branding removed, Exam System is the next P0 task).
+5.  **user:** Confirms the name for the brochure should be Schooltino. (Status: Completed)
+6.  **user:** Provides a phone number for the brochures. (Status: Completed)
+7.  **user:** Provides details for the comparison chart and subscription plan structure (1-month free, pricing). (Status: Completed)
+8.  **user:** Asks to get the marketing brochure created in a zip file. (Status: Completed)
+9.  **user:** Approves using Google Meet instead of Zoom. (Status: Pending Implementation)
+10. **user:** Asks for a one-click setup for the director, with the AI guiding them through the process. (Status: Completed via Setup Wizard)
 
 **Project Health Check:**
 -   **Broken:** None.
--   **Mocked:** The backend logic for Syllabus Tracking, AI Daily Planner, Leave Management workflow, and the new School Analytics page is still mocked. These are planned for implementation in upcoming phases.
+-   **Mocked:** NCERT syllabus data, Leave Management workflow, School Analytics page data.
 
 **3rd Party Integrations**
--   **OpenAI GPT-4o:** Actively used for the AI Assistant features in the Teacher and Student dashboards, via the user's provided  and the  library.
--   **Gemini Nano Banana:** Used for the AI Content Studio's image generation (via Emergent LLM Key).
--   **qrcode:** Python library for generating QR codes.
+-   **OpenAI GPT-4o:** Used for AI assistant features.
+-   **Zoom:** Backend APIs and frontend page are implemented, but the user has requested to replace this with Google Meet.
+-   **Google Calendar API (for Google Meet):** Playbook has been fetched, but implementation is pending.
+-   **qrcode:** Python library used to generate QR codes for marketing materials.
 
 **Testing status**
--   **Testing agent used after significant changes:** NO (Agent used screenshots and manual curl commands for testing in this session).
--   **Test files created:** None in this session.
+-   **Testing agent used after significant changes:** YES. The testing agent was used to test the Zoom integration and successfully identified a critical routing bug, which was subsequently fixed.
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None.
 -   **Known regressions:** None.
 
 **Credentials to test flow:**
 | Role | Email | Password | Portal |
 | :--- | :--- | :--- | :--- |
-| **Director** |  |  | Schooltino (Admin) |
-| **Principal**| |  | Schooltino (Admin) |
-| **V. Principal**|  |  | Schooltino (Admin) |
-| **Accountant**| |  | Schooltino (Admin) |
-| **Teacher** |  |  | TeachTino |
-| **Student** |  (ID) |  | StudyTino |
+| **Director** |  |  | Landing Page -> Login |
+| **Principal**| |  | Landing Page -> Login |
+| **Teacher** |  |  |  |
+| **Student** |  (ID) |  |  |
 
 **What agent forgot to execute**
-The agent successfully completed the requested tasks for this session. The main miss is not using the formal  for such a large feature (Permission System), relying instead on manual screenshot verification. The next agent should use the testing agent to validate the RBAC flows.</analysis>
+The agent has successfully kept up with the user's rapid-fire requests. The only major pending item that was previously discussed is the **Google Meet integration**. The agent fetched the playbook but correctly prioritized the user's more recent requests for the setup wizard, subscriptions, and landing page. This isn't a forgotten task, but rather a pending one that needs to be picked up.</analysis>
