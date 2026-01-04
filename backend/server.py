@@ -2682,14 +2682,18 @@ RESPONSE FORMAT:
 
 You help with: Math, Science, English, Hindi, Social Studies, Computer Science, and all NCERT subjects."""
         
+        session_id = f"student-{current_user.get('id', 'default')[:8]}-{str(uuid.uuid4())[:8]}"
+        
         chat = LlmChat(
             api_key=emergent_key or openai_key,
+            session_id=session_id,
             system_message=system_prompt
         ).with_model("openai", "gpt-4o")
         
-        response = await chat.send_async(UserMessage(content=request.prompt))
+        user_msg = UserMessage(text=request.prompt)
+        response = await chat.send_message(user_msg)
         
-        return {"response": response.content, "ai_powered": True}
+        return {"response": response, "ai_powered": True}
         
     except Exception as e:
         print(f"Student AI Error: {e}")
