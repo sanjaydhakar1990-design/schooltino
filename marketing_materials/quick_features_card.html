@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schooltino - Quick Features Card</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .card {
+            width: 400px;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .tagline {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .card-body {
+            padding: 30px;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 14px;
+            color: #2d3748;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li span {
+            font-size: 20px;
+        }
+        
+        .card-footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .card-footer .price {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .card-footer .price span {
+            font-size: 14px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+        
+        .card-footer p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .qr-section {
+            padding: 20px 30px;
+            text-align: center;
+            background: #f8fafc;
+        }
+        
+        .qr-section p {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 10px;
+        }
+        
+        .qr-code {
+            width: 100px;
+            height: 100px;
+            background: #e2e8f0;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #718096;
+            border-radius: 8px;
+        }
+        
+        .contact-strip {
+            background: #1a1a2e;
+            padding: 15px 30px;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .card {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <div class="logo">Schooltino</div>
+            <div class="tagline">AI + CCTV + Apps</div>
+        </div>
+        
+        <div class="card-body">
+            <ul class="feature-list">
+                <li><span>🎓</span> Complete Student Management</li>
+                <li><span>👨‍🏫</span> TeachTino Teacher Portal</li>
+                <li><span>📚</span> StudyTino Student Portal</li>
+                <li><span>🤖</span> AI Question Paper Generator</li>
+                <li><span>🎤</span> Voice Assistant (Hindi + English)</li>
+                <li><span>📹</span> CCTV & Face Recognition</li>
+                <li><span>💰</span> Online Fee Collection</li>
+                <li><span>📱</span> Mobile Apps (FREE)</li>
+                <li><span>🌐</span> Auto Website Sync</li>
+                <li><span>📊</span> Smart Analytics Dashboard</li>
+            </ul>
+        </div>
+        
+        <div class="card-footer">
+            <div class="price">₹14,999<span>/month</span></div>
+            <p>30 Days FREE Trial • No Credit Card Required</p>
+        </div>
+        
+        <div class="qr-section">
+            <p>Scan to visit our website</p>
+            <div class="qr-code">[QR Code]<br>schooltino.in</div>
+        </div>
+        
+        <div class="contact-strip">
+            📞 +91 XXXXXXXXXX &nbsp;|&nbsp; 🌐 www.schooltino.in
+        </div>
+    </div>
+</body>
+</html>
