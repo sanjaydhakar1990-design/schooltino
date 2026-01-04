@@ -345,24 +345,28 @@ NCERT_SYLLABUS_DATA = {
                 ]
             },
             "Biology": {
-                "book": "Biology",
+                "book": "Biology (NCERT 2024-25 Rationalized)",
+                "units": [
+                    {"unit": "VI", "name": "Reproduction", "marks": 16},
+                    {"unit": "VII", "name": "Genetics and Evolution", "marks": 20},
+                    {"unit": "VIII", "name": "Biology and Human Welfare", "marks": 12},
+                    {"unit": "IX", "name": "Biotechnology and its Applications", "marks": 12},
+                    {"unit": "X", "name": "Ecology and Environment", "marks": 10}
+                ],
                 "chapters": [
-                    {"number": 1, "name": "Reproduction in Organisms", "type": "lesson", "topics": ["Asexual reproduction", "Sexual reproduction", "Pre-fertilization events"]},
-                    {"number": 2, "name": "Sexual Reproduction in Flowering Plants", "type": "lesson", "topics": ["Flower structure", "Pollination", "Fertilization", "Seed formation"]},
-                    {"number": 3, "name": "Human Reproduction", "type": "lesson", "topics": ["Reproductive systems", "Gametogenesis", "Fertilization", "Pregnancy"]},
-                    {"number": 4, "name": "Reproductive Health", "type": "lesson", "topics": ["Population explosion", "Birth control", "STDs", "Infertility"]},
-                    {"number": 5, "name": "Principles of Inheritance and Variation", "type": "lesson", "topics": ["Mendel's laws", "Chromosomal theory", "Linkage", "Sex determination"]},
-                    {"number": 6, "name": "Molecular Basis of Inheritance", "type": "lesson", "topics": ["DNA structure", "Replication", "Transcription", "Translation", "Genetic code"]},
-                    {"number": 7, "name": "Evolution", "type": "lesson", "topics": ["Origin of life", "Evolution theories", "Evidence", "Human evolution"]},
-                    {"number": 8, "name": "Human Health and Disease", "type": "lesson", "topics": ["Pathogens", "Immunity", "AIDS", "Cancer", "Drugs"]},
-                    {"number": 9, "name": "Strategies for Enhancement in Food Production", "type": "lesson", "topics": ["Animal husbandry", "Plant breeding", "Tissue culture"]},
-                    {"number": 10, "name": "Microbes in Human Welfare", "type": "lesson", "topics": ["Industrial products", "Sewage treatment", "Biogas", "Biocontrol"]},
-                    {"number": 11, "name": "Biotechnology: Principles and Processes", "type": "lesson", "topics": ["rDNA technology", "Cloning vectors", "PCR", "Gel electrophoresis"]},
-                    {"number": 12, "name": "Biotechnology and its Applications", "type": "lesson", "topics": ["GM crops", "Gene therapy", "Transgenic animals", "Bioethics"]},
-                    {"number": 13, "name": "Organisms and Populations", "type": "lesson", "topics": ["Ecology", "Adaptations", "Population attributes", "Growth models"]},
-                    {"number": 14, "name": "Ecosystem", "type": "lesson", "topics": ["Structure", "Productivity", "Decomposition", "Energy flow", "Nutrient cycling"]},
-                    {"number": 15, "name": "Biodiversity and Conservation", "type": "lesson", "topics": ["Biodiversity patterns", "Loss of biodiversity", "Conservation"]},
-                    {"number": 16, "name": "Environmental Issues", "type": "lesson", "topics": ["Pollution", "Solid waste", "Global warming", "Ozone depletion"]}
+                    {"number": 1, "name": "Sexual Reproduction in Flowering Plants", "unit": "VI", "marks": 5, "type": "lesson", "topics": ["Flower structure", "Stamen and Pistil", "Male gametophyte", "Female gametophyte", "Pollination types", "Agencies of pollination", "Outbreeding devices", "Pollen-pistil interaction", "Double fertilization", "Post-fertilization changes", "Endosperm development", "Embryo development", "Seed structure", "Fruit types", "Apomixis", "Polyembryony"]},
+                    {"number": 2, "name": "Human Reproduction", "unit": "VI", "marks": 6, "type": "lesson", "topics": ["Male reproductive system", "Female reproductive system", "Spermatogenesis", "Oogenesis", "Menstrual cycle", "Fertilization", "Implantation", "Embryo development", "Placenta", "Pregnancy", "Parturition", "Lactation"]},
+                    {"number": 3, "name": "Reproductive Health", "unit": "VI", "marks": 5, "type": "lesson", "topics": ["Reproductive health problems", "Population explosion", "Birth control methods", "Contraceptives", "Medical termination of pregnancy", "Sexually transmitted infections", "Infertility", "Assisted reproductive technologies", "IVF", "ZIFT", "GIFT"]},
+                    {"number": 4, "name": "Principles of Inheritance and Variation", "unit": "VII", "marks": 8, "type": "lesson", "topics": ["Mendelian inheritance", "Law of dominance", "Law of segregation", "Law of independent assortment", "Incomplete dominance", "Co-dominance", "Multiple alleles", "ABO blood groups", "Pleiotropy", "Polygenic inheritance", "Chromosomal theory", "Linkage", "Recombination", "Sex determination", "Sex-linked inheritance", "Mendelian disorders", "Chromosomal disorders"]},
+                    {"number": 5, "name": "Molecular Basis of Inheritance", "unit": "VII", "marks": 8, "type": "lesson", "topics": ["DNA as genetic material", "DNA structure", "Packaging of DNA helix", "DNA replication", "Central dogma", "Transcription", "Genetic code", "Translation", "Regulation of gene expression", "Lac operon", "Human genome project", "DNA fingerprinting"]},
+                    {"number": 6, "name": "Evolution", "unit": "VII", "marks": 4, "type": "lesson", "topics": ["Origin of life", "Chemical evolution", "Biological evolution", "Evidence of evolution", "Darwin's theory", "Mutation theory", "Modern synthetic theory", "Hardy-Weinberg principle", "Natural selection", "Gene flow", "Genetic drift", "Adaptive radiation", "Human evolution"]},
+                    {"number": 7, "name": "Human Health and Disease", "unit": "VIII", "marks": 6, "type": "lesson", "topics": ["Pathogens", "Parasites", "Common diseases", "Typhoid", "Pneumonia", "Common cold", "Malaria", "Amoebiasis", "Ascariasis", "Elephantiasis", "Ringworm", "Immunity types", "Innate immunity", "Acquired immunity", "Active immunity", "Passive immunity", "Vaccination", "Allergies", "Auto-immune diseases", "AIDS", "Cancer"]},
+                    {"number": 8, "name": "Microbes in Human Welfare", "unit": "VIII", "marks": 6, "type": "lesson", "topics": ["Microbes in household products", "Fermented beverages", "Industrial products", "Antibiotics", "Chemicals", "Enzymes", "Bioactive molecules", "Sewage treatment", "Primary treatment", "Secondary treatment", "Biogas production", "Biocontrol agents", "Biofertilizers"]},
+                    {"number": 9, "name": "Biotechnology: Principles and Processes", "unit": "IX", "marks": 6, "type": "lesson", "topics": ["Genetic engineering", "Recombinant DNA technology", "Tools of genetic engineering", "Restriction enzymes", "Cloning vectors", "Competent host", "DNA insertion methods", "Gel electrophoresis", "PCR", "Bioreactors", "Downstream processing"]},
+                    {"number": 10, "name": "Biotechnology and its Applications", "unit": "IX", "marks": 6, "type": "lesson", "topics": ["Biotechnological applications in agriculture", "Bt crops", "Bt cotton", "Pest resistant plants", "Biotechnological applications in medicine", "Genetically engineered insulin", "Gene therapy", "Molecular diagnosis", "Transgenic animals", "Ethical issues", "Biopiracy", "Patents"]},
+                    {"number": 11, "name": "Organisms and Populations", "unit": "X", "marks": 4, "type": "lesson", "topics": ["Population attributes", "Population density", "Birth rate", "Death rate", "Age distribution", "Population growth", "Exponential growth", "Logistic growth", "Life history variation", "Population interactions", "Mutualism", "Competition", "Predation", "Parasitism", "Commensalism", "Amensalism"]},
+                    {"number": 12, "name": "Ecosystem", "unit": "X", "marks": 3, "type": "lesson", "topics": ["Ecosystem structure", "Productivity", "Primary productivity", "Secondary productivity", "Decomposition", "Energy flow", "Food chains", "Food webs", "Ecological pyramids", "Pyramid of number", "Pyramid of biomass", "Pyramid of energy"]},
+                    {"number": 13, "name": "Biodiversity and Conservation", "unit": "X", "marks": 3, "type": "lesson", "topics": ["Biodiversity concept", "Genetic diversity", "Species diversity", "Ecosystem diversity", "Patterns of biodiversity", "Importance of species diversity", "Loss of biodiversity", "Biodiversity conservation", "In-situ conservation", "Ex-situ conservation", "Hotspots", "Sacred groves", "Biosphere reserves", "National parks", "Wildlife sanctuaries"]}
                 ]
             }
         }
