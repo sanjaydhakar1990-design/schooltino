@@ -33,7 +33,9 @@ import {
   X,
   Bus,
   Heart,
-  DoorOpen
+  DoorOpen,
+  Fingerprint,
+  Clock
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
@@ -85,6 +87,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
     { path: '/app/front-office', icon: DoorOpen, label: 'front_office', permKey: 'attendance' },
     { path: '/app/transport', icon: Bus, label: 'transport', permKey: 'attendance' },
     { path: '/app/health', icon: Heart, label: 'health_module', permKey: 'attendance' },
+    { path: '/app/biometric', icon: Fingerprint, label: 'biometric', permKey: 'attendance' },
+    { path: '/app/timetable', icon: Clock, label: 'timetable', permKey: 'attendance' },
     { path: '/app/ai-paper', icon: Sparkles, label: 'ai_paper', permKey: 'ai_paper' },
     { path: '/app/ai-content', icon: Sparkles, label: 'ai_content', permKey: 'ai_content' },
     { path: '/app/ai-history', icon: History, label: 'ai_history', permKey: 'ai_paper' },
