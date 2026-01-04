@@ -19,7 +19,7 @@ import {
   Brain, Wand2, Smartphone, Send, PlusCircle, MessageSquare,
   Home, Paperclip, Eye, Archive, AlertCircle, Phone, 
   ChevronLeft, Star, Sparkles, BookMarked, ClipboardList,
-  Users, Lock, UserPlus, Check
+  Users, Lock, UserPlus, Check, CreditCard, Wallet
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -854,6 +854,16 @@ export default function StudyTinoDashboard() {
         <section>
           <h2 className="font-semibold text-slate-800 mb-3">⚡ Quick Actions</h2>
           <div className="grid grid-cols-3 gap-3">
+            {/* Fee Pay Button - Prominent */}
+            <Button 
+              onClick={() => navigate('/fee-payment')}
+              className="h-20 flex-col gap-1 bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0"
+              data-testid="fee-pay-button"
+            >
+              <CreditCard className="w-5 h-5" />
+              <span className="text-xs font-semibold">Fee Pay 💳</span>
+            </Button>
+            
             <Button 
               onClick={() => setShowLeaveDialog(true)}
               className="h-20 flex-col gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
@@ -885,14 +895,6 @@ export default function StudyTinoDashboard() {
             >
               <BookOpen className="w-5 h-5" />
               <span className="text-xs">Homework</span>
-            </Button>
-            
-            <Button 
-              className="h-20 flex-col gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
-              variant="outline"
-            >
-              <FileText className="w-5 h-5" />
-              <span className="text-xs">Materials</span>
             </Button>
             
             <Button 
