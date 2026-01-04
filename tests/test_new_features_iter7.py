@@ -21,10 +21,10 @@ class TestAuthentication:
         })
         assert response.status_code == 200
         data = response.json()
-        assert "token" in data
+        assert "access_token" in data
         assert data["user"]["role"] == "director"
         print(f"✅ Director login successful - Token received")
-        return data["token"]
+        return data["access_token"]
     
     def test_teacher_login(self):
         """Test Teacher login"""
@@ -34,10 +34,10 @@ class TestAuthentication:
         })
         assert response.status_code == 200
         data = response.json()
-        assert "token" in data
+        assert "access_token" in data
         assert data["user"]["role"] == "teacher"
         print(f"✅ Teacher login successful - Token received")
-        return data["token"]
+        return data["access_token"]
 
 
 class TestZoomMeetings:
@@ -50,7 +50,7 @@ class TestZoomMeetings:
             "email": "director@schooltino.com",
             "password": "admin123"
         })
-        return response.json()["token"]
+        return response.json()["access_token"]
     
     def test_get_meetings(self, auth_token):
         """Test GET /api/meetings - List all meetings"""
@@ -178,7 +178,7 @@ class TestSchoolRegistration:
             "email": "director@schooltino.com",
             "password": "admin123"
         })
-        return response.json()["token"]
+        return response.json()["access_token"]
     
     def test_create_school(self, auth_token):
         """Test POST /api/schools - Create new school with comprehensive details"""
@@ -240,7 +240,7 @@ class TestTeacherDashboard:
             "email": "teacher@schooltino.com",
             "password": "teacher123"
         })
-        return response.json()["token"]
+        return response.json()["access_token"]
     
     def test_teacher_dashboard_access(self, teacher_token):
         """Test teacher can access dashboard data"""
