@@ -81,6 +81,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     { path: '/app/gallery', icon: Image, label: 'gallery', permKey: 'gallery' },
     { path: '/app/ai-paper', icon: Sparkles, label: 'ai_paper', permKey: 'ai_paper' },
     { path: '/app/ai-content', icon: Sparkles, label: 'ai_content', permKey: 'ai_content' },
+    { path: '/app/ai-history', icon: History, label: 'ai_history', permKey: 'ai_paper' },
     { path: '/app/voice-assistant', icon: Mic, label: 'voice_assistant', permKey: 'meetings' },
     { path: '/app/cctv', icon: Video, label: 'cctv_dashboard', permKey: 'cctv' },
     { path: '/app/cctv-management', icon: Video, label: 'cctv_management', permKey: 'cctv', directorOnly: true },
