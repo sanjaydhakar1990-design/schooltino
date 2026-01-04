@@ -2199,15 +2199,58 @@ class TeacherAIRequest(BaseModel):
 
 @api_router.post("/ai/teacher-assistant")
 async def teacher_ai_assistant(request: TeacherAIRequest, current_user: dict = Depends(get_current_user)):
-    """TeachTino AI Assistant - Helps teachers with lesson plans, papers, worksheets"""
-    if current_user["role"] not in ["teacher", "principal", "vice_principal", "director", "staff"]:
+    """TeachTino AI Assistant - Helps teachers with lesson plans, papers, worksheets using GPT-4o"""
+    if current_user["role"] not in ["teacher", "principal", "vice_principal", "director", "staff", "student"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    # For now, return a mock response - can be integrated with actual AI later
-    responses = {
-        "lesson_plan": f"📚 Lesson Plan for: {request.prompt}\n\n1. Introduction (5 mins)\n2. Main Content (25 mins)\n3. Activity (15 mins)\n4. Summary (5 mins)",
-        "paper": f"📝 Question Paper: {request.prompt}\n\nSection A: MCQ (10 marks)\nSection B: Short Answer (20 marks)\nSection C: Long Answer (20 marks)",
-        "worksheet": f"📄 Worksheet: {request.prompt}\n\n1. Fill in the blanks\n2. Match the following\n3. Short questions\n4. Activity",
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Build system prompt based on request type
+        system_prompts = {
+            "lesson_plan": """You are TeachTino AI - an expert teaching assistant for Indian schools.
+Create detailed lesson plans in Hindi-English mix. Follow NCERT syllabus structure.
+Include: Learning objectives, Prerequisites, Introduction, Main content, Activities, Assessment, Homework.""",
+            
+            "paper": """You are TeachTino AI - an expert question paper generator for Indian schools.
+Create question papers following CBSE/NCERT pattern. Include:
+- Section A: MCQ (1 mark each)
+- Section B: Short Answer (2-3 marks)
+- Section C: Long Answer (5 marks)
+Mix Hindi and English. Include answer key.""",
+            
+            "worksheet": """You are TeachTino AI - an expert worksheet creator for Indian schools.
+Create engaging worksheets with:
+- Fill in the blanks
+- Match the following
+- True/False
+- Short questions
+- Activity-based questions
+Follow NCERT syllabus.""",
+            
+            "general": """You are TeachTino AI - a helpful teaching assistant for Indian school teachers.
+Help with lesson planning, student assessment, teaching strategies, and educational content.
+Respond in Hindi-English mix. Be practical and helpful."""
+        }
+        
+        system_prompt = system_prompts.get(request.type, system_prompts["general"])
+        
+        chat = LlmChat(
+            api_key=emergent_key or openai_key,
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+        
+        response = await chat.send_async(UserMessage(content=request.prompt))
+        
+        return {"response": response.content, "type": request.type, "ai_powered": True}
+        
+    except Exception as e:
+        print(f"AI Error: {e}")
+        # Fallback to basic response
+        return {"response": f"AI temporarily unavailable. Your query: {request.prompt}", "error": str(e)}
         "general": f"TeachTino AI Response for: {request.prompt}\n\nThis is a helpful response from your teaching assistant."
     }
     
