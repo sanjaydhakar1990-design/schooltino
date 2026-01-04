@@ -252,6 +252,7 @@ const resources = {
       "permissions": "अनुमतियां",
       "zoom_meetings": "मीटिंग्स",
       "online_exams": "ऑनलाइन परीक्षा",
+      "ai_accountant": "AI अकाउंटेंट",
       "add_school": "स्कूल जोड़ें",
       "setup_wizard": "सेटअप विज़ार्ड",
       "subscription": "सब्सक्रिप्शन",
