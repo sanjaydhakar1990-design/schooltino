@@ -47,6 +47,7 @@ const resources = {
       "notices": "Notices",
       "ai_paper": "AI Paper Generator",
       "ai_content": "AI Content Studio",
+      "ai_history": "AI History",
       "voice_assistant": "Voice Assistant",
       "gallery": "Image Gallery",
       "sms_center": "SMS Center",
