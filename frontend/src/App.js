@@ -28,6 +28,8 @@ import LeaveManagement from './pages/LeaveManagement';
 import CCTVDashboard from './pages/CCTVDashboard';
 import SchoolAnalytics from './pages/SchoolAnalytics';
 import PermissionManager from './pages/PermissionManager';
+import SchoolRegistrationForm from './pages/SchoolRegistrationForm';
+import ZoomMeetings from './pages/ZoomMeetings';
 
 // Components
 import Layout from './components/Layout';
@@ -118,6 +120,8 @@ function AppRoutes() {
         <Route path="website" element={<WebsiteIntegration />} />
         <Route path="leave" element={<LeaveManagement />} />
         <Route path="cctv" element={<CCTVDashboard />} />
+        <Route path="meetings" element={<ZoomMeetings />} />
+        <Route path="school-registration" element={<SchoolRegistrationForm />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
