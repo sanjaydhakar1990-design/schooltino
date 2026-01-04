@@ -2251,10 +2251,6 @@ Respond in Hindi-English mix. Be practical and helpful."""
         print(f"AI Error: {e}")
         # Fallback to basic response
         return {"response": f"AI temporarily unavailable. Your query: {request.prompt}", "error": str(e)}
-        "general": f"TeachTino AI Response for: {request.prompt}\n\nThis is a helpful response from your teaching assistant."
-    }
-    
-    return {"response": responses.get(request.type, responses["general"])}
 
 # ==================== TEACHER SYLLABUS & AI DAILY PLAN ====================
 
