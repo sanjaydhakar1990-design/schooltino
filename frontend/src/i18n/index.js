@@ -240,6 +240,8 @@ const resources = {
       "teachtino": "टीचटीनो",
       "school_analytics": "स्कूल रिपोर्ट्स",
       "permissions": "अनुमतियां",
+      "zoom_meetings": "Zoom मीटिंग्स",
+      "add_school": "स्कूल जोड़ें",
       "settings": "सेटिंग्स",
       "audit_logs": "ऑडिट लॉग",
       
