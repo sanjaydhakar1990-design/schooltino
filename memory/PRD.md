@@ -9,46 +9,47 @@
 
 ## What's Been Implemented
 
-### Latest Session (Jan 4, 2026 - Continued)
+### Latest Session (Jan 4, 2026 - Part 2)
 
-**6. Online Exam System** ✅ NEW!
-- Teacher can create MCQ exams with questions, options, correct answers, and marks
-- Exam details: Title, Subject, Class, Duration, Instructions
-- Support for negative marking (configurable)
-- Students can view available exams for their class
-- Students can take exam with timer
-- Auto-score calculation on submission
-- Detailed results: Score, Percentage, Correct/Wrong/Unanswered
-- Rank calculation (position among all students)
-- Teacher can view all results with statistics (highest, lowest, average, pass rate)
-- Leaderboard API for top performers
-- Exam status management (draft, active, completed)
-- Integration with StudyTino (Student Portal)
+**7. Razorpay Payment Integration** ✅ NEW!
+- Payment gateway configured (test mode ready)
+- Monthly: ₹17,999/month
+- Yearly: ₹1,79,988/year (₹14,999/month effective - saves ₹35,988)
+- Order creation and verification APIs
+- Subscription activation on successful payment
+- Payment history tracking
 
-### Previous Session (Jan 4, 2026)
+**8. CCTV Auto-Detection & Management System** ✅ NEW!
+- AI-powered network scanning to detect IP cameras
+- Support for generic IP, Hikvision, and Dahua cameras
+- Manual camera addition option
+- Recording settings: retention days, motion detection, cloud backup
+- Camera status monitoring (online/offline/detected)
+- Activate detected cameras with one click
 
-**1. Marketing Landing Page** ✅
-- Professional hero section with compelling copy
-- Features grid (12 features highlighted)
-- Pricing section (3 plans)
-- Registration form for new schools
+**9. Cloud Storage & Backup Management** ✅ NEW!
+- AI Auto-Setup: One click to configure optimal storage settings
+- Based on school size (students, cameras) determines tier
+- Supports: Local, AWS S3, Google Cloud, Azure
+- Backup types: Full, Incremental, Database-only, Documents-only
+- Auto-backup scheduling: Daily/Weekly/Monthly
+- Backup history with download option
+- Storage usage tracking
 
-**2. Director One-Click Setup System** ✅
-- AI-guided 7-step Setup Wizard
-- Progress tracking with completion percentage
+**10. Admin Activity Dashboard** ✅ NEW!
+- Real-time teacher activity monitoring
+- Today's summary: exams created, attendance marked, leaves pending
+- Activity feed with user names and actions
+- Teacher-cannot-access restriction (director/principal only)
 
-**3. Subscription Model** ✅
-- Free Trial: 30 days (AI 3 days only) - FREE
-- Monthly Plan: ₹17,999/month
-- Yearly Plan: ₹14,999/month (17% OFF)
+### Previous Session (Jan 4, 2026 - Part 1)
 
-**4. Director Account System** ✅
+**6. Online Exam System** ✅
+- Teachers create MCQ exams
+- Students take timed exams
+- Auto-scoring with rank calculation
 
-**5. Marketing Materials** ✅
-- Main Brochure with QR code
-- Comparison Chart with QR code
-- Quick Features Card with QR code
-- Hindi Pamphlet with QR code
+**1-5. Marketing, Onboarding, Subscriptions, Portals** ✅
 
 ---
 
@@ -56,31 +57,56 @@
 
 | Page | URL | Access |
 |------|-----|--------|
-| Landing Page (Marketing) | `/` | Public |
+| Landing Page | `/` | Public |
 | Login | `/login` | Public |
-| TeachTino Login | `/teachtino` | Public |
-| StudyTino Login | `/studytino` | Public |
+| TeachTino Login | `/teachtino` | Teachers |
+| StudyTino Login | `/studytino` | Students |
 | Dashboard | `/app/dashboard` | Protected |
-| **Online Exams** | `/app/exams` | Protected |
-| All Admin Pages | `/app/*` | Protected |
-| TeachTino Dashboard | `/teacher-dashboard` | Teachers |
-| StudyTino Dashboard | `/student-dashboard` | Students |
+| **Activity Dashboard** | `/app/activity` | Director Only |
+| **CCTV Management** | `/app/cctv-management` | Director Only |
+| **Storage & Backup** | `/app/storage` | Director Only |
+| Online Exams | `/app/exams` | Protected |
+| Subscription | `/app/subscription` | Protected |
 
 ---
 
-## API Endpoints - Online Exam System
+## New API Endpoints
 
+### Razorpay Payments
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/exams` | Create new exam (Teacher) |
-| GET | `/api/exams` | List exams |
-| GET | `/api/exams/my-results` | Student results |
-| GET | `/api/exams/{exam_id}` | Get exam details |
-| POST | `/api/exams/{exam_id}/submit` | Submit exam (Student) |
-| GET | `/api/exams/{exam_id}/results` | View all results (Teacher) |
-| GET | `/api/exams/{exam_id}/leaderboard` | Top performers |
-| PUT | `/api/exams/{exam_id}/status` | Update status |
-| DELETE | `/api/exams/{exam_id}` | Delete exam |
+| GET | `/api/payments/config` | Get payment gateway config |
+| POST | `/api/payments/create-order` | Create Razorpay order |
+| POST | `/api/payments/verify` | Verify payment |
+| GET | `/api/payments/history/{school_id}` | Payment history |
+
+### CCTV Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/cctv/auto-detect` | AI scan network for cameras |
+| GET | `/api/cctv/cameras/{school_id}` | List all cameras |
+| POST | `/api/cctv/cameras` | Add camera manually |
+| PUT | `/api/cctv/cameras/{camera_id}` | Update camera |
+| DELETE | `/api/cctv/cameras/{camera_id}` | Delete camera |
+| POST | `/api/cctv/cameras/{camera_id}/activate` | Activate detected camera |
+| POST | `/api/cctv/recording-settings` | Update recording settings |
+| GET | `/api/cctv/recording-settings/{school_id}` | Get settings |
+
+### Storage & Backup
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/storage/ai-setup` | AI auto-configure storage |
+| POST | `/api/storage/configure` | Manual configuration |
+| GET | `/api/storage/config/{school_id}` | Get configuration |
+| POST | `/api/storage/backup/trigger` | Trigger backup |
+| GET | `/api/storage/backups/{school_id}` | Backup history |
+| GET | `/api/storage/usage/{school_id}` | Storage usage stats |
+
+### Admin Dashboard
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/dashboard-overview/{school_id}` | Today's summary |
+| GET | `/api/admin/teacher-activities/{school_id}` | Activity feed |
 
 ---
 
@@ -90,42 +116,67 @@
 |------|----------|----------|--------|
 | Director | director@schooltino.com | admin123 | Landing Page |
 | Principal | principal@schooltino.com | principal123 | Landing Page |
-| Teacher | teacher@schooltino.com | teacher123 | TeachTino (/teachtino) |
-| Student | STD-2026-285220 | KPbeHdZf | StudyTino (/studytino) |
+| Teacher | teacher@schooltino.com | teacher123 | TeachTino |
+| Student | STD-2026-285220 | KPbeHdZf | StudyTino |
 
 ---
 
-## Mocked Features (Ready for Integration)
+## Simulated/Mocked Features
 
-1. **Meeting System** - Ready for Google Meet API
-2. **CCTV** - Ready for IP camera integration
-3. **Syllabus Tracking** - Ready for NCERT API
+| Feature | Status | Details |
+|---------|--------|---------|
+| CCTV Auto-Detect | SIMULATED | Returns 3 sample cameras (no real network scan) |
+| CCTV Live Feed | MOCKED | Shows placeholder (no real camera connection) |
+| Razorpay Payment | TEST MODE | Needs live API keys for real payments |
+| Backup Trigger | SIMULATED | Returns mock size values |
+| NCERT Syllabus | MOCKED | Static data |
+
+---
+
+## Required API Keys for Full Functionality
+
+1. **Razorpay** (for real payments)
+   - Get keys from: https://razorpay.com
+   - Add to `/app/backend/.env`:
+     ```
+     RAZORPAY_KEY_ID=rzp_live_xxx
+     RAZORPAY_KEY_SECRET=xxx
+     ```
+
+2. **Cloud Storage** (optional - for cloud backup)
+   - AWS S3: Access Key, Secret Key, Bucket Name
+   - Google Cloud: Service Account JSON
+   - Azure: Storage Account, Key
 
 ---
 
 ## Upcoming Tasks
 
 ### P0 - High Priority
-- [x] ~~Online Exam System~~ ✅ COMPLETED
+- [x] ~~Online Exam System~~ ✅
+- [x] ~~Razorpay Integration~~ ✅
+- [x] ~~CCTV Management~~ ✅
+- [x] ~~Storage & Backup~~ ✅
+- [x] ~~Admin Activity Dashboard~~ ✅
 - [ ] Google Meet integration (replace Zoom)
-- [ ] Payment gateway for subscriptions (Razorpay)
 
 ### P1 - Medium Priority
-- [ ] Backend refactoring (server.py > 5000 lines - CRITICAL)
+- [ ] Backend refactoring (server.py > 5500 lines - CRITICAL)
 - [ ] Real NCERT syllabus integration
 - [ ] Leave Management approval workflow
+- [ ] TeachTino portal enhancement (move teacher features)
 
 ### P2 - Lower Priority
 - [ ] OneTino.com master platform
-- [ ] CCTV hardware integration
+- [ ] Real CCTV camera connection
 - [ ] Principal role enhancements
 
 ---
 
-## Download Links
+## Test Reports
 
-- **Marketing Materials ZIP:** 
-  https://edutino.preview.emergentagent.com/api/download/marketing-materials
+- `/app/test_reports/iteration_8.json` - Online Exam System (94% backend, 100% frontend)
+- `/app/test_reports/iteration_9.json` - New features (100% backend, 100% frontend)
 
 ---
 
@@ -133,5 +184,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Live URL:** https://schooltino.in
 - **Preview URL:** https://edutino.preview.emergentagent.com
