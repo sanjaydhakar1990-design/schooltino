@@ -23,6 +23,7 @@ import {
   Play, CheckSquare, Trophy, Star, Zap, Image, Video, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
