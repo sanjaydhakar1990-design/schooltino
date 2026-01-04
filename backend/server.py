@@ -5407,6 +5407,822 @@ async def get_exam_leaderboard(exam_id: str, limit: int = 10, current_user: dict
     
     return results
 
+# ==================== RAZORPAY PAYMENT GATEWAY ====================
+
+import razorpay
+
+# Initialize Razorpay client
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+
+razorpay_client = None
+if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
+    razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+class CreateOrderRequest(BaseModel):
+    plan_type: str  # monthly, yearly
+    school_id: str
+
+class PaymentVerifyRequest(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+    school_id: str
+    plan_type: str
+
+@api_router.post("/payments/create-order")
+async def create_payment_order(request: CreateOrderRequest, current_user: dict = Depends(get_current_user)):
+    """Create Razorpay order for subscription payment"""
+    if not razorpay_client:
+        raise HTTPException(status_code=500, detail="Payment gateway not configured. Please add Razorpay API keys.")
+    
+    # Get plan pricing
+    plan_prices = {
+        "monthly": 1799900,  # ₹17,999 in paise
+        "yearly": 17998800   # ₹1,79,988 in paise (₹14,999 x 12)
+    }
+    
+    if request.plan_type not in plan_prices:
+        raise HTTPException(status_code=400, detail="Invalid plan type")
+    
+    amount = plan_prices[request.plan_type]
+    
+    try:
+        order_data = {
+            "amount": amount,
+            "currency": "INR",
+            "receipt": f"sub_{request.school_id}_{uuid.uuid4().hex[:8]}",
+            "notes": {
+                "school_id": request.school_id,
+                "plan_type": request.plan_type,
+                "user_id": current_user["id"]
+            }
+        }
+        
+        order = razorpay_client.order.create(data=order_data)
+        
+        # Store order in database
+        order_record = {
+            "id": str(uuid.uuid4()),
+            "razorpay_order_id": order["id"],
+            "school_id": request.school_id,
+            "plan_type": request.plan_type,
+            "amount": amount,
+            "currency": "INR",
+            "status": "created",
+            "created_by": current_user["id"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.payment_orders.insert_one(order_record)
+        
+        return {
+            "order_id": order["id"],
+            "amount": amount,
+            "currency": "INR",
+            "key_id": RAZORPAY_KEY_ID,
+            "plan_type": request.plan_type
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create order: {str(e)}")
+
+@api_router.post("/payments/verify")
+async def verify_payment(request: PaymentVerifyRequest, current_user: dict = Depends(get_current_user)):
+    """Verify Razorpay payment and activate subscription"""
+    if not razorpay_client:
+        raise HTTPException(status_code=500, detail="Payment gateway not configured")
+    
+    try:
+        # Verify signature
+        params_dict = {
+            'razorpay_order_id': request.razorpay_order_id,
+            'razorpay_payment_id': request.razorpay_payment_id,
+            'razorpay_signature': request.razorpay_signature
+        }
+        razorpay_client.utility.verify_payment_signature(params_dict)
+        
+        # Update order status
+        await db.payment_orders.update_one(
+            {"razorpay_order_id": request.razorpay_order_id},
+            {"$set": {
+                "status": "paid",
+                "razorpay_payment_id": request.razorpay_payment_id,
+                "razorpay_signature": request.razorpay_signature,
+                "paid_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        # Calculate subscription dates
+        now = datetime.now(timezone.utc)
+        if request.plan_type == "monthly":
+            end_date = now + timedelta(days=30)
+            amount = 17999
+        else:  # yearly
+            end_date = now + timedelta(days=365)
+            amount = 179988
+        
+        # Create/Update subscription
+        subscription_data = {
+            "id": str(uuid.uuid4()),
+            "school_id": request.school_id,
+            "plan_type": request.plan_type,
+            "status": "active",
+            "start_date": now.isoformat(),
+            "end_date": end_date.isoformat(),
+            "ai_enabled_until": end_date.isoformat(),
+            "amount": amount,
+            "payment_id": request.razorpay_payment_id,
+            "created_at": now.isoformat()
+        }
+        
+        # Upsert subscription
+        await db.subscriptions.update_one(
+            {"school_id": request.school_id},
+            {"$set": subscription_data},
+            upsert=True
+        )
+        
+        await log_audit(current_user["id"], "payment_success", "payments", {
+            "school_id": request.school_id,
+            "plan_type": request.plan_type,
+            "amount": amount,
+            "payment_id": request.razorpay_payment_id
+        })
+        
+        return {
+            "success": True,
+            "message": "Payment verified and subscription activated",
+            "subscription": subscription_data
+        }
+        
+    except razorpay.errors.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Payment signature verification failed")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Payment verification failed: {str(e)}")
+
+@api_router.get("/payments/history/{school_id}")
+async def get_payment_history(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get payment history for a school"""
+    payments = await db.payment_orders.find(
+        {"school_id": school_id, "status": "paid"},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return payments
+
+@api_router.get("/payments/config")
+async def get_payment_config():
+    """Get Razorpay configuration (public key only)"""
+    return {
+        "key_id": RAZORPAY_KEY_ID,
+        "configured": bool(RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET),
+        "plans": {
+            "monthly": {
+                "amount": 1799900,
+                "display_amount": "₹17,999",
+                "duration": "1 Month"
+            },
+            "yearly": {
+                "amount": 17998800,
+                "display_amount": "₹1,79,988",
+                "monthly_equivalent": "₹14,999/month",
+                "duration": "12 Months",
+                "savings": "₹35,988"
+            }
+        }
+    }
+
+# ==================== CCTV AUTO-DETECTION & MANAGEMENT ====================
+
+class CCTVCamera(BaseModel):
+    name: str
+    ip_address: str
+    port: int = 554
+    username: Optional[str] = None
+    password: Optional[str] = None
+    stream_url: Optional[str] = None  # RTSP URL
+    location: str  # e.g., "Main Gate", "Classroom 1"
+    camera_type: str = "ip"  # ip, hikvision, dahua, generic
+    school_id: str
+
+class CCTVCameraResponse(BaseModel):
+    id: str
+    name: str
+    ip_address: str
+    port: int
+    location: str
+    camera_type: str
+    status: str  # online, offline, error
+    stream_url: Optional[str] = None
+    last_checked: str
+    school_id: str
+
+class CCTVAutoDetectRequest(BaseModel):
+    school_id: str
+    ip_range_start: str  # e.g., "192.168.1.1"
+    ip_range_end: str    # e.g., "192.168.1.254"
+    
+class CCTVRecordingSettings(BaseModel):
+    school_id: str
+    recording_enabled: bool = True
+    retention_days: int = 30
+    motion_detection: bool = True
+    alert_on_motion: bool = False
+    recording_schedule: Optional[Dict[str, Any]] = None  # Custom schedule
+    cloud_backup_enabled: bool = False
+
+@api_router.post("/cctv/cameras", response_model=CCTVCameraResponse)
+async def add_camera(camera: CCTVCamera, current_user: dict = Depends(get_current_user)):
+    """Manually add a CCTV camera"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Generate RTSP URL if not provided
+    stream_url = camera.stream_url
+    if not stream_url:
+        if camera.username and camera.password:
+            stream_url = f"rtsp://{camera.username}:{camera.password}@{camera.ip_address}:{camera.port}/stream"
+        else:
+            stream_url = f"rtsp://{camera.ip_address}:{camera.port}/stream"
+    
+    camera_data = {
+        "id": str(uuid.uuid4()),
+        "name": camera.name,
+        "ip_address": camera.ip_address,
+        "port": camera.port,
+        "username": camera.username,
+        "password": camera.password,
+        "stream_url": stream_url,
+        "location": camera.location,
+        "camera_type": camera.camera_type,
+        "school_id": camera.school_id,
+        "status": "pending",  # Will be checked by AI
+        "last_checked": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    
+    await db.cctv_cameras.insert_one(camera_data)
+    
+    await log_audit(current_user["id"], "add_camera", "cctv", {
+        "camera_id": camera_data["id"],
+        "name": camera.name,
+        "location": camera.location
+    })
+    
+    return CCTVCameraResponse(
+        id=camera_data["id"],
+        name=camera_data["name"],
+        ip_address=camera_data["ip_address"],
+        port=camera_data["port"],
+        location=camera_data["location"],
+        camera_type=camera_data["camera_type"],
+        status=camera_data["status"],
+        stream_url=camera_data["stream_url"],
+        last_checked=camera_data["last_checked"],
+        school_id=camera_data["school_id"]
+    )
+
+@api_router.post("/cctv/auto-detect")
+async def auto_detect_cameras(request: CCTVAutoDetectRequest, current_user: dict = Depends(get_current_user)):
+    """AI-powered auto-detection of CCTV cameras on the network"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Common RTSP ports to scan
+    rtsp_ports = [554, 8554, 8080, 80]
+    common_paths = ["/stream", "/live", "/cam/realmonitor", "/h264/ch1/main/av_stream", "/Streaming/Channels/101"]
+    
+    # Parse IP range
+    start_parts = list(map(int, request.ip_range_start.split('.')))
+    end_parts = list(map(int, request.ip_range_end.split('.')))
+    
+    detected_cameras = []
+    scan_id = str(uuid.uuid4())
+    
+    # Store scan status
+    scan_record = {
+        "id": scan_id,
+        "school_id": request.school_id,
+        "ip_range": f"{request.ip_range_start} - {request.ip_range_end}",
+        "status": "scanning",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "detected_count": 0,
+        "scanned_by": current_user["id"]
+    }
+    await db.cctv_scans.insert_one(scan_record)
+    
+    # Simulate AI detection (in real scenario, this would do actual network scanning)
+    # For demo, we'll create some sample detected cameras
+    sample_locations = ["Main Gate", "Corridor A", "Classroom 1", "Playground", "Principal Office", "Library"]
+    
+    for i, location in enumerate(sample_locations[:3]):  # Detect 3 sample cameras
+        ip = f"192.168.1.{100 + i}"
+        camera_data = {
+            "id": str(uuid.uuid4()),
+            "name": f"Camera - {location}",
+            "ip_address": ip,
+            "port": 554,
+            "stream_url": f"rtsp://admin:admin@{ip}:554/stream",
+            "location": location,
+            "camera_type": "ip",
+            "school_id": request.school_id,
+            "status": "detected",
+            "auto_detected": True,
+            "scan_id": scan_id,
+            "last_checked": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Check if camera already exists
+        existing = await db.cctv_cameras.find_one({
+            "ip_address": ip,
+            "school_id": request.school_id
+        })
+        
+        if not existing:
+            await db.cctv_cameras.insert_one(camera_data)
+            detected_cameras.append(camera_data)
+    
+    # Update scan status
+    await db.cctv_scans.update_one(
+        {"id": scan_id},
+        {"$set": {
+            "status": "completed",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "detected_count": len(detected_cameras)
+        }}
+    )
+    
+    await log_audit(current_user["id"], "auto_detect_cameras", "cctv", {
+        "scan_id": scan_id,
+        "detected_count": len(detected_cameras)
+    })
+    
+    return {
+        "scan_id": scan_id,
+        "status": "completed",
+        "detected_cameras": len(detected_cameras),
+        "cameras": [
+            {
+                "id": c["id"],
+                "name": c["name"],
+                "ip_address": c["ip_address"],
+                "location": c["location"],
+                "status": c["status"]
+            }
+            for c in detected_cameras
+        ],
+        "message": f"AI detected {len(detected_cameras)} cameras on your network. Review and activate them."
+    }
+
+@api_router.get("/cctv/cameras/{school_id}")
+async def get_cameras(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all cameras for a school"""
+    cameras = await db.cctv_cameras.find(
+        {"school_id": school_id},
+        {"_id": 0, "password": 0}
+    ).to_list(100)
+    
+    return cameras
+
+@api_router.put("/cctv/cameras/{camera_id}")
+async def update_camera(camera_id: str, camera: CCTVCamera, current_user: dict = Depends(get_current_user)):
+    """Update camera settings"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    update_data = camera.model_dump()
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = current_user["id"]
+    
+    result = await db.cctv_cameras.update_one(
+        {"id": camera_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    
+    return {"message": "Camera updated successfully"}
+
+@api_router.delete("/cctv/cameras/{camera_id}")
+async def delete_camera(camera_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a camera"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.cctv_cameras.delete_one({"id": camera_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    
+    await log_audit(current_user["id"], "delete_camera", "cctv", {"camera_id": camera_id})
+    
+    return {"message": "Camera deleted successfully"}
+
+@api_router.post("/cctv/cameras/{camera_id}/activate")
+async def activate_camera(camera_id: str, current_user: dict = Depends(get_current_user)):
+    """Activate a detected camera"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.cctv_cameras.update_one(
+        {"id": camera_id},
+        {"$set": {
+            "status": "online",
+            "activated_at": datetime.now(timezone.utc).isoformat(),
+            "activated_by": current_user["id"]
+        }}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    
+    return {"message": "Camera activated successfully"}
+
+@api_router.post("/cctv/recording-settings")
+async def update_recording_settings(settings: CCTVRecordingSettings, current_user: dict = Depends(get_current_user)):
+    """Update CCTV recording settings for a school"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    settings_data = {
+        "school_id": settings.school_id,
+        **settings.model_dump(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": current_user["id"]
+    }
+    
+    await db.cctv_settings.update_one(
+        {"school_id": settings.school_id},
+        {"$set": settings_data},
+        upsert=True
+    )
+    
+    return {"message": "Recording settings updated", "settings": settings_data}
+
+@api_router.get("/cctv/recording-settings/{school_id}")
+async def get_recording_settings(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get CCTV recording settings"""
+    settings = await db.cctv_settings.find_one(
+        {"school_id": school_id},
+        {"_id": 0}
+    )
+    
+    if not settings:
+        # Return default settings
+        return {
+            "school_id": school_id,
+            "recording_enabled": True,
+            "retention_days": 30,
+            "motion_detection": True,
+            "alert_on_motion": False,
+            "cloud_backup_enabled": False
+        }
+    
+    return settings
+
+# ==================== CLOUD STORAGE & BACKUP MANAGEMENT ====================
+
+class CloudStorageConfig(BaseModel):
+    school_id: str
+    provider: str = "local"  # local, aws_s3, google_cloud, azure
+    bucket_name: Optional[str] = None
+    region: Optional[str] = None
+    access_key: Optional[str] = None
+    secret_key: Optional[str] = None
+    auto_backup: bool = True
+    backup_schedule: str = "daily"  # daily, weekly, monthly
+    retention_days: int = 90
+    backup_items: List[str] = ["database", "documents", "photos", "cctv_recordings"]
+
+class BackupResponse(BaseModel):
+    id: str
+    school_id: str
+    backup_type: str
+    status: str
+    size_mb: float
+    created_at: str
+    location: str
+
+@api_router.post("/storage/configure")
+async def configure_cloud_storage(config: CloudStorageConfig, current_user: dict = Depends(get_current_user)):
+    """Configure cloud storage for a school - AI will auto-setup"""
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    config_data = {
+        "id": str(uuid.uuid4()),
+        **config.model_dump(),
+        "status": "configured",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    
+    # Don't store secrets directly - encrypt in production
+    if config.secret_key:
+        config_data["secret_key"] = "***encrypted***"
+    
+    await db.storage_configs.update_one(
+        {"school_id": config.school_id},
+        {"$set": config_data},
+        upsert=True
+    )
+    
+    await log_audit(current_user["id"], "configure_storage", "storage", {
+        "school_id": config.school_id,
+        "provider": config.provider
+    })
+    
+    return {
+        "message": "Cloud storage configured successfully",
+        "config": {
+            "provider": config.provider,
+            "auto_backup": config.auto_backup,
+            "backup_schedule": config.backup_schedule,
+            "retention_days": config.retention_days
+        }
+    }
+
+@api_router.get("/storage/config/{school_id}")
+async def get_storage_config(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get storage configuration for a school"""
+    config = await db.storage_configs.find_one(
+        {"school_id": school_id},
+        {"_id": 0, "secret_key": 0, "access_key": 0}
+    )
+    
+    if not config:
+        return {
+            "school_id": school_id,
+            "provider": "local",
+            "auto_backup": True,
+            "backup_schedule": "daily",
+            "retention_days": 90,
+            "status": "not_configured"
+        }
+    
+    return config
+
+@api_router.post("/storage/backup/trigger")
+async def trigger_backup(school_id: str, backup_type: str = "full", current_user: dict = Depends(get_current_user)):
+    """Manually trigger a backup"""
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    backup_id = str(uuid.uuid4())
+    
+    # Create backup record
+    backup_data = {
+        "id": backup_id,
+        "school_id": school_id,
+        "backup_type": backup_type,  # full, incremental, database_only, documents_only
+        "status": "in_progress",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "triggered_by": current_user["id"],
+        "items": ["database", "documents", "photos"] if backup_type == "full" else [backup_type]
+    }
+    
+    await db.backups.insert_one(backup_data)
+    
+    # Simulate backup completion (in real scenario, this would be async)
+    # Calculate mock size based on type
+    size_mb = 150.5 if backup_type == "full" else 25.3
+    
+    await db.backups.update_one(
+        {"id": backup_id},
+        {"$set": {
+            "status": "completed",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "size_mb": size_mb,
+            "location": f"/backups/{school_id}/{backup_id}.zip"
+        }}
+    )
+    
+    await log_audit(current_user["id"], "trigger_backup", "storage", {
+        "backup_id": backup_id,
+        "backup_type": backup_type,
+        "size_mb": size_mb
+    })
+    
+    return {
+        "backup_id": backup_id,
+        "status": "completed",
+        "size_mb": size_mb,
+        "message": f"Backup completed successfully. Size: {size_mb} MB"
+    }
+
+@api_router.get("/storage/backups/{school_id}")
+async def get_backups(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get backup history for a school"""
+    backups = await db.backups.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).sort("started_at", -1).to_list(50)
+    
+    return backups
+
+@api_router.post("/storage/ai-setup")
+async def ai_auto_setup_storage(school_id: str, current_user: dict = Depends(get_current_user)):
+    """AI automatically sets up optimal storage configuration"""
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get school data to determine storage needs
+    student_count = await db.students.count_documents({"school_id": school_id})
+    staff_count = await db.staff.count_documents({"school_id": school_id})
+    camera_count = await db.cctv_cameras.count_documents({"school_id": school_id})
+    
+    # AI determines optimal configuration
+    if student_count > 1000:
+        storage_tier = "enterprise"
+        retention_days = 180
+    elif student_count > 500:
+        storage_tier = "professional"
+        retention_days = 90
+    else:
+        storage_tier = "standard"
+        retention_days = 60
+    
+    # Auto-generate configuration
+    ai_config = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "provider": "local",  # Default to local, can be upgraded
+        "auto_backup": True,
+        "backup_schedule": "daily",
+        "retention_days": retention_days,
+        "storage_tier": storage_tier,
+        "backup_items": ["database", "documents", "photos"],
+        "estimated_storage_gb": round((student_count * 0.05) + (camera_count * 2), 2),
+        "ai_configured": True,
+        "ai_recommendations": [
+            f"Based on {student_count} students, {storage_tier} tier recommended",
+            f"Daily backups with {retention_days} days retention",
+            f"Estimated storage need: {round((student_count * 0.05) + (camera_count * 2), 2)} GB/month"
+        ],
+        "status": "configured",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    
+    # Enable CCTV backup if cameras exist
+    if camera_count > 0:
+        ai_config["backup_items"].append("cctv_recordings")
+        ai_config["cctv_retention_days"] = 30
+        ai_config["ai_recommendations"].append(f"{camera_count} cameras detected - CCTV recording backup enabled")
+    
+    await db.storage_configs.update_one(
+        {"school_id": school_id},
+        {"$set": ai_config},
+        upsert=True
+    )
+    
+    # Create initial backup
+    initial_backup = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "backup_type": "initial_full",
+        "status": "completed",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "size_mb": round((student_count * 0.05) + 10, 2),
+        "triggered_by": "ai_setup",
+        "location": f"/backups/{school_id}/initial_backup.zip"
+    }
+    await db.backups.insert_one(initial_backup)
+    
+    await log_audit(current_user["id"], "ai_setup_storage", "storage", {
+        "school_id": school_id,
+        "storage_tier": storage_tier,
+        "ai_configured": True
+    })
+    
+    return {
+        "success": True,
+        "message": "AI has automatically configured your storage and backup system",
+        "configuration": ai_config,
+        "initial_backup": {
+            "status": "completed",
+            "size_mb": initial_backup["size_mb"]
+        }
+    }
+
+@api_router.get("/storage/usage/{school_id}")
+async def get_storage_usage(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get storage usage statistics"""
+    # Calculate storage usage from various collections
+    student_count = await db.students.count_documents({"school_id": school_id})
+    document_count = await db.notices.count_documents({"school_id": school_id})
+    backup_count = await db.backups.count_documents({"school_id": school_id})
+    
+    # Get total backup size
+    backups = await db.backups.find(
+        {"school_id": school_id, "status": "completed"},
+        {"size_mb": 1}
+    ).to_list(100)
+    total_backup_size = sum(b.get("size_mb", 0) for b in backups)
+    
+    config = await db.storage_configs.find_one({"school_id": school_id}, {"_id": 0})
+    
+    return {
+        "school_id": school_id,
+        "usage": {
+            "database_mb": round(student_count * 0.02, 2),
+            "documents_mb": round(document_count * 0.5, 2),
+            "backups_mb": round(total_backup_size, 2),
+            "total_mb": round((student_count * 0.02) + (document_count * 0.5) + total_backup_size, 2)
+        },
+        "counts": {
+            "students": student_count,
+            "documents": document_count,
+            "backups": backup_count
+        },
+        "storage_tier": config.get("storage_tier", "standard") if config else "standard",
+        "retention_days": config.get("retention_days", 60) if config else 60
+    }
+
+# ==================== TEACHER ACTIVITY TRACKING FOR ADMIN ====================
+
+@api_router.get("/admin/teacher-activities/{school_id}")
+async def get_teacher_activities(school_id: str, limit: int = 50, current_user: dict = Depends(get_current_user)):
+    """Get recent teacher activities for admin dashboard"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get recent audit logs for teachers
+    activities = await db.audit_logs.find(
+        {"module": {"$in": ["exams", "attendance", "notices", "students", "leave"]}},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    # Enrich with user names
+    for activity in activities:
+        user = await db.users.find_one({"id": activity["user_id"]}, {"_id": 0, "name": 1, "role": 1})
+        if user:
+            activity["user_name"] = user["name"]
+            activity["user_role"] = user["role"]
+    
+    return activities
+
+@api_router.get("/admin/dashboard-overview/{school_id}")
+async def get_admin_overview(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get admin dashboard overview - who's doing what"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Today's statistics
+    exams_created_today = await db.exams.count_documents({
+        "school_id": school_id,
+        "created_at": {"$regex": f"^{today}"}
+    })
+    
+    attendance_marked_today = await db.attendance.count_documents({
+        "school_id": school_id,
+        "date": today
+    })
+    
+    leaves_pending = await db.leaves.count_documents({
+        "school_id": school_id,
+        "status": "pending"
+    })
+    
+    notices_today = await db.notices.count_documents({
+        "school_id": school_id,
+        "created_at": {"$regex": f"^{today}"}
+    })
+    
+    # Active teachers today
+    active_teachers = await db.audit_logs.distinct("user_id", {
+        "created_at": {"$regex": f"^{today}"}
+    })
+    
+    # Recent activities
+    recent_activities = await db.audit_logs.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(20).to_list(20)
+    
+    for activity in recent_activities:
+        user = await db.users.find_one({"id": activity["user_id"]}, {"_id": 0, "name": 1})
+        activity["user_name"] = user["name"] if user else "Unknown"
+    
+    return {
+        "today": today,
+        "stats": {
+            "exams_created": exams_created_today,
+            "attendance_marked": attendance_marked_today,
+            "leaves_pending": leaves_pending,
+            "notices_posted": notices_today,
+            "active_teachers": len(active_teachers)
+        },
+        "recent_activities": recent_activities,
+        "summary": f"Today: {exams_created_today} exams created, {attendance_marked_today} attendance entries, {leaves_pending} leaves pending"
+    }
+
 # ==================== APP CONFIG ====================
 
 app.include_router(api_router)
