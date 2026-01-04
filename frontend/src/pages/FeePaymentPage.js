@@ -10,6 +10,7 @@ import {
   AlertCircle, ArrowLeft, Wallet, History, FileText, School
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { QRCodeSVG } from 'qrcode.react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
