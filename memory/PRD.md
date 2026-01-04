@@ -11,52 +11,63 @@
 
 ### Latest Session (Jan 4, 2026)
 
-**1. Director One-Click Setup System** ✅
+**1. Marketing Landing Page** ✅ NEW!
+- Professional hero section with compelling copy
+- "Transform Traditional School to Smart School" messaging
+- Before/After comparison (Chaos to Clarity)
+- Features grid (12 features highlighted)
+- AI capabilities showcase (GPT-4o powered)
+- Pricing section (3 plans)
+- Registration form for new schools
+- Login for existing users
+- "Install & Open Dashboard" after login
+- Testimonials and social proof
+- Contact section with phone number
+
+**2. Director One-Click Setup System** ✅
 - AI-guided 7-step Setup Wizard
 - Progress tracking with completion percentage
 - Step-by-step AI instructions for each task
 - Auto-detects completed steps
 
-**2. Subscription Model** ✅
+**3. Subscription Model** ✅
 - Free Trial: 30 days (AI 3 days only) - FREE
 - Monthly Plan: ₹17,999/month
 - Yearly Plan: ₹14,999/month (17% OFF, ₹35,988 savings)
 - Auto-activation on director signup
 
-**3. Director Account System** ✅
+**4. Director Account System** ✅
 - Unique ID generation (UUID-based)
 - Email-based login
 - Password change on first login required
 - Auto free trial activation
 
-**4. Marketing Materials** ✅
-- Main Brochure (Professional English)
-- Comparison Chart (vs Entab, Fedena, SchoolERP + "Your System" blank column)
-- Quick Features Card (Pocket-size)
-- Hindi Pamphlet
-- **Download:** https://schooltino-app.preview.emergentagent.com/api/download/marketing-materials
+**5. Marketing Materials** ✅
+- Main Brochure with QR code
+- Comparison Chart with QR code
+- Quick Features Card with QR code
+- Hindi Pamphlet with QR code
+- All with phone: +91 7879967616
 
-**5. Comprehensive School Registration Form** ✅
-- 4-step wizard with all school details
-- AI context for better assistance
-- Logo & photo upload
+---
 
-**6. Meetings System** ✅ (MOCKED)
-- Schedule, view, delete meetings
-- Recordings & AI summaries tabs
-- Ready for Google Meet integration
+## URL Structure
 
-### Previously Implemented
+| Page | URL | Access |
+|------|-----|--------|
+| Landing Page (Marketing) | `/` | Public |
+| Login | `/login` | Public |
+| Dashboard | `/app/dashboard` | Protected |
+| All Admin Pages | `/app/*` | Protected |
+| TeachTino | `/teacher-dashboard` | Teachers |
+| StudyTino | `/student-dashboard` | Students |
 
-**Core Features:**
-- Multi-portal: Schooltino (Admin), TeachTino (Teacher), StudyTino (Student)
-- Role-Based Access Control (RBAC) with Permission Manager
-- AI Integration: GPT-4o for AI Assistants
-- AI Paper Generator, AI Content Studio, Voice Assistant
-- Student/Staff/Class Management
-- Attendance, Fees, Leave Management
-- Notices, SMS Center, Image Gallery
-- CCTV Dashboard (mock), Website Integration
+---
+
+## Download Links
+
+- **Marketing Materials ZIP:** 
+  https://schooltino-app.preview.emergentagent.com/api/download/marketing-materials
 
 ---
 
@@ -67,51 +78,6 @@
 | Free Trial | 30 days | FREE | 3 days | All features |
 | Monthly | 1 month | ₹17,999 | Unlimited | All + Priority Support |
 | Yearly | 12 months | ₹14,999/mo | Unlimited | All + 17% OFF |
-
----
-
-## Setup Wizard Steps
-
-1. **School Details** - Name, logo, registration number
-2. **Add Classes** - Create class structure
-3. **Add Staff** - Teachers, principal, etc.
-4. **Add Students** - Student enrollment
-5. **Fee Structure** - Fee categories and amounts
-6. **Connect Website** - Auto-sync with school website
-7. **Setup CCTV** - Camera integration (optional)
-
----
-
-## Marketing Materials
-
-**Files in ZIP:**
-1. `brochure_main.html` - Full feature brochure
-2. `comparison_chart.html` - Feature comparison with competitors
-3. `quick_features_card.html` - Pocket card for quick pitch
-4. `hindi_pamphlet.html` - Hindi language pamphlet
-
-**Contact:** +91 7879967616 | www.schooltino.in
-
----
-
-## API Endpoints (New)
-
-### Subscription
-- `GET /api/subscription/plans` - List pricing plans
-- `POST /api/subscription/activate` - Activate a plan
-- `GET /api/subscription/current/{school_id}` - Current subscription status
-
-### Setup Wizard
-- `GET /api/setup/wizard` - Get wizard status
-- `GET /api/setup/ai-guide` - AI setup instructions
-- `POST /api/setup/complete-step/{step}` - Mark step complete
-
-### Director
-- `POST /api/auth/create-director` - Create director account
-- `POST /api/auth/change-password` - Change password
-
-### Downloads
-- `GET /api/download/marketing-materials` - Download ZIP
 
 ---
 
@@ -138,7 +104,7 @@
 
 ### P0 - High Priority
 - [ ] Google Meet integration (free)
-- [ ] Payment gateway for subscriptions
+- [ ] Payment gateway for subscriptions (Razorpay)
 
 ### P1 - Medium Priority
 - [ ] Backend refactoring (server.py > 4700 lines)
@@ -150,17 +116,9 @@
 
 ---
 
-## Technical Stack
+## Contact
 
-- **Backend:** FastAPI (Python)
-- **Frontend:** React + Tailwind + Shadcn UI
-- **Database:** MongoDB
-- **AI:** OpenAI GPT-4o (via Emergent LLM Key)
-- **Hosting:** Emergent Platform
-
----
-
-## Deployment
-
+- **Phone:** +91 7879967616
+- **Website:** schooltino.in
 - **Live URL:** https://schooltino.in
 - **Preview URL:** https://schooltino-app.preview.emergentagent.com
