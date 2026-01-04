@@ -100,6 +100,12 @@ function AppRoutes() {
         } 
       />
 
+      {/* TeachTino Portal - Teacher Login */}
+      <Route path="/teachtino" element={<TeachTinoLogin />} />
+      
+      {/* StudyTino Portal - Student Login */}
+      <Route path="/studytino" element={<StudyTinoLogin />} />
+
       {/* Protected Routes */}
       <Route
         path="/app"
