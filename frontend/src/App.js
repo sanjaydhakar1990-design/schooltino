@@ -167,6 +167,9 @@ function AppRoutes() {
         <Route path="subscription" element={<SubscriptionPage />} />
         <Route path="exams" element={<OnlineExamSystem />} />
         <Route path="ai-history" element={<AIHistoryPage />} />
+        <Route path="front-office" element={<FrontOfficePage />} />
+        <Route path="transport" element={<TransportPage />} />
+        <Route path="health" element={<HealthModulePage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
