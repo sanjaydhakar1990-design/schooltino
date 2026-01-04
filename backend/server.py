@@ -4337,6 +4337,497 @@ async def delete_meeting(meeting_id: str, current_user: dict = Depends(get_curre
     
     return {"message": "Meeting cancelled"}
 
+# ==================== SUBSCRIPTION & BILLING ====================
+
+@api_router.get("/subscription/plans")
+async def get_subscription_plans():
+    """Get available subscription plans"""
+    return {
+        "plans": [
+            {
+                "id": "free_trial",
+                "name": "Free Trial",
+                "duration": "1 Month",
+                "price": 0,
+                "price_display": "FREE",
+                "features": [
+                    "All features for 30 days",
+                    "AI features for 3 days",
+                    "Unlimited students & staff",
+                    "Email support"
+                ],
+                "ai_note": "AI features available for first 3 days only"
+            },
+            {
+                "id": "monthly",
+                "name": "Monthly Plan",
+                "duration": "1 Month",
+                "price": 17999,
+                "price_display": "₹17,999/month",
+                "features": [
+                    "All features unlimited",
+                    "AI features unlimited",
+                    "Priority support",
+                    "Monthly billing"
+                ]
+            },
+            {
+                "id": "yearly",
+                "name": "Yearly Plan",
+                "duration": "12 Months",
+                "price": 179988,
+                "price_display": "₹14,999/month",
+                "original_price": "₹17,999/month",
+                "savings": "₹35,988/year (17% OFF)",
+                "features": [
+                    "All features unlimited",
+                    "AI features unlimited",
+                    "Priority support",
+                    "Pay yearly, save more"
+                ],
+                "badge": "BEST VALUE"
+            }
+        ]
+    }
+
+@api_router.post("/subscription/activate")
+async def activate_subscription(plan: SubscriptionPlan, current_user: dict = Depends(get_current_user)):
+    """Activate a subscription plan for a school"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can manage subscriptions")
+    
+    plan_details = SUBSCRIPTION_PLANS.get(plan.plan_type)
+    if not plan_details:
+        raise HTTPException(status_code=400, detail="Invalid plan type")
+    
+    now = datetime.now(timezone.utc)
+    end_date = now + timedelta(days=plan_details["duration_days"])
+    ai_end_date = now + timedelta(days=plan_details["ai_duration_days"])
+    
+    subscription_doc = {
+        "id": str(uuid.uuid4()),
+        "school_id": plan.school_id,
+        "plan_type": plan.plan_type,
+        "status": "active",
+        "start_date": now.isoformat(),
+        "end_date": end_date.isoformat(),
+        "ai_enabled_until": ai_end_date.isoformat(),
+        "amount": plan_details["price"],
+        "features": plan_details["features"],
+        "created_at": now.isoformat(),
+        "created_by": current_user["id"]
+    }
+    
+    # Deactivate any existing subscription
+    await db.subscriptions.update_many(
+        {"school_id": plan.school_id, "status": "active"},
+        {"$set": {"status": "replaced"}}
+    )
+    
+    await db.subscriptions.insert_one(subscription_doc)
+    await log_audit(current_user["id"], "activate_subscription", "subscriptions", {
+        "school_id": plan.school_id,
+        "plan": plan.plan_type,
+        "amount": plan_details["price"]
+    })
+    
+    subscription_doc.pop("_id", None)
+    return subscription_doc
+
+@api_router.get("/subscription/current/{school_id}")
+async def get_current_subscription(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get current subscription for a school"""
+    subscription = await db.subscriptions.find_one(
+        {"school_id": school_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not subscription:
+        return {
+            "status": "no_subscription",
+            "message": "No active subscription. Start your free trial!",
+            "recommended_plan": "free_trial"
+        }
+    
+    # Check if expired
+    end_date = datetime.fromisoformat(subscription["end_date"].replace("Z", "+00:00"))
+    if end_date < datetime.now(timezone.utc):
+        await db.subscriptions.update_one(
+            {"id": subscription["id"]},
+            {"$set": {"status": "expired"}}
+        )
+        return {
+            "status": "expired",
+            "message": "Your subscription has expired. Please renew to continue.",
+            "expired_on": subscription["end_date"],
+            "recommended_plan": "monthly"
+        }
+    
+    # Check AI status
+    ai_end = datetime.fromisoformat(subscription["ai_enabled_until"].replace("Z", "+00:00"))
+    ai_active = ai_end > datetime.now(timezone.utc)
+    
+    return {
+        **subscription,
+        "ai_active": ai_active,
+        "days_remaining": (end_date - datetime.now(timezone.utc)).days,
+        "ai_days_remaining": max(0, (ai_end - datetime.now(timezone.utc)).days) if ai_active else 0
+    }
+
+# ==================== DIRECTOR SETUP WIZARD ====================
+
+SETUP_STEPS = [
+    {
+        "step_number": 1,
+        "title": "School Details",
+        "description": "Add your school's basic information, logo, and photos",
+        "route": "/school-registration",
+        "icon": "School"
+    },
+    {
+        "step_number": 2,
+        "title": "Add Classes",
+        "description": "Create classes and sections (e.g., Class 1-A, Class 10-B)",
+        "route": "/classes",
+        "icon": "GraduationCap"
+    },
+    {
+        "step_number": 3,
+        "title": "Add Staff",
+        "description": "Add teachers, principal, and other staff members",
+        "route": "/staff",
+        "icon": "Users"
+    },
+    {
+        "step_number": 4,
+        "title": "Add Students",
+        "description": "Add students and assign them to classes",
+        "route": "/students",
+        "icon": "UserPlus"
+    },
+    {
+        "step_number": 5,
+        "title": "Fee Structure",
+        "description": "Set up fee categories and amounts",
+        "route": "/fees",
+        "icon": "Wallet"
+    },
+    {
+        "step_number": 6,
+        "title": "Connect Website",
+        "description": "Link your school website for automatic updates",
+        "route": "/website",
+        "icon": "Globe"
+    },
+    {
+        "step_number": 7,
+        "title": "Setup CCTV",
+        "description": "Connect CCTV cameras for smart monitoring",
+        "route": "/cctv",
+        "icon": "Video"
+    }
+]
+
+@api_router.get("/setup/wizard")
+async def get_setup_wizard(current_user: dict = Depends(get_current_user)):
+    """Get setup wizard status for the school"""
+    school_id = current_user.get("school_id")
+    
+    # Get existing wizard or create new
+    wizard = await db.setup_wizards.find_one({"school_id": school_id}, {"_id": 0})
+    
+    if not wizard:
+        # Check completion status for each step
+        steps_status = []
+        for step in SETUP_STEPS:
+            is_completed = await check_step_completion(school_id, step["step_number"])
+            steps_status.append({
+                **step,
+                "is_completed": is_completed
+            })
+        
+        current_step = 1
+        for i, step in enumerate(steps_status):
+            if not step["is_completed"]:
+                current_step = step["step_number"]
+                break
+            current_step = step["step_number"] + 1
+        
+        wizard = {
+            "school_id": school_id,
+            "current_step": min(current_step, 7),
+            "total_steps": 7,
+            "steps": steps_status,
+            "is_completed": all(s["is_completed"] for s in steps_status),
+            "completion_percentage": sum(1 for s in steps_status if s["is_completed"]) * 100 // 7
+        }
+    
+    return wizard
+
+async def check_step_completion(school_id: str, step_number: int) -> bool:
+    """Check if a setup step is completed"""
+    if step_number == 1:  # School details
+        school = await db.schools.find_one({"id": school_id})
+        return school is not None and school.get("name") is not None
+    elif step_number == 2:  # Classes
+        count = await db.classes.count_documents({"school_id": school_id})
+        return count > 0
+    elif step_number == 3:  # Staff
+        count = await db.staff.count_documents({"school_id": school_id})
+        return count > 0
+    elif step_number == 4:  # Students
+        count = await db.students.count_documents({"school_id": school_id})
+        return count > 0
+    elif step_number == 5:  # Fees
+        count = await db.fee_categories.count_documents({"school_id": school_id})
+        return count > 0
+    elif step_number == 6:  # Website
+        settings = await db.website_settings.find_one({"school_id": school_id})
+        return settings is not None and settings.get("is_connected", False)
+    elif step_number == 7:  # CCTV
+        # CCTV is optional, mark as skippable
+        return True
+    return False
+
+@api_router.post("/setup/complete-step/{step_number}")
+async def complete_setup_step(step_number: int, current_user: dict = Depends(get_current_user)):
+    """Mark a setup step as completed"""
+    school_id = current_user.get("school_id")
+    
+    await db.setup_wizards.update_one(
+        {"school_id": school_id},
+        {
+            "$set": {
+                f"steps.{step_number - 1}.is_completed": True,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        },
+        upsert=True
+    )
+    
+    return {"message": f"Step {step_number} completed", "next_step": step_number + 1}
+
+@api_router.get("/setup/ai-guide")
+async def get_ai_setup_guide(current_user: dict = Depends(get_current_user)):
+    """AI-generated personalized setup guide"""
+    school_id = current_user.get("school_id")
+    wizard = await get_setup_wizard(current_user)
+    
+    incomplete_steps = [s for s in wizard["steps"] if not s["is_completed"]]
+    
+    if not incomplete_steps:
+        return {
+            "message": "🎉 Congratulations! Your school setup is complete!",
+            "tips": [
+                "Start adding daily attendance",
+                "Create your first notice",
+                "Generate AI question papers for upcoming exams"
+            ],
+            "next_action": {
+                "title": "Explore Dashboard",
+                "route": "/dashboard"
+            }
+        }
+    
+    next_step = incomplete_steps[0]
+    
+    guides = {
+        1: {
+            "message": f"👋 Welcome! Let's start by adding your school details.",
+            "instructions": [
+                "Enter your school name and registration number",
+                "Upload your school logo and building photo",
+                "Add contact details and social media links",
+                "This helps AI understand your school better!"
+            ]
+        },
+        2: {
+            "message": "📚 Great! Now let's create your class structure.",
+            "instructions": [
+                "Add all classes from nursery to 12th (as applicable)",
+                "Create sections (A, B, C) for each class",
+                "You can add class teachers later"
+            ]
+        },
+        3: {
+            "message": "👨‍🏫 Time to add your teaching staff!",
+            "instructions": [
+                "Start with the Principal and Vice Principal",
+                "Add all teachers with their subjects",
+                "Each staff member gets their own TeachTino login"
+            ]
+        },
+        4: {
+            "message": "👨‍🎓 Now add your students.",
+            "instructions": [
+                "You can add students one by one or upload Excel",
+                "Each student gets a unique ID and StudyTino login",
+                "Parents can track their child's progress"
+            ]
+        },
+        5: {
+            "message": "💰 Set up your fee structure.",
+            "instructions": [
+                "Create fee categories (Tuition, Transport, etc.)",
+                "Set amounts for each class",
+                "Parents can pay online through the app"
+            ]
+        },
+        6: {
+            "message": "🌐 Connect your school website.",
+            "instructions": [
+                "Enter your website URL",
+                "Schooltino can auto-update your website",
+                "Notices, events, and results sync automatically"
+            ]
+        },
+        7: {
+            "message": "📹 Set up CCTV monitoring (Optional).",
+            "instructions": [
+                "Connect IP cameras for smart monitoring",
+                "AI can auto-detect attendance from CCTV",
+                "Get alerts for unusual activities"
+            ]
+        }
+    }
+    
+    guide = guides.get(next_step["step_number"], {
+        "message": "Continue with your setup.",
+        "instructions": []
+    })
+    
+    return {
+        **guide,
+        "current_step": next_step,
+        "completion_percentage": wizard["completion_percentage"],
+        "remaining_steps": len(incomplete_steps)
+    }
+
+# ==================== DIRECTOR UNIQUE ID GENERATION ====================
+
+@api_router.post("/auth/create-director")
+async def create_director_for_school(
+    email: EmailStr,
+    name: str,
+    mobile: Optional[str] = None,
+    school_name: Optional[str] = None
+):
+    """Create a new Director account with unique ID - Public endpoint for onboarding"""
+    # Check if email already exists
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Generate unique director ID
+    director_id = str(uuid.uuid4())
+    
+    # Generate temporary password (8 chars)
+    temp_password = generate_temp_password()
+    hashed_pw = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt()).decode()
+    
+    # Create school first if name provided
+    school_id = None
+    if school_name:
+        school_id = str(uuid.uuid4())
+        school_doc = {
+            "id": school_id,
+            "name": school_name,
+            "address": "",
+            "board_type": "CBSE",
+            "city": "",
+            "state": "",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_active": True
+        }
+        await db.schools.insert_one(school_doc)
+    
+    # Create director user
+    user_doc = {
+        "id": director_id,
+        "email": email,
+        "password": hashed_pw,
+        "name": name,
+        "role": "director",
+        "mobile": mobile,
+        "school_id": school_id,
+        "status": "active",
+        "password_change_required": True,  # Must change password on first login
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "is_active": True
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    # Auto-activate free trial
+    if school_id:
+        now = datetime.now(timezone.utc)
+        subscription_doc = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "plan_type": "free_trial",
+            "status": "active",
+            "start_date": now.isoformat(),
+            "end_date": (now + timedelta(days=30)).isoformat(),
+            "ai_enabled_until": (now + timedelta(days=3)).isoformat(),
+            "amount": 0,
+            "features": ["all_features", "ai_3_days"],
+            "created_at": now.isoformat()
+        }
+        await db.subscriptions.insert_one(subscription_doc)
+    
+    return {
+        "message": "Director account created successfully!",
+        "director_id": director_id,
+        "email": email,
+        "temporary_password": temp_password,
+        "school_id": school_id,
+        "instructions": [
+            "Login with the email and temporary password",
+            "You will be asked to change your password on first login",
+            "Complete the setup wizard to configure your school"
+        ],
+        "subscription": {
+            "plan": "free_trial",
+            "duration": "30 days",
+            "ai_access": "3 days",
+            "message": "Your free trial has started!"
+        }
+    }
+
+@api_router.post("/auth/change-password")
+async def change_password(
+    old_password: str = Form(...),
+    new_password: str = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Change user password"""
+    user = await db.users.find_one({"id": current_user["id"]})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify old password
+    if not bcrypt.checkpw(old_password.encode(), user["password"].encode()):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Hash new password
+    hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {
+            "$set": {
+                "password": hashed_pw,
+                "password_change_required": False,
+                "password_changed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    await log_audit(current_user["id"], "change_password", "users", {"user_id": current_user["id"]})
+    
+    return {"message": "Password changed successfully"}
+
 # ==================== ONETINO INTEGRATION API ====================
 
 @api_router.get("/onetino/school-stats")
