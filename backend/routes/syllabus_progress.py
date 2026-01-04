@@ -24,7 +24,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
 # Emergent LLM Integration
-from emergentintegrations.llm.chat import LlmChat
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 
@@ -308,7 +308,8 @@ Use emojis to make it engaging.
             system_message="You are an expert teacher creating chapter summaries for students."
         ).with_model("openai", "gpt-4o-mini")
         
-        response = await chat.send_message(prompt)
+        user_msg = UserMessage(text=prompt)
+        response = await chat.send_message(user_msg)
         summary = response
         
         # Store the generated summary for future reference
