@@ -175,18 +175,6 @@ export default function OnlineExamSystem() {
     } catch (error) {
       console.error('Error creating exam:', error);
       toast.error(error.response?.data?.detail || 'Failed to create exam');
-      toast.success('Exam created! (Demo Mode)');
-      setExams([{
-        id: Date.now().toString(),
-        ...examForm,
-        total_questions: examForm.questions.length,
-        status: 'active',
-        created_by: user?.name,
-        start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 86400000 * 7).toISOString()
-      }, ...exams]);
-      setShowCreateDialog(false);
-      resetExamForm();
     } finally {
       setSubmitting(false);
     }
@@ -204,22 +192,26 @@ export default function OnlineExamSystem() {
     });
   };
 
-  const handleStartExam = (exam) => {
-    setSelectedExam({
-      ...exam,
-      questions: exam.questions || [
-        { id: 1, question: 'What is 2 + 2?', options: ['3', '4', '5', '6'], marks: 2 },
-        { id: 2, question: 'Capital of India?', options: ['Mumbai', 'Delhi', 'Kolkata', 'Chennai'], marks: 2 },
-        { id: 3, question: 'Largest planet?', options: ['Earth', 'Mars', 'Jupiter', 'Saturn'], marks: 2 },
-        { id: 4, question: 'H2O is?', options: ['Salt', 'Water', 'Sugar', 'Acid'], marks: 2 },
-        { id: 5, question: 'Who wrote Hamlet?', options: ['Dickens', 'Shakespeare', 'Austen', 'Hemingway'], marks: 2 }
-      ]
-    });
-    setTimeLeft(exam.duration * 60);
-    setAnswers({});
-    setCurrentQuestion(0);
-    setExamStarted(false);
-    setShowTakeExamDialog(true);
+  const handleStartExam = async (exam) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/exams/${exam.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const examWithQuestions = res.data;
+      setSelectedExam(examWithQuestions);
+      setTimeLeft(examWithQuestions.duration * 60);
+      setAnswers({});
+      setCurrentQuestion(0);
+      setExamStarted(false);
+      setShowTakeExamDialog(true);
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error('You have already attempted this exam');
+      } else {
+        toast.error('Failed to load exam');
+      }
+    }
   };
 
   const handleAnswerSelect = (questionId, optionIndex) => {
