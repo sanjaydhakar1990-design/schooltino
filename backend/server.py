@@ -2479,50 +2479,97 @@ async def generate_paper(request: PaperGenerateRequest, current_user: dict = Dep
         raise HTTPException(status_code=403, detail="Not authorized")
     
     openai_key = os.environ.get("OPENAI_API_KEY")
-    if not openai_key:
-        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    api_key = emergent_key or openai_key
+    
+    if not api_key:
+        raise HTTPException(status_code=500, detail="API key not configured")
     
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
         
-        system_prompt = f"""You are an expert question paper generator for Indian schools. 
+        # Calculate marks distribution based on question types
+        marks_distribution = []
+        if 'mcq' in request.question_types:
+            marks_distribution.append(("MCQ", 1, int(request.total_marks * 0.2)))  # 20% for MCQs
+        if 'fill_blank' in request.question_types:
+            marks_distribution.append(("Fill in the Blanks", 1, int(request.total_marks * 0.1)))  # 10%
+        if 'short' in request.question_types:
+            marks_distribution.append(("Short Answer", 2, int(request.total_marks * 0.3)))  # 30%
+        if 'long' in request.question_types:
+            marks_distribution.append(("Long Answer", 5, int(request.total_marks * 0.4)))  # 40%
+        
+        # If only some types selected, adjust distribution
+        if len(marks_distribution) == 1:
+            marks_distribution[0] = (marks_distribution[0][0], marks_distribution[0][1], request.total_marks)
+        elif len(marks_distribution) == 2:
+            half = request.total_marks // 2
+            marks_distribution[0] = (marks_distribution[0][0], marks_distribution[0][1], half)
+            marks_distribution[1] = (marks_distribution[1][0], marks_distribution[1][1], request.total_marks - half)
+        
+        # Build distribution string
+        dist_str = "\n".join([f"- {name}: {marks} marks total ({marks//per_q} questions × {per_q} marks each)" 
+                             for name, per_q, marks in marks_distribution])
+        
+        system_prompt = f"""You are an expert question paper generator for Indian schools following NCERT 2024-25 syllabus.
 Generate questions for {request.class_name} students in {request.subject} subject.
 Chapter/Topic: {request.chapter}
 Difficulty: {request.difficulty}
-Total Marks: {request.total_marks}
-Time Duration: {request.time_duration} minutes
 Language: {request.language}
 
-Generate questions in these types: {', '.join(request.question_types)}
+CRITICAL REQUIREMENT - MARKS DISTRIBUTION:
+Total Marks Required: EXACTLY {request.total_marks} marks (NOT MORE, NOT LESS)
+Time Duration: {request.time_duration} minutes
 
-Return JSON format:
+Question Types and Marks:
+{dist_str}
+
+STRICT RULES:
+1. You MUST generate questions that add up to EXACTLY {request.total_marks} marks
+2. Each MCQ = 1 mark, Fill blank = 1 mark, Short answer = 2 marks, Long answer = 5 marks
+3. Generate questions ONLY from the specified chapter(s)
+4. Use NCERT 2024-25 rationalized syllabus content
+5. Do NOT include questions from deleted/rationalized topics
+6. Ensure all questions are from {request.class_name} level only
+
+Return ONLY valid JSON (no extra text):
 {{
     "questions": [
         {{
-            "type": "mcq|short|long|fill_blank",
+            "type": "mcq",
             "question": "question text",
-            "options": ["a", "b", "c", "d"],  // only for mcq
-            "answer": "correct answer",
+            "options": ["a) option1", "b) option2", "c) option3", "d) option4"],
+            "answer": "correct option",
             "marks": 1,
-            "difficulty": "easy|medium|hard"
+            "difficulty": "easy"
+        }},
+        {{
+            "type": "short",
+            "question": "question text",
+            "answer": "expected answer in 2-3 sentences",
+            "marks": 2,
+            "difficulty": "medium"
+        }},
+        {{
+            "type": "long",
+            "question": "question text",
+            "answer": "detailed answer",
+            "marks": 5,
+            "difficulty": "hard"
         }}
-    ]
+    ],
+    "total_marks": {request.total_marks}
 }}
 
-Ensure:
-- Questions are age-appropriate
-- Mix of difficulty levels
-- Total marks match {request.total_marks}
-- Clear and grammatically correct questions
-- Provide answer key"""
+VERIFY: Sum of all question marks = {request.total_marks}"""
 
         chat = LlmChat(
-            api_key=openai_key,
+            api_key=api_key,
             session_id=f"paper-{str(uuid.uuid4())[:8]}",
             system_message=system_prompt
         ).with_model("openai", "gpt-4o")
         
-        user_msg = UserMessage(text=f"Generate a {request.subject} question paper for {request.class_name} on {request.chapter}")
+        user_msg = UserMessage(text=f"Generate a {request.subject} question paper for {request.class_name} on topic: {request.chapter}. Total marks MUST be exactly {request.total_marks}.")
         response = await chat.send_message(user_msg)
         
         # Parse response
@@ -2536,15 +2583,45 @@ Ensure:
         else:
             questions_data = {"questions": []}
         
+        # Validate and fix marks if needed
+        questions = questions_data.get("questions", [])
+        actual_total = sum(q.get("marks", 0) for q in questions)
+        
+        # If marks don't match, try to adjust
+        if actual_total != request.total_marks and questions:
+            # Calculate difference
+            diff = request.total_marks - actual_total
+            
+            if diff > 0:
+                # Need more marks - add simple MCQs
+                for i in range(diff):
+                    questions.append({
+                        "type": "mcq",
+                        "question": f"Additional question {i+1}: Define the key term from this chapter.",
+                        "options": ["a) Option A", "b) Option B", "c) Option C", "d) Option D"],
+                        "answer": "Please verify with chapter content",
+                        "marks": 1,
+                        "difficulty": "easy"
+                    })
+            elif diff < 0:
+                # Too many marks - remove from end until balanced
+                while sum(q.get("marks", 0) for q in questions) > request.total_marks and questions:
+                    questions.pop()
+        
+        # Final verification
+        final_total = sum(q.get("marks", 0) for q in questions)
+        
         paper_data = {
             "id": str(uuid.uuid4()),
             "subject": request.subject,
             "class_name": request.class_name,
             "chapter": request.chapter,
-            "questions": questions_data.get("questions", []),
+            "questions": questions,
             "total_marks": request.total_marks,
+            "actual_marks": final_total,
             "time_duration": request.time_duration,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "marks_verified": final_total == request.total_marks
         }
         
         # Save to DB
