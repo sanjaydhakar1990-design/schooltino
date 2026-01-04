@@ -224,31 +224,24 @@ export default function OnlineExamSystem() {
   const handleSubmitExam = async () => {
     setSubmitting(true);
     try {
-      // Calculate score (mock)
-      const correctAnswers = { 1: 1, 2: 1, 3: 2, 4: 1, 5: 1 };
-      let score = 0;
-      Object.keys(answers).forEach(qId => {
-        if (answers[qId] === correctAnswers[qId]) {
-          score += 2;
-        }
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/exams/${selectedExam.id}/submit`, {
+        exam_id: selectedExam.id,
+        answers: answers
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      toast.success(`Exam submitted! Your score: ${score}/${selectedExam.total_marks}`);
+      const result = res.data;
+      toast.success(`Exam submitted! Your score: ${result.score}/${result.total_marks} (${result.percentage}%)`);
       
-      setMyResults([{
-        id: Date.now().toString(),
-        exam_title: selectedExam.title,
-        subject: selectedExam.subject,
-        score,
-        total_marks: selectedExam.total_marks,
-        percentage: Math.round((score / selectedExam.total_marks) * 100),
-        submitted_at: new Date().toISOString()
-      }, ...myResults]);
-
+      setMyResults([result, ...myResults]);
       setShowTakeExamDialog(false);
       setExamStarted(false);
+      fetchExams(); // Refresh to show already_attempted status
     } catch (error) {
-      toast.error('Failed to submit exam');
+      console.error('Error submitting exam:', error);
+      toast.error(error.response?.data?.detail || 'Failed to submit exam');
     } finally {
       setSubmitting(false);
     }
