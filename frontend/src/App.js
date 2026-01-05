@@ -97,14 +97,16 @@ const PublicRoute = ({ children }) => {
   }
   
   if (isAuthenticated && user) {
-    // Role-based redirect
+    // Role-based redirect - All staff go to Unified Portal
     const role = user.role;
-    if (['teacher', 'admission_staff', 'clerk', 'staff'].includes(role)) {
-      return <Navigate to="/teacher-dashboard" replace />;
+    if (['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director'].includes(role)) {
+      return <Navigate to="/portal" replace />;
     } else if (role === 'student') {
       return <Navigate to="/student-dashboard" replace />;
+    } else if (role === 'director') {
+      return <Navigate to="/app/dashboard" replace />;
     }
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/portal" replace />;
   }
   
   return children;
