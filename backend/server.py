@@ -1445,6 +1445,120 @@ async def get_my_permissions(current_user: dict = Depends(get_current_user)):
     default_perms = DEFAULT_PERMISSIONS.get(current_user["role"], {})
     return {"permissions": default_perms, "role": current_user["role"], "is_director": False, "is_default": True}
 
+
+# ==================== ROLE CHANGE & CLASS ASSIGNMENT ====================
+
+@api_router.put("/users/{user_id}/role")
+async def change_user_role(user_id: str, role_data: dict, current_user: dict = Depends(get_current_user)):
+    """Director can change any staff member's role"""
+    # Only director can change roles
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can change roles")
+    
+    new_role = role_data.get("role")
+    valid_roles = ["principal", "vice_principal", "co_director", "admin_staff", "accountant", 
+                   "admission_staff", "clerk", "teacher"]
+    
+    if new_role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user["role"] == "director":
+        raise HTTPException(status_code=400, detail="Cannot change Director's role")
+    
+    old_role = user["role"]
+    
+    # Update role
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "role": new_role,
+            "role_updated_at": datetime.now(timezone.utc).isoformat(),
+            "role_updated_by": current_user["id"]
+        }}
+    )
+    
+    await log_audit(current_user["id"], "change_role", "users", {
+        "user_id": user_id,
+        "user_name": user["name"],
+        "old_role": old_role,
+        "new_role": new_role
+    })
+    
+    return {
+        "success": True,
+        "message": f"{user['name']} is now {new_role.replace('_', ' ').title()}",
+        "user_id": user_id,
+        "old_role": old_role,
+        "new_role": new_role
+    }
+
+
+@api_router.get("/users/{user_id}/assigned-classes")
+async def get_user_assigned_classes(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get classes assigned to a user (for any role)"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "assigned_classes": 1, "name": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "user_id": user_id,
+        "user_name": user.get("name"),
+        "classes": user.get("assigned_classes", [])
+    }
+
+
+@api_router.put("/users/{user_id}/assign-classes")
+async def assign_classes_to_user(user_id: str, class_data: dict, current_user: dict = Depends(get_current_user)):
+    """Director/Principal assigns classes to any staff member (even VP, Principal can teach)"""
+    # Only director or principal can assign classes
+    if current_user["role"] not in ["director", "principal"]:
+        user_perms = current_user.get("permissions", {})
+        if not user_perms.get("class_assignment"):
+            raise HTTPException(status_code=403, detail="Not authorized to assign classes")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    class_ids = class_data.get("class_ids", [])
+    
+    # Update user's assigned classes
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "assigned_classes": class_ids,
+            "can_teach": len(class_ids) > 0,
+            "classes_updated_at": datetime.now(timezone.utc).isoformat(),
+            "classes_updated_by": current_user["id"]
+        }}
+    )
+    
+    # Also update each class with this user as assigned teacher (if not already)
+    for class_id in class_ids:
+        await db.classes.update_one(
+            {"id": class_id},
+            {"$addToSet": {"assigned_teachers": user_id}}
+        )
+    
+    await log_audit(current_user["id"], "assign_classes", "users", {
+        "user_id": user_id,
+        "user_name": user["name"],
+        "class_ids": class_ids,
+        "count": len(class_ids)
+    })
+    
+    return {
+        "success": True,
+        "message": f"{len(class_ids)} class(es) assigned to {user['name']}",
+        "user_id": user_id,
+        "assigned_classes": class_ids
+    }
+
+
 # ==================== TEACHER-CLASS ASSIGNMENT ROUTES ====================
 
 @api_router.post("/teachers/{teacher_id}/assign-class")
