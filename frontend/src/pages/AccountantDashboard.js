@@ -361,9 +361,10 @@ export default function AccountantDashboard() {
 
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 w-full max-w-lg">
+          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="salaries">Salaries</TabsTrigger>
+            <TabsTrigger value="old-dues">Old Dues</TabsTrigger>
             <TabsTrigger value="defaulters">Defaulters</TabsTrigger>
             <TabsTrigger value="expenses">Expenses</TabsTrigger>
           </TabsList>
