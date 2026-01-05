@@ -53,6 +53,7 @@ import DirectorAIDashboard from './pages/DirectorAIDashboard';
 import MultiYearFeesPage from './pages/MultiYearFeesPage';
 import SalaryTrackingPage from './pages/SalaryTrackingPage';
 import StudentReceiptsPage from './pages/StudentReceiptsPage';
+import UnifiedPortal from './pages/UnifiedPortal';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
