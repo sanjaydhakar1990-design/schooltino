@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schooltino vs Others - Feature Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8fafc;
+            padding: 30px;
+        }
+        
+        .comparison-sheet {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .header h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #a0aec0;
+        }
+        
+        /* Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .comparison-table thead th {
+            background: #f8fafc;
+            font-weight: 600;
+            font-size: 14px;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .comparison-table thead th:first-child {
+            text-align: left;
+            background: #667eea;
+            color: white;
+        }
+        
+        .comparison-table thead th.highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .comparison-table thead th.your-system {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .comparison-table tbody tr:hover {
+            background: #f7fafc;
+        }
+        
+        .comparison-table tbody td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .comparison-table tbody td.highlight {
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .comparison-table tbody td.your-system {
+            background: rgba(72, 187, 120, 0.05);
+        }
+        
+        /* Icons */
+        .tick {
+            color: #48bb78;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .cross {
+            color: #f56565;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .partial {
+            color: #ed8936;
+            font-size: 16px;
+        }
+        
+        /* Category Row */
+        .category-row td {
+            background: #edf2f7 !important;
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 30px 40px;
+            background: #1a1a2e;
+            color: white;
+            text-align: center;
+        }
+        
+        .footer p {
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        .footer .cta {
+            margin-top: 20px;
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 10px;
+            }
+            .comparison-sheet {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="comparison-sheet">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Schooltino</div>
+            <h2>Feature Comparison Chart</h2>
+        </div>
+        
+        <!-- Comparison Table -->
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Features</th>
+                    <th>Entab</th>
+                    <th>Fedena</th>
+                    <th>SchoolERP</th>
+                    <th class="highlight">Schooltino</th>
+                    <th class="your-system">Your System<br><small>(Mark with pen ✓ or ✗)</small></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Basic Features -->
+                <tr class="category-row">
+                    <td colspan="6">📚 Basic School Management</td>
+                </tr>
+                <tr>
+                    <td>Student Management</td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Staff Management</td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Attendance System</td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Fee Management</td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Exam & Results</td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                
+                <!-- AI Features -->
+                <tr class="category-row">
+                    <td colspan="6">🤖 AI-Powered Features</td>
+                </tr>
+                <tr>
+                    <td>AI Question Paper Generator</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>AI Lesson Plan Generator</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>AI Content Studio (Pamphlets)</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Voice Assistant (Hindi + English)</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>AI Homework Helper for Students</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                
+                <!-- Advanced Features -->
+                <tr class="category-row">
+                    <td colspan="6">🚀 Advanced Features</td>
+                </tr>
+                <tr>
+                    <td>Dedicated Teacher Portal (TeachTino)</td>
+                    <td><span class="partial">Partial</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="partial">Partial</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Dedicated Student Portal (StudyTino)</td>
+                    <td><span class="partial">Partial</span></td>
+                    <td><span class="tick">✓</span></td>
+                    <td><span class="partial">Partial</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>CCTV Integration</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Face Recognition Attendance</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Auto Website Sync</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="partial">Partial</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Video Meeting Integration</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                
+                <!-- Mobile & Apps -->
+                <tr class="category-row">
+                    <td colspan="6">📱 Mobile & Apps</td>
+                </tr>
+                <tr>
+                    <td>PWA Mobile Apps (Android + iOS)</td>
+                    <td><span class="partial">Extra Cost</span></td>
+                    <td><span class="partial">Extra Cost</span></td>
+                    <td><span class="partial">Extra Cost</span></td>
+                    <td class="highlight"><span class="tick">✓ FREE</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Offline Mode</td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>WhatsApp Notifications</td>
+                    <td><span class="partial">Extra Cost</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="partial">Extra Cost</span></td>
+                    <td class="highlight"><span class="tick">✓</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                
+                <!-- Support & Language -->
+                <tr class="category-row">
+                    <td colspan="6">🌐 Support & Language</td>
+                </tr>
+                <tr>
+                    <td>Hindi Language Support</td>
+                    <td><span class="partial">Partial</span></td>
+                    <td><span class="cross">✗</span></td>
+                    <td><span class="partial">Partial</span></td>
+                    <td class="highlight"><span class="tick">✓ Full</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>24/7 Support</td>
+                    <td><span class="partial">Business Hours</span></td>
+                    <td><span class="partial">Business Hours</span></td>
+                    <td><span class="partial">Business Hours</span></td>
+                    <td class="highlight"><span class="tick">✓ 24/7</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                <tr>
+                    <td>Free Training</td>
+                    <td><span class="partial">Limited</span></td>
+                    <td><span class="partial">Limited</span></td>
+                    <td><span class="partial">Limited</span></td>
+                    <td class="highlight"><span class="tick">✓ Unlimited</span></td>
+                    <td class="your-system"></td>
+                </tr>
+                
+                <!-- Pricing Row -->
+                <tr class="category-row">
+                    <td colspan="6">💰 Pricing (Approx.)</td>
+                </tr>
+                <tr>
+                    <td>Starting Price</td>
+                    <td>₹25,000+/year</td>
+                    <td>₹30,000+/year</td>
+                    <td>₹20,000+/year</td>
+                    <td class="highlight"><strong>₹14,999/mo</strong><br><small>or FREE trial</small></td>
+                    <td class="your-system"></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>See the difference? Schooltino gives you MORE features at BETTER prices!</p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 20px; flex-wrap: wrap;">
+                <div>
+                    <p>📞 Call: +91 7879967616</p>
+                    <a href="https://schooltino.in" class="cta">Start Your FREE Trial Today →</a>
+                </div>
+                <div style="text-align: center;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://schooltino.in" alt="QR" style="border-radius: 8px; background: white; padding: 5px;">
+                    <p style="font-size: 11px; margin-top: 5px;">Scan to Visit</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
