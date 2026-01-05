@@ -652,6 +652,48 @@ export default function StudentsPage() {
                 </div>
               )}
 
+              {/* Biometric Enrollment Section - Only for new admission */}
+              {!editingStudent && (
+                <div className="border-t border-slate-200 pt-4 mt-2">
+                  <Label className="text-base font-semibold flex items-center gap-2 mb-3">
+                    <Fingerprint className="w-5 h-5 text-emerald-600" />
+                    Biometric Enrollment (Fingerprint) - Optional
+                  </Label>
+                  
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center">
+                        <Fingerprint className="w-8 h-8 text-emerald-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-slate-700 font-medium">
+                          Fingerprint Registration
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Biometric device से fingerprint register करें। Student admission के बाद Biometric section से भी कर सकते हैं।
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full w-0 bg-emerald-500 rounded-full" />
+                      </div>
+                      <span className="text-xs text-slate-400">Not enrolled</span>
+                    </div>
+                    
+                    <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      Biometric device connect होने पर ही काम करेगा
+                    </p>
+                  </div>
+                  
+                  <p className="text-xs text-slate-500 mt-2">
+                    * Biometric optional है। बाद में Biometric section से enroll कर सकते हैं।
+                  </p>
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   {t('cancel')}
