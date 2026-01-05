@@ -1007,3 +1007,258 @@ async def get_cctv_attendance(school_id: str, date: Optional[str] = None):
         "total_detected": len(by_student),
         "attendance_records": list(by_student.values())
     }
+
+
+
+# ==================== STAFF/DIRECTOR PHOTO UPLOAD ====================
+
+class StaffPhotoUpload(BaseModel):
+    staff_id: str
+    school_id: str
+    photo_base64: str
+    photo_type: str = "passport"  # passport, front, left, right
+    capture_device: Optional[str] = "webcam"
+
+
+@router.post("/staff/upload-photo")
+async def upload_staff_photo(data: StaffPhotoUpload):
+    """
+    Upload photo for staff/teacher/director face recognition
+    Used for AI greeting and attendance
+    """
+    valid_types = ["passport", "front", "left", "right"]
+    if data.photo_type not in valid_types:
+        raise HTTPException(status_code=400, detail=f"Invalid photo type. Must be one of: {valid_types}")
+    
+    # Check if staff exists (in users collection)
+    staff = await db.users.find_one(
+        {"id": data.staff_id},
+        {"_id": 0, "name": 1, "id": 1, "role": 1, "email": 1}
+    )
+    
+    if not staff:
+        # Also check staff collection
+        staff = await db.staff.find_one(
+            {"id": data.staff_id},
+            {"_id": 0, "name": 1, "id": 1, "designation": 1}
+        )
+    
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    
+    # Analyze photo quality with AI
+    quality_analysis = await analyze_photo_quality(data.photo_base64, data.photo_type)
+    
+    quality_score = quality_analysis.get("quality_score", 0)
+    face_detected = quality_analysis.get("face_detected", True)
+    
+    if not face_detected:
+        return {
+            "success": False,
+            "error": "Chehra detect nahi hua photo mein",
+            "analysis": quality_analysis,
+            "action": "retake"
+        }
+    
+    if quality_score < 60:
+        return {
+            "success": False,
+            "error": f"Photo quality kam hai ({quality_score}/100). Better lighting mein try karein.",
+            "analysis": quality_analysis,
+            "recommendations": quality_analysis.get("recommendations", []),
+            "action": "retake"
+        }
+    
+    # Generate photo ID
+    photo_id = str(uuid.uuid4())
+    
+    # Save photo record
+    photo_record = {
+        "id": photo_id,
+        "staff_id": data.staff_id,
+        "staff_name": staff.get("name"),
+        "staff_role": staff.get("role") or staff.get("designation", "staff"),
+        "school_id": data.school_id,
+        "photo_type": data.photo_type,
+        "photo_data": data.photo_base64,
+        "capture_device": data.capture_device,
+        "quality_score": quality_score,
+        "quality_analysis": quality_analysis,
+        "ai_verified": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.staff_face_photos.insert_one(photo_record)
+    
+    # Update staff face enrollment status
+    existing_photos = await db.staff_face_photos.count_documents({
+        "staff_id": data.staff_id
+    })
+    
+    await db.users.update_one(
+        {"id": data.staff_id},
+        {"$set": {
+            "face_enrolled": True,
+            "face_photos_count": existing_photos,
+            "face_updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "success": True,
+        "photo_id": photo_id,
+        "message": f"{data.photo_type.title()} photo save ho gaya! 📸",
+        "quality_score": quality_score,
+        "total_photos": existing_photos,
+        "staff_name": staff.get("name"),
+        "analysis": quality_analysis
+    }
+
+
+@router.get("/staff/enrollment-status/{staff_id}")
+async def get_staff_enrollment_status(staff_id: str):
+    """
+    Get face enrollment status for a staff member
+    """
+    staff = await db.users.find_one(
+        {"id": staff_id},
+        {"_id": 0, "password": 0}
+    )
+    
+    if not staff:
+        staff = await db.staff.find_one({"id": staff_id}, {"_id": 0})
+    
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    
+    # Get all photos
+    photos = await db.staff_face_photos.find(
+        {"staff_id": staff_id},
+        {"_id": 0, "photo_data": 0}  # Don't send full photo data
+    ).to_list(20)
+    
+    photo_types = {p["photo_type"]: {
+        "id": p["id"],
+        "quality_score": p.get("quality_score", 0),
+        "created_at": p.get("created_at")
+    } for p in photos}
+    
+    required_types = ["passport", "front"]
+    completed = sum(1 for t in required_types if t in photo_types)
+    
+    return {
+        "staff_id": staff_id,
+        "staff_name": staff.get("name"),
+        "role": staff.get("role") or staff.get("designation"),
+        "face_enrolled": staff.get("face_enrolled", False),
+        "enrollment_progress": {
+            "completed": completed,
+            "required": len(required_types),
+            "percentage": round((completed / len(required_types)) * 100)
+        },
+        "photos": photo_types,
+        "required_photos": required_types,
+        "optional_photos": ["left", "right"],
+        "can_use_recognition": completed >= 1
+    }
+
+
+@router.delete("/staff/photo/{photo_id}")
+async def delete_staff_photo(photo_id: str):
+    """Delete a staff photo"""
+    photo = await db.staff_face_photos.find_one({"id": photo_id})
+    
+    if not photo:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    await db.staff_face_photos.delete_one({"id": photo_id})
+    
+    # Update enrollment count
+    remaining = await db.staff_face_photos.count_documents({
+        "staff_id": photo["staff_id"]
+    })
+    
+    await db.users.update_one(
+        {"id": photo["staff_id"]},
+        {"$set": {
+            "face_enrolled": remaining > 0,
+            "face_photos_count": remaining
+        }}
+    )
+    
+    return {"success": True, "message": "Photo delete ho gaya"}
+
+
+@router.get("/staff/photos/{staff_id}")
+async def get_staff_photos(staff_id: str):
+    """Get all photos for a staff member"""
+    photos = await db.staff_face_photos.find(
+        {"staff_id": staff_id},
+        {"_id": 0}
+    ).to_list(20)
+    
+    return {
+        "staff_id": staff_id,
+        "photos": photos,
+        "total": len(photos)
+    }
+
+
+@router.post("/staff/verify")
+async def verify_staff_face(staff_id: str, photo_base64: str):
+    """
+    Verify if photo matches enrolled staff face
+    Used during entry/greeting
+    """
+    # Get enrolled passport photo
+    enrolled = await db.staff_face_photos.find_one({
+        "staff_id": staff_id,
+        "photo_type": "passport"
+    })
+    
+    if not enrolled:
+        # Try front photo
+        enrolled = await db.staff_face_photos.find_one({
+            "staff_id": staff_id,
+            "photo_type": "front"
+        })
+    
+    if not enrolled:
+        return {
+            "success": False,
+            "verified": False,
+            "error": "No enrolled photo found for this staff"
+        }
+    
+    # Compare faces
+    comparison = await compare_faces(enrolled["photo_data"], photo_base64)
+    
+    is_match = comparison.get("is_same_person", False)
+    confidence = comparison.get("confidence", 0)
+    
+    # Log verification
+    await db.staff_face_verifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "staff_id": staff_id,
+        "verified": is_match,
+        "confidence": confidence,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    if is_match:
+        staff = await db.users.find_one({"id": staff_id}, {"_id": 0, "name": 1, "role": 1})
+        return {
+            "success": True,
+            "verified": True,
+            "staff_name": staff.get("name") if staff else None,
+            "staff_role": staff.get("role") if staff else None,
+            "confidence": confidence,
+            "message": "Face verified successfully!"
+        }
+    else:
+        return {
+            "success": True,
+            "verified": False,
+            "confidence": confidence,
+            "message": "Face match nahi hua"
+        }
