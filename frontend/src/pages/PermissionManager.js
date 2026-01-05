@@ -370,12 +370,7 @@ export default function PermissionManager() {
                     <tr key={userData.id} className="hover:bg-slate-50">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium ${
-                            userData.role === 'principal' ? 'bg-blue-500' :
-                            userData.role === 'vice_principal' ? 'bg-emerald-500' :
-                            userData.role === 'co_director' ? 'bg-purple-500' :
-                            'bg-slate-500'
-                          }`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium ${getRoleAvatarColor(userData.role)}`}>
                             {userData.name.charAt(0)}
                           </div>
                           <div>
@@ -385,9 +380,23 @@ export default function PermissionManager() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(userData.role)}`}>
-                          {userData.role.replace('_', ' ').toUpperCase()}
-                        </span>
+                        <button 
+                          onClick={() => openRoleChange(userData)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(userData.role)} hover:ring-2 hover:ring-offset-1 hover:ring-indigo-300 cursor-pointer transition-all`}
+                          title="Click to change role"
+                        >
+                          {userData.role.replace('_', ' ').toUpperCase()} ✏️
+                        </button>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <button
+                          onClick={() => openClassAssignment(userData)}
+                          className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline"
+                        >
+                          {userData.assigned_classes?.length > 0 
+                            ? `${userData.assigned_classes.length} class(es)`
+                            : '+ Assign'}
+                        </button>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span className={`px-2 py-1 rounded text-xs ${
@@ -395,48 +404,37 @@ export default function PermissionManager() {
                           userData.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                           'bg-red-100 text-red-700'
                         }`}>
-                          {userData.status}
+                          {userData.status || 'active'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center">
-                        {userData.full_access_granted ? (
-                          <span className="inline-flex items-center text-emerald-600">
-                            <Star className="w-4 h-4 mr-1 fill-current" />
-                            Yes
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">No</span>
-                        )}
-                      </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => openPermissions(userData)}
+                            className="text-xs"
                           >
-                            <Edit className="w-3 h-3 mr-1" />
+                            <Shield className="w-3 h-3 mr-1" />
                             Permissions
                           </Button>
                           {!userData.full_access_granted ? (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                              className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 text-xs"
                               onClick={() => grantFullAccess(userData)}
                             >
-                              <Unlock className="w-3 h-3 mr-1" />
-                              Full Access
+                              <Unlock className="w-3 h-3" />
                             </Button>
                           ) : (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-red-600 border-red-200 hover:bg-red-50"
+                              className="text-red-600 border-red-200 hover:bg-red-50 text-xs"
                               onClick={() => revokeAccess(userData)}
                             >
-                              <Lock className="w-3 h-3 mr-1" />
-                              Revoke
+                              <Lock className="w-3 h-3" />
                             </Button>
                           )}
                         </div>
