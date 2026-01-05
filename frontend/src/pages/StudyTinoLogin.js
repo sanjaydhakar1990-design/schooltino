@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import ForgotPassword from '../components/ForgotPassword';
 import {
   BookOpen,
   Brain,
@@ -24,7 +25,8 @@ import {
   MessageCircle,
   Lightbulb,
   GraduationCap,
-  Users
+  Users,
+  Key
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,6 +36,7 @@ export default function StudyTinoLogin() {
   const [loading, setLoading] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   
   const [loginForm, setLoginForm] = useState({
     studentId: '',
