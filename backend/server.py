@@ -61,6 +61,9 @@ from routes.multi_year_fees import router as multi_year_fees_router
 from routes.salary_management import router as salary_router
 from routes.face_recognition import router as face_recognition_router
 from routes.id_card import router as id_card_router
+from routes.password_reset import router as password_reset_router
+from routes.school_auto_setup import router as school_setup_router
+from routes.director_greeting import router as director_greeting_router
 
 # ==================== MODELS ====================
 
