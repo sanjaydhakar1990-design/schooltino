@@ -298,13 +298,13 @@ Your Login Credentials:
         </div>
       </section>
 
-      {/* Transformation Section */}
+      {/* Transformation Section - UPDATED */}
       <section id="transformation" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
               From Chaos to Clarity in
-              <span className="text-indigo-600"> 30 Days</span>
+              <span className="text-indigo-600"> 1 Month</span>
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               See how Schooltino transforms every aspect of your school operations
@@ -323,18 +323,22 @@ Your Login Credentials:
                   <p className="text-red-600">Traditional School Problems</p>
                 </div>
               </div>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {[
-                  'Manual attendance taking - 30 mins daily',
-                  'Paper-based fee receipts - Lost records',
+                  'Manual attendance - 30+ mins daily wasted',
+                  'Paper receipts - Records get lost',
                   'No parent communication system',
-                  'Manual exam paper creation - Hours of work',
-                  'No real-time school monitoring',
-                  'Scattered data in registers',
+                  'Manual exam papers - Hours of work',
+                  'No real-time monitoring',
+                  'Data scattered in registers',
                   'No mobile access for anyone',
-                  'Security blind spots everywhere'
+                  'CCTV just for recording - No AI',
+                  'Old fee dues - Hard to track',
+                  'Teacher salary - Manual calculations',
+                  'No ID cards - Security risk',
+                  'Twin students - Confusion in attendance'
                 ].map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-red-800">
+                  <li key={idx} className="flex items-start gap-3 text-red-800 text-sm">
                     <span className="text-red-500 mt-1">✗</span>
                     {item}
                   </li>
@@ -353,23 +357,46 @@ Your Login Credentials:
                   <p className="text-emerald-600">Smart School Benefits</p>
                 </div>
               </div>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {[
-                  'Auto attendance via CCTV - 0 mins!',
-                  'Digital fee collection - Perfect records',
-                  'Instant WhatsApp/SMS to parents',
-                  'AI generates papers in 2 minutes',
-                  'Live dashboard with all metrics',
-                  'All data in one secure place',
-                  'Mobile apps for everyone - FREE',
-                  '24/7 AI-powered CCTV monitoring'
+                  '📸 Auto attendance via ANY CCTV - 0 mins!',
+                  '💳 Digital fee + Auto receipts - Perfect records',
+                  '📱 WhatsApp/SMS alerts to parents instantly',
+                  '🤖 AI Paper Generator - 2 mins only!',
+                  '🎯 Director AI Dashboard - Big Boss Control',
+                  '☁️ All data in one secure cloud',
+                  '📲 Mobile apps for everyone - FREE',
+                  '🔍 AI Face Recognition - Works with any CCTV!',
+                  '📊 Multi-year fee tracking (2-3 years)',
+                  '💵 Teacher salary slip - Auto download',
+                  '🎫 Auto ID Card generation - Instant!',
+                  '👯 Twin detection - AI never confused!'
                 ].map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-emerald-800">
+                  <li key={idx} className="flex items-start gap-3 text-emerald-800 text-sm">
                     <span className="text-emerald-500 mt-1">✓</span>
                     {item}
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+          
+          {/* New Features Highlight */}
+          <div className="mt-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white">
+            <h3 className="text-2xl font-bold mb-6 text-center">🚀 Latest Features Added!</h3>
+            <div className="grid md:grid-cols-4 gap-6">
+              {[
+                { icon: '📸', title: 'AI Face Recognition', desc: 'Any CCTV brand works!' },
+                { icon: '🎫', title: 'Auto ID Cards', desc: 'Student + Staff cards instant' },
+                { icon: '💰', title: 'Multi-Year Fees', desc: '2-3 years old dues track' },
+                { icon: '💵', title: 'Salary Tracking', desc: 'Teacher payslips download' }
+              ].map((item, idx) => (
+                <div key={idx} className="text-center">
+                  <span className="text-4xl block mb-2">{item.icon}</span>
+                  <h4 className="font-bold">{item.title}</h4>
+                  <p className="text-indigo-200 text-sm">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
