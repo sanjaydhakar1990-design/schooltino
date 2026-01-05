@@ -824,6 +824,21 @@ export default function StudentsPage() {
           }}
         />
       )}
+
+      {/* ID Card Viewer Modal */}
+      {showIDCard && idCardStudent && (
+        <IDCardViewer
+          isOpen={showIDCard}
+          onClose={() => {
+            setShowIDCard(false);
+            setIdCardStudent(null);
+          }}
+          personId={idCardStudent.student_id || idCardStudent.id}
+          personType="student"
+          schoolId={schoolId}
+          onPhotoUpload={() => fetchStudents()}
+        />
+      )}
     </div>
   );
 }
