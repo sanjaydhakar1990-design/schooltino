@@ -450,6 +450,71 @@ Your Login Credentials:
         </div>
       </section>
 
+      {/* NEW: Advanced Features Section */}
+      <section className="py-20 bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 rounded-full text-red-700 text-sm font-bold mb-4">
+              🔥 Competitor ki tarah sab features + MORE!
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              India's Most <span className="text-red-600">Feature-Rich</span> School ERP
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Vidhyalaya, Fedena, Entab - sabse zyada features sirf Schooltino mein!
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: '🎯', title: 'Director AI', desc: 'Big Boss command center - Daily orders & monitoring', isNew: true },
+              { icon: '📸', title: 'AI Face Recognition', desc: 'CCTV + Auto attendance - Twin detection bhi!', isNew: true },
+              { icon: '💰', title: 'Multi-Year Fees', desc: '2-3 saal purani fees track karein', isNew: true },
+              { icon: '💵', title: 'Salary Tracking', desc: 'Teachers ka salary - Due/Credited status', isNew: true },
+              { icon: '🏥', title: 'Health Module', desc: 'Student health records & immunization', isNew: false },
+              { icon: '🚌', title: 'Transport', desc: 'Vehicle tracking & route management', isNew: false },
+              { icon: '🚪', title: 'Front Office', desc: 'Visitor management & gate pass', isNew: false },
+              { icon: '📅', title: 'Auto Timetable', desc: 'AI-powered schedule generator', isNew: false },
+              { icon: '👆', title: 'Biometric', desc: 'Fingerprint attendance support', isNew: false },
+              { icon: '🗣️', title: 'Ask Tino', desc: 'Hindi voice assistant', isNew: false },
+              { icon: '📝', title: 'AI Papers', desc: '2 min mein exam paper', isNew: false },
+              { icon: '📊', title: 'Analytics', desc: 'Real-time dashboards', isNew: false }
+            ].map((feature, idx) => (
+              <div 
+                key={idx}
+                className={`p-4 rounded-xl border-2 transition-all hover:shadow-lg ${
+                  feature.isNew ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-white'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">{feature.icon}</span>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                      {feature.title}
+                      {feature.isNew && (
+                        <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">NEW</span>
+                      )}
+                    </h4>
+                    <p className="text-sm text-slate-500">{feature.desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Button 
+              size="lg" 
+              onClick={() => scrollToSection('register')}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Try All Features FREE for 30 Days
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
