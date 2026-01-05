@@ -223,6 +223,117 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Signature & Seal Upload - Director/Principal only */}
+      {(user?.role === 'director' || user?.role === 'principal') && (
+        <div className="stat-card">
+          <div className="flex items-center gap-3 mb-4">
+            <PenTool className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-lg font-semibold text-slate-900">Signature & Seal for Notices</h2>
+          </div>
+          <p className="text-sm text-slate-500 mb-4">
+            Ye signature aur seal notices pe automatically show honge
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Signature Upload */}
+            <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 hover:border-indigo-300 transition-all">
+              <div className="flex items-center gap-2 mb-3">
+                <PenTool className="w-4 h-4 text-indigo-600" />
+                <span className="font-medium text-slate-700">Signature</span>
+              </div>
+              
+              {signatureUrl ? (
+                <div className="relative">
+                  <img 
+                    src={`${process.env.REACT_APP_BACKEND_URL}${signatureUrl}`}
+                    alt="Signature"
+                    className="w-full h-24 object-contain bg-white rounded-lg border"
+                  />
+                  <button
+                    onClick={() => signatureInputRef.current?.click()}
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow hover:bg-slate-100"
+                  >
+                    <Upload className="w-4 h-4 text-slate-600" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => signatureInputRef.current?.click()}
+                  disabled={uploadingSignature}
+                  className="w-full h-24 flex flex-col items-center justify-center bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-all"
+                >
+                  {uploadingSignature ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                      <span className="text-sm text-slate-500">Upload Signature</span>
+                    </>
+                  )}
+                </button>
+              )}
+              
+              <input
+                ref={signatureInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleSignatureUpload}
+                className="hidden"
+              />
+              <p className="text-xs text-slate-400 mt-2">PNG/JPG, max 2MB</p>
+            </div>
+            
+            {/* Seal Upload */}
+            <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 hover:border-indigo-300 transition-all">
+              <div className="flex items-center gap-2 mb-3">
+                <Stamp className="w-4 h-4 text-indigo-600" />
+                <span className="font-medium text-slate-700">School Seal/Stamp</span>
+              </div>
+              
+              {sealUrl ? (
+                <div className="relative">
+                  <img 
+                    src={`${process.env.REACT_APP_BACKEND_URL}${sealUrl}`}
+                    alt="Seal"
+                    className="w-full h-24 object-contain bg-white rounded-lg border"
+                  />
+                  <button
+                    onClick={() => sealInputRef.current?.click()}
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow hover:bg-slate-100"
+                  >
+                    <Upload className="w-4 h-4 text-slate-600" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => sealInputRef.current?.click()}
+                  disabled={uploadingSeal}
+                  className="w-full h-24 flex flex-col items-center justify-center bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-all"
+                >
+                  {uploadingSeal ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                  ) : (
+                    <>
+                      <Stamp className="w-6 h-6 text-slate-400 mb-1" />
+                      <span className="text-sm text-slate-500">Upload Seal</span>
+                    </>
+                  )}
+                </button>
+              )}
+              
+              <input
+                ref={sealInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleSealUpload}
+                className="hidden"
+              />
+              <p className="text-xs text-slate-400 mt-2">PNG/JPG, max 2MB</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* School Selection */}
       <div className="stat-card">
         <div className="flex items-center justify-between mb-4">
