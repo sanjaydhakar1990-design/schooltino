@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://campus-connect-461.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://schooltino-1.preview.emergentagent.com')
 
 class TestVoiceAssistantStatus:
     """Test Voice Assistant status endpoint"""

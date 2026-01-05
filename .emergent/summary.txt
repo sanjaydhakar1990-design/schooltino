@@ -2,51 +2,80 @@
 The user wants to build a comprehensive, AI-powered school management platform named Schooltino. The vision is for it to be a market-leading, feature-rich, and affordable ERP system.
 
 **Key requirements added during this session:**
-*   Implement multi-year fee due tracking and management.
-*   Add a salary tracking module for teachers, including slip downloads.
-*   Overhaul the Admin, Teacher, and Student dashboards with quick-access tabs for better usability, inspired by competitor .
-*   Generate a downloadable archive () of marketing materials (brochures, pamphlets).
-*   Implement a sophisticated AI Face Recognition system for student enrollment, capable of verifying photo quality, handling twins, and being skippable.
-*   Update the homepage to reflect all newly added features, particularly in the From Chaos to Clarity section.
-*   Allow accountants to input fee dues and salary data.
-*   Allow students to download fee receipts.
-*   Implement an automatic ID card generation feature for students and staff.
-*   Update the pricing structure on the backend and landing page to a new 5-tier model, with some plans marked as Coming Soon.
-*   Create a mock API for auto-detecting any brand of CCTV camera.
-*   Allow staff/teachers to upload their photos for AI recognition.
+*   Implement a Forgot Password feature for all user roles (Director, Teacher, Student, Accountant).
+*   Create a feature for AI to auto-configure a new school's details by extracting information from its website URL.
+*   Implement a personalized AI greeting for the Director upon entering the school, which changes based on the time of day and can be customized (e.g., Hare Krishna).
+*   Allow the Director to upload their photo for face recognition.
+*   Fix the mobile view sidebar so it hides after a navigation item is clicked.
+*   Implement a highly flexible authorization system where the Director can assign any role (e.g., Vice Principal, Administrative Staff) and specific permissions to any teacher or staff member.
+*   Principals and Vice Principals should also be assignable to classes.
+*   Re-create the marketing materials (brochures, pamphlets) in a visually impressive HTML format, based on a reference ZIP file provided by the user.
+*   Clean up the Admin dashboard to hide irrelevant items like Online Exams.
 
 **User's preferred language**: Hinglish (The user communicates using a mix of Hindi and English. The next agent MUST respond in Hinglish.)
 
 **what currently exists?**
-The platform is a full-stack application (React + FastAPI + MongoDB) with a public landing page and role-based portals. This session added significant functionality:
-*   **Fee & Salary Management:** Backend APIs and frontend pages for tracking multi-year fee dues and teacher salaries have been created.
-*   **Dashboard UX Overhaul:** Quick-access tabs have been added to the Admin, Teacher, and Student dashboards, significantly improving navigation.
-*   **AI Face Recognition Enrollment:** A complete flow for student face enrollment has been built. It includes a frontend component () to capture photos and a backend service () that uses the OpenAI API to verify image quality and stores face encodings.
-*   **ID Card Generation:** A backend API and a frontend modal () were created to generate and display text-based ID cards for students on demand.
-*   **Dynamic Pricing:** The landing page now features a completely revamped, 5-tier pricing section, pulling data directly from a new backend configuration.
-*   **Accountant Dashboard:** Now includes tabs for Old Dues and Salaries.
-*   **Marketing Materials:** A  archive containing updated brochures and pamphlets is available at .
+The platform is a full-stack application (React + FastAPI + MongoDB). The core functionality has been significantly expanded in this session:
+*   **Accountant Data Entry:** The previously missing forms for accountants to add multi-year fee dues and set salary structures have been implemented and are functional in the Accountant Dashboard.
+*   **Staff/Director Face Enrollment:** Teachers and Directors can now upload their photos for the AI face recognition system through their respective profile sections.
+*   **Forgot Password:** A complete, OTP-based Forgot Password flow has been implemented for all login pages (Main, TeachTino, StudyTino).
+*   **Advanced Permission System:** A powerful  page allows the Director to dynamically change user roles (e.g., promote a Teacher to Vice Principal), assign staff to specific classes, and manage granular permissions for various modules.
+*   **Director Profile Management:** The main Admin Dashboard now includes a My Profile section for the Director to update settings and upload photos for face recognition.
+*   **Mobile UI Fix:** The mobile sidebar now correctly closes upon clicking a navigation link.
+*   **Placeholder Backend Routes:** Initial files and routes have been created for future features like AI School Auto-Setup and Director AI Greeting.
 
 **Last working item**:
-*   **Last item agent was working:** The agent just finished implementing the final set of user requests: updating the homepage's From Chaos to Clarity section, adding the ID Card generation feature, and creating a new brochure archive. The agent ran a full suite of tests via the testing agent, which all passed.
-*   **Status:** USER VERIFICATION PENDING
-*   **Agent Testing Done:** Y
-*   **Which testing method agent to use?** NA (Testing is complete for this item)
+*   **Last item agent was working:** The user was unhappy with the plain-text marketing materials and provided a ZIP file with HTML examples. The agent was in the process of:
+    1.  Re-creating the marketing brochures in a professional HTML format based on the user's reference.
+    2.  Removing/hiding items irrelevant to the Director from the Admin Dashboard sidebar (specifically Online Exams).
+*   **Status:** IN PROGRESS
+*   **Agent Testing Done:** N
+*   **Which testing method agent to use?** manual testing by curl/ python -c. The agent needs to create the final  archive of the new HTML brochures and provide a download link. A screenshot should be used to verify the Admin sidebar cleanup.
 *   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1: Critical Backend Monolith (P1)**
+*   **Issue 1: Complete HTML Marketing Materials (P0)**
+*   **Issue 2: Clean Up Admin Sidebar (P1)**
+*   **Issue 3: Critical Backend Monolith (P1)**
 
 **Issues Detail:**
-*   **Issue 1: Critical Backend Monolith**
-    *   **Description:** The main  file remains over 6,000 lines. The agent has correctly modularized all new features into the  directory but has not refactored the legacy code within .
-    *   **Attempted fixes:** Consistently creating new features in separate route files. No direct refactoring was attempted.
+*   **Issue 1: Complete HTML Marketing Materials**
+    *   **Description:** The user wants impressive HTML brochures, not the plain text files previously generated. The agent has started creating new HTML files in  but has not completed all of them or packaged them into a downloadable archive.
+    *   **Attempted fixes:** The agent analyzed the user's reference HTML files and created three new ones: , , and .
+    *   **Next debug checklist:**
+        1.  Review the user's reference files in  again to ensure all required documents are created in the correct HTML style.
+        2.  Create any remaining documents.
+        3.  Package all final HTML files from  into a new .
+        4.  Make the archive available for download.
+    *   **Why fix this issue and what will be achieved with the fix?** To meet the user's explicit request for professional, visually appealing marketing materials.
+    *   **Status:** IN PROGRESS
+    *   **Is recurring issue?** Y (User has repeatedly asked for brochures).
+    *   **Should Test frontend/backend/both after fix?** NA (Needs manual verification of the generated file).
+    *   **Blocked on other issue:** None.
+
+*   **Issue 2: Clean Up Admin Sidebar**
+    *   **Description:** The user wants to hide menu items that are not relevant for the Director's role, such as Online Exams, from the Admin Dashboard sidebar.
+    *   **Attempted fixes:** The agent located the online_exams entry in  and acknowledged that the permission system should handle this, but did not explicitly implement or verify the change.
+    *   **Next debug checklist:**
+        1.  Modify .
+        2.  Inside the  array, find the online_exams item.
+        3.  Add a condition to the  function or add a new property to the link object to ensure it does not render for the 'director' role. For example, add  to the link object and check against the user's role.
+        4.  Verify the change with a screenshot of the admin dashboard.
+    *   **Why fix this issue and what will be achieved with the fix?** It will provide a cleaner, more focused user experience for the Director, as requested.
+    *   **Status:** NOT STARTED
+    *   **Is recurring issue?** N
+    *   **Should Test frontend/backend/both after fix?** frontend
+    *   **Blocked on other issue:** None.
+
+*   **Issue 3: Critical Backend Monolith**
+    *   **Description:** The main  file remains over 6,000 lines long. While new features are being correctly modularized, the legacy code has not been refactored.
+    *   **Attempted fixes:** The agent has been consistently creating new features in the  directory, but no direct refactoring of  has been done.
     *   **Next debug checklist:** Plan a dedicated task to migrate a logical chunk (e.g., all authentication or student management endpoints) from  into a new file under .
     *   **Why fix this issue and what will be achieved with the fix?** Refactoring is critical for long-term stability, maintainability, and reducing the risk of introducing bugs.
     *   **Status:** IN PROGRESS
     *   **Is recurring issue?** Y
-    *   **Should Test frontend/backend/both after fix?** backend (extensive regression testing is required)
-    *   **Blocked on other issue:** None
+    *   **Should Test frontend/backend/both after fix?** backend (extensive regression testing is required).
+    *   **Blocked on other issue:** None.
 
 **In progress Task List**:
 None.
@@ -54,11 +83,11 @@ None.
 **Upcoming and Future Tasks**
 
 **Upcoming Tasks:**
-*   **P0: Accountant Data Entry Forms:** The user requested a way for accountants to *input* fee dues and salary data. The agent created viewing pages and backend APIs, but not the data entry forms. This is a critical missing piece of the workflow.
-*   **P0: Staff Photo Upload & Recognition:** Implement a feature for teachers and other staff to upload their photos via their profile, to be used by the AI recognition system, similar to the student enrollment process.
+*   **P0: AI School Auto-Setup:** Fully implement the feature where the AI can auto-configure a school by scraping its website URL. The backend file  exists but needs to be built out and connected to a frontend interface.
+*   **P1: Director AI Personalized Greeting:** Complete the implementation of the personalized AI greeting for the Director. The backend file  is a placeholder. This requires frontend integration to allow the director to set their greeting preferences.
 *   **P1: Live CCTV Auto-Attendance:** Implement the logic to connect the face recognition system to a (simulated) live CCTV feed to mark student attendance automatically.
 *   **P1: Homepage Guest Login/Demo:** Implement the agent's suggestion to allow prospective customers to try some features without logging in, to improve conversion.
-*   **P2: Fulfill Mocked Features:** Integrate live services for Razorpay, SMS Notifications, and Cloud Storage. The new CCTV auto-detection is also mocked and needs a real implementation plan.
+*   **P2: Fulfill Mocked Features:** Integrate live services for Razorpay, SMS Notifications, and Cloud Storage. The CCTV auto-detection is also mocked and needs a real implementation plan.
 
 **Future Tasks:**
 *   AI Teacher Clone (using HeyGen API)
@@ -67,109 +96,107 @@ None.
 *   Google Meet Integration
 
 **Completed work in this session**
--   **Multi-Year Fee & Salary Tracking:** Backend APIs and initial frontend pages created. (DONE)
--   **Dashboard Quick-Access Tabs:** Implemented on Admin, Teacher, and Student dashboards. (DONE, TESTED)
--   **AI Face Recognition Enrollment:** Full flow for students implemented and tested. (DONE, TESTED)
--   **Dynamic 5-Tier Pricing:** Implemented on backend and landing page. (DONE, TESTED)
--   **Automatic ID Card Generation:** Feature added for students. (DONE, TESTED)
--   **Homepage Content Update:** From Chaos to Clarity and features sections updated. (DONE, TESTED)
--   **Marketing Materials Archive:** Generated and updated at . (DONE)
+-   **Accountant Data Entry Forms:** Implemented forms for adding fee dues and salary data. (DONE, TESTED)
+-   **Staff & Director Photo Upload:** Added UI for staff/director to upload photos for face recognition. (DONE, TESTED)
+-   **Forgot Password:** Implemented a full OTP-based password reset flow for all roles. (DONE, TESTED)
+-   **Advanced Authorization System:** Created a UI for the Director to change user roles and assign classes. (DONE, TESTED)
+-   **Director Profile Management:** Added a profile management section with face recognition setup to the Admin Dashboard. (DONE, TESTED)
+-   **Mobile Sidebar Fix:** Ensured the sidebar closes correctly on navigation. (DONE, TESTED)
 
 **Earlier issues found/mentioned but not fixed**
-*   **Issue 1: Accountant Data Entry Forms**
-    *   **Description:** The user explicitly asked for a way for the accountant to add salary and fee due data (accountant me sallay or stentent se secton me fee dane ka b add karna warna hum due add kaha se karenge). The agent created APIs and viewing pages but overlooked creating the necessary data *input* forms in the Accountant Dashboard.
-    *   **Debug checklist:**
-        1.  In , add Add Due and Process Salary buttons.
-        2.  Create modals or new forms that allow the accountant to select a student/teacher and input fee/salary details.
-        3.  Connect these forms to the existing POST endpoints in  and .
-    *   **Why to solve this issue and what will be achieved with this?** The fee and salary modules are incomplete without the ability to add new data.
-    *   **Should Test frontend/backend/both after fix?** both
-    *   **Is recurring issue?** N
+None in this session. The critical issue of accountant data entry from the previous handoff was successfully resolved.
 
 **Known issue recurrence from previous fork**
 *   **Issue recurrence in previous fork:** Backend monolith ().
-*   **Recurrence count:** 7
+*   **Recurrence count:** 8
 *   **Status:** IN PROGRESS
 
 **Code Architecture**
 
 
+**Key Technical Concepts**
+*   **Frontend:** React, Shadcn UI, Tailwind CSS, .
+*   **Backend:** FastAPI, Pydantic, MongoDB ().
+*   **Architecture:** Full-stack with role-based access control (RBAC). A modular approach for new backend routes is being enforced, but a large monolith () remains.
+*   **Key Features:** Dynamic role management, AI-assisted face recognition enrollment, modular dashboards, data entry forms with search functionality.
+
 **key DB schema**
+*   **users:**  (schema enhanced with granular permissions, role, and class assignments).
 *   **previous_year_dues:** 
 *   **salary_records:** 
-*   **face_encodings:** 
+*   **face_encodings:**  (now supports  for both students and staff).
+
+**changes in tech stack**
+None.
 
 **All files of reference**
-*   : Handles student face enrollment, quality checks with OpenAI, and a mock CCTV detection API.
-*   : Generates text-based ID cards.
-*   : Modified to add all new routers and the new 5-tier pricing logic.
-*   : Significantly overhauled with a new pricing section and updated feature descriptions.
-*   : Integrated with the new face enrollment and ID card components.
-*   : Updated with new tabs for Old Dues and Salaries.
-*   : The new component for capturing student photos for AI enrollment.
-*   : The final deliverable containing all marketing text files.
+*   : The core of the new flexible authorization system. Contains UI for role changes and class assignments.
+*   : Now contains the critical data entry forms for fees and salaries.
+*   : The Director's main dashboard, now includes the My Profile tab for settings and face photo uploads.
+*   : The teacher's portal, where the profile/settings modal for photo upload was added.
+*   : The reusable component for the password reset flow.
+*   : Heavily modified to include new routes for role/class management, fix search endpoint bugs, and register all new modular routers.
+*   : Backend logic for the forgot password feature.
+*   : The user-provided reference files that the next agent MUST use as a style guide for brochures.
 
 **Areas that need refactoring**:
-*   ****: This remains the highest priority for refactoring to break up the monolith.
+*   ****: This is a critical technical debt. It needs to be broken down into smaller, more manageable route files to improve maintainability.
 
 **key api endpoints**
-*    (GET, POST): Manage previous year fee dues.
-*    (GET, POST): Manage teacher salaries.
-*   : Handles the face photo upload and enrollment process.
-*   : Gets stats on enrolled faces.
-*   : (Mock) API to simulate detecting CCTV cameras.
-*    (GET): Generates an ID card for a student.
-*    (GET): Returns the new 5-tier pricing plans.
+*    (POST)
+*    (POST)
+*    (POST)
+*    (POST): Changes the role of a user.
+*    (POST): Assigns a class to a staff member.
+*    (POST): Endpoint for staff/director to upload photos.
+*    (GET): Publicly searchable student list for forms.
+*    (GET): Publicly searchable staff list for forms.
 
 **Critical Info for New Agent**
-*   The user provides large, complex requirements in rapid succession. It is critical to break down each request, formulate a clear plan, and get confirmation before starting.
-*   The user wants all new features to be immediately reflected on the public-facing  to serve as marketing.
-*   Pay close attention to missed requirements. The agent built viewing pages for fees/salary but missed the user's explicit request for data *entry* forms for the accountant. This is your P0 task.
-*   The agent successfully used  to create archives as a workaround for not having a PK-\(%\ÿÿÿÿÿÿÿÿ-PKPK-\(%\¶!-PK/M tool. Continue using this method for similar requests.
+*   **Brochure Format:** User wants visually impressive **HTML brochures**, not plain text. You MUST use the files in  as a template for style and format.
+*   **Authorization is Key:** The new permission system is a central feature. The Director must have the power to assign roles and permissions flexibly.
+*   **Director Profile Location:** The Director's profile management and face recognition upload are now part of the main Admin Dashboard (), NOT the teacher portal ().
+*   **Route Ordering Matters:** The agent fixed a bug where FastAPI route ordering caused issues ( was being caught by ). Be mindful of this when adding new routes.
 
 **documents and test reports created in this job**
 *   
 *   
-*   
-*   
-*   
-*   All files inside 
+*    (contains user's sample HTML files)
+*    (contains new in-progress HTML files)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Asks to update homepage's Chaos to Clarity section, generate ID cards, allow staff photo uploads, and re-create the brochure ZIP. (Status: **Partially Completed**. ID cards and homepage are done, but staff photo upload is pending).
-2.  **agent:** Finishes the pricing/CCTV update and suggests a guest login feature. (Status: **Handled**).
-3.  **user:** Provides a new 5-tier pricing structure, requests two plans be marked Coming Soon, asks for a 1-month free trial, and wants the AI to auto-detect any CCTV brand. Also asks to update brochures and improve the homepage based on a competitor. (Status: **Completed**).
-4.  **agent:** Finishes the face recognition/UI update and suggests CCTV auto-attendance. (Status: **Handled**).
-5.  **user:** Specifies using the OpenAI key from  and details the face recognition requirements (high-res, mobile capture, handle twins). (Status: **Completed**).
-6.  **agent:** Acknowledges the new requirements and asks for a detailed plan confirmation. (Status: **Handled**).
-7.  **user:** Provides a massive list of new requirements: homepage updates, accountant data entry for fees/salary, downloadable slips/receipts, and the full AI face recognition spec. (Status: **Partially Completed**. Face recognition and receipt/slip pages done, but accountant data entry was missed).
-8.  **agent:** Finishes the first batch of features (multi-year fees, salary tracking, quick tabs, brochures) and suggests an enhancement. (Status: **Handled**).
-9.  **user:** Confirms the plan and asks for the brochure zip file at the end. (Status: **Handled**).
-10. **agent:** Proposes the initial plan to implement multi-year fees, dashboard UI, salary tracking, and marketing materials. (Status: **Handled**).
+1.  **user:** Asks for impressive HTML brochures, provides a reference ZIP, and wants the Admin dashboard cleaned up. (Status: **IN PROGRESS**)
+2.  **agent:** Confirms understanding and starts working on the brochures and dashboard cleanup.
+3.  **user:** Clarifies that the Director's profile should be in the Admin panel and requests a powerful authorization system where the Director can assign any role/permission to any staff member. (Status: **Completed**)
+4.  **agent:** Provides a detailed summary of the new authorization system.
+5.  **user:** Asks where the Director can update their profile/photos and points out a bug with the mobile sidebar not closing. (Status: **Completed**)
+6.  **agent:** Provides a summary of the fixes for the Director's profile and mobile sidebar.
+7.  **user:** Asks for the download link for the marketing materials. (Status: **Completed**, but user was unhappy with the format).
+8.  **agent:** Provides the download link.
+9.  **user:** Approves the plan (Option C) and adds a new feature request for a personalized AI greeting for the Director. (Status: **Partially Completed**, backend placeholders created).
+10. **agent:** Presents a revised plan including the Director greeting and other new features.
 
 **Project Health Check:**
 *   **Broken:** None.
-*   **Mocked:** Razorpay, AI Accountant, Cloud Storage, SMS Notifications, CCTV Management (including the new  API).
+*   **Mocked:** Razorpay, AI Accountant, Cloud Storage, SMS Notifications, CCTV Management, AI School Auto-Setup, Director AI Greeting.
 
 **3rd Party Integrations**
-*   **OpenAI GPT-4o:** Now used for AI-based quality verification of student photos during face enrollment.
-*   **ElevenLabs / OpenAI Whisper:** No changes, still in use for voice assistant.
-*   **All others:** No change from the previous summary.
+*   **OpenAI GPT-4o:** Used for AI-based quality verification of student and staff photos during face enrollment.
 
 **Testing status**
-*   **Testing agent used after significant changes:** YES. The testing agent was used four times to validate major feature milestones ( to ).
+*   **Testing agent used after significant changes:** YES. The agent ran  once (). It reported several test assertion failures and minor bugs. The agent successfully fixed the bugs related to search APIs and MongoDB projections.
 *   **Troubleshoot agent used after agent stuck in loop:** NO.
-*   **Test files created:** The testing agent added multiple pytest files across the four iterations.
-*   **Known regressions:** None. All tests passed in the final run.
+*   **Test files created:** Yes, via the testing agent in .
+*   **Known regressions:** None. The bugs found by the testing agent were addressed.
 
 **Credentials to test flow:**
-| Role | Email / ID | Password | Portal |
-| :--- | :--- | :--- | :--- |
-| **Director** |  |  | Landing Page -> Login |
-| **Teacher** |  |  |  |
-| **Student** |  |  |  |
-| **Accountant** | |  | Landing Page -> Login |
+| Role | Email / ID | Password |
+| :--- | :--- | :--- |
+| **Director** |  |  |
+| **Teacher** |  |  |
+| **Student** |  |  |
+| **Accountant** | |  |
 
 **What agent forgot to execute**
-*   **Accountant Data Entry Forms:** The most critical missed item. The user requested a UI for accountants to *add* fee dues and salary information. The agent built the backend APIs and viewing components but not the forms for data entry, making the modules unusable for accountants. This must be the next agent's top priority.
-*   **Staff Photo Upload:** The user asked for a way for staff/teachers to upload their own photos for AI recognition. This was part of the last request but was not implemented.</analysis>
+*   The agent started the task of creating HTML brochures but has not finished creating all the required files or packaging them into a downloadable archive for the user.
+*   The agent identified the need to hide Online Exams from the admin sidebar but did not implement the code change, assuming the existing permission system would handle it without verification. This needs to be explicitly implemented and tested.</analysis>

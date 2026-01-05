@@ -384,4 +384,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Preview URL:** https://campus-connect-461.preview.emergentagent.com
+- **Preview URL:** https://schooltino-1.preview.emergentagent.com
