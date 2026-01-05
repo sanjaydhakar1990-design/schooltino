@@ -43,7 +43,10 @@ import {
   Target,
   Award,
   MessageSquare,
-  ChevronDown
+  ChevronDown,
+  Building,
+  MapPin,
+  Gift
 } from 'lucide-react';
 import { toast } from 'sonner';
 
