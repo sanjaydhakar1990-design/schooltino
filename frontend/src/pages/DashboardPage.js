@@ -10,10 +10,19 @@ import {
   TrendingUp,
   AlertCircle,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
+  CalendarCheck,
+  FileText,
+  Bell,
+  Calculator,
+  History,
+  Sparkles,
+  Video,
+  DoorOpen
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { TrialStatusCard } from '../components/TrialMode';
+import { useNavigate } from 'react-router-dom';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
