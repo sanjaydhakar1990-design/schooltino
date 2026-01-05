@@ -2113,8 +2113,12 @@ async def search_students_simple(q: str, school_id: Optional[str] = None, limit:
     
     students = await db.students.find(
         query,
-        {"_id": 0, "password": 0, "id": 1, "student_id": 1, "name": 1, "class_id": 1, "school_id": 1}
+        {"_id": 0}
     ).limit(limit).to_list(limit)
+    
+    # Remove password from results
+    for s in students:
+        s.pop("password", None)
     
     return {"students": students}
 
@@ -2140,13 +2144,17 @@ async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: in
     # Search in users collection (teachers, directors, accountants)
     users = await db.users.find(
         {**query, "role": {"$in": ["teacher", "director", "principal", "accountant", "clerk"]}},
-        {"_id": 0, "password": 0, "id": 1, "name": 1, "email": 1, "role": 1, "school_id": 1}
+        {"_id": 0}
     ).limit(limit).to_list(limit)
+    
+    # Remove passwords from results
+    for u in users:
+        u.pop("password", None)
     
     # Also search in staff collection
     staff = await db.staff.find(
         query,
-        {"_id": 0, "id": 1, "name": 1, "designation": 1, "school_id": 1}
+        {"_id": 0}
     ).limit(limit).to_list(limit)
     
     # Combine results
