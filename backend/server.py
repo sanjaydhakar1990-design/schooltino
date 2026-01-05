@@ -2664,11 +2664,23 @@ async def get_notices(
     
     notices = await db.notices.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     
-    # Enrich with creator names
+    # Get school signature and seal
+    school = await db.schools.find_one(
+        {"id": current_user.get("school_id")},
+        {"_id": 0, "signature_url": 1, "seal_url": 1, "name": 1}
+    )
+    signature_url = school.get("signature_url") if school else None
+    seal_url = school.get("seal_url") if school else None
+    school_name = school.get("name") if school else "School"
+    
+    # Enrich with creator names and sign/seal
     for notice in notices:
         user = await db.users.find_one({"id": notice.get("created_by")}, {"_id": 0, "name": 1})
         if user:
             notice["created_by_name"] = user["name"]
+        notice["signature_url"] = signature_url
+        notice["seal_url"] = seal_url
+        notice["school_name"] = school_name
     
     return [NoticeResponse(**n) for n in notices]
 
