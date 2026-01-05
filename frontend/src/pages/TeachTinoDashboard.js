@@ -968,6 +968,16 @@ export default function TeachTinoDashboard() {
             </Button>
             
             <Button 
+              onClick={() => navigate('/app/salary')}
+              className="h-24 flex-col gap-2 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200"
+              variant="outline"
+              data-testid="salary-tracking-button"
+            >
+              <Wallet className="w-6 h-6" />
+              <span className="text-sm">My Salary</span>
+            </Button>
+            
+            <Button 
               onClick={() => navigate('/app/staff-directory')}
               className="h-24 flex-col gap-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200"
               variant="outline"
