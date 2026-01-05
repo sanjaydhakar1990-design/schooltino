@@ -4192,6 +4192,80 @@ async def get_public_notices(school_id: str, limit: int = 10):
     ).sort("created_at", -1).to_list(limit)
     return {"notices": notices}
 
+
+# ============== SIGN & SEAL UPLOAD ==============
+
+@api_router.post("/school/upload-signature")
+async def upload_signature(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload school signature image - Director only"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can upload signature")
+    
+    # Save file
+    file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+    filename = f"signature_{current_user.get('school_id', 'default')}_{uuid.uuid4().hex[:8]}.{file_ext}"
+    file_path = UPLOAD_DIR / "signatures" / filename
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+    
+    # Save URL to school
+    signature_url = f"/api/uploads/signatures/{filename}"
+    await db.schools.update_one(
+        {"id": current_user.get("school_id")},
+        {"$set": {"signature_url": signature_url, "signature_updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Signature uploaded", "url": signature_url}
+
+
+@api_router.post("/school/upload-seal")
+async def upload_seal(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload school seal/stamp image - Director only"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can upload seal")
+    
+    # Save file
+    file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+    filename = f"seal_{current_user.get('school_id', 'default')}_{uuid.uuid4().hex[:8]}.{file_ext}"
+    file_path = UPLOAD_DIR / "seals" / filename
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+    
+    # Save URL to school
+    seal_url = f"/api/uploads/seals/{filename}"
+    await db.schools.update_one(
+        {"id": current_user.get("school_id")},
+        {"$set": {"seal_url": seal_url, "seal_updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Seal uploaded", "url": seal_url}
+
+
+@api_router.get("/school/signature-seal")
+async def get_signature_seal(current_user: dict = Depends(get_current_user)):
+    """Get school signature and seal URLs"""
+    school = await db.schools.find_one(
+        {"id": current_user.get("school_id")},
+        {"_id": 0, "signature_url": 1, "seal_url": 1}
+    )
+    return {
+        "signature_url": school.get("signature_url") if school else None,
+        "seal_url": school.get("seal_url") if school else None
+    }
+
+
 @api_router.get("/public/school/{school_id}/events")
 async def get_public_events(school_id: str, limit: int = 10):
     """Public API - Get upcoming events for external website"""
