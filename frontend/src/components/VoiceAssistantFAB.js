@@ -42,6 +42,8 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
   const [messages, setMessages] = useState([]);
   const [pendingAction, setPendingAction] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -57,6 +59,55 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
   useEffect(() => {
     localStorage.setItem('tino_voice_gender', voiceGender);
   }, [voiceGender]);
+
+  // Load chat history from localStorage
+  useEffect(() => {
+    const savedHistory = localStorage.getItem(`tino_chat_history_${user?.id}`);
+    if (savedHistory) {
+      try {
+        setChatHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error('Failed to load chat history');
+      }
+    }
+  }, [user?.id]);
+
+  // Save messages to history when conversation ends
+  const saveToHistory = () => {
+    if (messages.length > 1) {
+      const newSession = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        messages: messages.slice(1), // Skip greeting
+        preview: messages[1]?.text?.slice(0, 50) || 'Chat session'
+      };
+      const updatedHistory = [newSession, ...chatHistory].slice(0, 20); // Keep last 20
+      setChatHistory(updatedHistory);
+      localStorage.setItem(`tino_chat_history_${user?.id}`, JSON.stringify(updatedHistory));
+    }
+  };
+
+  // Delete a chat session
+  const deleteSession = (sessionId) => {
+    const updatedHistory = chatHistory.filter(s => s.id !== sessionId);
+    setChatHistory(updatedHistory);
+    localStorage.setItem(`tino_chat_history_${user?.id}`, JSON.stringify(updatedHistory));
+    toast.success('Chat deleted');
+  };
+
+  // Clear all history
+  const clearAllHistory = () => {
+    setChatHistory([]);
+    localStorage.removeItem(`tino_chat_history_${user?.id}`);
+    toast.success('All chat history cleared');
+  };
+
+  // Load a previous session
+  const loadSession = (session) => {
+    setMessages([{ type: 'ai', text: getGreeting(), time: new Date() }, ...session.messages]);
+    setShowHistory(false);
+    toast.success('Chat loaded');
+  };
 
   // Initial greeting
   useEffect(() => {
