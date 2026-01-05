@@ -235,6 +235,25 @@ This is a computer generated slip.
               <option key={year} value={year}>{year}</option>
             ))}
           </select>
+          <Button 
+            variant="outline"
+            onClick={() => {
+              // Download all salary slips for the year
+              const paidSlips = salaryStatus?.monthly_breakdown?.filter(m => m.status === 'credited') || [];
+              if (paidSlips.length === 0) {
+                toast.info('No paid salary slips to download');
+                return;
+              }
+              paidSlips.forEach(slip => {
+                fetchSalarySlip(slip.slip_no || `SLIP-${slip.month}`);
+              });
+              toast.success(`Downloading ${paidSlips.length} salary slips...`);
+            }}
+            data-testid="download-all-slips-btn"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download All Slips
+          </Button>
         </div>
       </div>
 
