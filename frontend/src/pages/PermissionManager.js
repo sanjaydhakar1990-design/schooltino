@@ -155,6 +155,65 @@ export default function PermissionManager() {
     setShowPermissionDialog(true);
   };
 
+  const openRoleChange = (userData) => {
+    setSelectedUser(userData);
+    setNewRole(userData.role);
+    setShowRoleDialog(true);
+  };
+
+  const openClassAssignment = async (userData) => {
+    setSelectedUser(userData);
+    try {
+      const res = await axios.get(`${API}/users/${userData.id}/assigned-classes`);
+      setAssignedClasses(res.data.classes || []);
+    } catch (error) {
+      setAssignedClasses([]);
+    }
+    setShowClassDialog(true);
+  };
+
+  const changeRole = async () => {
+    if (!selectedUser || !newRole) return;
+    setSaving(true);
+    try {
+      await axios.put(`${API}/users/${selectedUser.id}/role`, {
+        role: newRole
+      });
+      toast.success(`${selectedUser.name} is now ${newRole.replace('_', ' ').toUpperCase()}`);
+      setShowRoleDialog(false);
+      fetchUsers();
+    } catch (error) {
+      toast.error('Failed to change role');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleClassAssignment = (classId) => {
+    setAssignedClasses(prev => 
+      prev.includes(classId) 
+        ? prev.filter(c => c !== classId)
+        : [...prev, classId]
+    );
+  };
+
+  const saveClassAssignments = async () => {
+    if (!selectedUser) return;
+    setSaving(true);
+    try {
+      await axios.put(`${API}/users/${selectedUser.id}/assign-classes`, {
+        class_ids: assignedClasses
+      });
+      toast.success(`Classes assigned to ${selectedUser.name}`);
+      setShowClassDialog(false);
+      fetchUsers();
+    } catch (error) {
+      toast.error('Failed to assign classes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const togglePermission = (key) => {
     setUserPermissions(prev => ({
       ...prev,
