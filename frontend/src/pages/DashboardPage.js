@@ -279,6 +279,67 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Profile Dialog for Director */}
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-indigo-600" />
+              My Profile & Settings
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* User Info */}
+            <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+              <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center">
+                <span className="text-2xl font-bold text-white">{user?.name?.charAt(0)}</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900">{user?.name}</h3>
+                <p className="text-sm text-indigo-600 capitalize font-medium">{user?.role?.replace('_', ' ')}</p>
+                <p className="text-xs text-slate-500">{user?.email}</p>
+              </div>
+            </div>
+
+            {/* Face Recognition Setup */}
+            <StaffPhotoUpload 
+              staffId={user?.id}
+              staffName={user?.name}
+              schoolId={schoolId}
+              onComplete={() => {
+                toast.success('Face enrollment complete! Ab CCTV aapko recognize karega.');
+              }}
+            />
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowProfileDialog(false);
+                  navigate('/app/settings');
+                }}
+                className="flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                School Settings
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowProfileDialog(false);
+                  navigate('/app/director-ai');
+                }}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Director AI
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
