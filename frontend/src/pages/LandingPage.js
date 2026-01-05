@@ -60,6 +60,7 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState('register');
   const [loading, setLoading] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   
   // Registration form
   const [regForm, setRegForm] = useState({
