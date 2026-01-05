@@ -257,7 +257,7 @@ export default function AccountantDashboard() {
     }
 
     try {
-      const res = await fetch(`${API}/api/salary/structure`, {
+      const res = await fetch(`${API}/api/salary/structure/set`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
