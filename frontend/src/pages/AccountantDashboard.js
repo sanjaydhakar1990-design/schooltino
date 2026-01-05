@@ -742,20 +742,71 @@ export default function AccountantDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Clock className="w-12 h-12 text-red-200 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">Previous Year Fees Management</h3>
-                  <p className="text-slate-500 mb-4">
-                    Go to dedicated page for complete multi-year fee management
-                  </p>
-                  <Button 
-                    onClick={() => window.location.href = '/app/multi-year-fees'}
-                    variant="outline"
-                    className="border-red-200 text-red-700 hover:bg-red-50"
-                  >
-                    Open Multi-Year Fees Page
-                  </Button>
-                </div>
+                {oldDues.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-4 text-sm text-slate-500">Student</th>
+                          <th className="text-left py-3 px-4 text-sm text-slate-500">Years Pending</th>
+                          <th className="text-right py-3 px-4 text-sm text-slate-500">Total Dues</th>
+                          <th className="text-center py-3 px-4 text-sm text-slate-500">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {oldDues.map((due, idx) => (
+                          <tr key={idx} className="border-b hover:bg-slate-50">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                  <GraduationCap className="w-4 h-4 text-red-600" />
+                                </div>
+                                <div>
+                                  <span className="font-medium">{due.student_name || 'Student'}</span>
+                                  <p className="text-xs text-slate-500">{due.student_id}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-wrap gap-1">
+                                {(due.years_pending || []).map((year, i) => (
+                                  <span key={i} className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">
+                                    {year}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-right font-bold text-red-600">
+                              {formatCurrency(due.total_dues)}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <Button size="sm" variant="outline" className="text-xs">
+                                <CreditCard className="w-3 h-3 mr-1" />
+                                Collect
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <CheckCircle className="w-12 h-12 text-emerald-200 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-emerald-700 mb-2">Koi Old Dues Nahi! 🎉</h3>
+                    <p className="text-slate-500 mb-4">
+                      Sabhi previous year fees clear hain
+                    </p>
+                    <Button 
+                      onClick={() => setShowAddDue(true)}
+                      variant="outline"
+                      className="border-red-200 text-red-700 hover:bg-red-50"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add New Due
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
