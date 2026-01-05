@@ -60,6 +60,7 @@ from routes.director_ai import router as director_ai_router
 from routes.multi_year_fees import router as multi_year_fees_router
 from routes.salary_management import router as salary_router
 from routes.face_recognition import router as face_recognition_router
+from routes.id_card import router as id_card_router
 
 # ==================== MODELS ====================
 
