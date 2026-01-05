@@ -60,6 +60,13 @@ export default function StudentsPage() {
   const [newStudentCredentials, setNewStudentCredentials] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
+  
+  // Photo capture states
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: '',
