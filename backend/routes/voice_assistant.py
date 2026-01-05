@@ -1,15 +1,17 @@
 """
-Voice Assistant API Routes
+Voice Assistant API Routes - Tino AI
 - Speech-to-Text using OpenAI Whisper
-- Text-to-Speech using ElevenLabs (Female voice)
-- AI Command Processing with confirmation
+- Text-to-Speech using ElevenLabs (Male/Female voices)
+- AI Command Processing with OpenAI GPT for smart responses
+- Role-based actions for Director, Teacher, Staff, Student
 """
 import os
 import io
 import base64
 import logging
+import uuid
 from typing import Optional, List
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -34,125 +36,125 @@ def get_database():
         db = get_db()
     return db
 
-# ElevenLabs setup
+# API Keys
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
 
-# Female voice ID - Rachel (default female voice in ElevenLabs)
-FEMALE_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel - soft female voice
+# ElevenLabs Voice IDs - Best Hindi voices
+VOICE_IDS = {
+    "male": "pNInz6obpgDQGcFmaJgB",      # Adam - Deep male voice
+    "female": "21m00Tcm4TlvDq8ikWAM"     # Rachel - Soft female voice
+}
+
+# Alternative Hindi-friendly voices
+HINDI_VOICES = {
+    "male": "ErXwobaYiN019PkySvjV",       # Antoni - Clear male
+    "female": "EXAVITQu4vr4xnSDxMaL"      # Bella - Natural female
+}
 
 # Initialize clients
 eleven_client = None
 stt_client = None
+openai_client = None
 
 try:
     from elevenlabs import ElevenLabs
-    from elevenlabs.types import VoiceSettings
     if ELEVENLABS_API_KEY:
         eleven_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
-        logger.info("ElevenLabs client initialized successfully")
-except ImportError as e:
-    logger.warning(f"ElevenLabs not installed: {e}")
+        logger.info("ElevenLabs client initialized")
 except Exception as e:
-    logger.error(f"Failed to initialize ElevenLabs: {e}")
+    logger.warning(f"ElevenLabs init failed: {e}")
 
 try:
     from emergentintegrations.llm.openai import OpenAISpeechToText
     if EMERGENT_LLM_KEY:
         stt_client = OpenAISpeechToText(api_key=EMERGENT_LLM_KEY)
-        logger.info("OpenAI STT client initialized successfully")
-except ImportError as e:
-    logger.warning(f"emergentintegrations not installed: {e}")
+        logger.info("OpenAI STT initialized")
 except Exception as e:
-    logger.error(f"Failed to initialize STT: {e}")
+    logger.warning(f"STT init failed: {e}")
+
+try:
+    from openai import OpenAI
+    if OPENAI_API_KEY:
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        logger.info("OpenAI client initialized")
+except Exception as e:
+    logger.warning(f"OpenAI init failed: {e}")
 
 
 # Pydantic Models
 class TTSRequest(BaseModel):
     text: str
-    voice_id: Optional[str] = FEMALE_VOICE_ID
-
-
-class TTSResponse(BaseModel):
-    audio_base64: str
-    text: str
-
+    voice_gender: str = "female"  # male or female
 
 class CommandRequest(BaseModel):
     command: str
     school_id: str
     user_id: str
+    user_role: str = "director"
+    voice_gender: str = "female"
     confirmed: bool = False
-
 
 class CommandResponse(BaseModel):
     message: str
     action: Optional[str] = None
+    action_type: Optional[str] = None  # redirect, data, execute
     requires_confirmation: bool = False
     confirmation_message: Optional[str] = None
     data: Optional[dict] = None
     audio_base64: Optional[str] = None
 
-
-class VoiceAvailability(BaseModel):
-    tts_available: bool
-    stt_available: bool
+class ChatMessage(BaseModel):
     message: str
+    school_id: str
+    user_id: str
+    user_role: str = "director"
+    user_name: str = "User"
+    voice_gender: str = "female"
 
 
-# Available voice commands
-VOICE_COMMANDS = {
-    "create_all_classes": {
-        "keywords": ["create all classes", "sabhi classes banao", "sab class banao", "nursery se 12th tak", "all classes create"],
-        "action": "create_all_classes",
-        "confirmation_required": True,
-        "confirmation_message": "Kya aap Nursery se Class 12th tak sabhi classes create karna chahte hain?"
-    },
-    "add_student": {
-        "keywords": ["add student", "student add karo", "naya student", "new student"],
-        "action": "add_student",
-        "confirmation_required": True,
-        "confirmation_message": "Kya aap naya student add karna chahte hain?"
-    },
-    "show_attendance": {
-        "keywords": ["attendance dikha", "show attendance", "aaj ki attendance", "today attendance"],
-        "action": "show_attendance",
-        "confirmation_required": False
-    },
-    "fee_status": {
-        "keywords": ["fee status", "pending fees", "fee collection", "kitni fee baki"],
-        "action": "fee_status",
-        "confirmation_required": False
-    },
-    "send_notice": {
-        "keywords": ["notice bhejo", "send notice", "announcement", "sabko batao"],
-        "action": "send_notice",
-        "confirmation_required": True,
-        "confirmation_message": "Kya aap notice send karna chahte hain?"
-    },
-    "show_dashboard": {
-        "keywords": ["dashboard dikha", "show dashboard", "overview", "summary"],
-        "action": "show_dashboard",
-        "confirmation_required": False
-    }
+# Role-based system prompts
+ROLE_PROMPTS = {
+    "director": """You are Tino, an AI assistant for school directors. You help with:
+- School management overview
+- Staff and student management
+- Fee collection status
+- Attendance reports
+- Creating classes and notices
+Always be professional, helpful and speak in Hinglish (mix of Hindi and English).
+Keep responses short and actionable. Actually DO the work when asked.""",
+
+    "teacher": """You are Tino, an AI assistant for teachers. You help with:
+- Class management
+- Student attendance
+- Creating question papers
+- Syllabus progress
+- Leave applications
+Always be supportive and speak in Hinglish. Keep responses concise.""",
+
+    "student": """You are Tino, an AI assistant for students. You help with:
+- Homework and study tips
+- Exam schedules
+- Fee payment status
+- Attendance records
+Be friendly and encouraging. Speak in simple Hinglish.""",
+
+    "accountant": """You are Tino, an AI assistant for school accountants. You help with:
+- Fee collection and pending dues
+- Salary management
+- Expense tracking
+- Financial reports
+Be precise with numbers. Speak in Hinglish."""
 }
 
 
-def detect_command(text: str) -> Optional[dict]:
-    """Detect command from transcribed text"""
-    text_lower = text.lower()
-    
-    for cmd_key, cmd_data in VOICE_COMMANDS.items():
-        for keyword in cmd_data["keywords"]:
-            if keyword in text_lower:
-                return {
-                    "command_key": cmd_key,
-                    **cmd_data
-                }
-    return None
+def get_voice_id(gender: str) -> str:
+    """Get ElevenLabs voice ID based on gender"""
+    return VOICE_IDS.get(gender, VOICE_IDS["female"])
 
 
-def generate_audio_response(text: str, voice_id: str = FEMALE_VOICE_ID) -> Optional[str]:
+def generate_audio(text: str, gender: str = "female") -> Optional[str]:
     """Generate TTS audio using ElevenLabs"""
     if not eleven_client:
         return None
@@ -160,10 +162,12 @@ def generate_audio_response(text: str, voice_id: str = FEMALE_VOICE_ID) -> Optio
     try:
         from elevenlabs.types import VoiceSettings
         
+        voice_id = get_voice_id(gender)
+        
         voice_settings = VoiceSettings(
             stability=0.7,
             similarity_boost=0.8,
-            style=0.5,
+            style=0.4,
             use_speaker_boost=True
         )
         
@@ -174,40 +178,131 @@ def generate_audio_response(text: str, voice_id: str = FEMALE_VOICE_ID) -> Optio
             voice_settings=voice_settings
         )
         
-        # Collect audio data
         audio_data = b""
         for chunk in audio_generator:
             audio_data += chunk
         
-        # Convert to base64
-        audio_b64 = base64.b64encode(audio_data).decode()
-        return audio_b64
+        return base64.b64encode(audio_data).decode()
         
     except Exception as e:
-        logger.error(f"TTS generation failed: {e}")
+        logger.error(f"TTS failed: {e}")
         return None
 
 
-@router.get("/status", response_model=VoiceAvailability)
-async def check_voice_status():
-    """Check if voice services are available"""
-    tts_ok = eleven_client is not None and ELEVENLABS_API_KEY is not None
-    stt_ok = stt_client is not None and EMERGENT_LLM_KEY is not None
+async def get_ai_response(message: str, role: str, context: dict = None) -> str:
+    """Get AI response using OpenAI GPT"""
+    if not openai_client:
+        return "AI service not available. Please configure OpenAI API key."
     
-    if tts_ok and stt_ok:
-        message = "Voice Assistant ready! Main aapki madad ke liye taiyar hoon."
-    elif tts_ok:
-        message = "Text-to-Speech available, but Speech-to-Text not configured."
-    elif stt_ok:
-        message = "Speech-to-Text available, but Text-to-Speech not configured."
-    else:
-        message = "Voice services not configured. Please add API keys."
+    try:
+        system_prompt = ROLE_PROMPTS.get(role, ROLE_PROMPTS["director"])
+        
+        # Add context if available
+        if context:
+            system_prompt += f"\n\nCurrent context:\n"
+            if context.get("school_name"):
+                system_prompt += f"- School: {context['school_name']}\n"
+            if context.get("total_students"):
+                system_prompt += f"- Total Students: {context['total_students']}\n"
+            if context.get("pending_fees"):
+                system_prompt += f"- Pending Fees: ₹{context['pending_fees']}\n"
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message}
+            ],
+            max_tokens=300,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        logger.error(f"AI response failed: {e}")
+        return f"Maaf kijiye, kuch technical problem hai. Error: {str(e)}"
+
+
+# Command detection and execution
+COMMANDS = {
+    "create_classes": {
+        "keywords": ["create all classes", "sabhi classes", "nursery se 12th", "sab class banao", "classes create"],
+        "roles": ["director", "principal"],
+        "confirm": True,
+        "message": "Kya aap Nursery se Class 12th tak sabhi classes create karna chahte hain?"
+    },
+    "show_attendance": {
+        "keywords": ["attendance", "hajri", "kitne present", "aaj ki attendance"],
+        "roles": ["director", "teacher", "principal"],
+        "confirm": False
+    },
+    "fee_status": {
+        "keywords": ["fee", "fees", "pending", "collection", "kitni fee", "baki fee"],
+        "roles": ["director", "accountant", "principal"],
+        "confirm": False
+    },
+    "add_student": {
+        "keywords": ["add student", "naya student", "student add", "admission"],
+        "roles": ["director", "admission_staff", "clerk"],
+        "confirm": False,
+        "redirect": "/app/students"
+    },
+    "send_notice": {
+        "keywords": ["notice", "announcement", "sabko batao", "circular"],
+        "roles": ["director", "teacher", "principal"],
+        "confirm": False,
+        "redirect": "/app/notices"
+    },
+    "ai_paper": {
+        "keywords": ["paper", "question paper", "exam paper", "paper banao"],
+        "roles": ["director", "teacher"],
+        "confirm": False,
+        "redirect": "/app/ai-paper"
+    },
+    "my_classes": {
+        "keywords": ["meri class", "my class", "assigned class"],
+        "roles": ["teacher"],
+        "confirm": False
+    },
+    "my_fees": {
+        "keywords": ["meri fee", "my fee", "fee status"],
+        "roles": ["student"],
+        "confirm": False
+    }
+}
+
+
+def detect_command(text: str, role: str) -> Optional[dict]:
+    """Detect command from text based on user role"""
+    text_lower = text.lower()
     
-    return VoiceAvailability(
-        tts_available=tts_ok,
-        stt_available=stt_ok,
-        message=message
-    )
+    for cmd_key, cmd_data in COMMANDS.items():
+        # Check if role is allowed
+        if role not in cmd_data.get("roles", []):
+            continue
+            
+        for keyword in cmd_data["keywords"]:
+            if keyword in text_lower:
+                return {"key": cmd_key, **cmd_data}
+    
+    return None
+
+
+# API Endpoints
+@router.get("/status")
+async def check_status():
+    """Check voice services availability"""
+    return {
+        "tts_available": eleven_client is not None,
+        "stt_available": stt_client is not None,
+        "ai_available": openai_client is not None,
+        "voices": {
+            "male": {"id": VOICE_IDS["male"], "name": "Adam"},
+            "female": {"id": VOICE_IDS["female"], "name": "Rachel"}
+        },
+        "message": "Tino AI ready!" if all([eleven_client, openai_client]) else "Some services not configured"
+    }
 
 
 @router.post("/transcribe")
@@ -215,20 +310,15 @@ async def transcribe_audio(
     audio_file: UploadFile = File(...),
     language: str = Form(default="hi")
 ):
-    """Transcribe audio to text using OpenAI Whisper"""
+    """Transcribe audio to text"""
     if not stt_client:
-        raise HTTPException(
-            status_code=503,
-            detail="Speech-to-Text service not available. Please configure EMERGENT_LLM_KEY."
-        )
+        raise HTTPException(status_code=503, detail="STT not available")
     
     try:
-        # Read audio content
         audio_content = await audio_file.read()
         audio_io = io.BytesIO(audio_content)
         audio_io.name = audio_file.filename or "audio.webm"
         
-        # Transcribe using Whisper
         response = await stt_client.transcribe(
             file=audio_io,
             model="whisper-1",
@@ -236,147 +326,183 @@ async def transcribe_audio(
             language=language
         )
         
-        transcribed_text = response.text if hasattr(response, 'text') else str(response)
+        text = response.text if hasattr(response, 'text') else str(response)
         
-        # Detect command
-        detected_cmd = detect_command(transcribed_text)
-        
-        return {
-            "transcribed_text": transcribed_text,
-            "detected_command": detected_cmd
-        }
+        return {"transcribed_text": text, "language": language}
         
     except Exception as e:
-        logger.error(f"Transcription failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+        logger.error(f"Transcribe failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/tts", response_model=TTSResponse)
+@router.post("/tts")
 async def text_to_speech(request: TTSRequest):
-    """Convert text to speech using ElevenLabs female voice"""
+    """Convert text to speech"""
     if not eleven_client:
-        raise HTTPException(
-            status_code=503,
-            detail="Text-to-Speech service not available. Please configure ELEVENLABS_API_KEY."
-        )
+        raise HTTPException(status_code=503, detail="TTS not available")
     
-    try:
-        audio_b64 = generate_audio_response(request.text, request.voice_id)
-        
-        if not audio_b64:
-            raise HTTPException(status_code=500, detail="Failed to generate audio")
-        
-        return TTSResponse(
-            audio_base64=audio_b64,
-            text=request.text
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"TTS failed: {e}")
-        raise HTTPException(status_code=500, detail=f"TTS failed: {str(e)}")
+    audio_b64 = generate_audio(request.text, request.voice_gender)
+    
+    if not audio_b64:
+        raise HTTPException(status_code=500, detail="Audio generation failed")
+    
+    return {"audio_base64": audio_b64, "text": request.text, "voice": request.voice_gender}
 
 
-@router.post("/process-command", response_model=CommandResponse)
-async def process_voice_command(request: CommandRequest):
-    """Process voice command and execute action with confirmation"""
+@router.post("/chat", response_model=CommandResponse)
+async def chat_with_tino(request: ChatMessage):
+    """Chat with Tino AI - supports text input"""
     db = get_database()
     
-    # Detect command from text
-    detected_cmd = detect_command(request.command)
+    # Get school context
+    context = {}
+    try:
+        school = await db.schools.find_one({"id": request.school_id})
+        if school:
+            context["school_name"] = school.get("name", "School")
+        
+        # Get stats
+        student_count = await db.students.count_documents({"school_id": request.school_id})
+        context["total_students"] = student_count
+        
+        # Get pending fees (simplified)
+        pending = await db.fees.count_documents({"school_id": request.school_id, "status": "pending"})
+        context["pending_fees"] = pending * 5000  # Approximate
+    except:
+        pass
     
-    if not detected_cmd:
-        response_text = "Maaf kijiye, main aapka command samajh nahi paya. Kripya dobara bolein."
-        audio_b64 = generate_audio_response(response_text)
+    # Detect if it's a command
+    cmd = detect_command(request.message, request.user_role)
+    
+    if cmd:
+        # Handle command
+        if cmd.get("redirect"):
+            response_text = f"Aapko {cmd['key'].replace('_', ' ')} page par le ja raha hoon."
+            audio_b64 = generate_audio(response_text, request.voice_gender)
+            
+            return CommandResponse(
+                message=response_text,
+                action=cmd["key"],
+                action_type="redirect",
+                data={"redirect": cmd["redirect"]},
+                audio_base64=audio_b64
+            )
+        
+        if cmd.get("confirm"):
+            audio_b64 = generate_audio(cmd["message"], request.voice_gender)
+            return CommandResponse(
+                message=cmd["message"],
+                action=cmd["key"],
+                requires_confirmation=True,
+                confirmation_message=cmd["message"],
+                audio_base64=audio_b64
+            )
+        
+        # Execute command
+        result = await execute_command(cmd["key"], request.school_id, request.user_role, db)
+        audio_b64 = generate_audio(result["message"], request.voice_gender)
         
         return CommandResponse(
-            message=response_text,
+            message=result["message"],
+            action=cmd["key"],
+            action_type="data",
+            data=result.get("data"),
             audio_base64=audio_b64
         )
     
-    action = detected_cmd["action"]
-    requires_confirmation = detected_cmd.get("confirmation_required", False)
+    # No command detected - use AI for general chat
+    ai_response = await get_ai_response(request.message, request.user_role, context)
+    audio_b64 = generate_audio(ai_response, request.voice_gender)
     
-    # If confirmation is required and not confirmed
-    if requires_confirmation and not request.confirmed:
-        confirmation_msg = detected_cmd.get("confirmation_message", "Kya aap confirm karte hain?")
-        audio_b64 = generate_audio_response(confirmation_msg)
-        
-        return CommandResponse(
-            message=confirmation_msg,
-            action=action,
-            requires_confirmation=True,
-            confirmation_message=confirmation_msg,
-            audio_base64=audio_b64
-        )
-    
-    # Execute confirmed commands
-    result = await execute_command(action, request.school_id, db)
-    
-    response_text = result.get("message", "Command executed successfully!")
-    audio_b64 = generate_audio_response(response_text)
-    
-    # Save to AI conversation history
+    # Save conversation
     try:
         await db.ai_conversations.insert_one({
+            "id": str(uuid.uuid4()),
+            "school_id": request.school_id,
+            "user_id": request.user_id,
+            "user_role": request.user_role,
+            "user_input": request.message,
+            "ai_response": ai_response,
+            "action_type": "chat",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    except:
+        pass
+    
+    return CommandResponse(
+        message=ai_response,
+        action_type="chat",
+        audio_base64=audio_b64
+    )
+
+
+@router.post("/execute-command", response_model=CommandResponse)
+async def execute_confirmed_command(request: CommandRequest):
+    """Execute a confirmed command"""
+    db = get_database()
+    
+    # Detect command
+    cmd = detect_command(request.command, request.user_role)
+    
+    if not cmd:
+        response_text = "Command samajh nahi aaya. Kripya dobara try karein."
+        audio_b64 = generate_audio(response_text, request.voice_gender)
+        return CommandResponse(message=response_text, audio_base64=audio_b64)
+    
+    # Execute
+    result = await execute_command(cmd["key"], request.school_id, request.user_role, db)
+    audio_b64 = generate_audio(result["message"], request.voice_gender)
+    
+    # Save to history
+    try:
+        await db.ai_conversations.insert_one({
+            "id": str(uuid.uuid4()),
             "school_id": request.school_id,
             "user_id": request.user_id,
             "user_input": request.command,
-            "ai_response": response_text,
-            "action_type": "voice",
-            "action_data": {
-                "action": action,
-                "affected_ids": result.get("affected_ids", []),
-                "original_state": result.get("original_state")
-            },
+            "ai_response": result["message"],
+            "action_type": "command",
+            "action_data": {"command": cmd["key"], "result": result.get("data")},
             "status": "completed",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "can_undo": action in ["create_all_classes", "add_student"],
-            "undo_data": {
-                "action": action,
-                "affected_ids": result.get("affected_ids", [])
-            }
+            "created_at": datetime.now(timezone.utc).isoformat()
         })
-    except Exception as e:
-        logger.error(f"Failed to save AI history: {e}")
+    except:
+        pass
     
     return CommandResponse(
-        message=response_text,
-        action=action,
-        requires_confirmation=False,
+        message=result["message"],
+        action=cmd["key"],
+        action_type="execute",
         data=result.get("data"),
         audio_base64=audio_b64
     )
 
 
-async def execute_command(action: str, school_id: str, db) -> dict:
-    """Execute the confirmed command"""
+async def execute_command(cmd_key: str, school_id: str, role: str, db) -> dict:
+    """Execute command based on key"""
     
-    if action == "create_all_classes":
+    if cmd_key == "create_classes":
         return await create_all_classes(school_id, db)
     
-    elif action == "show_attendance":
+    elif cmd_key == "show_attendance":
         return await get_attendance_summary(school_id, db)
     
-    elif action == "fee_status":
+    elif cmd_key == "fee_status":
         return await get_fee_status(school_id, db)
     
-    elif action == "show_dashboard":
-        return {"message": "Dashboard page par redirect kar raha hoon.", "data": {"redirect": "/app/dashboard"}}
+    elif cmd_key == "my_classes":
+        return {"message": "Aapki assigned classes dekhne ke liye Classes section mein jaayein.", 
+                "data": {"redirect": "/app/classes"}}
     
-    elif action == "add_student":
-        return {"message": "Student add karne ke liye Students page par jaayein.", "data": {"redirect": "/app/students"}}
+    elif cmd_key == "my_fees":
+        return {"message": "Aapki fee details dekhne ke liye Fee section check karein.",
+                "data": {"redirect": "/fee-payment"}}
     
-    elif action == "send_notice":
-        return {"message": "Notice bhejne ke liye Notices page par jaayein.", "data": {"redirect": "/app/notices"}}
-    
-    return {"message": "Command processed."}
+    return {"message": "Command executed."}
 
 
 async def create_all_classes(school_id: str, db) -> dict:
     """Create all classes from Nursery to 12th"""
-    
     class_names = [
         "Nursery", "LKG", "UKG",
         "Class 1", "Class 2", "Class 3", "Class 4", "Class 5",
@@ -384,120 +510,113 @@ async def create_all_classes(school_id: str, db) -> dict:
         "Class 11", "Class 12"
     ]
     
-    created_count = 0
-    existing_count = 0
+    created = 0
+    existing = 0
     
-    for class_name in class_names:
-        # Check if class already exists
-        existing = await db.classes.find_one({
-            "school_id": school_id,
-            "name": class_name
-        })
+    for name in class_names:
+        exists = await db.classes.find_one({"school_id": school_id, "name": name})
         
-        if existing:
-            existing_count += 1
+        if exists:
+            existing += 1
             continue
         
-        # Create new class
-        class_doc = {
+        await db.classes.insert_one({
+            "id": str(uuid.uuid4()),
             "school_id": school_id,
-            "name": class_name,
+            "name": name,
+            "section": "A",
             "sections": ["A"],
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "created_by": "voice_assistant"
-        }
-        
-        await db.classes.insert_one(class_doc)
-        created_count += 1
+            "created_by": "tino_ai"
+        })
+        created += 1
     
-    if created_count > 0:
-        message = f"Maine {created_count} nayi classes create kar di hain! Nursery se Class 12th tak."
-    elif existing_count > 0:
-        message = f"Sabhi {existing_count} classes pehle se exist karti hain."
+    if created > 0:
+        msg = f"Done! Maine {created} nayi classes create kar di hain - Nursery se Class 12th tak. Ab aap students add kar sakte hain."
     else:
-        message = "Classes create ho gayi hain."
+        msg = f"Sabhi {existing} classes pehle se exist karti hain. Koi nayi class create nahi hui."
     
-    return {
-        "message": message,
-        "data": {
-            "created": created_count,
-            "existing": existing_count
-        }
-    }
+    return {"message": msg, "data": {"created": created, "existing": existing}}
 
 
 async def get_attendance_summary(school_id: str, db) -> dict:
-    """Get today's attendance summary"""
-    from datetime import date
-    
+    """Get today's attendance"""
     today = date.today().isoformat()
     
-    # Get attendance records for today
-    attendance = await db.attendance.find({
+    # Count students
+    total_students = await db.students.count_documents({"school_id": school_id, "is_active": True})
+    
+    # Get today's attendance
+    attendance_records = await db.attendance.find({
         "school_id": school_id,
         "date": today
     }).to_list(1000)
     
-    total = len(attendance)
-    present = sum(1 for a in attendance if a.get("status") == "present")
-    absent = total - present
+    present = sum(1 for a in attendance_records if a.get("status") == "present")
+    absent = len(attendance_records) - present
     
-    if total > 0:
-        percentage = round((present / total) * 100, 1)
-        message = f"Aaj ki attendance: {present} students present hain, {absent} absent. Attendance {percentage}% hai."
+    if len(attendance_records) > 0:
+        pct = round((present / len(attendance_records)) * 100, 1)
+        msg = f"Aaj ki attendance report: {present} students present, {absent} absent. Attendance {pct}% hai."
+    elif total_students > 0:
+        msg = f"Aaj ki attendance abhi mark nahi hui. Total {total_students} students hain."
     else:
-        message = "Aaj ki attendance abhi record nahi hui hai."
+        msg = "Abhi koi student registered nahi hai. Pehle students add karein."
     
     return {
-        "message": message,
+        "message": msg,
         "data": {
-            "total": total,
+            "total": total_students,
             "present": present,
-            "absent": absent
+            "absent": absent,
+            "date": today
         }
     }
 
 
 async def get_fee_status(school_id: str, db) -> dict:
     """Get fee collection status"""
-    
-    # Get pending fees
-    students_with_pending = await db.students.count_documents({
+    # Count pending fees
+    pending_count = await db.fees.count_documents({
         "school_id": school_id,
-        "fee_status": {"$ne": "paid"}
+        "status": {"$in": ["pending", "partial"]}
     })
     
-    # Get recent payments
-    recent_payments = await db.payments.find({
-        "school_id": school_id
-    }).sort("created_at", -1).limit(5).to_list(5)
+    # Count paid
+    paid_count = await db.fees.count_documents({
+        "school_id": school_id,
+        "status": "paid"
+    })
     
-    total_collected = sum(p.get("amount", 0) for p in recent_payments)
+    # Get total students
+    total_students = await db.students.count_documents({"school_id": school_id})
     
-    message = f"{students_with_pending} students ki fees pending hai. Recent collection ₹{total_collected:,.0f} hai."
+    if pending_count > 0:
+        msg = f"Fee Status: {pending_count} students ki fee pending hai. {paid_count} students ne pay kar diya hai."
+    elif total_students > 0:
+        msg = f"Bahut badhiya! Sabhi {total_students} students ki fee clear hai."
+    else:
+        msg = "Abhi koi fee record nahi hai. Pehle students add karein aur fee structure set karein."
     
     return {
-        "message": message,
+        "message": msg,
         "data": {
-            "pending_students": students_with_pending,
-            "recent_collection": total_collected
+            "pending": pending_count,
+            "paid": paid_count,
+            "total_students": total_students
         }
     }
 
 
-@router.get("/available-commands")
-async def get_available_commands():
-    """Get list of available voice commands"""
-    commands = []
-    for cmd_key, cmd_data in VOICE_COMMANDS.items():
-        commands.append({
-            "command": cmd_key,
-            "keywords": cmd_data["keywords"][:2],  # Show first 2 keywords
-            "requires_confirmation": cmd_data.get("confirmation_required", False)
-        })
-    
-    return {
-        "commands": commands,
-        "languages": ["Hindi", "Hinglish", "English"],
-        "tip": "Aap Hindi ya English mein bol sakte hain!"
-    }
+# Legacy endpoint compatibility
+@router.post("/process-command", response_model=CommandResponse)
+async def process_command_legacy(request: CommandRequest):
+    """Legacy endpoint - redirects to chat"""
+    chat_request = ChatMessage(
+        message=request.command,
+        school_id=request.school_id,
+        user_id=request.user_id,
+        user_role=request.user_role,
+        voice_gender=request.voice_gender
+    )
+    return await chat_with_tino(chat_request)
