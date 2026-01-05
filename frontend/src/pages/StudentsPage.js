@@ -704,6 +704,27 @@ export default function StudentsPage() {
                               <Edit className="w-4 h-4 mr-2" />
                               Edit Details
                             </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setIdCardStudent(student);
+                                setShowIDCard(true);
+                              }}
+                            >
+                              <CreditCard className="w-4 h-4 mr-2 text-indigo-600" />
+                              View ID Card
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setNewStudentCredentials({
+                                  student_id: student.student_id || student.id,
+                                  name: student.name
+                                });
+                                setShowFaceEnrollment(true);
+                              }}
+                            >
+                              <Camera className="w-4 h-4 mr-2 text-emerald-600" />
+                              Face Enrollment
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => openSuspendDialog(student)}>
                               <Ban className="w-4 h-4 mr-2 text-amber-500" />
