@@ -616,6 +616,8 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
                  '🎤 Mic button dabake bolo, chhod do - reply aayega'}
               </p>
             </div>
+              </>
+            )}
           </div>
         </div>
       )}
