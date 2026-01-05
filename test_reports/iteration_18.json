@@ -1,0 +1,84 @@
+{
+  "summary": "Iteration 18: Testing updated subscription pricing and CCTV APIs. All 11 backend tests passed. Frontend landing page shows all 6 pricing cards with correct prices (₹9,999 to ₹47,999), COMING SOON badges on GPS and AI Teacher plans, and '1 Month FREE Trial - All AI Features Included!' banner.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_api_tests": {
+      "total": 11,
+      "passed": 11,
+      "skipped": 0,
+      "failed": 0,
+      "tests": [
+        "test_get_subscription_plans_returns_6_plans - PASSED",
+        "test_subscription_plans_correct_pricing - PASSED",
+        "test_gps_tracking_coming_soon - PASSED",
+        "test_ai_teacher_coming_soon - PASSED",
+        "test_trial_info_one_month_free - PASSED",
+        "test_free_trial_plan_details - PASSED",
+        "test_register_cctv_device - PASSED",
+        "test_register_cctv_auto_detect_brand - PASSED",
+        "test_get_cctv_devices - PASSED",
+        "test_get_cctv_devices_returns_registered_devices - PASSED",
+        "test_admin_login_success - PASSED"
+      ]
+    },
+    "frontend_tests": {
+      "landing_page_pricing": {
+        "6_pricing_cards": "PASSED - All 6 cards found (Basic ERP, AI Powered, CCTV + Biometric, Bus GPS + CCTV, AI Teacher Clone, 1 Month FREE Trial)",
+        "correct_prices": "PASSED - ₹9,999, ₹17,999, ₹27,999, ₹37,999, ₹47,999 all displayed correctly",
+        "coming_soon_badges": "PASSED - Found 4 COMING SOON badges (2 on GPS, 2 on AI Teacher - badge + button)",
+        "most_popular_badge": "PASSED - Found on AI Powered plan",
+        "recommended_badge": "PASSED - Found on CCTV + Biometric plan",
+        "trial_banner": "PASSED - '🎉 1 Month FREE Trial - All AI Features Included!' banner visible at top of pricing section"
+      }
+    }
+  },
+  "features_verified": {
+    "subscription_plans_api": {
+      "endpoint": "GET /api/subscription/plans",
+      "returns_6_plans": "✓ free_trial, basic, ai_powered, cctv_biometric, gps_tracking, ai_teacher",
+      "correct_pricing": "✓ 0, 9999, 17999, 27999, 37999, 47999",
+      "coming_soon_flags": "✓ gps_tracking and ai_teacher have coming_soon: true",
+      "trial_info": "✓ duration: '1 Month FREE', ai_included: true"
+    },
+    "cctv_apis": {
+      "register_device": "✓ POST /api/face-recognition/cctv/register - Works with any brand, auto-detect enabled",
+      "get_devices": "✓ GET /api/face-recognition/cctv/devices/{school_id} - Returns registered devices",
+      "supported_brands": "✓ Hikvision, Dahua, CP Plus, Honeywell, Bosch, Samsung, Axis, Uniview, TVT, Generic IP Camera"
+    },
+    "landing_page": {
+      "pricing_section": "✓ Shows 6 pricing cards with correct prices",
+      "trial_banner": "✓ '1 Month FREE Trial - All AI Features Included!' banner displayed",
+      "badges": "✓ MOST POPULAR on AI Powered, RECOMMENDED on CCTV + Biometric, COMING SOON on GPS and AI Teacher"
+    }
+  },
+  "test_report_links": [
+    "/app/tests/test_subscription_cctv_iter18.py",
+    "/app/test_reports/pytest/pytest_results_iter18.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/tests/test_subscription_cctv_iter18.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 passed)",
+    "frontend": "100% (all pricing features verified)"
+  },
+  "test_credentials": {
+    "admin_email": "director@schooltino.com",
+    "admin_password": "admin123",
+    "school_id": "school1"
+  },
+  "seed_data_creation": "CCTV test devices registered during testing",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 18 verified: 1) Subscription Plans API returns 6 plans with updated pricing (₹9,999 to ₹47,999/year). 2) gps_tracking and ai_teacher plans have coming_soon: true. 3) Trial info shows '1 Month FREE'. 4) CCTV registration API works with any brand (auto-detect). 5) Landing page displays all 6 pricing cards correctly with COMING SOON badges on GPS and AI Teacher plans."
+}
