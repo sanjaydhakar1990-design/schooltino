@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schooltino - Feature Comparison Chart 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .chart-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        /* Table Container */
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        th, td {
+            padding: 14px 12px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #1f2937;
+            position: sticky;
+            top: 0;
+        }
+        
+        th:first-child, td:first-child {
+            text-align: left;
+            font-weight: 500;
+            background: #f8fafc;
+            position: sticky;
+            left: 0;
+        }
+        
+        /* Plan Headers */
+        .plan-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+            font-size: 14px;
+        }
+        
+        .plan-header.popular {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+            color: #1e40af;
+        }
+        
+        .plan-header.coming-soon {
+            background: #f1f5f9 !important;
+            color: #9ca3af;
+        }
+        
+        .plan-price {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e40af;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .plan-yearly {
+            font-size: 11px;
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        /* Category Headers */
+        .category-row {
+            background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%) !important;
+        }
+        
+        .category-row td {
+            color: white !important;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: left !important;
+            padding-left: 20px;
+        }
+        
+        /* Checkmarks */
+        .check {
+            color: #10b981;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .cross {
+            color: #ef4444;
+            font-size: 16px;
+        }
+        
+        .new-badge {
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        
+        .coming-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 700;
+            display: block;
+            margin-top: 3px;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        /* Popular column highlight */
+        td:nth-child(3), th:nth-child(3) {
+            background: rgba(219, 234, 254, 0.3);
+        }
+        
+        /* Legend */
+        .legend {
+            padding: 20px 30px;
+            background: #f8fafc;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #64748b;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 25px;
+            text-align: center;
+            color: white;
+        }
+        
+        .footer p {
+            margin-bottom: 15px;
+        }
+        
+        .cta-btn {
+            display: inline-block;
+            background: white;
+            color: #1e3a8a;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .chart-container { box-shadow: none; }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 24px; }
+            table { font-size: 11px; }
+            th, td { padding: 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎓 Schooltino Feature Comparison</h1>
+            <p>Choose the perfect plan for your school • Updated January 2026</p>
+        </div>
+        
+        <!-- Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 250px;">Feature</th>
+                        <th class="plan-header" style="width: 130px;">
+                            📋 Basic<br>
+                            <span class="plan-price">₹1,000</span>
+                            <span class="plan-yearly">₹9,999/yr</span>
+                        </th>
+                        <th class="plan-header popular" style="width: 130px;">
+                            ⭐ AI Powered<br>
+                            <span class="plan-price">₹1,999</span>
+                            <span class="plan-yearly">₹17,999/yr</span>
+                        </th>
+                        <th class="plan-header" style="width: 130px;">
+                            📹 CCTV+Bio<br>
+                            <span class="plan-price">₹2,999</span>
+                            <span class="plan-yearly">₹27,999/yr</span>
+                        </th>
+                        <th class="plan-header coming-soon" style="width: 130px;">
+                            🚌 GPS<br>
+                            <span class="plan-price">₹3,999</span>
+                            <span class="coming-badge">Coming Soon</span>
+                        </th>
+                        <th class="plan-header coming-soon" style="width: 130px;">
+                            🤖 AI Clone<br>
+                            <span class="plan-price">₹4,999</span>
+                            <span class="coming-badge">Coming Soon</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- STUDENT MANAGEMENT -->
+                    <tr class="category-row">
+                        <td colspan="6">👨‍🎓 STUDENT MANAGEMENT</td>
+                    </tr>
+                    <tr>
+                        <td>Student Profiles & Admission</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Transfer Certificate</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>AI ID Card Generation <span class="new-badge">NEW</span></td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Face Recognition Enrollment</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    
+                    <!-- ATTENDANCE -->
+                    <tr class="category-row">
+                        <td colspan="6">📋 ATTENDANCE</td>
+                    </tr>
+                    <tr>
+                        <td>Manual Attendance</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Biometric Attendance</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>CCTV Auto Attendance (Any Brand)</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    
+                    <!-- FEES & FINANCE -->
+                    <tr class="category-row">
+                        <td colspan="6">💰 FEES & FINANCE</td>
+                    </tr>
+                    <tr>
+                        <td>Fee Collection & Receipts</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Multi-Year Dues Tracking</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Online Payment (Razorpay)</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Accountant Data Entry Forms <span class="new-badge">NEW</span></td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>AI Fee Defaulter Prediction</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Salary Slip Generation</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    
+                    <!-- AI FEATURES -->
+                    <tr class="category-row">
+                        <td colspan="6">🤖 AI FEATURES</td>
+                    </tr>
+                    <tr>
+                        <td>AI Voice Assistant (Hindi + English)</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>AI Paper Generator (NCERT)</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Director AI Dashboard</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>AI Accountant</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>AI School Auto-Setup <span class="new-badge">NEW</span></td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>AI Teacher Clone (HeyGen)</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    
+                    <!-- SECURITY -->
+                    <tr class="category-row">
+                        <td colspan="6">🔐 SECURITY & ACCESS</td>
+                    </tr>
+                    <tr>
+                        <td>Forgot Password (OTP) <span class="new-badge">NEW</span></td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Staff Face Recognition <span class="new-badge">NEW</span></td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Director Personal Greeting <span class="new-badge">NEW</span></td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Role & Permission Management <span class="new-badge">NEW</span></td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Entry/Exit Logs</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    
+                    <!-- TRANSPORT -->
+                    <tr class="category-row">
+                        <td colspan="6">🚌 TRANSPORT (GPS)</td>
+                    </tr>
+                    <tr>
+                        <td>Live Bus Tracking</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Route Optimization</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Bus CCTV Feed</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    
+                    <!-- COMMUNICATION -->
+                    <tr class="category-row">
+                        <td colspan="6">📱 COMMUNICATION</td>
+                    </tr>
+                    <tr>
+                        <td>SMS Alerts</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>WhatsApp Integration</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Parent/Teacher/Student Apps</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    
+                    <!-- SUPPORT -->
+                    <tr class="category-row">
+                        <td colspan="6">🎧 SUPPORT</td>
+                    </tr>
+                    <tr>
+                        <td>Email Support</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>WhatsApp Support</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Dedicated Account Manager</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>On-site Training</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item"><span class="check">✓</span> Included</div>
+            <div class="legend-item"><span class="cross">✗</span> Not Available</div>
+            <div class="legend-item"><span class="new-badge">NEW</span> January 2026</div>
+            <div class="legend-item"><span class="coming-badge" style="display: inline;">Coming Soon</span></div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>🎉 <strong>1 Month FREE Trial on ALL Plans</strong> - No Credit Card Required!</p>
+            <p>📞 +91 XXXX-XXXXXX | 📧 info@schooltino.com | 🌐 www.schooltino.com</p>
+            <a href="#" class="cta-btn">Start FREE Trial →</a>
+        </div>
+    </div>
+</body>
+</html>
