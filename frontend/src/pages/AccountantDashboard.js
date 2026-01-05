@@ -706,7 +706,7 @@ export default function AccountantDashboard() {
                         <tr>
                           <td colSpan={7} className="py-12 text-center text-slate-400">
                             <Banknote className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                            <p>No salary records. Click "Set Salary Structure" to add.</p>
+                            <p>No salary records. Click &quot;Set Salary Structure&quot; to add.</p>
                           </td>
                         </tr>
                       )}
