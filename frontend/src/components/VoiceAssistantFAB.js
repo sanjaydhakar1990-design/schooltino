@@ -377,36 +377,68 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
             {/* Header */}
             <div className="p-4 border-b border-slate-700 flex items-center justify-between bg-slate-900/50">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img 
-                    src={AVATARS[voiceGender]} 
-                    alt="Tino AI"
-                    className="w-12 h-12 rounded-full border-2 border-indigo-500"
-                  />
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 ${
-                    voiceGender === 'male' ? 'bg-indigo-500' : 'bg-pink-500'
-                  }`} />
-                </div>
+                {showHistory ? (
+                  <button
+                    onClick={() => setShowHistory(false)}
+                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <div className="relative">
+                    <img 
+                      src={AVATARS[voiceGender]} 
+                      alt="Tino AI"
+                      className="w-12 h-12 rounded-full border-2 border-indigo-500"
+                    />
+                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 ${
+                      voiceGender === 'male' ? 'bg-indigo-500' : 'bg-pink-500'
+                    }`} />
+                  </div>
+                )}
                 <div>
                   <h3 className="font-bold text-white flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-yellow-400" />
-                    Tino AI
+                    {showHistory ? 'Chat History' : 'Tino AI'}
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {voiceGender === 'male' ? 'Male Voice' : 'Female Voice'} • {user?.role}
+                    {showHistory ? `${chatHistory.length} saved chats` : `${voiceGender === 'male' ? 'Male Voice' : 'Female Voice'} • ${user?.role}`}
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
+                {!showHistory && (
+                  <>
+                    <button
+                      onClick={() => setShowHistory(true)}
+                      className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
+                      title="Chat History"
+                    >
+                      <History className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setShowSettings(!showSettings)}
+                      className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
+                    >
+                      <Settings className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+                {showHistory && chatHistory.length > 0 && (
+                  <button
+                    onClick={clearAllHistory}
+                    className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-all"
+                    title="Clear All"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
                 <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
-                >
-                  <Settings className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    saveToHistory();
+                    setIsOpen(false);
+                  }}
                   className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
                 >
                   <X className="w-5 h-5" />
@@ -414,10 +446,54 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
               </div>
             </div>
 
-            {/* Settings Panel */}
-            {showSettings && (
-              <div className="p-4 bg-slate-800/50 border-b border-slate-700 space-y-3">
-                <div className="flex items-center justify-between">
+            {/* Chat History View */}
+            {showHistory ? (
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {chatHistory.length === 0 ? (
+                  <div className="text-center py-8">
+                    <History className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-500">Koi saved chat nahi hai</p>
+                  </div>
+                ) : (
+                  chatHistory.map((session) => (
+                    <div 
+                      key={session.id}
+                      className="p-3 bg-slate-800 rounded-xl border border-slate-700 hover:border-indigo-500/50 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => loadSession(session)}
+                        >
+                          <p className="text-white text-sm font-medium truncate">
+                            {session.preview}...
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {new Date(session.date).toLocaleDateString('hi-IN', {
+                              day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSession(session.id);
+                          }}
+                          className="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/20 rounded"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Settings Panel */}
+                {showSettings && (
+                  <div className="p-4 bg-slate-800/50 border-b border-slate-700 space-y-3">
+                    <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-300">Voice Gender</span>
                   <button
                     onClick={toggleVoiceGender}
