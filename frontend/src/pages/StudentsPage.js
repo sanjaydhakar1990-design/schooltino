@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
   Plus, Search, Edit, Trash2, Eye, Loader2, User, UserPlus, 
-  Copy, Check, Ban, RefreshCw, LogOut, MoreVertical, AlertTriangle, Camera
+  Copy, Check, Ban, RefreshCw, LogOut, MoreVertical, AlertTriangle, Camera, CreditCard
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -35,6 +35,7 @@ import {
 } from '../components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import FaceEnrollmentCapture from '../components/FaceEnrollmentCapture';
+import IDCardViewer from '../components/IDCardViewer';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
