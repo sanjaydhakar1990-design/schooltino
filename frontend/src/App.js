@@ -254,12 +254,16 @@ function SmartRedirect() {
   }
   
   const role = user.role;
-  if (['teacher', 'admission_staff', 'clerk', 'staff'].includes(role)) {
-    return <Navigate to="/teacher-dashboard" replace />;
-  } else if (role === 'student') {
+  // Students go to student dashboard
+  if (role === 'student') {
     return <Navigate to="/student-dashboard" replace />;
   }
-  return <Navigate to="/dashboard" replace />;
+  // Director goes to full admin dashboard
+  if (role === 'director') {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+  // All other staff go to Unified Portal
+  return <Navigate to="/portal" replace />;
 }
 
 function App() {
