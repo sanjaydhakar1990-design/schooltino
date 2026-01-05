@@ -50,6 +50,7 @@ export default function StudentsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCredentialsDialogOpen, setIsCredentialsDialogOpen] = useState(false);
   const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
+  const [showFaceEnrollment, setShowFaceEnrollment] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudentCredentials, setNewStudentCredentials] = useState(null);
