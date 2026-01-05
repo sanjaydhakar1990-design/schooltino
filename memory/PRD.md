@@ -304,4 +304,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Preview URL:** https://smartschool-ai-3.preview.emergentagent.com
+- **Preview URL:** https://schoolerp-6.preview.emergentagent.com
