@@ -547,7 +547,7 @@ export default function TeachTinoDashboard() {
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={() => setShowProfileDialog(true)}>
                 <Settings className="w-5 h-5 text-slate-600" />
               </Button>
               
