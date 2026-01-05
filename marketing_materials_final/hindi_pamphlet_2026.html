@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>स्कूलटीनो - हिंदी पैम्फलेट</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .pamphlet {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            padding: 50px 35px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '🎓';
+            position: absolute;
+            font-size: 120px;
+            opacity: 0.15;
+            top: 10px;
+            right: 20px;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: white;
+            color: #ff6b6b;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        /* New Banner */
+        .new-banner {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            padding: 15px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Content */
+        .content {
+            padding: 35px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 25px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+        
+        .feature-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-3px);
+            border-color: #ff6b6b;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.15);
+        }
+        
+        .feature-item.new {
+            border-color: #10b981;
+            position: relative;
+        }
+        
+        .feature-item.new::after {
+            content: 'नया!';
+            position: absolute;
+            top: -8px;
+            right: 10px;
+            background: #10b981;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+        
+        .feature-item h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .feature-item p {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        
+        /* Pricing */
+        .pricing {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .pricing h2 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 25px;
+        }
+        
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .price-table th,
+        .price-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+        }
+        
+        .price-table th {
+            background: rgba(255,255,255,0.1);
+            font-weight: 600;
+        }
+        
+        .price-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .popular-badge {
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+        
+        /* New Features Section */
+        .new-features-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .new-features-section h2 {
+            text-align: center;
+            color: #92400e;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .new-feature-list {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .new-feature-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+        }
+        
+        .new-feature-row .icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .new-feature-row h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .new-feature-row p {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        /* Why Choose */
+        .why-choose {
+            background: #f0fdf4;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .why-choose h3 {
+            text-align: center;
+            color: #166534;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .why-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .why-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #166534;
+        }
+        
+        /* Contact */
+        .contact {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .contact h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .contact-item {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .cta-btn {
+            display: inline-block;
+            background: white;
+            color: #ff6b6b;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1f2937;
+            padding: 20px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .pamphlet { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="pamphlet">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎓 स्कूलटीनो</h1>
+            <p>AI से चलने वाला स्मार्ट स्कूल सॉफ्टवेयर</p>
+            <div class="badge">🎉 1 महीना FREE ट्रायल!</div>
+        </div>
+        
+        <!-- New Banner -->
+        <div class="new-banner">
+            🆕 जनवरी 2026: पासवर्ड रिसेट | फेस रिकग्निशन | डायरेक्टर ग्रीटिंग | वन-क्लिक सेटअप
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Features -->
+            <h2 class="section-title">✨ हमारी खास सुविधाएं</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI वॉइस असिस्टेंट</h3>
+                    <p>हिंदी में बात करो! फीस, अटेंडेंस, रिजल्ट - सब पूछो</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📸</div>
+                    <h3>CCTV फेस रिकग्निशन</h3>
+                    <p>कोई भी CCTV चलेगा! ऑटो अटेंडेंस लग जाए</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">👔</div>
+                    <h3>डायरेक्टर AI डैशबोर्ड</h3>
+                    <p>स्कूल हेल्थ स्कोर 0-100, हिंदी में ब्रीफिंग</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💰</div>
+                    <h3>AI अकाउंटेंट</h3>
+                    <p>फीस डिफॉल्टर प्रेडिक्शन, सैलरी स्लिप</p>
+                </div>
+                <div class="feature-item new">
+                    <div class="feature-icon">🔐</div>
+                    <h3>पासवर्ड रिसेट (OTP)</h3>
+                    <p>ईमेल या मोबाइल से खुद रिसेट करो</p>
+                </div>
+                <div class="feature-item new">
+                    <div class="feature-icon">🙏</div>
+                    <h3>डायरेक्टर ग्रीटिंग</h3>
+                    <p>"हरे कृष्णा" बोले AI जब आप आओ!</p>
+                </div>
+            </div>
+            
+            <!-- New Features Detail -->
+            <div class="new-features-section">
+                <h2>🆕 नई सुविधाएं (जनवरी 2026)</h2>
+                <div class="new-feature-list">
+                    <div class="new-feature-row">
+                        <div class="icon">🔐</div>
+                        <div>
+                            <h4>पासवर्ड भूल गए?</h4>
+                            <p>ईमेल, मोबाइल या स्टूडेंट ID से OTP मंगाओ और खुद रिसेट करो। एडमिन को फोन करने की जरूरत नहीं!</p>
+                        </div>
+                    </div>
+                    <div class="new-feature-row">
+                        <div class="icon">📸</div>
+                        <div>
+                            <h4>स्टाफ फेस रिकग्निशन</h4>
+                            <p>टीचर्स अपनी फोटो अपलोड करें। AI चेक करे क्वालिटी। CCTV से ऑटो पहचान!</p>
+                        </div>
+                    </div>
+                    <div class="new-feature-row">
+                        <div class="icon">🙏</div>
+                        <div>
+                            <h4>पर्सनल ग्रीटिंग</h4>
+                            <p>डायरेक्टर आए तो AI बोले "Good Morning! हरे कृष्णा!" पहली बार हाल-चाल भी पूछे!</p>
+                        </div>
+                    </div>
+                    <div class="new-feature-row">
+                        <div class="icon">🏫</div>
+                        <div>
+                            <h4>वन-क्लिक सेटअप</h4>
+                            <p>स्कूल की वेबसाइट URL दो - AI खुद निकाले सारी डिटेल्स। 5 मिनट में सेटअप!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pricing -->
+            <div class="pricing">
+                <h2>💰 सस्ते और आसान प्लान</h2>
+                <table class="price-table">
+                    <tr>
+                        <th>प्लान</th>
+                        <th>मासिक</th>
+                        <th>सालाना</th>
+                    </tr>
+                    <tr>
+                        <td>📋 बेसिक ERP</td>
+                        <td>₹1,000</td>
+                        <td>₹9,999</td>
+                    </tr>
+                    <tr>
+                        <td>🤖 AI पावर्ड <span class="popular-badge">लोकप्रिय</span></td>
+                        <td>₹1,999</td>
+                        <td>₹17,999</td>
+                    </tr>
+                    <tr>
+                        <td>📹 CCTV + बायोमेट्रिक</td>
+                        <td>₹2,999</td>
+                        <td>₹27,999</td>
+                    </tr>
+                    <tr>
+                        <td>🚌 Bus GPS (जल्द आ रहा)</td>
+                        <td>₹3,999</td>
+                        <td>₹37,999</td>
+                    </tr>
+                    <tr>
+                        <td>🤖 AI Teacher (जल्द आ रहा)</td>
+                        <td>₹4,999</td>
+                        <td>₹47,999</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- Why Choose -->
+            <div class="why-choose">
+                <h3>🏆 स्कूलटीनो ही क्यों?</h3>
+                <div class="why-list">
+                    <div class="why-item">✅ भारत में बना</div>
+                    <div class="why-item">✅ हिंदी + English</div>
+                    <div class="why-item">✅ कोई भी CCTV चलेगा</div>
+                    <div class="why-item">✅ 1 महीना FREE</div>
+                    <div class="why-item">✅ 24/7 WhatsApp सपोर्ट</div>
+                    <div class="why-item">✅ CBSE, ICSE, State Board</div>
+                </div>
+            </div>
+            
+            <!-- Contact -->
+            <div class="contact">
+                <h2>📞 अभी संपर्क करें!</h2>
+                <div class="contact-grid">
+                    <div class="contact-item">📞 +91 XXXX-XXXXXX</div>
+                    <div class="contact-item">💬 WhatsApp</div>
+                    <div class="contact-item">📧 info@schooltino.com</div>
+                    <div class="contact-item">🌐 schooltino.com</div>
+                </div>
+                <a href="#" class="cta-btn">FREE ट्रायल शुरू करें →</a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>500+ स्कूल हम पर भरोसा करते हैं | Made with ❤️ in India</p>
+        </div>
+    </div>
+</body>
+</html>
