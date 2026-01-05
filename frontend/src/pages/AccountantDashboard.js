@@ -635,18 +635,29 @@ export default function AccountantDashboard() {
                     <Users className="w-5 h-5 text-blue-600" />
                     Staff Salaries
                   </CardTitle>
-                  <Button
-                    onClick={payAllSalaries}
-                    disabled={processingPayAll}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    {processingPayAll ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                    )}
-                    Pay All Salaries
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowAddSalary(true)}
+                      variant="outline"
+                      className="border-blue-200 text-blue-700"
+                      data-testid="add-salary-btn"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Set Salary Structure
+                    </Button>
+                    <Button
+                      onClick={payAllSalaries}
+                      disabled={processingPayAll}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      {processingPayAll ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                      )}
+                      Pay All Salaries
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -664,7 +675,7 @@ export default function AccountantDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {salaries.map((salary, idx) => (
+                      {salaries.length > 0 ? salaries.map((salary, idx) => (
                         <tr key={idx} className="border-b hover:bg-slate-50">
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
@@ -691,7 +702,14 @@ export default function AccountantDashboard() {
                             )}
                           </td>
                         </tr>
-                      ))}
+                      )) : (
+                        <tr>
+                          <td colSpan={7} className="py-12 text-center text-slate-400">
+                            <Banknote className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                            <p>No salary records. Click "Set Salary Structure" to add.</p>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -707,15 +725,16 @@ export default function AccountantDashboard() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Clock className="w-5 h-5 text-red-600" />
-                      Previous Year Fee Dues
+                      Previous Year Fee Dues ({oldDues.length})
                     </CardTitle>
                     <CardDescription>
                       Track and collect fees from 2-3 previous years
                     </CardDescription>
                   </div>
                   <Button 
-                    onClick={() => window.location.href = '/app/multi-year-fees'}
+                    onClick={() => setShowAddDue(true)}
                     className="bg-red-600 hover:bg-red-700"
+                    data-testid="add-due-btn"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Old Due
