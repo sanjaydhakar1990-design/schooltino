@@ -353,8 +353,8 @@ export default function PermissionManager() {
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">User</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Role</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Classes</th>
                   <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Status</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Full Access</th>
                   <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Actions</th>
                 </tr>
               </thead>
