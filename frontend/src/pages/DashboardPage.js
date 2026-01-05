@@ -36,10 +36,13 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const { schoolId } = useAuth();
+  const { schoolId, user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+
+  const isDirector = user?.role === 'director';
 
   useEffect(() => {
     if (schoolId) {
