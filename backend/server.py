@@ -6677,6 +6677,7 @@ api_router.include_router(director_ai_router)
 api_router.include_router(multi_year_fees_router)
 api_router.include_router(salary_router)
 api_router.include_router(face_recognition_router)
+api_router.include_router(id_card_router)
 
 app.include_router(api_router)
 
