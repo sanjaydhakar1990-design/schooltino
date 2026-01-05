@@ -946,7 +946,14 @@ Your Login Credentials:
                       </Button>
                       
                       <p className="text-center text-sm text-slate-500">
-                        Forgot password? Contact support
+                        <button 
+                          type="button"
+                          onClick={() => setShowForgotPassword(true)}
+                          className="text-indigo-600 hover:text-indigo-800 hover:underline flex items-center justify-center gap-1 mx-auto"
+                        >
+                          <Key className="w-3 h-3" />
+                          Forgot Password?
+                        </button>
                       </p>
                     </form>
                   )}
@@ -956,6 +963,16 @@ Your Login Credentials:
           </div>
         </div>
       </section>
+
+      {/* Forgot Password Modal */}
+      <ForgotPassword 
+        isOpen={showForgotPassword} 
+        onClose={() => setShowForgotPassword(false)}
+        onSuccess={() => {
+          toast.success('Password reset successful! Please login.');
+          setActiveTab('login');
+        }}
+      />
 
       {/* Portals Section - TeachTino & StudyTino */}
       <section className="py-16 bg-slate-50">
