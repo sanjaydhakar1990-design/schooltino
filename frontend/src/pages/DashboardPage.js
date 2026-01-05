@@ -109,11 +109,11 @@ export default function DashboardPage() {
           { icon: Calculator, label: 'Accountant', path: '/app/accountant', color: 'bg-purple-500' },
           { icon: Bell, label: 'Notices', path: '/app/notices', color: 'bg-pink-500' },
           { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: 'bg-indigo-500' },
-          { icon: DoorOpen, label: 'Front Office', path: '/app/front-office', color: 'bg-teal-500' },
+          { icon: Settings, label: 'My Profile', action: () => setShowProfileDialog(true), color: 'bg-slate-600' },
         ].map((item, idx) => (
           <button
             key={idx}
-            onClick={() => navigate(item.path)}
+            onClick={() => item.action ? item.action() : navigate(item.path)}
             className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-lg hover:border-indigo-300 transition-all group"
             data-testid={`quick-tab-${item.label.toLowerCase().replace(' ', '-')}`}
           >
