@@ -265,22 +265,64 @@ export default function NoticesPage() {
               data-testid={`notice-card-${notice.id}`}
             >
               <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-4 flex-1">
                   <div className="mt-1">
                     {getPriorityIcon(notice.priority)}
                   </div>
-                  <div>
+                  <div className="flex-1">
+                    {/* Notice Header */}
+                    {notice.school_name && (
+                      <p className="text-sm font-medium text-indigo-600 mb-1">{notice.school_name}</p>
+                    )}
                     <h3 className="text-lg font-semibold text-slate-900">{notice.title}</h3>
                     <p className="text-slate-600 mt-2 whitespace-pre-wrap">{notice.content}</p>
-                    <div className="flex items-center gap-4 mt-4 text-sm text-slate-500">
-                      <span>By: {notice.created_by_name}</span>
-                      <span>{new Date(notice.created_at).toLocaleDateString()}</span>
-                      <div className="flex gap-1">
-                        {notice.target_audience.map(a => (
-                          <span key={a} className="badge badge-info capitalize">{a}</span>
-                        ))}
+                    
+                    {/* Signature & Seal Section */}
+                    {(notice.signature_url || notice.seal_url) && (
+                      <div className="mt-6 pt-4 border-t border-slate-200 flex items-end justify-between">
+                        <div className="text-sm text-slate-500">
+                          <p>By: {notice.created_by_name}</p>
+                          <p>{new Date(notice.created_at).toLocaleDateString('hi-IN', {
+                            day: 'numeric', month: 'long', year: 'numeric'
+                          })}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          {notice.signature_url && (
+                            <div className="text-center">
+                              <img 
+                                src={`${process.env.REACT_APP_BACKEND_URL}${notice.signature_url}`}
+                                alt="Signature"
+                                className="h-12 object-contain"
+                              />
+                              <p className="text-xs text-slate-400 mt-1">Signature</p>
+                            </div>
+                          )}
+                          {notice.seal_url && (
+                            <div className="text-center">
+                              <img 
+                                src={`${process.env.REACT_APP_BACKEND_URL}${notice.seal_url}`}
+                                alt="Seal"
+                                className="h-14 object-contain"
+                              />
+                              <p className="text-xs text-slate-400 mt-1">School Seal</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
+                    
+                    {/* Notice Footer */}
+                    {!notice.signature_url && !notice.seal_url && (
+                      <div className="flex items-center gap-4 mt-4 text-sm text-slate-500">
+                        <span>By: {notice.created_by_name}</span>
+                        <span>{new Date(notice.created_at).toLocaleDateString()}</span>
+                        <div className="flex gap-1">
+                          {notice.target_audience.map(a => (
+                            <span key={a} className="badge badge-info capitalize">{a}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {hasPermission(['director', 'principal', 'admin']) && (
