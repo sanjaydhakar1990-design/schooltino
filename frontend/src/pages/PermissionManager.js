@@ -15,11 +15,24 @@ import {
   Shield, Users, Search, ChevronRight, Check, X, 
   Loader2, UserCog, GraduationCap, Wallet, Bell,
   CalendarCheck, Settings, Eye, Edit, Lock, Unlock,
-  AlertTriangle, RefreshCw, Crown, Star
+  AlertTriangle, RefreshCw, Crown, Star, BookOpen,
+  UserPlus, Building2, Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Available roles that Director can assign
+const AVAILABLE_ROLES = [
+  { value: 'principal', label: 'Principal', color: 'bg-blue-500', desc: 'School head with teaching duties' },
+  { value: 'vice_principal', label: 'Vice Principal', color: 'bg-emerald-500', desc: 'Deputy head, can teach classes' },
+  { value: 'co_director', label: 'Co-Director', color: 'bg-purple-500', desc: 'Partner in school management' },
+  { value: 'admin_staff', label: 'Administrative Staff', color: 'bg-pink-500', desc: 'Handles admissions, fees, records' },
+  { value: 'accountant', label: 'Accountant', color: 'bg-amber-500', desc: 'Fee collection & salary management' },
+  { value: 'admission_staff', label: 'Admission Officer', color: 'bg-cyan-500', desc: 'Student admissions only' },
+  { value: 'clerk', label: 'Office Clerk', color: 'bg-slate-500', desc: 'General office work' },
+  { value: 'teacher', label: 'Teacher', color: 'bg-indigo-500', desc: 'Teaching staff (uses TeachTino)' },
+];
 
 // Permission categories for better organization
 const PERMISSION_CATEGORIES = {
@@ -31,12 +44,18 @@ const PERMISSION_CATEGORIES = {
   "User Management": [
     { key: "user_management", label: "User Management", description: "Create Principal, VP, Co-Director accounts" },
     { key: "staff", label: "Staff Management", description: "View and manage staff" },
+    { key: "staff_create", label: "Create Staff", description: "Add new staff members" },
+    { key: "staff_delete", label: "Delete Staff", description: "Remove staff members" },
   ],
   "Students & Classes": [
     { key: "students", label: "View Students", description: "View student list" },
+    { key: "student_create", label: "Create Students", description: "Add new students" },
+    { key: "student_edit", label: "Edit Students", description: "Modify student profiles" },
+    { key: "student_delete", label: "Delete Students", description: "Remove students" },
     { key: "student_admission", label: "Student Admission", description: "Admit new students & generate IDs" },
     { key: "classes", label: "Classes", description: "View and manage classes" },
     { key: "class_assignment", label: "Teacher Assignment", description: "Assign teachers to classes" },
+    { key: "can_teach", label: "Can Teach Classes", description: "Can be assigned as class teacher" },
   ],
   "Attendance & Leave": [
     { key: "attendance", label: "Attendance", description: "Manage attendance" },
@@ -47,6 +66,9 @@ const PERMISSION_CATEGORIES = {
     { key: "fees", label: "View Fees", description: "View fee structure" },
     { key: "fee_collection", label: "Fee Collection", description: "Collect cash payments" },
     { key: "fee_approval", label: "Fee Approval", description: "Approve cash payments" },
+    { key: "fee_structure_edit", label: "Edit Fee Structure", description: "Modify fee amounts" },
+    { key: "old_dues", label: "Old Dues Management", description: "Add/edit previous year dues" },
+    { key: "salary_management", label: "Salary Management", description: "Manage staff salaries" },
   ],
   "Communication": [
     { key: "notices", label: "View Notices", description: "View notices" },
@@ -59,6 +81,7 @@ const PERMISSION_CATEGORIES = {
   ],
   "Security & Settings": [
     { key: "cctv", label: "CCTV Dashboard", description: "View CCTV feeds" },
+    { key: "face_recognition", label: "Face Recognition", description: "Manage face enrollment" },
     { key: "meetings", label: "Meetings", description: "Schedule & join meetings" },
     { key: "gallery", label: "Gallery", description: "Manage image gallery" },
     { key: "website_integration", label: "Website Integration", description: "Manage website sync" },
