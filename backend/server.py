@@ -2124,39 +2124,6 @@ async def delete_student(student_id: str, current_user: dict = Depends(get_curre
     return {"message": "Student deactivated successfully"}
 
 
-# Simple search endpoints for accountant dashboard (no auth required)
-@api_router.get("/students/search")
-async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
-    """
-    Simple student search for accountant forms
-    """
-    if not q or len(q) < 2:
-        return {"students": []}
-    
-    query = {
-        "status": {"$in": ["active", None]},
-        "$or": [
-            {"name": {"$regex": q, "$options": "i"}},
-            {"student_id": {"$regex": q, "$options": "i"}},
-            {"id": {"$regex": q, "$options": "i"}}
-        ]
-    }
-    
-    if school_id:
-        query["school_id"] = school_id
-    
-    students = await db.students.find(
-        query,
-        {"_id": 0}
-    ).limit(limit).to_list(limit)
-    
-    # Remove password from results
-    for s in students:
-        s.pop("password", None)
-    
-    return {"students": students}
-
-
 @api_router.get("/staff/search")
 async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
     """
