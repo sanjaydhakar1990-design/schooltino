@@ -84,7 +84,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     { path: '/app/payment-settings', icon: CreditCard, label: 'payment_settings', permKey: 'fees' },
     { path: '/app/fee-structure', icon: FileText, label: 'fee_structure', permKey: 'fees' },
     { path: '/app/notices', icon: Bell, label: 'notices', permKey: 'notices' },
-    { path: '/app/exams', icon: FileText, label: 'online_exams', permKey: 'ai_paper' },
+    { path: '/app/exams', icon: FileText, label: 'online_exams', permKey: 'ai_paper', teacherOnly: true },
     { path: '/app/meetings', icon: Video, label: 'zoom_meetings', permKey: 'meetings' },
     { path: '/app/sms', icon: MessageSquare, label: 'sms_center', permKey: 'sms_center' },
     { path: '/app/gallery', icon: Image, label: 'gallery', permKey: 'gallery' },
