@@ -780,6 +780,26 @@ export default function StudentsPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Face Enrollment Modal */}
+      {showFaceEnrollment && newStudentCredentials && (
+        <FaceEnrollmentCapture
+          isOpen={showFaceEnrollment}
+          onClose={() => setShowFaceEnrollment(false)}
+          studentId={newStudentCredentials.student_id}
+          schoolId={schoolId}
+          studentName={newStudentCredentials.name}
+          onComplete={() => {
+            setShowFaceEnrollment(false);
+            toast.success('Face enrollment completed!');
+            fetchStudents();
+          }}
+          onSkip={() => {
+            setShowFaceEnrollment(false);
+            toast.info('Face enrollment skipped. Complete later from profile.');
+          }}
+        />
+      )}
     </div>
   );
 }
