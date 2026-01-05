@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import ForgotPassword from '../components/ForgotPassword';
 import {
   School,
   Sparkles,
@@ -46,7 +47,8 @@ import {
   ChevronDown,
   Building,
   MapPin,
-  Gift
+  Gift,
+  Key
 } from 'lucide-react';
 import { toast } from 'sonner';
 
