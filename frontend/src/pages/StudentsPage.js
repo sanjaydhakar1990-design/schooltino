@@ -206,9 +206,40 @@ export default function StudentsPage() {
         // New admission - use /students/admit endpoint
         const response = await axios.post(`${API}/students/admit`, payload);
         
+        const studentId = response.data.student_id;
+        
+        // If photo was captured, upload it for face recognition
+        if (capturedPhoto) {
+          try {
+            // Convert base64 to blob
+            const base64Data = capturedPhoto.split(',')[1];
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+            
+            const photoFormData = new FormData();
+            photoFormData.append('photo', blob, 'admission_photo.jpg');
+            photoFormData.append('student_id', studentId);
+            photoFormData.append('school_id', schoolId);
+            photoFormData.append('photo_type', 'front');
+            
+            await axios.post(`${API}/face-recognition/upload-photo`, photoFormData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            toast.success('Face photo uploaded for AI attendance! 📸');
+          } catch (photoErr) {
+            console.error('Photo upload failed:', photoErr);
+            toast.info('Student created but photo upload failed. Add later from profile.');
+          }
+        }
+        
         // Show credentials dialog
         setNewStudentCredentials({
-          student_id: response.data.student_id,
+          student_id: studentId,
           name: response.data.name,
           login_id: response.data.login_id,
           temporary_password: response.data.temporary_password,
@@ -220,6 +251,7 @@ export default function StudentsPage() {
       }
       
       resetForm();
+      setCapturedPhoto(null); // Clear captured photo
       fetchStudents();
     } catch (error) {
       const msg = error.response?.data?.detail;
