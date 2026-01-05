@@ -1354,6 +1354,41 @@ export default function TeachTinoDashboard() {
 
       {/* Voice Assistant Modal - Ask Tino */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
+
+      {/* Profile/Settings Dialog */}
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-emerald-600" />
+              Profile & Settings
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* User Info */}
+            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl font-bold text-emerald-700">{user?.name?.charAt(0)}</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900">{user?.name}</h3>
+                <p className="text-sm text-slate-500 capitalize">{user?.role?.replace('_', ' ')}</p>
+                <p className="text-xs text-slate-400">{user?.email}</p>
+              </div>
+            </div>
+
+            {/* Face Recognition Setup */}
+            <StaffPhotoUpload 
+              staffId={user?.id}
+              staffName={user?.name}
+              schoolId={user?.school_id}
+              onComplete={() => {
+                toast.success('Face enrollment complete!');
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
