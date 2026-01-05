@@ -1094,6 +1094,364 @@ export default function AccountantDashboard() {
           ) : null}
         </DialogContent>
       </Dialog>
+
+      {/* Add Fee Due Dialog */}
+      <Dialog open={showAddDue} onOpenChange={setShowAddDue}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-red-600" />
+              Previous Year Fee Due Add Karein
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Student Search */}
+            <div>
+              <label className="text-sm font-medium">Student Search</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  value={studentSearch}
+                  onChange={(e) => {
+                    setStudentSearch(e.target.value);
+                    searchStudents(e.target.value);
+                  }}
+                  placeholder="Student ka naam ya ID search karein..."
+                  className="pl-10"
+                />
+              </div>
+              {students.length > 0 && !selectedStudent && (
+                <div className="mt-2 border rounded-lg max-h-40 overflow-y-auto">
+                  {students.map((s, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        setSelectedStudent(s);
+                        setStudentSearch(s.name);
+                        setStudents([]);
+                      }}
+                      className="p-2 hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                    >
+                      <GraduationCap className="w-4 h-4 text-slate-400" />
+                      <div>
+                        <p className="font-medium text-sm">{s.name}</p>
+                        <p className="text-xs text-slate-500">{s.student_id || s.id} | {s.class_id}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {selectedStudent && (
+                <div className="mt-2 p-2 bg-emerald-50 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <span className="text-sm font-medium">{selectedStudent.name}</span>
+                  </div>
+                  <button onClick={() => { setSelectedStudent(null); setStudentSearch(''); }} className="text-xs text-red-600">
+                    Change
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Academic Year</label>
+                <select
+                  value={dueForm.academic_year}
+                  onChange={(e) => setDueForm(f => ({ ...f, academic_year: e.target.value }))}
+                  className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1"
+                >
+                  <option value="2023-24">2023-24</option>
+                  <option value="2022-23">2022-23</option>
+                  <option value="2021-22">2021-22</option>
+                  <option value="2020-21">2020-21</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Fee Type</label>
+                <select
+                  value={dueForm.fee_type}
+                  onChange={(e) => setDueForm(f => ({ ...f, fee_type: e.target.value }))}
+                  className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1"
+                >
+                  <option value="tuition">Tuition Fee</option>
+                  <option value="exam">Exam Fee</option>
+                  <option value="transport">Transport Fee</option>
+                  <option value="hostel">Hostel Fee</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Due Amount (₹)</label>
+              <Input
+                type="number"
+                value={dueForm.due_amount}
+                onChange={(e) => setDueForm(f => ({ ...f, due_amount: e.target.value }))}
+                placeholder="Enter due amount"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Description (Optional)</label>
+              <Input
+                value={dueForm.description}
+                onChange={(e) => setDueForm(f => ({ ...f, description: e.target.value }))}
+                placeholder="e.g., Last year pending tuition"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Remarks (Optional)</label>
+              <Textarea
+                value={dueForm.remarks}
+                onChange={(e) => setDueForm(f => ({ ...f, remarks: e.target.value }))}
+                placeholder="Any additional notes..."
+                rows={2}
+              />
+            </div>
+
+            <Button 
+              onClick={addFeeDue} 
+              className="w-full bg-red-600 hover:bg-red-700"
+              disabled={!selectedStudent || !dueForm.due_amount}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Fee Due
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Salary Structure Dialog */}
+      <Dialog open={showAddSalary} onOpenChange={setShowAddSalary}>
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Banknote className="w-5 h-5 text-blue-600" />
+              Salary Structure Set Karein
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Staff Search */}
+            <div>
+              <label className="text-sm font-medium">Staff Search</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  value={staffSearch}
+                  onChange={(e) => {
+                    setStaffSearch(e.target.value);
+                    searchStaff(e.target.value);
+                  }}
+                  placeholder="Staff ka naam search karein..."
+                  className="pl-10"
+                />
+              </div>
+              {staffList.length > 0 && !selectedStaff && (
+                <div className="mt-2 border rounded-lg max-h-40 overflow-y-auto">
+                  {staffList.map((s, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        setSelectedStaff(s);
+                        setStaffSearch(s.name);
+                        setStaffList([]);
+                      }}
+                      className="p-2 hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                    >
+                      <User className="w-4 h-4 text-slate-400" />
+                      <div>
+                        <p className="font-medium text-sm">{s.name}</p>
+                        <p className="text-xs text-slate-500 capitalize">{s.role || s.designation}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {selectedStaff && (
+                <div className="mt-2 p-2 bg-blue-50 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium">{selectedStaff.name}</span>
+                    <span className="text-xs text-slate-500 capitalize">({selectedStaff.role || selectedStaff.designation})</span>
+                  </div>
+                  <button onClick={() => { setSelectedStaff(null); setStaffSearch(''); }} className="text-xs text-red-600">
+                    Change
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Earnings */}
+            <div className="bg-emerald-50 rounded-lg p-4">
+              <h4 className="font-medium text-emerald-800 mb-3 flex items-center gap-2">
+                <ArrowUp className="w-4 h-4" />
+                Earnings
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-600">Basic Salary *</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.basic_salary}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, basic_salary: e.target.value }))}
+                    placeholder="30000"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">HRA</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.hra}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, hra: e.target.value }))}
+                    placeholder="5000"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">DA</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.da}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, da: e.target.value }))}
+                    placeholder="3000"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">TA</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.ta}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, ta: e.target.value }))}
+                    placeholder="2000"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">Medical</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.medical}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, medical: e.target.value }))}
+                    placeholder="1500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">Special Allowance</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.special_allowance}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, special_allowance: e.target.value }))}
+                    placeholder="2000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Deductions */}
+            <div className="bg-rose-50 rounded-lg p-4">
+              <h4 className="font-medium text-rose-800 mb-3 flex items-center gap-2">
+                <ArrowDown className="w-4 h-4" />
+                Deductions
+              </h4>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-600">PF</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.pf_deduction}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, pf_deduction: e.target.value }))}
+                    placeholder="1800"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">Tax</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.tax_deduction}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, tax_deduction: e.target.value }))}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">Other</label>
+                  <Input
+                    type="number"
+                    value={salaryForm.other_deductions}
+                    onChange={(e) => setSalaryForm(f => ({ ...f, other_deductions: e.target.value }))}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Effective From</label>
+              <Input
+                type="date"
+                value={salaryForm.effective_from}
+                onChange={(e) => setSalaryForm(f => ({ ...f, effective_from: e.target.value }))}
+              />
+            </div>
+
+            {/* Summary */}
+            {salaryForm.basic_salary && (
+              <div className="bg-slate-100 rounded-lg p-4">
+                <div className="flex justify-between text-sm">
+                  <span>Gross Salary:</span>
+                  <span className="font-bold text-emerald-600">
+                    {formatCurrency(
+                      (parseFloat(salaryForm.basic_salary) || 0) +
+                      (parseFloat(salaryForm.hra) || 0) +
+                      (parseFloat(salaryForm.da) || 0) +
+                      (parseFloat(salaryForm.ta) || 0) +
+                      (parseFloat(salaryForm.medical) || 0) +
+                      (parseFloat(salaryForm.special_allowance) || 0)
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span>Total Deductions:</span>
+                  <span className="font-bold text-rose-600">
+                    {formatCurrency(
+                      (parseFloat(salaryForm.pf_deduction) || 0) +
+                      (parseFloat(salaryForm.tax_deduction) || 0) +
+                      (parseFloat(salaryForm.other_deductions) || 0)
+                    )}
+                  </span>
+                </div>
+                <hr className="my-2" />
+                <div className="flex justify-between text-base">
+                  <span className="font-medium">Net Salary:</span>
+                  <span className="font-bold text-blue-600">
+                    {formatCurrency(
+                      (parseFloat(salaryForm.basic_salary) || 0) +
+                      (parseFloat(salaryForm.hra) || 0) +
+                      (parseFloat(salaryForm.da) || 0) +
+                      (parseFloat(salaryForm.ta) || 0) +
+                      (parseFloat(salaryForm.medical) || 0) +
+                      (parseFloat(salaryForm.special_allowance) || 0) -
+                      (parseFloat(salaryForm.pf_deduction) || 0) -
+                      (parseFloat(salaryForm.tax_deduction) || 0) -
+                      (parseFloat(salaryForm.other_deductions) || 0)
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <Button 
+              onClick={setSalaryStructure} 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={!selectedStaff || !salaryForm.basic_salary}
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Set Salary Structure
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
