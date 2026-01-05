@@ -88,7 +88,8 @@ export default function AccountantDashboard() {
         fetchAIInsight(),
         fetchSalaries(),
         fetchDefaulters(),
-        fetchExpenses()
+        fetchExpenses(),
+        fetchOldDues()
       ]);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -154,6 +155,151 @@ export default function AccountantDashboard() {
       }
     } catch (error) {
       console.error('Expenses fetch error:', error);
+    }
+  };
+
+  // NEW: Fetch Old Dues
+  const fetchOldDues = async () => {
+    try {
+      const res = await fetch(`${API}/api/multi-year-fees/defaulters/${schoolId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setOldDues(data.defaulters || []);
+      }
+    } catch (error) {
+      console.error('Old dues fetch error:', error);
+    }
+  };
+
+  // NEW: Search Students
+  const searchStudents = async (query) => {
+    if (!query || query.length < 2) {
+      setStudents([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/students/search?q=${encodeURIComponent(query)}&school_id=${schoolId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setStudents(data.students || data || []);
+      }
+    } catch (error) {
+      console.error('Student search error:', error);
+    }
+  };
+
+  // NEW: Search Staff
+  const searchStaff = async (query) => {
+    if (!query || query.length < 2) {
+      setStaffList([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/staff/search?q=${encodeURIComponent(query)}&school_id=${schoolId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setStaffList(data.staff || data || []);
+      }
+    } catch (error) {
+      console.error('Staff search error:', error);
+    }
+  };
+
+  // NEW: Add Fee Due
+  const addFeeDue = async () => {
+    if (!selectedStudent || !dueForm.due_amount) {
+      toast.error('Student select karein aur amount daalein');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/api/multi-year-fees/add-due`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_id: selectedStudent.id || selectedStudent.student_id,
+          school_id: schoolId,
+          academic_year: dueForm.academic_year,
+          due_amount: parseFloat(dueForm.due_amount),
+          fee_type: dueForm.fee_type,
+          description: dueForm.description,
+          remarks: dueForm.remarks
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(data.message || 'Fee due added successfully!');
+        setShowAddDue(false);
+        setSelectedStudent(null);
+        setDueForm({
+          academic_year: '2023-24',
+          due_amount: '',
+          fee_type: 'tuition',
+          description: '',
+          remarks: ''
+        });
+        fetchOldDues();
+      } else {
+        const err = await res.json();
+        toast.error(err.detail || 'Fee due add nahi ho paya');
+      }
+    } catch (error) {
+      toast.error('Error adding fee due');
+    }
+  };
+
+  // NEW: Set Salary Structure
+  const setSalaryStructure = async () => {
+    if (!selectedStaff || !salaryForm.basic_salary) {
+      toast.error('Staff select karein aur basic salary daalein');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/api/salary/structure`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          staff_id: selectedStaff.id,
+          school_id: schoolId,
+          basic_salary: parseFloat(salaryForm.basic_salary) || 0,
+          hra: parseFloat(salaryForm.hra) || 0,
+          da: parseFloat(salaryForm.da) || 0,
+          ta: parseFloat(salaryForm.ta) || 0,
+          medical: parseFloat(salaryForm.medical) || 0,
+          special_allowance: parseFloat(salaryForm.special_allowance) || 0,
+          pf_deduction: parseFloat(salaryForm.pf_deduction) || 0,
+          tax_deduction: parseFloat(salaryForm.tax_deduction) || 0,
+          other_deductions: parseFloat(salaryForm.other_deductions) || 0,
+          effective_from: salaryForm.effective_from
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(data.message || 'Salary structure set successfully!');
+        setShowAddSalary(false);
+        setSelectedStaff(null);
+        setSalaryForm({
+          basic_salary: '',
+          hra: '',
+          da: '',
+          ta: '',
+          medical: '',
+          special_allowance: '',
+          pf_deduction: '',
+          tax_deduction: '',
+          other_deductions: '',
+          effective_from: new Date().toISOString().split('T')[0]
+        });
+        fetchSalaries();
+      } else {
+        const err = await res.json();
+        toast.error(err.detail || 'Salary structure set nahi ho paya');
+      }
+    } catch (error) {
+      toast.error('Error setting salary structure');
     }
   };
 
