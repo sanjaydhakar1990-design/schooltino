@@ -109,6 +109,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const filteredItems = navItems.filter(item => {
     // Director-only items
     if (item.directorOnly && !isDirector) return false;
+    // Teacher-only items (hide from Director)
+    if (item.teacherOnly && isDirector) return false;
     // Check permission
     return hasPermission(item.permKey);
   });
