@@ -64,6 +64,7 @@ from routes.id_card import router as id_card_router
 from routes.password_reset import router as password_reset_router
 from routes.school_auto_setup import router as school_setup_router
 from routes.director_greeting import router as director_greeting_router
+from routes.tino_brain import router as tino_brain_router
 
 # ==================== MODELS ====================
 
@@ -6891,6 +6892,7 @@ api_router.include_router(id_card_router)
 api_router.include_router(password_reset_router)
 api_router.include_router(school_setup_router)
 api_router.include_router(director_greeting_router)
+api_router.include_router(tino_brain_router)
 
 app.include_router(api_router)
 
