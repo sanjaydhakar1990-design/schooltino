@@ -7,9 +7,45 @@
 
 ---
 
-## What's Been Implemented (Latest Session - 4 Jan 2026)
+## What's Been Implemented (Latest Session - 5 Jan 2026)
 
-### 36. Director AI - Big Boss Command Center ✅ NEW!
+### 38. Multi-Year Fee Dues Management ✅ NEW!
+- **Track 2-3 years old fees** - Previous year dues carry forward
+- **Year-wise dues breakdown** for each student
+- **Defaulters list** with total pending amount
+- **Payment allocation** across years (oldest first)
+- **Bulk add dues** - Import old fee data
+- **Waive/Delete dues** with reason tracking
+- **Fee collection summary** by academic year
+- APIs: `/api/multi-year-fees/add-due`, `/student/{id}`, `/summary/{school_id}`, `/defaulters/{school_id}`, `/pay`, `/due/{id}`
+
+### 39. Salary Management for Teachers & Staff ✅ NEW!
+- **Monthly salary tracking** - Due/Credited status for each month
+- **Salary structure** - Basic + HRA + DA + TA + Medical + Special Allowance
+- **Deductions** - PF, Tax, Other deductions
+- **Salary slip generation** - Download text format
+- **Year selector** - View previous years' salary history
+- **Bulk salary credit** - Pay multiple staff at once
+- **Salary dashboard** - Admin view of all staff salaries
+- APIs: `/api/salary/status/{staff_id}`, `/structure/set`, `/structure/{staff_id}`, `/credit`, `/slip/{slip_no}`, `/dashboard/{school_id}`, `/bulk-credit`
+
+### 40. Dashboard Quick-Access Tabs ✅ NEW!
+- **Admin Dashboard** - 8 quick tabs: Attendance, Fees, Old Dues, Students, Accountant, Notices, AI Paper, Front Office
+- **TeachTino Dashboard** - Added "My Salary" button in Quick Actions
+- **StudyTino Dashboard** - 4 quick tabs: Pay Fees, Results, AI Help, Leave
+- **One-click navigation** to key modules
+
+### 41. Marketing Materials Archive ✅ NEW!
+- **Main Brochure** - Full feature list, pricing, contact info
+- **Hindi Pamphlet** - Full Hindi version for local market
+- **Feature Comparison** - Schooltino vs Competitors table
+- **Director AI Feature Sheet** - Big Boss feature highlights
+- **Social Media Posts** - Ready-to-use post templates with hashtags
+- Download: `/app/Schooltino_Marketing_Materials.tar.gz`
+
+---
+
+### 36. Director AI - Big Boss Command Center ✅
 - **Central AI Dashboard** - School ka AI Director jo sab monitor kare
 - **School Health Score** - 0-100 based on attendance, fees, performance
 - **Priority Orders** - Daily tasks with HIGH/MEDIUM/LOW priority
@@ -20,7 +56,7 @@
 - **Critical Alerts** - Red alerts for immediate action
 - APIs: `/api/director-ai/dashboard`, `/voice-briefing`, `/ask`, `/department-status`
 
-### 37. Pricing Restructured ✅ NEW!
+### 37. Pricing Restructured ✅
 - **Basic ERP (No AI):** ₹9,999/year - Students, Attendance, Fees, Reports
 - **AI Powered:** ₹18,000/year - Basic + All AI Features + Director AI
 - **Enterprise:** ₹35,000/year - Unlimited + CCTV AI + WhatsApp + Support
