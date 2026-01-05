@@ -193,6 +193,24 @@ DEFAULT_PERMISSIONS = {
         "notices": True, "notice_create": False, "sms_center": False, "gallery": True,
         "ai_paper": False, "ai_content": False, "cctv": False, "website_integration": False,
         "audit_logs": False, "settings": False, "meetings": False, "reports": False
+    },
+    "teacher": {
+        "dashboard": True, "school_analytics": False, "user_management": False,
+        "students": True, "student_admission": False, "staff": False, "classes": True,
+        "class_assignment": False, "attendance": True, "leave_management": True,
+        "leave_approval": False, "fees": False, "fee_collection": False, "fee_approval": False,
+        "notices": True, "notice_create": True, "sms_center": False, "gallery": True,
+        "ai_paper": True, "ai_content": True, "cctv": False, "website_integration": False,
+        "audit_logs": False, "settings": False, "meetings": True, "reports": True
+    },
+    "admin_staff": {
+        "dashboard": True, "school_analytics": False, "user_management": False,
+        "students": True, "student_admission": True, "staff": True, "classes": True,
+        "class_assignment": False, "attendance": True, "leave_management": True,
+        "leave_approval": False, "fees": True, "fee_collection": True, "fee_approval": False,
+        "notices": True, "notice_create": True, "sms_center": True, "gallery": True,
+        "ai_paper": False, "ai_content": False, "cctv": False, "website_integration": False,
+        "audit_logs": False, "settings": False, "meetings": True, "reports": True
     }
 }
 
