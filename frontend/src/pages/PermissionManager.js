@@ -513,6 +513,141 @@ export default function PermissionManager() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Role Change Dialog */}
+      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCog className="w-5 h-5 text-indigo-600" />
+              Change Role for {selectedUser?.name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-600">
+              Current Role: <span className={`px-2 py-0.5 rounded ${getRoleBadgeColor(selectedUser?.role || '')}`}>
+                {selectedUser?.role?.replace('_', ' ').toUpperCase()}
+              </span>
+            </p>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Select New Role</label>
+              <div className="grid gap-2">
+                {AVAILABLE_ROLES.map((role) => (
+                  <button
+                    key={role.value}
+                    onClick={() => setNewRole(role.value)}
+                    className={`p-3 rounded-lg border-2 text-left transition-all ${
+                      newRole === role.value 
+                        ? 'border-indigo-500 bg-indigo-50' 
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full ${role.color} flex items-center justify-center`}>
+                        <UserCog className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">{role.label}</p>
+                        <p className="text-xs text-slate-500">{role.desc}</p>
+                      </div>
+                      {newRole === role.value && (
+                        <Check className="w-5 h-5 text-indigo-600 ml-auto" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+            <Button variant="outline" onClick={() => setShowRoleDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={changeRole} 
+              disabled={saving || newRole === selectedUser?.role} 
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+              Change Role
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Class Assignment Dialog */}
+      <Dialog open={showClassDialog} onOpenChange={setShowClassDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-indigo-600" />
+              Assign Classes to {selectedUser?.name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-600">
+              Select classes this person can teach or manage. Even Principal/VP can be assigned classes.
+            </p>
+
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {classes.length === 0 ? (
+                <p className="text-center text-slate-500 py-4">No classes found. Create classes first.</p>
+              ) : (
+                classes.map((cls) => (
+                  <button
+                    key={cls.id}
+                    onClick={() => toggleClassAssignment(cls.id)}
+                    className={`w-full p-3 rounded-lg border-2 text-left transition-all flex items-center justify-between ${
+                      assignedClasses.includes(cls.id)
+                        ? 'border-indigo-500 bg-indigo-50' 
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                        <GraduationCap className="w-5 h-5 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">{cls.name}</p>
+                        <p className="text-xs text-slate-500">
+                          Section: {cls.section || 'A'} | Students: {cls.student_count || 0}
+                        </p>
+                      </div>
+                    </div>
+                    {assignedClasses.includes(cls.id) && (
+                      <Check className="w-5 h-5 text-indigo-600" />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800">
+                <strong>Note:</strong> Assigned staff will see these classes in their dashboard and can manage attendance, assignments, etc.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+            <Button variant="outline" onClick={() => setShowClassDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={saveClassAssignments} 
+              disabled={saving} 
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+              Save ({assignedClasses.length} classes)
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
