@@ -18,11 +18,19 @@ import {
   History,
   Sparkles,
   Video,
-  DoorOpen
+  DoorOpen,
+  Settings,
+  Camera,
+  User,
+  CheckCircle
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { TrialStatusCard } from '../components/TrialMode';
 import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Button } from '../components/ui/button';
+import StaffPhotoUpload from '../components/StaffPhotoUpload';
+import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
