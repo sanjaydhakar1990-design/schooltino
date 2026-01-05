@@ -209,6 +209,16 @@ function AppRoutes() {
         }
       />
 
+      {/* Unified Portal - Smart Dashboard for all Staff */}
+      <Route
+        path="/portal"
+        element={
+          <ProtectedRoute>
+            <UnifiedPortal />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Student Portal - Standalone */}
       <Route
         path="/student-dashboard"
