@@ -2089,6 +2089,72 @@ async def delete_student(student_id: str, current_user: dict = Depends(get_curre
     await log_audit(current_user["id"], "delete", "students", {"student_id": student_id})
     return {"message": "Student deactivated successfully"}
 
+
+# Simple search endpoints for accountant dashboard (no auth required)
+@api_router.get("/students/search")
+async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
+    """
+    Simple student search for accountant forms
+    """
+    if not q or len(q) < 2:
+        return {"students": []}
+    
+    query = {
+        "status": {"$in": ["active", None]},
+        "$or": [
+            {"name": {"$regex": q, "$options": "i"}},
+            {"student_id": {"$regex": q, "$options": "i"}},
+            {"id": {"$regex": q, "$options": "i"}}
+        ]
+    }
+    
+    if school_id:
+        query["school_id"] = school_id
+    
+    students = await db.students.find(
+        query,
+        {"_id": 0, "password": 0, "id": 1, "student_id": 1, "name": 1, "class_id": 1, "school_id": 1}
+    ).limit(limit).to_list(limit)
+    
+    return {"students": students}
+
+
+@api_router.get("/staff/search")
+async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
+    """
+    Simple staff search for accountant forms
+    """
+    if not q or len(q) < 2:
+        return {"staff": []}
+    
+    query = {
+        "$or": [
+            {"name": {"$regex": q, "$options": "i"}},
+            {"email": {"$regex": q, "$options": "i"}}
+        ]
+    }
+    
+    if school_id:
+        query["school_id"] = school_id
+    
+    # Search in users collection (teachers, directors, accountants)
+    users = await db.users.find(
+        {**query, "role": {"$in": ["teacher", "director", "principal", "accountant", "clerk"]}},
+        {"_id": 0, "password": 0, "id": 1, "name": 1, "email": 1, "role": 1, "school_id": 1}
+    ).limit(limit).to_list(limit)
+    
+    # Also search in staff collection
+    staff = await db.staff.find(
+        query,
+        {"_id": 0, "id": 1, "name": 1, "designation": 1, "school_id": 1}
+    ).limit(limit).to_list(limit)
+    
+    # Combine results
+    all_staff = users + staff
+    
+    return {"staff": all_staff}
+
+
 # ==================== STAFF ROUTES ====================
 
 @api_router.post("/staff", response_model=StaffResponse)
