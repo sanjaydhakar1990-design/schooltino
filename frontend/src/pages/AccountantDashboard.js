@@ -518,6 +518,48 @@ export default function AccountantDashboard() {
             </Card>
           </TabsContent>
 
+          {/* Old Dues Tab - Multi-Year Fee Management */}
+          <TabsContent value="old-dues" className="mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-red-600" />
+                      Previous Year Fee Dues
+                    </CardTitle>
+                    <CardDescription>
+                      Track and collect fees from 2-3 previous years
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => window.location.href = '/app/multi-year-fees'}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Old Due
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Clock className="w-12 h-12 text-red-200 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">Previous Year Fees Management</h3>
+                  <p className="text-slate-500 mb-4">
+                    Go to dedicated page for complete multi-year fee management
+                  </p>
+                  <Button 
+                    onClick={() => window.location.href = '/app/multi-year-fees'}
+                    variant="outline"
+                    className="border-red-200 text-red-700 hover:bg-red-50"
+                  >
+                    Open Multi-Year Fees Page
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Defaulters Tab */}
           <TabsContent value="defaulters" className="mt-4">
             <Card>
