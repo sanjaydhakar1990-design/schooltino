@@ -239,7 +239,23 @@ export default function StudyTinoLogin() {
                   </>
                 )}
               </Button>
+              
+              <button 
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="w-full text-center text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-center gap-1 mt-3"
+              >
+                <Key className="w-3 h-3" />
+                Forgot Password?
+              </button>
             </form>
+
+            {/* Forgot Password Modal */}
+            <ForgotPassword 
+              isOpen={showForgotPassword} 
+              onClose={() => setShowForgotPassword(false)}
+              onSuccess={() => toast.success('Password reset! Please login.')}
+            />
 
             {/* Install App Section */}
             <div className="mt-8 pt-8 border-t border-slate-100">
