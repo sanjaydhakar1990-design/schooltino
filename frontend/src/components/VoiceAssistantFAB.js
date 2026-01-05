@@ -485,8 +485,8 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
               </form>
               
               <p className="text-xs text-slate-500 mt-2 text-center">
-                {isListening ? '🎙️ Bol rahe hain... Stop karne ke liye click karein' : 
-                 'Type karein ya mic button dabayein'}
+                {isListening ? '🎙️ Bol rahe hain... Chhod do jab ho jaye' : 
+                 '🎤 Mic button dabake bolo, chhod do - reply aayega'}
               </p>
             </div>
           </div>
