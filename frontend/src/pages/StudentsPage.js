@@ -524,6 +524,35 @@ export default function StudentsPage() {
                 <Copy className="w-4 h-4 mr-2" />
                 Copy All Credentials
               </Button>
+              
+              {/* Face Enrollment Option */}
+              <div className="border-t border-slate-200 pt-4 mt-4">
+                <p className="text-sm text-slate-600 mb-3">
+                  📸 <strong>Face Enrollment</strong> - AI attendance ke liye photos add karein
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    className="flex-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                    onClick={() => {
+                      setIsCredentialsDialogOpen(false);
+                      setShowFaceEnrollment(true);
+                    }}
+                  >
+                    📷 Capture Photos Now
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    className="text-slate-500"
+                    onClick={() => {
+                      toast.info('Face enrollment skipped. Complete from student profile later.');
+                      setIsCredentialsDialogOpen(false);
+                    }}
+                  >
+                    Skip for Now
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
