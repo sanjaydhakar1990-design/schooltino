@@ -130,6 +130,7 @@ function AppRoutes() {
       
       {/* StudyTino Portal - Student Login */}
       <Route path="/studytino" element={<StudyTinoLogin />} />
+      <Route path="/studytino/receipts" element={<StudentReceiptsPage />} />
 
       {/* Protected Routes */}
       <Route
