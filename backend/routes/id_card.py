@@ -1,0 +1,341 @@
+# /app/backend/routes/id_card.py
+"""
+ID Card Generation System
+- Auto-generate ID cards for students and staff
+- Include photo, QR code, details
+- Downloadable format
+"""
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime, timezone
+import uuid
+import os
+import sys
+import base64
+
+sys.path.append('/app/backend')
+
+from motor.motor_asyncio import AsyncIOMotorClient
+
+# Database connection
+mongo_url = os.environ.get('MONGO_URL')
+db_name = os.environ.get('DB_NAME', 'test_database')
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
+
+router = APIRouter(prefix="/id-card", tags=["ID Card"])
+
+
+# ==================== MODELS ====================
+
+class IDCardData(BaseModel):
+    person_id: str
+    person_type: str  # student, teacher, staff, director
+    school_id: str
+    include_photo: bool = True
+
+
+# ==================== GENERATE ID CARD ====================
+
+@router.get("/generate/{person_type}/{person_id}")
+async def generate_id_card(person_type: str, person_id: str, school_id: Optional[str] = None):
+    """
+    Generate ID card data for student/teacher/staff
+    Returns all data needed to render an ID card
+    """
+    if person_type not in ["student", "teacher", "staff", "director", "admin"]:
+        raise HTTPException(status_code=400, detail="Invalid person type")
+    
+    # Get person details based on type
+    person = None
+    collection = None
+    
+    if person_type == "student":
+        # Try students collection
+        person = await db.students.find_one(
+            {"$or": [{"id": person_id}, {"student_id": person_id}]},
+            {"_id": 0}
+        )
+        collection = "students"
+    else:
+        # Try staff collection first
+        person = await db.staff.find_one({"id": person_id}, {"_id": 0})
+        if not person:
+            # Try users collection
+            person = await db.users.find_one({"id": person_id}, {"_id": 0})
+            collection = "users"
+        else:
+            collection = "staff"
+    
+    if not person:
+        raise HTTPException(status_code=404, detail=f"{person_type.title()} not found")
+    
+    # Get school info
+    school = None
+    sid = school_id or person.get("school_id")
+    if sid:
+        school = await db.schools.find_one({"id": sid}, {"_id": 0, "name": 1, "address": 1, "phone": 1, "logo": 1})
+    
+    # Get photo if available
+    photo = None
+    if person_type == "student":
+        photo_record = await db.student_face_photos.find_one(
+            {"student_id": person_id, "photo_type": "passport"},
+            {"_id": 0, "photo_data": 1}
+        )
+        if photo_record:
+            photo = photo_record.get("photo_data")
+    else:
+        # Staff photo
+        photo_record = await db.staff_photos.find_one(
+            {"staff_id": person_id, "photo_type": "passport"},
+            {"_id": 0, "photo_data": 1}
+        )
+        if photo_record:
+            photo = photo_record.get("photo_data")
+        elif person.get("photo"):
+            photo = person.get("photo")
+    
+    # Build ID card data
+    if person_type == "student":
+        id_card = {
+            "card_type": "STUDENT ID CARD",
+            "id_number": person.get("student_id") or person.get("admission_no") or person.get("id"),
+            "name": person.get("name"),
+            "class": person.get("class_id") or person.get("class_name"),
+            "section": person.get("section"),
+            "roll_no": person.get("roll_no"),
+            "dob": person.get("dob"),
+            "blood_group": person.get("blood_group"),
+            "father_name": person.get("father_name"),
+            "mother_name": person.get("mother_name"),
+            "phone": person.get("parent_phone") or person.get("phone"),
+            "address": person.get("address"),
+            "admission_date": person.get("admission_date"),
+            "valid_until": f"{datetime.now().year + 1}-03-31"
+        }
+    else:
+        id_card = {
+            "card_type": f"{person_type.upper()} ID CARD",
+            "id_number": person.get("employee_id") or person.get("id"),
+            "name": person.get("name"),
+            "designation": person.get("designation") or person.get("role", person_type).title(),
+            "department": person.get("department"),
+            "dob": person.get("dob"),
+            "blood_group": person.get("blood_group"),
+            "phone": person.get("phone"),
+            "email": person.get("email"),
+            "address": person.get("address"),
+            "joining_date": person.get("joining_date") or person.get("created_at"),
+            "valid_until": f"{datetime.now().year + 1}-03-31"
+        }
+    
+    # Generate QR code data (for verification)
+    qr_data = f"SCHOOLTINO|{person_type.upper()}|{id_card['id_number']}|{id_card['name']}"
+    
+    return {
+        "success": True,
+        "id_card": id_card,
+        "photo": photo,
+        "has_photo": photo is not None,
+        "school": {
+            "name": school.get("name") if school else "School Name",
+            "address": school.get("address") if school else "",
+            "phone": school.get("phone") if school else "",
+            "logo": school.get("logo") if school else None
+        },
+        "qr_data": qr_data,
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@router.get("/text/{person_type}/{person_id}")
+async def get_id_card_text(person_type: str, person_id: str):
+    """
+    Get ID card as downloadable text format
+    """
+    card_data = await generate_id_card(person_type, person_id)
+    
+    if not card_data.get("success"):
+        raise HTTPException(status_code=404, detail="Card generation failed")
+    
+    id_card = card_data["id_card"]
+    school = card_data["school"]
+    
+    # Build text format
+    card_text = f"""
+╔══════════════════════════════════════════════════════════════════╗
+║                        {school['name'].upper()[:50].center(50)}                        ║
+║                        {school['address'][:50].center(50)}                        ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║                    {id_card['card_type'].center(40)}                    ║
+║                                                                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║   ID NUMBER:   {str(id_card['id_number'])[:25].ljust(25)}                        ║
+║   NAME:        {str(id_card['name'])[:25].ljust(25)}                        ║
+"""
+    
+    if person_type == "student":
+        card_text += f"""║   CLASS:       {str(id_card.get('class', 'N/A'))[:25].ljust(25)}                        ║
+║   ROLL NO:     {str(id_card.get('roll_no', 'N/A'))[:25].ljust(25)}                        ║
+║   FATHER:      {str(id_card.get('father_name', 'N/A'))[:25].ljust(25)}                        ║
+║   PHONE:       {str(id_card.get('phone', 'N/A'))[:25].ljust(25)}                        ║
+"""
+    else:
+        card_text += f"""║   DESIGNATION: {str(id_card.get('designation', 'N/A'))[:25].ljust(25)}                        ║
+║   PHONE:       {str(id_card.get('phone', 'N/A'))[:25].ljust(25)}                        ║
+║   EMAIL:       {str(id_card.get('email', 'N/A'))[:25].ljust(25)}                        ║
+"""
+    
+    card_text += f"""║                                                                  ║
+║   BLOOD GROUP: {str(id_card.get('blood_group', 'N/A'))[:10].ljust(10)}                                     ║
+║   VALID UNTIL: {str(id_card.get('valid_until', 'N/A'))[:15].ljust(15)}                                ║
+║                                                                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║           QR CODE: {card_data['qr_data'][:40].ljust(40)}          ║
+╚══════════════════════════════════════════════════════════════════╝
+
+                    IF FOUND, PLEASE RETURN TO SCHOOL
+"""
+    
+    return {
+        "success": True,
+        "card_text": card_text,
+        "filename": f"ID_Card_{id_card['id_number']}.txt"
+    }
+
+
+# ==================== BULK ID CARDS ====================
+
+@router.post("/bulk-generate")
+async def bulk_generate_id_cards(school_id: str, person_type: str, person_ids: List[str]):
+    """
+    Generate ID cards for multiple persons at once
+    """
+    cards = []
+    errors = []
+    
+    for person_id in person_ids[:50]:  # Limit to 50
+        try:
+            card = await generate_id_card(person_type, person_id, school_id)
+            if card.get("success"):
+                cards.append({
+                    "id": person_id,
+                    "name": card["id_card"]["name"],
+                    "card": card
+                })
+        except Exception as e:
+            errors.append(f"{person_id}: {str(e)}")
+    
+    return {
+        "success": True,
+        "generated": len(cards),
+        "errors": errors[:10],
+        "cards": cards
+    }
+
+
+# ==================== STAFF PHOTO UPLOAD ====================
+
+class StaffPhotoUpload(BaseModel):
+    staff_id: str
+    school_id: str
+    photo_base64: str
+    photo_type: str = "passport"  # passport, front, etc.
+
+@router.post("/staff-photo")
+async def upload_staff_photo(data: StaffPhotoUpload):
+    """
+    Upload photo for teacher/staff
+    For face recognition and ID card
+    """
+    # Check if staff exists
+    staff = await db.staff.find_one({"id": data.staff_id}, {"_id": 0, "name": 1})
+    if not staff:
+        staff = await db.users.find_one({"id": data.staff_id}, {"_id": 0, "name": 1})
+    
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    
+    photo_id = str(uuid.uuid4())
+    
+    photo_record = {
+        "id": photo_id,
+        "staff_id": data.staff_id,
+        "school_id": data.school_id,
+        "photo_type": data.photo_type,
+        "photo_data": data.photo_base64,
+        "staff_name": staff.get("name"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Upsert - replace if exists
+    await db.staff_photos.update_one(
+        {"staff_id": data.staff_id, "photo_type": data.photo_type},
+        {"$set": photo_record},
+        upsert=True
+    )
+    
+    # Update staff record
+    await db.staff.update_one(
+        {"id": data.staff_id},
+        {"$set": {
+            "has_photo": True,
+            "photo_updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await db.users.update_one(
+        {"id": data.staff_id},
+        {"$set": {
+            "has_photo": True,
+            "photo_updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "success": True,
+        "message": f"Photo uploaded for {staff.get('name')}",
+        "photo_id": photo_id
+    }
+
+
+@router.get("/staff-photos/{staff_id}")
+async def get_staff_photos(staff_id: str):
+    """Get all photos for a staff member"""
+    photos = await db.staff_photos.find(
+        {"staff_id": staff_id},
+        {"_id": 0, "photo_data": 0}  # Exclude large photo data in list
+    ).to_list(10)
+    
+    staff = await db.staff.find_one({"id": staff_id}, {"_id": 0, "name": 1})
+    if not staff:
+        staff = await db.users.find_one({"id": staff_id}, {"_id": 0, "name": 1})
+    
+    return {
+        "staff_id": staff_id,
+        "staff_name": staff.get("name") if staff else None,
+        "total_photos": len(photos),
+        "photos": photos
+    }
+
+
+@router.get("/staff-photo/{staff_id}/{photo_type}")
+async def get_staff_photo(staff_id: str, photo_type: str = "passport"):
+    """Get specific photo for a staff member"""
+    photo = await db.staff_photos.find_one(
+        {"staff_id": staff_id, "photo_type": photo_type},
+        {"_id": 0}
+    )
+    
+    if not photo:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    return {
+        "success": True,
+        "photo": photo
+    }
