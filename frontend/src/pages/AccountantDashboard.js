@@ -10,7 +10,8 @@ import {
   Calculator, Users, Wallet, TrendingUp, AlertTriangle, Brain, 
   IndianRupee, ArrowUp, ArrowDown, Receipt, FileText, Plus,
   Loader2, CheckCircle, Clock, XCircle, Download, RefreshCw,
-  PieChart, BarChart3, Send, Sparkles, User, Building2
+  PieChart, BarChart3, Send, Sparkles, User, Building2, Search,
+  GraduationCap, CreditCard, Banknote
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,6 +31,40 @@ export default function AccountantDashboard() {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [processingPayAll, setProcessingPayAll] = useState(false);
+  
+  // NEW: Add Fee Due Dialog
+  const [showAddDue, setShowAddDue] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [dueForm, setDueForm] = useState({
+    academic_year: '2023-24',
+    due_amount: '',
+    fee_type: 'tuition',
+    description: '',
+    remarks: ''
+  });
+  
+  // NEW: Add Salary Structure Dialog
+  const [showAddSalary, setShowAddSalary] = useState(false);
+  const [staffList, setStaffList] = useState([]);
+  const [staffSearch, setStaffSearch] = useState('');
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [salaryForm, setSalaryForm] = useState({
+    basic_salary: '',
+    hra: '',
+    da: '',
+    ta: '',
+    medical: '',
+    special_allowance: '',
+    pf_deduction: '',
+    tax_deduction: '',
+    other_deductions: '',
+    effective_from: new Date().toISOString().split('T')[0]
+  });
+  
+  // NEW: Old Dues List
+  const [oldDues, setOldDues] = useState([]);
   
   const [expenseForm, setExpenseForm] = useState({
     category: 'maintenance',
