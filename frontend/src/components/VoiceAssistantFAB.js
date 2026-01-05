@@ -8,7 +8,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { 
   Mic, MicOff, X, Volume2, Loader2, CheckCircle, XCircle,
-  Send, User, Sparkles, Settings, MessageSquare
+  Send, User, Sparkles, Settings, MessageSquare, History, Trash2, ChevronLeft
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
