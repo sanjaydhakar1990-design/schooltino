@@ -530,6 +530,46 @@ export default function StudyTinoDashboard() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-4 space-y-4 pb-24">
+        {/* ==================== QUICK ACCESS TABS ==================== */}
+        <section className="grid grid-cols-4 gap-3" data-testid="student-quick-tabs">
+          <button 
+            onClick={() => navigate('/studytino/fees')}
+            className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-md transition-all"
+          >
+            <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center mb-1">
+              <Wallet className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs font-medium text-slate-700">Pay Fees</span>
+          </button>
+          <button 
+            onClick={() => {}}
+            className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-md transition-all"
+          >
+            <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center mb-1">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs font-medium text-slate-700">Results</span>
+          </button>
+          <button 
+            onClick={() => setShowAIHelper(true)}
+            className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-md transition-all"
+          >
+            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mb-1">
+              <Brain className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs font-medium text-slate-700">AI Help</span>
+          </button>
+          <button 
+            onClick={() => setShowLeaveDialog(true)}
+            className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-md transition-all"
+          >
+            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-1">
+              <CalendarDays className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs font-medium text-slate-700">Leave</span>
+          </button>
+        </section>
+
         {/* ==================== IMPORTANT ALERT (if exists) ==================== */}
         {alerts.length > 0 && alerts[0].priority === 'high' && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
