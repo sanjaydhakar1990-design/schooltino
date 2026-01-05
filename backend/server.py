@@ -6681,6 +6681,9 @@ api_router.include_router(multi_year_fees_router)
 api_router.include_router(salary_router)
 api_router.include_router(face_recognition_router)
 api_router.include_router(id_card_router)
+api_router.include_router(password_reset_router)
+api_router.include_router(school_setup_router)
+api_router.include_router(director_greeting_router)
 
 app.include_router(api_router)
 
