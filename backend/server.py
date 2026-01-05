@@ -4684,39 +4684,41 @@ async def delete_meeting(meeting_id: str, current_user: dict = Depends(get_curre
 
 @api_router.get("/subscription/plans")
 async def get_subscription_plans():
-    """Get available subscription plans - Smart pricing for Indian schools"""
+    """Get available subscription plans - Updated pricing for Indian schools"""
     return {
         "plans": [
             {
                 "id": "free_trial",
                 "name": "Free Trial",
-                "duration": "15 Days",
+                "duration": "1 Month",
                 "price": 0,
                 "price_display": "FREE",
                 "features": [
-                    "All features for 15 days",
-                    "AI features for 7 days",
-                    "Up to 100 students",
-                    "Email support"
+                    "1 Month full access",
+                    "All AI features included",
+                    "CCTV + Biometric included",
+                    "Up to ₹27,999 plan features",
+                    "Email & WhatsApp support"
                 ],
                 "ai_included": True,
-                "ai_note": "AI features available for first 7 days only"
+                "trial_plan": "cctv_biometric"
             },
             {
                 "id": "basic",
                 "name": "Basic ERP",
                 "duration": "Per Year",
                 "price": 9999,
+                "monthly_price": 1000,
                 "price_display": "₹9,999/year",
-                "monthly_equivalent": "₹833/month",
+                "monthly_equivalent": "₹1,000/month",
                 "features": [
-                    "Up to 1000 students",
+                    "Unlimited students",
                     "Attendance Management",
                     "Fee Collection & Reports",
                     "Student & Staff Management",
                     "Timetable Management",
-                    "SMS Notifications (100/month)",
-                    "Basic Reports",
+                    "SMS Notifications",
+                    "Mobile App Access",
                     "Email Support"
                 ],
                 "ai_included": False,
@@ -4727,20 +4729,17 @@ async def get_subscription_plans():
                 "id": "ai_powered",
                 "name": "AI Powered",
                 "duration": "Per Year",
-                "price": 18000,
-                "price_display": "₹18,000/year",
-                "monthly_equivalent": "₹1,500/month",
+                "price": 17999,
+                "monthly_price": 1999,
+                "price_display": "₹17,999/year",
+                "monthly_equivalent": "₹1,999/month",
                 "features": [
-                    "Up to 2000 students",
                     "Everything in Basic ERP",
-                    "AI Paper Generator (Unlimited)",
+                    "AI Paper Generator",
                     "AI Voice Assistant (Ask Tino)",
-                    "AI Content Studio",
+                    "AI Chapter Summary",
                     "AI Accountant Insights",
                     "Director AI Dashboard",
-                    "Biometric Integration",
-                    "Transport Management",
-                    "Health Module",
                     "WhatsApp Notifications",
                     "Priority Support"
                 ],
@@ -4749,31 +4748,78 @@ async def get_subscription_plans():
                 "ideal_for": "Growing Schools - Full AI Power"
             },
             {
-                "id": "enterprise",
-                "name": "Enterprise",
+                "id": "cctv_biometric",
+                "name": "CCTV + Biometric",
                 "duration": "Per Year",
-                "price": 35000,
-                "price_display": "₹35,000/year",
-                "monthly_equivalent": "₹2,917/month",
+                "price": 27999,
+                "monthly_price": 2999,
+                "price_display": "₹27,999/year",
+                "monthly_equivalent": "₹2,999/month",
                 "features": [
-                    "Unlimited students",
                     "Everything in AI Powered",
-                    "CCTV AI Integration",
-                    "Multi-branch Support",
-                    "Custom Branding",
-                    "API Access",
-                    "Dedicated Account Manager",
-                    "On-premise Option",
-                    "24/7 Phone Support",
-                    "Staff Training (2 sessions)"
+                    "AI Face Recognition",
+                    "CCTV Integration (Any Brand)",
+                    "Auto Attendance via CCTV",
+                    "Biometric Attendance",
+                    "Twin/Sibling Detection",
+                    "Visitor Management",
+                    "24/7 Support"
                 ],
                 "ai_included": True,
-                "badge": "BEST FOR CHAINS",
-                "ideal_for": "Large Schools & School Chains"
+                "badge": "RECOMMENDED",
+                "ideal_for": "Schools with CCTV & Biometric Systems"
+            },
+            {
+                "id": "gps_tracking",
+                "name": "Bus GPS + CCTV",
+                "duration": "Per Year",
+                "price": 37999,
+                "monthly_price": 3999,
+                "price_display": "₹37,999/year",
+                "monthly_equivalent": "₹3,999/month",
+                "features": [
+                    "Everything in CCTV + Biometric",
+                    "Live Bus GPS Tracking",
+                    "Route Optimization AI",
+                    "Parent Bus Notifications",
+                    "Driver Management",
+                    "Fuel Analytics"
+                ],
+                "ai_included": True,
+                "badge": "COMING SOON",
+                "coming_soon": True,
+                "ideal_for": "Schools with Transport Fleet"
+            },
+            {
+                "id": "ai_teacher",
+                "name": "AI Teacher Clone",
+                "duration": "Per Year",
+                "price": 47999,
+                "monthly_price": 4999,
+                "price_display": "₹47,999/year",
+                "monthly_equivalent": "₹4,999/month",
+                "features": [
+                    "Everything in GPS + CCTV",
+                    "AI Teacher Avatar (HeyGen)",
+                    "Personalized Video Lessons",
+                    "Multi-language Teaching",
+                    "AI Doubt Solving 24/7",
+                    "Per Class License"
+                ],
+                "ai_included": True,
+                "badge": "COMING SOON",
+                "coming_soon": True,
+                "ideal_for": "Premium Schools - Future of Education"
             }
         ],
-        "comparison_note": "AI features se 3x faster kaam hota hai!",
-        "support_whatsapp": "+91-XXXXXXXXXX"
+        "trial_info": {
+            "duration": "1 Month FREE",
+            "includes": "All features up to ₹27,999 plan",
+            "ai_included": True,
+            "no_card_required": True
+        },
+        "comparison_note": "1 Month FREE Trial - All AI features included!",
+        "support_whatsapp": "+91-7879967616"
     }
 
 @api_router.post("/subscription/activate")
