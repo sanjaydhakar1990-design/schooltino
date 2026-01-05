@@ -45,6 +45,9 @@ export default function TeachTinoDashboard() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   
+  // Profile/Settings State
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  
   // Syllabus State
   const [syllabusData, setSyllabusData] = useState([]);
   const [showSyllabusDialog, setShowSyllabusDialog] = useState(false);
