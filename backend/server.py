@@ -529,6 +529,9 @@ class NoticeResponse(BaseModel):
     created_by_name: Optional[str] = None
     is_active: bool = True
     created_at: str
+    signature_url: Optional[str] = None
+    seal_url: Optional[str] = None
+    school_name: Optional[str] = None
 
 # Audit Log Model
 class AuditLogResponse(BaseModel):
