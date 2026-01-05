@@ -50,6 +50,8 @@ import HealthModulePage from './pages/HealthModulePage';
 import BiometricPage from './pages/BiometricPage';
 import TimetablePage from './pages/TimetablePage';
 import DirectorAIDashboard from './pages/DirectorAIDashboard';
+import MultiYearFeesPage from './pages/MultiYearFeesPage';
+import SalaryTrackingPage from './pages/SalaryTrackingPage';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
