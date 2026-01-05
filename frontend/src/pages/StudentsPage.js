@@ -533,7 +533,7 @@ export default function StudentsPage() {
               {/* Face Enrollment Option */}
               <div className="border-t border-slate-200 pt-4 mt-4">
                 <p className="text-sm text-slate-600 mb-3">
-                  📸 <strong>Face Enrollment</strong> - AI attendance ke liye photos add karein
+                  📸 <strong>Face Enrollment</strong> - AI attendance ke liye photos add karein (Optional)
                 </p>
                 <div className="flex gap-2">
                   <Button 
@@ -543,6 +543,7 @@ export default function StudentsPage() {
                       setIsCredentialsDialogOpen(false);
                       setShowFaceEnrollment(true);
                     }}
+                    data-testid="capture-photos-btn"
                   >
                     📷 Capture Photos Now
                   </Button>
@@ -553,8 +554,40 @@ export default function StudentsPage() {
                       toast.info('Face enrollment skipped. Complete from student profile later.');
                       setIsCredentialsDialogOpen(false);
                     }}
+                    data-testid="skip-face-btn"
                   >
                     Skip for Now
+                  </Button>
+                </div>
+              </div>
+
+              {/* Biometric Enrollment Option */}
+              <div className="border-t border-slate-200 pt-4 mt-2">
+                <p className="text-sm text-slate-600 mb-3">
+                  👆 <strong>Biometric Enrollment</strong> - Fingerprint registration (Optional)
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                    onClick={() => {
+                      toast.info('Biometric device se connect karein aur fingerprint register karein.');
+                      // Navigate to biometric page with student context
+                      window.location.href = `/app/biometric?student_id=${newStudentCredentials?.student_id}&name=${encodeURIComponent(newStudentCredentials?.name || '')}`;
+                    }}
+                    data-testid="biometric-enroll-btn"
+                  >
+                    👆 Enroll Biometric Now
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    className="text-slate-500"
+                    onClick={() => {
+                      toast.info('Biometric enrollment skipped. Complete later from Biometric section.');
+                    }}
+                    data-testid="skip-biometric-btn"
+                  >
+                    Skip
                   </Button>
                 </div>
               </div>
