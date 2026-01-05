@@ -9,7 +9,44 @@
 
 ## What's Been Implemented (Latest Session - 5 Jan 2026)
 
-### 46. Updated Pricing Structure ✅ NEW! 💰
+### 51. Forgot Password System ✅ NEW! 🔐
+- **All portals supported** - Director, Teacher, Student, Accountant
+- **OTP-based reset** - Email, Mobile, or Student ID
+- **3-step flow:** Request OTP → Verify OTP → Set New Password
+- **Demo mode** - OTP shown for testing
+- **Secure tokens** - 10-min OTP expiry, 1-hour reset token
+- APIs: `/api/password-reset/forgot`, `/verify-otp`, `/reset`
+
+### 52. Accountant Data Entry Forms ✅ NEW! 💰
+- **Add Old Dues** - Student search, Academic year, Fee type, Amount
+- **Set Salary Structure** - Staff search, Earnings (Basic, HRA, DA, TA, Medical, Special), Deductions (PF, Tax, Other)
+- **Real-time calculations** - Gross, Deductions, Net salary preview
+- **Integrated in Accountant Dashboard** - Old Dues and Salaries tabs
+
+### 53. Staff/Director Photo Upload ✅ NEW! 📸
+- **Face Recognition Setup** - Upload photos for AI recognition
+- **4 photo types** - Passport (required), Front (required), Left, Right
+- **AI quality check** - OpenAI analyzes photo quality
+- **Enrollment progress** - Shows completion percentage
+- **Access via Settings** - TeachTino dashboard settings button
+- APIs: `/api/face-recognition/staff/upload-photo`, `/staff/enrollment-status/{staff_id}`
+
+### 54. AI School Auto-Setup ✅ NEW! 🏫
+- **One-click setup** - Just provide school website URL
+- **AI extracts details** - School name, address, contact, principal, board, fees
+- **Editable results** - Review and edit before confirming
+- **API key generation** - For third-party integration
+- APIs: `/api/school-setup/extract-from-website`, `/generate-api-key`, `/wizard/quick-setup`
+
+### 55. Director Personalized Greeting ✅ NEW! 🙏
+- **Time-based greeting** - Good Morning/Afternoon/Evening/Night
+- **Custom greeting** - Hare Krishna, Jai Shree Ram, etc.
+- **Wellness check** - "Aap kaise hain?" on first entry
+- **Smart cooldown** - Doesn't repeat greeting within 60 mins
+- **Entry tracking** - Logs when director enters
+- APIs: `/api/director-greeting/greet/{user_id}`, `/settings`, `/log-entry`
+
+### 46. Updated Pricing Structure ✅ 💰
 - **Basic ERP (No AI):** ₹1,000/month | ₹9,999/year
 - **AI Powered (MOST POPULAR):** ₹1,999/month | ₹17,999/year
 - **CCTV + Biometric (RECOMMENDED):** ₹2,999/month | ₹27,999/year
