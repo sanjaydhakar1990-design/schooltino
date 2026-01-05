@@ -70,6 +70,8 @@ const resources = {
       "ai_accountant": "AI Accountant",
       "payment_settings": "Payment Settings",
       "fee_structure": "Fee Structure",
+      "previous_year_fees": "Previous Year Fees",
+      "salary_management": "Salary Management",
       "staff_directory": "Staff Directory",
       "add_school": "Add School",
       "setup_wizard": "Setup Wizard",
