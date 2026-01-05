@@ -531,7 +531,7 @@ export default function StudyTinoDashboard() {
 
       <main className="max-w-lg mx-auto px-4 py-4 space-y-4 pb-24">
         {/* ==================== QUICK ACCESS TABS ==================== */}
-        <section className="grid grid-cols-4 gap-3" data-testid="student-quick-tabs">
+        <section className="grid grid-cols-5 gap-2" data-testid="student-quick-tabs">
           <button 
             onClick={() => navigate('/studytino/fees')}
             className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-md transition-all"
@@ -540,6 +540,15 @@ export default function StudyTinoDashboard() {
               <Wallet className="w-5 h-5 text-white" />
             </div>
             <span className="text-xs font-medium text-slate-700">Pay Fees</span>
+          </button>
+          <button 
+            onClick={() => navigate('/studytino/receipts')}
+            className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-md transition-all"
+          >
+            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-1">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs font-medium text-slate-700">Receipts</span>
           </button>
           <button 
             onClick={() => {}}
@@ -563,7 +572,7 @@ export default function StudyTinoDashboard() {
             onClick={() => setShowLeaveDialog(true)}
             className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-md transition-all"
           >
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-1">
+            <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center mb-1">
               <CalendarDays className="w-5 h-5 text-white" />
             </div>
             <span className="text-xs font-medium text-slate-700">Leave</span>
