@@ -23,9 +23,15 @@
    • Weak student identification
    • Salary tracking & payslips
 
+📸 AI FACE RECOGNITION (NEW!)
+   • Works with ANY CCTV Brand
+   • Auto attendance via CCTV
+   • Twin/Sibling detection
+   • Biometric integration
+
 📊 ATTENDANCE SYSTEM
    • Daily attendance marking
-   • Biometric integration support
+   • CCTV + Biometric support
    • Auto SMS to parents
    • Monthly reports
 
@@ -42,46 +48,48 @@
    • Director AI Dashboard ("Big Boss")
    • AI Accountant
 
-📱 MOBILE READY
-   • PWA - Install like app
-   • Works on any device
-   • Offline support
-   • WhatsApp integration (coming soon)
-
-🏥 ADDITIONAL MODULES
-   • Front Office / Visitor Management
-   • Transport Management
-   • Health Module
-   • Timetable Auto-Scheduler
-   • CCTV Integration (coming soon)
-
 ═══════════════════════════════════════════════════════════════════════════════
-                               💵 AFFORDABLE PRICING 💵
+                         💵 NEW AFFORDABLE PRICING 💵
 ═══════════════════════════════════════════════════════════════════════════════
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  PLAN              │  PRICE/YEAR    │  BEST FOR                            │
+│  PLAN                 │  MONTHLY      │  YEARLY       │  FEATURES          │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  🟢 BASIC ERP      │  ₹9,999/year   │  Small schools (up to 500 students) │
-│     (No AI)        │  ₹833/month    │  Basic management only               │
+│                                                                             │
+│  🟢 BASIC ERP         │  ₹1,000/month │  ₹9,999/year  │  No AI            │
+│     (Small Schools)   │               │               │  Basic Management │
+│                                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  🔵 AI POWERED     │  ₹18,000/year  │  Medium schools + AI features       │
-│     (Most Popular) │  ₹1,500/month  │  Director AI, Voice Assistant       │
+│                                                                             │
+│  🔵 AI POWERED        │  ₹1,999/month │  ₹17,999/year │  Full AI Features │
+│     (MOST POPULAR)    │               │               │  Voice Assistant  │
+│                                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  🟣 ENTERPRISE     │  ₹35,000/year  │  Large schools + CCTV AI            │
-│     (All Features) │  ₹2,917/month  │  WhatsApp + Priority support        │
+│                                                                             │
+│  🟣 CCTV + BIOMETRIC  │  ₹2,999/month │  ₹27,999/year │  AI + CCTV        │
+│     (RECOMMENDED)     │               │               │  Face Recognition │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  🟡 BUS GPS + CCTV    │  ₹3,999/month │  ₹37,999/year │  GPS Tracking     │
+│     (COMING SOON)     │               │               │  Fleet Management │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  🔴 AI TEACHER CLONE  │  ₹4,999/month │  ₹47,999/year │  HeyGen AI Avatar │
+│     (COMING SOON)     │  (per class)  │  (per class)  │  Video Lessons    │
+│                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-           ⚡ 50% CHEAPER THAN COMPETITORS WITH 3X MORE AI FEATURES! ⚡
-
 ═══════════════════════════════════════════════════════════════════════════════
-                              🆓 30 DAYS FREE TRIAL 🆓
+                     🎉 1 MONTH FREE TRIAL! 🎉
 ═══════════════════════════════════════════════════════════════════════════════
 
-   ✅ All features unlocked
-   ✅ AI features for 3 days
-   ✅ No credit card required
-   ✅ Cancel anytime
+   ✅ ALL AI Features Included
+   ✅ CCTV + Biometric Access (₹27,999 plan)
+   ✅ No Credit Card Required
+   ✅ Cancel Anytime
+   ✅ Full Support
 
                     👉 START NOW: schooltino.in/register 👈
 
@@ -93,8 +101,22 @@
    🗣️ HINDI/ENGLISH - Full language support
    📱 MOBILE FIRST - Access anywhere
    🤖 AI POWERED - Smart automation
-   💰 AFFORDABLE - Best value for money
+   📸 ANY CCTV WORKS - Auto-detect any brand
+   💰 MOST AFFORDABLE - From ₹1,000/month only!
    🔒 SECURE - Your data is safe
+
+═══════════════════════════════════════════════════════════════════════════════
+                       🎯 CCTV AUTO-DETECTION 🎯
+═══════════════════════════════════════════════════════════════════════════════
+
+   Our AI works with ANY CCTV brand:
+   
+   ✅ Hikvision         ✅ Dahua           ✅ CP Plus
+   ✅ Honeywell         ✅ Bosch           ✅ Samsung
+   ✅ Axis              ✅ Uniview         ✅ TVT
+   ✅ Any IP Camera!
+
+   No special hardware needed - just connect your existing CCTV!
 
 ═══════════════════════════════════════════════════════════════════════════════
                               CONTACT US TODAY!
@@ -107,4 +129,6 @@
 
    Demo ke liye aaj hi contact karein! 🎯
 
+═══════════════════════════════════════════════════════════════════════════════
+              ⭐ "Ab har school banega SMART school!" ⭐
 ═══════════════════════════════════════════════════════════════════════════════
