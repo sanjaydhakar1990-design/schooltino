@@ -546,6 +546,112 @@ export default function StudentsPage() {
                   />
                 </div>
               </div>
+
+              {/* Photo Capture Section - Only for new admission */}
+              {!editingStudent && (
+                <div className="border-t border-slate-200 pt-4 mt-4">
+                  <Label className="text-base font-semibold flex items-center gap-2 mb-3">
+                    <Camera className="w-5 h-5 text-indigo-600" />
+                    Student Photo (AI Attendance के लिए) - Optional
+                  </Label>
+                  
+                  {!capturedPhoto && !showCamera && (
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50 h-20"
+                        onClick={startCamera}
+                        data-testid="open-camera-btn"
+                      >
+                        <div className="flex flex-col items-center">
+                          <Camera className="w-6 h-6 mb-1" />
+                          <span>📷 Camera से Capture</span>
+                        </div>
+                      </Button>
+                      <label className="flex-1">
+                        <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg h-20 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+                          <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                          <span className="text-sm text-slate-600">📁 Photo Upload</span>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                          data-testid="photo-upload-input"
+                        />
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Camera View */}
+                  {showCamera && (
+                    <div className="relative bg-black rounded-xl overflow-hidden">
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-64 object-cover"
+                      />
+                      <canvas ref={canvasRef} className="hidden" />
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+                        <Button
+                          type="button"
+                          onClick={capturePhoto}
+                          className="bg-white text-indigo-600 hover:bg-indigo-50"
+                          data-testid="capture-btn"
+                        >
+                          <Camera className="w-5 h-5 mr-2" />
+                          Capture
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={stopCamera}
+                          className="bg-white/80 text-red-600 border-red-300"
+                        >
+                          <X className="w-5 h-5 mr-2" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Photo Preview */}
+                  {capturedPhoto && (
+                    <div className="relative">
+                      <img
+                        src={capturedPhoto}
+                        alt="Captured"
+                        className="w-full h-48 object-cover rounded-xl border-2 border-emerald-500"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="bg-white/90 text-red-600 border-red-300 hover:bg-red-50"
+                          onClick={removePhoto}
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                      <div className="absolute bottom-2 left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                        <Check className="w-4 h-4" />
+                        Photo Ready
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-slate-500 mt-2">
+                    * Photo optional hai। बाद में student profile से भी add कर सकते हैं।
+                  </p>
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   {t('cancel')}
