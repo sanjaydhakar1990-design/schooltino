@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schooltino - AI-Powered School Management Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .brochure {
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .logo {
+            font-size: 52px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tagline {
+            font-size: 22px;
+            font-weight: 300;
+            color: #a0aec0;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 14px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+        }
+        
+        /* New Features Banner */
+        .new-features-banner {
+            background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .new-features-banner h3 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        /* Features Grid */
+        .features {
+            padding: 50px 40px;
+            background: #f8fafc;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 40px;
+        }
+        
+        .section-title span {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+        
+        .feature-card.new {
+            position: relative;
+            border-color: #10b981;
+        }
+        
+        .feature-card.new::after {
+            content: 'NEW';
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+        
+        /* Pricing Section */
+        .pricing {
+            padding: 50px 40px;
+            background: white;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .price-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 30px 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .price-card.popular {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            transform: scale(1.05);
+        }
+        
+        .price-card.popular::before {
+            content: '⭐ MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        
+        .price-card.coming-soon {
+            opacity: 0.7;
+            background: #f8fafc;
+        }
+        
+        .price-card.coming-soon::after {
+            content: 'COMING SOON';
+            position: absolute;
+            top: -12px;
+            right: 15px;
+            background: #94a3b8;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        
+        .price-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+        
+        .price-amount {
+            font-size: 32px;
+            font-weight: 800;
+            color: #667eea;
+            margin: 15px 0;
+        }
+        
+        .price-amount span {
+            font-size: 14px;
+            font-weight: 400;
+            color: #64748b;
+        }
+        
+        .price-yearly {
+            font-size: 14px;
+            color: #10b981;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .price-features {
+            text-align: left;
+            font-size: 13px;
+            color: #475569;
+            line-height: 2;
+        }
+        
+        .price-features li {
+            list-style: none;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .price-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        /* New Features Section */
+        .new-features {
+            padding: 50px 40px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+        }
+        
+        .new-features .section-title {
+            color: white;
+        }
+        
+        .new-features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .new-feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .new-feature-item h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .new-feature-item p {
+            font-size: 14px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+        
+        /* Contact Section */
+        .contact {
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            text-align: center;
+            color: white;
+        }
+        
+        .contact h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .contact-item {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cta-btn {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1a1a2e;
+            padding: 20px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .brochure { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="brochure">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="logo">🎓 SCHOOLTINO</div>
+            <p class="tagline">AI + CCTV + Apps = Complete Smart School Management</p>
+            <div class="hero-badge">🎉 1 Month FREE Trial - No Credit Card!</div>
+        </div>
+        
+        <!-- New Features Banner -->
+        <div class="new-features-banner">
+            <h3>🆕 January 2026 Update: Forgot Password | Staff Face Recognition | Director AI Greeting | One-Click School Setup</h3>
+        </div>
+        
+        <!-- Core Features -->
+        <div class="features">
+            <h2 class="section-title">Why Schools <span>Love</span> Schooltino</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Voice Assistant</h3>
+                    <p>Talk to your school! Ask anything in Hindi or English. Get instant answers about fees, attendance, results.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>CCTV Face Recognition</h3>
+                    <p>Any CCTV brand works! Auto attendance when students enter. No manual marking needed.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👔</div>
+                    <h3>Director AI Dashboard</h3>
+                    <p>School Health Score 0-100. AI tells you what to fix first. Voice briefings in Hindi every morning.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>AI Accountant</h3>
+                    <p>Predicts fee defaulters. Auto salary slips. Expense tracking with AI insights.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>AI Paper Generator</h3>
+                    <p>Create question papers in 30 seconds. NCERT aligned. Auto-marking available.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Apps</h3>
+                    <p>Parent, Teacher & Student apps. Works offline too. Install like WhatsApp!</p>
+                </div>
+                
+                <!-- NEW Features -->
+                <div class="feature-card new">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Forgot Password (OTP)</h3>
+                    <p>All users can reset password via Email, Mobile or Student ID. No admin help needed!</p>
+                </div>
+                <div class="feature-card new">
+                    <div class="feature-icon">🙏</div>
+                    <h3>Director Personal Greeting</h3>
+                    <p>AI greets Director by name! Custom greetings like "Hare Krishna". Wellness check on first entry.</p>
+                </div>
+                <div class="feature-card new">
+                    <div class="feature-icon">🏫</div>
+                    <h3>One-Click School Setup</h3>
+                    <p>Enter school website URL → AI extracts all details automatically. Setup in 5 minutes!</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pricing Section -->
+        <div class="pricing">
+            <h2 class="section-title">Simple, <span>Affordable</span> Pricing</h2>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <div class="price-name">📋 Basic ERP</div>
+                    <div class="price-amount">₹1,000<span>/month</span></div>
+                    <div class="price-yearly">₹9,999/year (Save ₹2,000)</div>
+                    <ul class="price-features">
+                        <li>Student Management</li>
+                        <li>Attendance & Fees</li>
+                        <li>SMS Alerts</li>
+                        <li>Basic Reports</li>
+                        <li>Parent Portal</li>
+                    </ul>
+                </div>
+                
+                <div class="price-card popular">
+                    <div class="price-name">🤖 AI Powered</div>
+                    <div class="price-amount">₹1,999<span>/month</span></div>
+                    <div class="price-yearly">₹17,999/year (Save ₹6,000)</div>
+                    <ul class="price-features">
+                        <li>Everything in Basic</li>
+                        <li>AI Voice Assistant</li>
+                        <li>AI Paper Generator</li>
+                        <li>Director AI Dashboard</li>
+                        <li>AI Accountant</li>
+                        <li>Forgot Password (OTP)</li>
+                        <li>One-Click School Setup</li>
+                    </ul>
+                </div>
+                
+                <div class="price-card">
+                    <div class="price-name">📹 CCTV + Biometric</div>
+                    <div class="price-amount">₹2,999<span>/month</span></div>
+                    <div class="price-yearly">₹27,999/year (Save ₹8,000)</div>
+                    <ul class="price-features">
+                        <li>Everything in AI Powered</li>
+                        <li>Any CCTV Brand Support</li>
+                        <li>Face Recognition</li>
+                        <li>Auto Attendance</li>
+                        <li>Director Personal Greeting</li>
+                        <li>Staff Face Enrollment</li>
+                        <li>Entry/Exit Logs</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Additional Plans -->
+            <div class="pricing-grid" style="margin-top: 20px;">
+                <div class="price-card coming-soon">
+                    <div class="price-name">🚌 Bus GPS + CCTV</div>
+                    <div class="price-amount">₹3,999<span>/month</span></div>
+                    <div class="price-yearly">₹37,999/year</div>
+                    <ul class="price-features">
+                        <li>Everything in CCTV</li>
+                        <li>Live Bus Tracking</li>
+                        <li>Route Optimization</li>
+                        <li>Bus CCTV Feed</li>
+                        <li>Parent App Alerts</li>
+                    </ul>
+                </div>
+                
+                <div class="price-card coming-soon">
+                    <div class="price-name">🤖 AI Teacher Clone</div>
+                    <div class="price-amount">₹4,999<span>/month</span></div>
+                    <div class="price-yearly">₹47,999/year</div>
+                    <ul class="price-features">
+                        <li>Everything in GPS</li>
+                        <li>HeyGen AI Video Clone</li>
+                        <li>24/7 Doubt Solving</li>
+                        <li>Personalized Teaching</li>
+                        <li>Multi-language Support</li>
+                    </ul>
+                </div>
+                
+                <div class="price-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <div class="feature-icon" style="font-size: 50px;">🎁</div>
+                    <h3 style="margin: 15px 0;">Custom Enterprise</h3>
+                    <p style="color: #64748b; font-size: 14px;">Need something special? We'll build it for you!</p>
+                    <div style="margin-top: 15px; color: #667eea; font-weight: 600;">Contact Us →</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- New Features Detail Section -->
+        <div class="new-features">
+            <h2 class="section-title">🆕 What's New in <span style="color: #10b981;">January 2026</span></h2>
+            <div class="new-features-grid">
+                <div class="new-feature-item">
+                    <h4>🔐 Forgot Password System</h4>
+                    <p>All users (Director, Teacher, Student, Accountant) can now reset their password using Email, Mobile, or Student ID. OTP-based secure reset. No more calling admin!</p>
+                </div>
+                <div class="new-feature-item">
+                    <h4>📸 Staff Face Recognition</h4>
+                    <p>Teachers and Directors can upload their photos for face recognition. AI verifies photo quality. CCTV auto-recognizes when they enter school.</p>
+                </div>
+                <div class="new-feature-item">
+                    <h4>🙏 Director Personal Greeting</h4>
+                    <p>AI greets Director by name based on time (Good Morning/Evening). Set custom greetings like "Hare Krishna", "Jai Shree Ram". First entry wellness check!</p>
+                </div>
+                <div class="new-feature-item">
+                    <h4>🏫 One-Click School Setup</h4>
+                    <p>Just enter your school website URL. AI automatically extracts school name, address, principal name, contact details. Review & confirm. Setup done in 5 minutes!</p>
+                </div>
+                <div class="new-feature-item">
+                    <h4>👥 Role & Permission Management</h4>
+                    <p>Director can change anyone's role (Teacher → Vice Principal). Assign classes to any staff. Even Principal/VP can teach classes. Full authorization control!</p>
+                </div>
+                <div class="new-feature-item">
+                    <h4>💰 Accountant Data Entry</h4>
+                    <p>Add previous year fee dues with student search. Set salary structure with earnings & deductions breakdown. Real-time net salary calculation.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Section -->
+        <div class="contact">
+            <h2>Ready to Transform Your School?</h2>
+            <p>Join 500+ schools already using Schooltino</p>
+            <div class="contact-info">
+                <div class="contact-item">📞 +91 XXXX-XXXXXX</div>
+                <div class="contact-item">💬 WhatsApp: +91 XXXX-XXXXXX</div>
+                <div class="contact-item">📧 info@schooltino.com</div>
+            </div>
+            <a href="#" class="cta-btn">Start FREE Trial Now →</a>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>🌐 www.schooltino.com | Made with ❤️ in India for Indian Schools</p>
+            <p style="margin-top: 10px;">CBSE • ICSE • State Board - All Supported | Hindi + English Bilingual</p>
+        </div>
+    </div>
+</body>
+</html>
