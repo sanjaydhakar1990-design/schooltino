@@ -27,6 +27,14 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Sign & Seal states
+  const [signatureUrl, setSignatureUrl] = useState(null);
+  const [sealUrl, setSealUrl] = useState(null);
+  const [uploadingSignature, setUploadingSignature] = useState(false);
+  const [uploadingSeal, setUploadingSeal] = useState(false);
+  const signatureInputRef = useRef(null);
+  const sealInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -40,6 +48,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchSchools();
+    fetchSignatureSeal();
   }, []);
 
   const fetchSchools = async () => {
@@ -50,6 +59,70 @@ export default function SettingsPage() {
       console.error('Failed to fetch schools');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSignatureSeal = async () => {
+    try {
+      const response = await axios.get(`${API}/school/signature-seal`);
+      setSignatureUrl(response.data.signature_url);
+      setSealUrl(response.data.seal_url);
+    } catch (error) {
+      console.error('Failed to fetch signature/seal');
+    }
+  };
+
+  const handleSignatureUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File size should be less than 2MB');
+      return;
+    }
+    
+    setUploadingSignature(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await axios.post(`${API}/school/upload-signature`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setSignatureUrl(response.data.url);
+      toast.success('Signature uploaded successfully! ✍️');
+    } catch (error) {
+      toast.error('Failed to upload signature');
+    } finally {
+      setUploadingSignature(false);
+    }
+  };
+
+  const handleSealUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File size should be less than 2MB');
+      return;
+    }
+    
+    setUploadingSeal(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await axios.post(`${API}/school/upload-seal`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setSealUrl(response.data.url);
+      toast.success('Seal uploaded successfully! 🔖');
+    } catch (error) {
+      toast.error('Failed to upload seal');
+    } finally {
+      setUploadingSeal(false);
     }
   };
 
