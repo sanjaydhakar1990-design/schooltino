@@ -178,6 +178,8 @@ function AppRoutes() {
         <Route path="biometric" element={<BiometricPage />} />
         <Route path="timetable" element={<TimetablePage />} />
         <Route path="director-ai" element={<DirectorAIDashboard />} />
+        <Route path="multi-year-fees" element={<MultiYearFeesPage />} />
+        <Route path="salary" element={<SalaryTrackingPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
