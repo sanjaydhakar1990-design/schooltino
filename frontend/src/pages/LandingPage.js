@@ -508,128 +508,199 @@ Your Login Credentials:
               onClick={() => scrollToSection('register')}
               className="bg-red-600 hover:bg-red-700"
             >
-              Try All Features FREE for 30 Days
+              Try All Features FREE for 1 Month
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* NEW: Pricing Section - Updated Plans */}
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 rounded-full text-emerald-700 text-sm font-bold mb-4">
+              🎉 1 Month FREE Trial - All AI Features Included!
+            </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              Simple, Transparent
-              <span className="text-indigo-600"> Pricing</span>
+              Simple, <span className="text-indigo-600">Affordable</span> Pricing
             </h2>
             <p className="text-lg text-slate-600">
-              Start free, upgrade when you're ready
+              From ₹1,000/month - India's most affordable AI School ERP
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free Trial */}
-            <div className="bg-white rounded-2xl border-2 border-slate-200 p-8 hover:shadow-xl transition-shadow">
-              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                <Zap className="w-7 h-7 text-emerald-600" />
+          {/* Pricing Grid - 6 Plans */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Plan 1: Basic */}
+            <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 hover:shadow-xl transition-all hover:border-slate-300">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mb-4">
+                <Building className="w-6 h-6 text-slate-600" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Free Trial</h3>
-              <p className="text-slate-500 mb-6">Perfect to explore</p>
-              <div className="mb-6">
-                <span className="text-5xl font-bold text-slate-900">FREE</span>
-                <span className="text-slate-500 ml-2">/ 30 days</span>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">Basic ERP</h3>
+              <p className="text-slate-500 text-sm mb-4">No AI - Simple Management</p>
+              <div className="mb-1">
+                <span className="text-4xl font-bold text-slate-900">₹9,999</span>
+                <span className="text-slate-500">/year</span>
               </div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'All features unlocked',
-                  'AI features for 3 days',
-                  'Unlimited users',
-                  'Email support'
-                ].map((item, idx) => (
+              <p className="text-emerald-600 text-sm mb-4">₹1,000/month</p>
+              <ul className="space-y-2 mb-6 text-sm">
+                {['Unlimited Students', 'Attendance', 'Fee Collection', 'Timetable', 'Reports', 'SMS Alerts'].map((item, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-slate-600">
-                    <Check className="w-5 h-5 text-emerald-500" />
+                    <Check className="w-4 h-4 text-emerald-500" />
                     {item}
                   </li>
                 ))}
               </ul>
-              <Button 
-                onClick={() => scrollToSection('register')}
-                variant="outline" 
-                className="w-full"
-              >
-                Start Free Trial
-              </Button>
-            </div>
-            
-            {/* Yearly - Popular */}
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-8 text-white relative transform md:scale-105 shadow-2xl">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-yellow-400 text-yellow-900 text-sm font-bold rounded-full">
-                BEST VALUE
-              </div>
-              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                <Crown className="w-7 h-7 text-yellow-300" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Yearly Plan</h3>
-              <p className="text-indigo-200 mb-6">Most popular choice</p>
-              <div className="mb-2">
-                <span className="text-5xl font-bold">₹14,999</span>
-                <span className="text-indigo-200 ml-2">/ month</span>
-              </div>
-              <p className="text-emerald-300 text-sm mb-6">Save ₹35,988/year (17% OFF)</p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Everything unlimited',
-                  'AI features unlimited',
-                  'Priority 24/7 support',
-                  'Free training sessions',
-                  'Custom branding'
-                ].map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-indigo-100">
-                    <Check className="w-5 h-5 text-yellow-300" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Button 
-                onClick={() => scrollToSection('register')}
-                className="w-full bg-white text-indigo-700 hover:bg-indigo-50"
-              >
+              <Button onClick={() => scrollToSection('register')} variant="outline" className="w-full">
                 Get Started
               </Button>
             </div>
-            
-            {/* Monthly */}
-            <div className="bg-white rounded-2xl border-2 border-slate-200 p-8 hover:shadow-xl transition-shadow">
-              <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-                <Calendar className="w-7 h-7 text-blue-600" />
+
+            {/* Plan 2: AI Powered - MOST POPULAR */}
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white relative transform md:scale-105 shadow-2xl">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">
+                MOST POPULAR
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Monthly Plan</h3>
-              <p className="text-slate-500 mb-6">Flexible billing</p>
-              <div className="mb-6">
-                <span className="text-5xl font-bold text-slate-900">₹17,999</span>
-                <span className="text-slate-500 ml-2">/ month</span>
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                <Sparkles className="w-6 h-6 text-yellow-300" />
               </div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'All features unlimited',
-                  'AI features unlimited',
-                  'Priority support',
-                  'Cancel anytime'
-                ].map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-slate-600">
-                    <Check className="w-5 h-5 text-blue-500" />
+              <h3 className="text-xl font-bold mb-1">AI Powered</h3>
+              <p className="text-indigo-200 text-sm mb-4">Full AI Features</p>
+              <div className="mb-1">
+                <span className="text-4xl font-bold">₹17,999</span>
+                <span className="text-indigo-200">/year</span>
+              </div>
+              <p className="text-emerald-300 text-sm mb-4">₹1,999/month</p>
+              <ul className="space-y-2 mb-6 text-sm">
+                {['Everything in Basic', 'AI Voice Assistant', 'AI Paper Generator', 'AI Summary', 'Director AI Dashboard', 'AI Accountant'].map((item, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-indigo-100">
+                    <Check className="w-4 h-4 text-yellow-300" />
                     {item}
                   </li>
                 ))}
               </ul>
-              <Button 
-                onClick={() => scrollToSection('register')}
-                variant="outline" 
-                className="w-full"
-              >
-                Choose Monthly
+              <Button onClick={() => scrollToSection('register')} className="w-full bg-white text-indigo-700 hover:bg-indigo-50">
+                Start Free Trial
               </Button>
+            </div>
+
+            {/* Plan 3: CCTV + Biometric - RECOMMENDED */}
+            <div className="bg-white rounded-2xl border-2 border-emerald-300 p-6 hover:shadow-xl transition-all relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
+                RECOMMENDED
+              </div>
+              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+                <Camera className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">CCTV + Biometric</h3>
+              <p className="text-slate-500 text-sm mb-4">AI Face Recognition</p>
+              <div className="mb-1">
+                <span className="text-4xl font-bold text-slate-900">₹27,999</span>
+                <span className="text-slate-500">/year</span>
+              </div>
+              <p className="text-emerald-600 text-sm mb-4">₹2,999/month</p>
+              <ul className="space-y-2 mb-6 text-sm">
+                {['Everything in AI Powered', 'CCTV Integration (Any Brand)', 'AI Face Recognition', 'Auto Attendance', 'Twin Detection', 'Biometric'].map((item, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-slate-600">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button onClick={() => scrollToSection('register')} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                Start Free Trial
+              </Button>
+            </div>
+
+            {/* Plan 4: GPS Tracking - COMING SOON */}
+            <div className="bg-slate-50 rounded-2xl border-2 border-slate-200 p-6 relative opacity-75">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-amber-500 text-white text-xs font-bold rounded-full">
+                COMING SOON
+              </div>
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
+                <MapPin className="w-6 h-6 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">Bus GPS + CCTV</h3>
+              <p className="text-slate-500 text-sm mb-4">Transport Fleet Tracking</p>
+              <div className="mb-1">
+                <span className="text-4xl font-bold text-slate-900">₹37,999</span>
+                <span className="text-slate-500">/year</span>
+              </div>
+              <p className="text-amber-600 text-sm mb-4">₹3,999/month</p>
+              <ul className="space-y-2 mb-6 text-sm">
+                {['Everything in CCTV', 'Live Bus GPS', 'Route Optimization', 'Parent Alerts', 'Driver Management', 'Fuel Analytics'].map((item, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-slate-600">
+                    <Check className="w-4 h-4 text-amber-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button disabled variant="outline" className="w-full">
+                Coming Soon
+              </Button>
+            </div>
+
+            {/* Plan 5: AI Teacher Clone - COMING SOON */}
+            <div className="bg-slate-50 rounded-2xl border-2 border-slate-200 p-6 relative opacity-75">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-500 text-white text-xs font-bold rounded-full">
+                COMING SOON
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                <Video className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">AI Teacher Clone</h3>
+              <p className="text-slate-500 text-sm mb-4">HeyGen AI Avatar</p>
+              <div className="mb-1">
+                <span className="text-4xl font-bold text-slate-900">₹47,999</span>
+                <span className="text-slate-500">/year</span>
+              </div>
+              <p className="text-purple-600 text-sm mb-4">₹4,999/month (per class)</p>
+              <ul className="space-y-2 mb-6 text-sm">
+                {['Everything in GPS', 'AI Teacher Avatar', 'Personalized Videos', 'Multi-language', 'AI Doubt Solving', '24/7 AI Tutor'].map((item, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-slate-600">
+                    <Check className="w-4 h-4 text-purple-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button disabled variant="outline" className="w-full">
+                Coming Soon
+              </Button>
+            </div>
+
+            {/* Free Trial Card */}
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                <Gift className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-1">1 Month FREE Trial</h3>
+              <p className="text-emerald-100 text-sm mb-4">Try before you buy!</p>
+              <div className="mb-4">
+                <span className="text-4xl font-bold">FREE</span>
+              </div>
+              <ul className="space-y-2 mb-6 text-sm">
+                {['All AI features included', 'CCTV + Biometric access', 'Up to ₹27,999 plan', 'No credit card needed', 'Cancel anytime'].map((item, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-emerald-100">
+                    <Check className="w-4 h-4 text-white" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button onClick={() => scrollToSection('register')} className="w-full bg-white text-emerald-700 hover:bg-emerald-50">
+                Start FREE Trial Now
+              </Button>
+            </div>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="mt-12 text-center">
+            <p className="text-slate-500 mb-4">Trusted by 500+ Schools across India</p>
+            <div className="flex flex-wrap justify-center gap-8 items-center opacity-60">
+              <span className="text-lg font-bold text-slate-400">🏫 MP Schools</span>
+              <span className="text-lg font-bold text-slate-400">🏫 Delhi NCR</span>
+              <span className="text-lg font-bold text-slate-400">🏫 Maharashtra</span>
+              <span className="text-lg font-bold text-slate-400">🏫 Gujarat</span>
             </div>
           </div>
         </div>
@@ -644,7 +715,7 @@ Your Login Credentials:
                 Ready to Transform Your School?
               </h2>
               <p className="text-lg text-indigo-200 mb-8">
-                Join 500+ schools already using Schooltino. Start your 30-day free trial today - no credit card required.
+                Join 500+ schools already using Schooltino. Start your 1 MONTH free trial today - no credit card required.
               </p>
               
               <div className="space-y-4">
