@@ -317,18 +317,30 @@
 ## Upcoming Tasks
 
 ### P0 - High Priority
-- [ ] Complete Backend Refactoring (server.py is 6200+ lines)
-- [ ] Google Meet integration (replace Zoom)
+- [ ] AI School Auto-Setup - Website URL se school details extract
+- [ ] Director AI Personalized Greeting - Time-based custom greeting
 
 ### P1 - Medium Priority
-- [ ] Live Razorpay integration with real keys
-- [ ] Add more state boards (RBSE, UPMSP, CGBSE)
-- [ ] Leave Management approval workflow
+- [ ] Backend Refactoring (server.py is 6500+ lines)
+- [ ] Live CCTV Auto-Attendance
+- [ ] Homepage Guest Login/Demo
 
 ### P2 - Lower Priority
-- [ ] OneTino.com master platform
-- [ ] Real CCTV camera connection
-- [ ] Hardware integration
+- [ ] Live Razorpay integration
+- [ ] WhatsApp Integration (Baileys)
+- [ ] AI Teacher Clone (HeyGen API)
+- [ ] Bus GPS Integration
+
+---
+
+## Mocked Features (Require Real Integration)
+
+| Feature | Status | What's Needed |
+|---------|--------|---------------|
+| **Razorpay Payment** | Mocked | Live Razorpay API keys |
+| **SMS Notifications** | Mocked | SMS gateway integration |
+| **Cloud Storage** | Mocked | S3/Cloud storage setup |
+| **CCTV Camera** | Mocked | Hardware integration |
 
 ---
 
@@ -338,30 +350,29 @@
 /app/
 ├── backend/
 │   ├── routes/
-│   │   ├── voice_assistant.py   # NEW: Voice AI Assistant APIs
-│   │   ├── fee_payment.py       # Student fee payment APIs
-│   │   ├── ai_accountant.py     # AI Accountant Dashboard APIs
-│   │   ├── syllabus_progress.py # Syllabus sync & AI summarizer
-│   │   ├── ncert.py
-│   │   ├── mpbse.py
-│   │   └── syllabus.py
-│   ├── services/
-│   ├── core/
-│   └── server.py (6200+ lines - needs refactoring)
+│   │   ├── director_greeting.py
+│   │   ├── face_recognition.py
+│   │   ├── id_card.py
+│   │   ├── multi_year_fees.py
+│   │   ├── password_reset.py
+│   │   ├── salary_management.py
+│   │   └── school_auto_setup.py
+│   ├── static/marketing/         # Marketing brochures archive
+│   └── server.py                 # Main server (6500+ lines - needs refactoring)
 ├── frontend/
 │   └── src/
 │       ├── components/
-│       │   ├── VoiceAssistantFAB.js  # NEW: Voice AI floating button
-│       │   ├── Layout.js             # Updated: Mobile responsive
-│       │   └── Sidebar.js            # Updated: Mobile toggle
+│       │   ├── Sidebar.js        # teacherOnly flag added
+│       │   └── ...
 │       └── pages/
-│           ├── FeePaymentPage.js     # Student fee payment UI
-│           ├── AccountantDashboard.js # AI Accountant Dashboard
-│           ├── StudentDashboard.js   # Updated: Fee Pay button
+│           ├── UnifiedPortal.js  # NEW: Smart dashboard for all staff
+│           ├── DashboardPage.js
+│           ├── TeachTinoLogin.js # Updated redirect logic
 │           └── ...
+├── marketing_materials_final/    # HTML brochure files
 └── test_reports/
-    ├── iteration_12.json
-    └── iteration_14.json              # NEW: Voice Assistant tests
+    ├── iteration_20.json
+    └── iteration_21.json         # Latest test results
 ```
 
 ---
