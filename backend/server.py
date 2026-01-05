@@ -6894,6 +6894,10 @@ api_router.include_router(director_greeting_router)
 
 app.include_router(api_router)
 
+# Mount static files for uploads and marketing materials
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+app.mount("/api/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="static")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
