@@ -9,57 +9,50 @@
 
 ## What's Been Implemented (Latest Session - 5 Jan 2026)
 
-### 42. AI Face Recognition System ✅ NEW! 🔥
-- **OpenAI Vision Integration** - GPT-4o for photo quality analysis
-- **Multi-photo enrollment** - 4-5 photos (passport + angles + full body)
-- **AI Quality Check** - Verifies face detection, angle, clarity
-- **Twin/Sibling Detection** - High-accuracy (85% threshold) to prevent duplicates
-- **Skip Option** - Complete enrollment later from student profile
-- **Face Search** - Find student in school database by face
-- **Biometric Settings** - Enable/disable per school
-- APIs: `/api/face-recognition/upload-photo`, `/verify`, `/search`, `/enrollment-status/{id}`, `/school-settings/{id}`, `/stats/{id}`
+### 46. Updated Pricing Structure ✅ NEW! 💰
+- **Basic ERP (No AI):** ₹1,000/month | ₹9,999/year
+- **AI Powered (MOST POPULAR):** ₹1,999/month | ₹17,999/year
+- **CCTV + Biometric (RECOMMENDED):** ₹2,999/month | ₹27,999/year
+- **Bus GPS + CCTV:** ₹3,999/month | ₹37,999/year (COMING SOON)
+- **AI Teacher Clone (HeyGen):** ₹4,999/month | ₹47,999/year (COMING SOON)
 
-### 43. Landing Page Enhancement ✅ NEW!
-- **Advanced Features Section** - "India's Most Feature-Rich ERP"
-- **NEW Badges** - Director AI, Face Recognition, Multi-Year Fees, Salary Tracking highlighted
-- **Competitor Comparison** - Shows all features vs competitors
+### 47. 1 Month FREE Trial ✅ NEW! 🎉
+- Full access to ₹27,999 plan features
+- All AI features included
+- CCTV + Biometric included
+- No credit card required
 
-### 44. Student Admission Face Enrollment ✅ NEW!
-- **Post-Admission Prompt** - After credentials show, option to capture photos
-- **Webcam/Upload** - Camera capture or file upload
-- **Skip for Later** - Can complete enrollment from student profile
-- **FaceEnrollmentCapture Component** - Complete UI for photo capture
+### 48. CCTV Auto-Detection System ✅ NEW! 📸
+- **Works with ANY CCTV brand** - Hikvision, Dahua, CP Plus, Honeywell, Bosch, Samsung, Axis, etc.
+- **Auto-detect protocol** - AI automatically identifies camera brand and format
+- **Real-time frame processing** - Process CCTV frames for face detection
+- **Auto attendance marking** - Detect faces and mark attendance automatically
+- APIs: `/api/face-recognition/cctv/register`, `/cctv/devices/{school_id}`, `/cctv/process-frame`, `/cctv/attendance/{school_id}`
 
-### 45. Receipt/Slip Downloads ✅ NEW!
-- **Student Fee Receipts** - `/studytino/receipts` page with download
-- **Teacher Salary Slips** - Download All Slips button
-- **Accountant Old Dues Tab** - 5 tabs now including multi-year fees
+### 49. Landing Page Enhancement ✅ NEW!
+- **6 Pricing Cards** - All plans with correct prices
+- **COMING SOON badges** - GPS and AI Teacher marked
+- **MOST POPULAR & RECOMMENDED badges**
+- **1 Month FREE Trial banner** prominently displayed
+- **Advanced Features Section** - Vidyalaya-style feature showcase
 
-### 38. Multi-Year Fee Dues Management ✅
-- **Track 2-3 years old fees** - Previous year dues carry forward
-- **Year-wise dues breakdown** for each student
-- **Defaulters list** with total pending amount
-- **Payment allocation** across years (oldest first)
-- APIs: `/api/multi-year-fees/add-due`, `/student/{id}`, `/summary/{school_id}`, `/defaulters/{school_id}`, `/pay`
-
-### 39. Salary Management for Teachers & Staff ✅
-- **Monthly salary tracking** - Due/Credited status for each month
-- **Salary structure** - Basic + HRA + DA + TA + Medical + Special Allowance
-- **Salary slip generation** - Download text format
-- **Download All Slips** - One-click all slips download
-- APIs: `/api/salary/status/{staff_id}`, `/structure/set`, `/credit`, `/slip/{slip_no}`, `/dashboard/{school_id}`
-
-### 40. Dashboard Quick-Access Tabs ✅
-- **Admin Dashboard** - 8 quick tabs: Attendance, Fees, Old Dues, Students, Accountant, Notices, AI Paper, Front Office
-- **TeachTino Dashboard** - Added "My Salary" button
-- **StudyTino Dashboard** - 5 quick tabs: Pay Fees, Receipts, Results, AI Help, Leave
-
-### 41. Marketing Materials Archive ✅
+### 50. Updated Marketing Materials ✅ NEW!
+- Brochures updated with new pricing
+- Hindi pamphlet with new prices
+- Feature comparison updated
 - Download: `/app/Schooltino_Marketing_Materials.tar.gz`
 
----
+### 42. AI Face Recognition System ✅
+- OpenAI GPT-4o Vision integration
+- Multi-photo enrollment (4-5 photos)
+- Twin/sibling detection (85% threshold)
+- Skip option available
 
-### 36. Director AI - Big Boss Command Center ✅
+### 38-41. Previous Features ✅
+- Multi-Year Fee Management
+- Salary Tracking
+- Dashboard Quick-Access Tabs
+- Director AI Dashboard
 - **Central AI Dashboard** - School ka AI Director jo sab monitor kare
 - **School Health Score** - 0-100 based on attendance, fees, performance
 - **Priority Orders** - Daily tasks with HIGH/MEDIUM/LOW priority
