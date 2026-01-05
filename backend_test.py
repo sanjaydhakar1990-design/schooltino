@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import uuid
 
 class SchooltinoAPITester:
-    def __init__(self, base_url="https://schoolerp-6.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://campus-connect-461.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.user_data = None
