@@ -455,16 +455,21 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
                   disabled={isProcessing || isListening}
                 />
                 
-                {/* Voice Button */}
+                {/* Voice Button - Push to Talk */}
                 <button
                   type="button"
-                  onClick={isListening ? stopRecording : startRecording}
+                  onMouseDown={startRecording}
+                  onMouseUp={stopRecording}
+                  onMouseLeave={isListening ? stopRecording : undefined}
+                  onTouchStart={startRecording}
+                  onTouchEnd={stopRecording}
                   disabled={isProcessing}
-                  className={`p-3 rounded-xl transition-all ${
+                  className={`p-3 rounded-xl transition-all select-none ${
                     isListening 
-                      ? 'bg-red-500 text-white animate-pulse' 
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-red-500 text-white animate-pulse scale-110' 
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600 active:bg-red-500 active:scale-110'
                   }`}
+                  data-testid="push-to-talk-btn"
                 >
                   {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                 </button>
