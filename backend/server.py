@@ -2045,6 +2045,40 @@ async def get_students(
     
     return [StudentResponse(**s) for s in students]
 
+
+# Simple search endpoints for accountant dashboard (no auth required)
+@api_router.get("/students/search")
+async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
+    """
+    Simple student search for accountant forms
+    """
+    if not q or len(q) < 2:
+        return {"students": []}
+    
+    query = {
+        "status": {"$in": ["active", None]},
+        "$or": [
+            {"name": {"$regex": q, "$options": "i"}},
+            {"student_id": {"$regex": q, "$options": "i"}},
+            {"id": {"$regex": q, "$options": "i"}}
+        ]
+    }
+    
+    if school_id:
+        query["school_id"] = school_id
+    
+    students = await db.students.find(
+        query,
+        {"_id": 0}
+    ).limit(limit).to_list(limit)
+    
+    # Remove password from results
+    for s in students:
+        s.pop("password", None)
+    
+    return {"students": students}
+
+
 @api_router.get("/students/{student_id}", response_model=StudentResponse)
 async def get_student(student_id: str, current_user: dict = Depends(get_current_user)):
     student = await db.students.find_one({"id": student_id}, {"_id": 0})
