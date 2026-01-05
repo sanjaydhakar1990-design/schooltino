@@ -52,6 +52,7 @@ import TimetablePage from './pages/TimetablePage';
 import DirectorAIDashboard from './pages/DirectorAIDashboard';
 import MultiYearFeesPage from './pages/MultiYearFeesPage';
 import SalaryTrackingPage from './pages/SalaryTrackingPage';
+import StudentReceiptsPage from './pages/StudentReceiptsPage';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
