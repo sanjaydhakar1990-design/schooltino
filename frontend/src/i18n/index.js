@@ -243,6 +243,7 @@ const resources = {
       // Navigation
       "dashboard": "डैशबोर्ड",
       "director_ai": "डायरेक्टर AI",
+      "tino_brain": "टीनो ब्रेन",
       "users": "यूजर अकाउंट्स",
       "students": "छात्र",
       "staff": "कर्मचारी",
