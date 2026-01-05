@@ -554,13 +554,18 @@ export default function TinoBrainDashboard() {
                 />
                 <button
                   type="button"
-                  onClick={isListening ? stopRecording : startRecording}
+                  onMouseDown={startRecording}
+                  onMouseUp={stopRecording}
+                  onMouseLeave={isListening ? stopRecording : undefined}
+                  onTouchStart={startRecording}
+                  onTouchEnd={stopRecording}
                   disabled={isProcessing}
-                  className={`p-2 rounded-lg transition-all ${
+                  className={`p-2 rounded-lg transition-all select-none ${
                     isListening 
-                      ? 'bg-red-500 text-white animate-pulse' 
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-red-500 text-white animate-pulse scale-110' 
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600 active:bg-red-500 active:scale-110'
                   }`}
+                  title="Press & hold to speak"
                 >
                   {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                 </button>
