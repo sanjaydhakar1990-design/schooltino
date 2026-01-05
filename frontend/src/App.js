@@ -54,6 +54,7 @@ import MultiYearFeesPage from './pages/MultiYearFeesPage';
 import SalaryTrackingPage from './pages/SalaryTrackingPage';
 import StudentReceiptsPage from './pages/StudentReceiptsPage';
 import UnifiedPortal from './pages/UnifiedPortal';
+import TinoBrainDashboard from './pages/TinoBrainDashboard';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
