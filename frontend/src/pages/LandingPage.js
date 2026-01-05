@@ -226,7 +226,7 @@ Your Login Credentials:
                   onClick={() => scrollToSection('register')}
                   className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-lg px-8"
                 >
-                  Start 30 Days FREE Trial
+                  Start 1 Month FREE Trial
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
                 <Button 
