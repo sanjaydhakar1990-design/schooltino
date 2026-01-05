@@ -567,26 +567,99 @@ class SubscriptionResponse(BaseModel):
     amount: float
     created_at: str
 
-# Subscription pricing
+# Subscription pricing - Updated pricing tiers
 SUBSCRIPTION_PLANS = {
     "free_trial": {
-        "duration_days": 30,
-        "ai_duration_days": 3,
+        "duration_days": 30,  # 1 month free
+        "ai_duration_days": 30,  # Full AI access in trial
         "price": 0,
-        "features": ["all_features", "ai_3_days"]
+        "features": ["all_features", "ai_included", "cctv_biometric"]
     },
-    "monthly": {
-        "duration_days": 30,
-        "ai_duration_days": 30,
-        "price": 17999,
-        "features": ["all_features", "ai_unlimited", "priority_support"]
-    },
-    "yearly": {
+    "basic": {
+        "id": "basic",
+        "name": "Basic ERP",
+        "monthly_price": 1000,
+        "yearly_price": 9999,
         "duration_days": 365,
-        "ai_duration_days": 365,
-        "price": 179988,  # 14999 * 12
-        "monthly_equivalent": 14999,
-        "features": ["all_features", "ai_unlimited", "priority_support", "discount_17%"]
+        "ai_included": False,
+        "features": [
+            "Student Management",
+            "Teacher Management", 
+            "Fee Management",
+            "Attendance",
+            "Exam & Results",
+            "Reports",
+            "Mobile App Access",
+            "SMS Notifications"
+        ]
+    },
+    "ai_powered": {
+        "id": "ai_powered",
+        "name": "AI Powered",
+        "monthly_price": 1999,
+        "yearly_price": 17999,
+        "duration_days": 365,
+        "ai_included": True,
+        "features": [
+            "All Basic Features",
+            "AI Voice Assistant (Ask Tino)",
+            "AI Paper Generator",
+            "AI Chapter Summary",
+            "Director AI Dashboard",
+            "AI Accountant",
+            "Smart Analytics"
+        ]
+    },
+    "cctv_biometric": {
+        "id": "cctv_biometric",
+        "name": "CCTV + Biometric",
+        "monthly_price": 2999,
+        "yearly_price": 27999,
+        "duration_days": 365,
+        "ai_included": True,
+        "features": [
+            "All AI Powered Features",
+            "CCTV Integration (Any Brand)",
+            "AI Face Recognition",
+            "Biometric Attendance",
+            "Auto Attendance via CCTV",
+            "Twin/Sibling Detection",
+            "Visitor Management"
+        ]
+    },
+    "gps_tracking": {
+        "id": "gps_tracking",
+        "name": "Bus GPS + CCTV",
+        "monthly_price": 3999,
+        "yearly_price": 37999,
+        "duration_days": 365,
+        "ai_included": True,
+        "coming_soon": True,
+        "features": [
+            "All CCTV + Biometric Features",
+            "Live Bus GPS Tracking",
+            "Route Optimization AI",
+            "Parent Bus Notifications",
+            "Driver Management",
+            "Fuel Analytics"
+        ]
+    },
+    "ai_teacher": {
+        "id": "ai_teacher",
+        "name": "AI Teacher Clone",
+        "monthly_price": 4999,
+        "yearly_price": 47999,
+        "duration_days": 365,
+        "ai_included": True,
+        "coming_soon": True,
+        "features": [
+            "All GPS + CCTV Features",
+            "AI Teacher Avatar (HeyGen)",
+            "Personalized Video Lessons",
+            "Multi-language Teaching",
+            "AI Doubt Solving",
+            "24/7 AI Tutor Access"
+        ]
     }
 }
 
