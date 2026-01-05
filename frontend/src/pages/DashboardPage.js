@@ -88,6 +88,32 @@ export default function DashboardPage() {
       {/* Trial Status Card */}
       <TrialStatusCard />
 
+      {/* Quick Access Tabs - Competitor-style */}
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-3" data-testid="quick-access-tabs">
+        {[
+          { icon: CalendarCheck, label: 'Attendance', path: '/app/attendance', color: 'bg-emerald-500' },
+          { icon: Wallet, label: 'Fees', path: '/app/fees', color: 'bg-amber-500' },
+          { icon: History, label: 'Old Dues', path: '/app/multi-year-fees', color: 'bg-red-500' },
+          { icon: Users, label: 'Students', path: '/app/students', color: 'bg-blue-500' },
+          { icon: Calculator, label: 'Accountant', path: '/app/accountant', color: 'bg-purple-500' },
+          { icon: Bell, label: 'Notices', path: '/app/notices', color: 'bg-pink-500' },
+          { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: 'bg-indigo-500' },
+          { icon: DoorOpen, label: 'Front Office', path: '/app/front-office', color: 'bg-teal-500' },
+        ].map((item, idx) => (
+          <button
+            key={idx}
+            onClick={() => navigate(item.path)}
+            className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-lg hover:border-indigo-300 transition-all group"
+            data-testid={`quick-tab-${item.label.toLowerCase().replace(' ', '-')}`}
+          >
+            <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
+              <item.icon className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs font-medium text-slate-700">{item.label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold font-heading text-slate-900">{t('dashboard')}</h1>
