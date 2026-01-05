@@ -38,6 +38,7 @@ const resources = {
       // Navigation
       "dashboard": "Dashboard",
       "director_ai": "Director AI",
+      "tino_brain": "Tino Brain",
       "users": "User Accounts",
       "students": "Students",
       "staff": "Staff",
