@@ -270,8 +270,24 @@ export default function PermissionManager() {
       case 'vice_principal': return 'bg-emerald-100 text-emerald-700';
       case 'co_director': return 'bg-purple-100 text-purple-700';
       case 'accountant': return 'bg-amber-100 text-amber-700';
-      case 'admission_staff': return 'bg-pink-100 text-pink-700';
+      case 'admission_staff': return 'bg-cyan-100 text-cyan-700';
+      case 'admin_staff': return 'bg-pink-100 text-pink-700';
+      case 'teacher': return 'bg-indigo-100 text-indigo-700';
+      case 'clerk': return 'bg-slate-100 text-slate-700';
       default: return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  const getRoleAvatarColor = (role) => {
+    switch(role) {
+      case 'principal': return 'bg-blue-500';
+      case 'vice_principal': return 'bg-emerald-500';
+      case 'co_director': return 'bg-purple-500';
+      case 'accountant': return 'bg-amber-500';
+      case 'admission_staff': return 'bg-cyan-500';
+      case 'admin_staff': return 'bg-pink-500';
+      case 'teacher': return 'bg-indigo-500';
+      default: return 'bg-slate-500';
     }
   };
 
