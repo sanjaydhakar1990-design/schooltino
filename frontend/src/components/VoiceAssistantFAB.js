@@ -235,8 +235,17 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
         speakText(result.message);
       }
       
-      // Handle redirect
-      if (result.data?.redirect) {
+      // Handle NAVIGATION - Actually navigate to the page
+      if (result.navigate_to) {
+        toast.success(`Opening ${result.navigate_to}...`);
+        setTimeout(() => {
+          setIsOpen(false); // Close the assistant
+          window.location.href = result.navigate_to;
+        }, 1500);
+      }
+      
+      // Handle legacy redirect
+      if (result.data?.redirect && !result.navigate_to) {
         setTimeout(() => {
           window.location.href = result.data.redirect;
         }, 2000);
