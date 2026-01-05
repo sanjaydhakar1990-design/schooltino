@@ -97,12 +97,29 @@ export default function PermissionManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showClassDialog, setShowClassDialog] = useState(false);
   const [userPermissions, setUserPermissions] = useState({});
   const [saving, setSaving] = useState(false);
+  const [newRole, setNewRole] = useState('');
+  const [classes, setClasses] = useState([]);
+  const [assignedClasses, setAssignedClasses] = useState([]);
 
   useEffect(() => {
     fetchUsers();
+    fetchClasses();
   }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const meRes = await axios.get(`${API}/auth/me`);
+      const schoolId = meRes.data.school_id || 'default';
+      const res = await axios.get(`${API}/classes?school_id=${schoolId}`);
+      setClasses(res.data || []);
+    } catch (error) {
+      console.error('Fetch classes error:', error);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -112,9 +129,10 @@ export default function PermissionManager() {
       const schoolId = meRes.data.school_id || 'default';
       
       const res = await axios.get(`${API}/users/school/${schoolId}`);
-      // Filter out teachers (they use TeachTino) and current director
+      // Filter to show all except current director
       const adminUsers = res.data.filter(u => 
-        ['principal', 'vice_principal', 'co_director', 'accountant', 'admission_staff', 'clerk'].includes(u.role)
+        ['principal', 'vice_principal', 'co_director', 'accountant', 'admission_staff', 'clerk', 'admin_staff', 'teacher'].includes(u.role) &&
+        u.id !== user?.id
       );
       setUsers(adminUsers);
     } catch (error) {
