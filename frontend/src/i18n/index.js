@@ -274,6 +274,8 @@ const resources = {
       "ai_accountant": "AI अकाउंटेंट",
       "payment_settings": "पेमेंट सेटिंग्स",
       "fee_structure": "फीस स्ट्रक्चर",
+      "previous_year_fees": "पिछले साल की फीस",
+      "salary_management": "सैलरी ट्रैकिंग",
       "staff_directory": "स्टाफ डायरेक्टरी",
       "add_school": "स्कूल जोड़ें",
       "setup_wizard": "सेटअप विज़ार्ड",
