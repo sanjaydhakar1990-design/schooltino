@@ -244,6 +244,79 @@ export default function StudyTinoDashboard() {
     }
   };
 
+  // Razorpay Payment Handler
+  const handlePayFees = useCallback(async () => {
+    if (!paymentAmount || isNaN(paymentAmount) || Number(paymentAmount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    setPaymentProcessing(true);
+
+    try {
+      // Create order
+      const orderRes = await axios.post(`${API}/razorpay/create-order`, {
+        amount: Math.round(Number(paymentAmount) * 100), // Convert to paise
+        student_id: user?.id,
+        student_name: profile?.name || user?.name,
+        school_id: profile?.school_id || 'default',
+        fee_type: 'tuition',
+        description: `Fee Payment - ${profile?.name}`
+      });
+
+      const { order_id, key_id, amount } = orderRes.data;
+
+      // Razorpay options
+      const options = {
+        key: key_id,
+        amount: amount,
+        currency: 'INR',
+        name: 'Schooltino',
+        description: `Fee Payment - ${profile?.class_name}`,
+        order_id: order_id,
+        handler: async (response) => {
+          try {
+            // Verify payment
+            await axios.post(`${API}/razorpay/verify-payment`, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              student_id: user?.id,
+              school_id: profile?.school_id || 'default'
+            });
+            
+            toast.success('🎉 Payment successful!');
+            setShowPaymentDialog(false);
+            setPaymentAmount('');
+          } catch (verifyError) {
+            toast.error('Payment verification failed. Please contact school.');
+          }
+        },
+        prefill: {
+          name: profile?.name || user?.name,
+          email: user?.email || '',
+          contact: profile?.mobile || ''
+        },
+        theme: {
+          color: '#4F46E5'
+        },
+        modal: {
+          ondismiss: () => {
+            setPaymentProcessing(false);
+          }
+        }
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.open();
+      
+    } catch (error) {
+      toast.error('Failed to initiate payment');
+    } finally {
+      setPaymentProcessing(false);
+    }
+  }, [paymentAmount, user, profile, Razorpay]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
