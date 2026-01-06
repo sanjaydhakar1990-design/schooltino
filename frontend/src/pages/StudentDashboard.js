@@ -3,7 +3,7 @@
  * Simple, Clean, Light Theme - Mobile First
  * Inspired by: MyLeadingCampus, BloomByte
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -28,11 +28,13 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
+import { useRazorpay } from 'react-razorpay';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function StudyTinoDashboard() {
   const { user, logout } = useAuth();
+  const [Razorpay] = useRazorpay();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
