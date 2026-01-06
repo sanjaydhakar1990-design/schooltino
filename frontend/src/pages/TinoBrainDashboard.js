@@ -523,14 +523,54 @@ export default function TinoBrainDashboard() {
         <div className="lg:col-span-1">
           <Card className="bg-white border-0 shadow-sm h-full flex flex-col">
             <CardHeader className="pb-2 border-b">
-              <CardTitle className="text-slate-900 flex items-center gap-2">
-                <Brain className="w-5 h-5 text-indigo-600" />
-                Ask Tino Brain
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-slate-900 flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-indigo-600" />
+                  Ask Tino Brain
+                </CardTitle>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"
+                    title="Chat History"
+                  >
+                    <History className="w-4 h-4" />
+                  </button>
+                  {messages.length > 0 && (
+                    <button
+                      onClick={clearChatHistory}
+                      className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600"
+                      title="Clear Chat"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
               <CardDescription className="text-slate-500 text-xs">
-                Kuch bhi puchho - Tino sab jaanta hai!
+                🎤 Mic dabao → Bolo → Chhodo → Auto execute!
               </CardDescription>
             </CardHeader>
+
+            {/* Chat History Panel */}
+            {showHistory && chatSessions.length > 0 && (
+              <div className="border-b bg-slate-50 p-3 max-h-[200px] overflow-y-auto">
+                <p className="text-xs font-medium text-slate-600 mb-2">Previous Chats</p>
+                {chatSessions.map((session, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => loadChatSession(session.date)}
+                    className="w-full text-left p-2 rounded-lg hover:bg-white text-xs mb-1 border border-transparent hover:border-slate-200"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-slate-700">{session.date}</span>
+                      <span className="text-slate-400">{session.message_count} msgs</span>
+                    </div>
+                    <p className="text-slate-500 truncate">{session.preview}</p>
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[350px] max-h-[450px] bg-slate-50">
@@ -541,6 +581,12 @@ export default function TinoBrainDashboard() {
                     Namaste! Main Tino Brain hoon.<br/>
                     Mujhse school ke baare mein kuch bhi puchho!
                   </p>
+                  <div className="mt-4 text-xs text-slate-400">
+                    <p className="font-medium mb-1">Try bolke:</p>
+                    <p>"Notice bhejo ki kal chutti hai"</p>
+                    <p>"Aaj kaun absent hai"</p>
+                    <p>"Fee reminder bhejo"</p>
+                  </div>
                 </div>
               )}
               
