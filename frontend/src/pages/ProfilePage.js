@@ -273,71 +273,24 @@ export default function ProfilePage() {
                     Enroll Face for AI
                   </Badge>
                 )}
-                
-                {/* Photo Upload Buttons */}
-                <div className="flex gap-2 mt-4 justify-center">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={startCamera}
-                    disabled={uploading}
-                  >
-                    <Camera className="w-4 h-4 mr-1" />
-                    Camera
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    <Upload className="w-4 h-4 mr-1" />
-                    Upload
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </div>
-                
-                {uploading && (
-                  <p className="text-xs text-indigo-600 mt-2 flex items-center justify-center gap-1">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Enrolling face...
-                  </p>
-                )}
               </CardContent>
             </Card>
 
-            {/* Camera Dialog */}
-            {showCamera && (
-              <Card className="border-2 border-indigo-200">
-                <CardContent className="p-4">
-                  <div className="relative rounded-lg overflow-hidden bg-black">
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full"
-                    />
-                    <canvas ref={canvasRef} className="hidden" />
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={capturePhoto}>
-                      <Camera className="w-4 h-4 mr-2" />
-                      Capture
-                    </Button>
-                    <Button variant="outline" onClick={stopCamera}>
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Multi-Photo Face Enrollment (4-5 Photos) */}
+            <MultiFaceEnrollment
+              personId={user?.id}
+              personType={user?.role === 'student' ? 'student' : 'staff'}
+              personName={user?.name}
+              schoolId={schoolId}
+              minPhotos={4}
+              maxPhotos={5}
+              onComplete={(result) => {
+                if (result.success) {
+                  setFaceEnrolled(true);
+                  toast.success(`${result.photoCount} photos enrolled!`);
+                }
+              }}
+            />
 
             {/* AI Features Card */}
             <Card>
