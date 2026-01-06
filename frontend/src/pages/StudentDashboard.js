@@ -247,15 +247,37 @@ export default function StudyTinoDashboard() {
         <div className="grid grid-cols-4 gap-3">
           {[
             { icon: Wallet, label: 'Pay Fees', color: 'bg-green-500', path: '/studytino/fees' },
-            { icon: FileText, label: 'Receipts', color: 'bg-blue-500', path: '/studytino/receipts' },
-            { icon: CalendarDays, label: 'Leave', color: 'bg-rose-500', action: () => setShowLeaveDialog(true) },
-            { icon: Brain, label: 'AI Help', color: 'bg-purple-500', action: () => setShowAIHelper(true) },
+            { icon: MessageCircle, label: 'Class Chat', color: 'bg-blue-500', action: () => openClassChat() },
+            { icon: AlertOctagon, label: 'Complaint', color: 'bg-rose-500', action: () => setShowComplaintDialog(true) },
+            { icon: Trophy, label: 'Activities', color: 'bg-amber-500', action: () => openActivities() },
           ].map((item, idx) => (
             <button
               key={idx}
               onClick={item.action || (() => navigate(item.path))}
               className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-100 hover:shadow-md transition-all"
               data-testid={`quick-action-${item.label.toLowerCase().replace(' ', '-')}`}
+            >
+              <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-2`}>
+                <item.icon className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xs font-medium text-slate-700">{item.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Second Row Quick Actions */}
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { icon: FileText, label: 'Receipts', color: 'bg-slate-500', path: '/studytino/receipts' },
+            { icon: CalendarDays, label: 'Leave', color: 'bg-purple-500', action: () => setShowLeaveDialog(true) },
+            { icon: Brain, label: 'AI Help', color: 'bg-indigo-500', action: () => setShowAIHelper(true) },
+            { icon: User, label: 'Profile', color: 'bg-teal-500', action: () => setShowProfileDialog(true) },
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              onClick={item.action || (() => navigate(item.path))}
+              className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-100 hover:shadow-md transition-all"
+              data-testid={`quick-action-2-${item.label.toLowerCase().replace(' ', '-')}`}
             >
               <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-2`}>
                 <item.icon className="w-5 h-5 text-white" />
