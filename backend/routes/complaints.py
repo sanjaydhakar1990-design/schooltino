@@ -9,9 +9,19 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone
 import uuid
-from database import get_database
+import os
+from motor.motor_asyncio import AsyncIOMotorClient
 
 router = APIRouter(prefix="/complaints", tags=["Complaints"])
+
+# Database connection
+mongo_url = os.environ.get('MONGO_URL')
+db_name = os.environ.get('DB_NAME', 'test_database')
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
+
+def get_database():
+    return db
 
 # Models
 class CreateComplaint(BaseModel):
