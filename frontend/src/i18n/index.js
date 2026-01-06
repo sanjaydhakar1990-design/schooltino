@@ -463,6 +463,7 @@ const resources = {
       
       // Navigation
       "dashboard": "Dashboard",
+      "home": "Home",
       "director_ai": "Director AI",
       "tino_brain": "Tino Brain",
       "users": "Users",
@@ -486,6 +487,19 @@ const resources = {
       "timetable": "Timetable",
       "cctv_dashboard": "CCTV",
       "settings": "Settings",
+      "school_analytics": "Analytics",
+      "permissions": "Permissions",
+      "website_integration": "Website",
+      "zoom_meetings": "Meetings",
+      "ai_accountant": "AI Accountant",
+      "fee_structure": "Fee Structure",
+      "salary": "Salary",
+      "academic": "Academic",
+      
+      // Greetings
+      "good_morning": "Good Morning",
+      "good_afternoon": "Good Afternoon",
+      "good_evening": "Good Evening",
       
       // Dashboard
       "total_students": "Total Students",
