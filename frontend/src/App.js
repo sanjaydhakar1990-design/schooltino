@@ -59,6 +59,9 @@ import TinoBrainDashboard from './pages/TinoBrainDashboard';
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
 
+// Notice Popup System
+import NoticePopup from './components/NoticePopup';
+
 // New Pages
 import StaffDirectory from './pages/StaffDirectory';
 import ProfilePage from './pages/ProfilePage';
