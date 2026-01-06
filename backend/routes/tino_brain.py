@@ -507,6 +507,7 @@ async def create_smart_alert(query: str, school_id: str, db) -> Dict:
 
 # ============== AI RESPONSE GENERATION ==============
 
+async def get_ai_response(query: str, role: str, context: Dict, conversation_history: List = None) -> str:
     """Get intelligent response from OpenAI"""
     if not openai_client:
         return "AI service not available. Please configure OpenAI API key."
