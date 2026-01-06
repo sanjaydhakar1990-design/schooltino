@@ -66,6 +66,9 @@ from routes.school_auto_setup import router as school_setup_router
 from routes.director_greeting import router as director_greeting_router
 from routes.tino_brain import router as tino_brain_router
 from routes.ai_greeting import router as ai_greeting_router
+from routes.group_chat import router as group_chat_router
+from routes.complaints import router as complaints_router
+from routes.sports_activities import router as activities_router
 
 # ==================== MODELS ====================
 
