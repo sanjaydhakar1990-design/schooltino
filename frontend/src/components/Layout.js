@@ -1,12 +1,23 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, Mic } from 'lucide-react';
+import { Menu, Mic, Globe } from 'lucide-react';
 import Sidebar from './Sidebar';
 import VoiceAssistantFAB from './VoiceAssistantFAB';
+import { useLanguage } from '../context/LanguageContext';
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const { language, changeLanguage } = useLanguage();
+
+  const languages = [
+    { code: 'en', label: 'English', flag: '🇬🇧' },
+    { code: 'hi', label: 'हिंदी', flag: '🇮🇳' },
+    { code: 'hinglish', label: 'Hinglish', flag: '🔄' }
+  ];
+
+  const currentLang = languages.find(l => l.code === language) || languages[0];
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -41,16 +52,59 @@ export const Layout = () => {
           {/* Spacer for desktop */}
           <div className="hidden lg:block" />
           
-          {/* Ask Tino Button - Top Right */}
-          <button
-            onClick={() => setVoiceModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-            data-testid="ask-tino-btn"
-          >
-            <Mic className="w-4 h-4" />
-            <span className="font-medium text-sm">Ask Tino</span>
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          </button>
+          {/* Right side buttons */}
+          <div className="flex items-center gap-3">
+            {/* Language Toggle */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
+                data-testid="language-toggle"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">{currentLang.label}</span>
+                <span className="sm:hidden">{currentLang.flag}</span>
+              </button>
+              
+              {/* Language Dropdown */}
+              {showLangMenu && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowLangMenu(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-50">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          changeLanguage(lang.code);
+                          setShowLangMenu(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                          language === lang.code ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700'
+                        }`}
+                      >
+                        <span>{lang.flag}</span>
+                        <span>{lang.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {/* Ask Tino Button */}
+            <button
+              onClick={() => setVoiceModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              data-testid="ask-tino-btn"
+            >
+              <Mic className="w-4 h-4" />
+              <span className="font-medium text-sm hidden sm:inline">Ask Tino</span>
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            </button>
+          </div>
         </header>
 
         {/* Main Content */}
