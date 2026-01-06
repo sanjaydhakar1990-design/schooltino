@@ -2700,6 +2700,118 @@ async def delete_notice(notice_id: str, current_user: dict = Depends(get_current
     await log_audit(current_user["id"], "delete", "notices", {"notice_id": notice_id})
     return {"message": "Notice deleted successfully"}
 
+
+# ==================== NOTICE POPUP SYSTEM ====================
+
+@api_router.get("/notices/unread")
+async def get_unread_notices(
+    school_id: str,
+    user_id: str,
+    user_role: Optional[str] = None
+):
+    """Get unread notices for popup display"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Build query for active, non-expired notices
+    query = {
+        "school_id": school_id,
+        "is_active": True,
+        "$or": [
+            {"expires_at": {"$exists": False}},
+            {"expires_at": None},
+            {"expires_at": {"$gt": now}}
+        ]
+    }
+    
+    # Get notices
+    notices = await db.notices.find(query, {"_id": 0}).sort("created_at", -1).limit(10).to_list(10)
+    
+    # Filter out already read notices
+    read_notices = await db.notice_reads.find(
+        {"user_id": user_id},
+        {"_id": 0, "notice_id": 1}
+    ).to_list(1000)
+    
+    read_ids = {r["notice_id"] for r in read_notices}
+    
+    unread = []
+    for notice in notices:
+        if notice["id"] not in read_ids:
+            # Check if notice is for this user/role
+            target_type = notice.get("target_type", "all")
+            
+            if target_type == "all":
+                unread.append(notice)
+            elif target_type == "students" and user_role == "student":
+                unread.append(notice)
+            elif target_type == "teachers" and user_role in ["teacher", "staff"]:
+                unread.append(notice)
+            elif target_type == "staff" and user_role in ["teacher", "staff", "admin"]:
+                unread.append(notice)
+            elif target_type == "specific":
+                # Check if user is in target list
+                target_users = notice.get("target_users", [])
+                if user_id in target_users:
+                    unread.append(notice)
+            elif target_type == "class":
+                # Would need to check student's class - simplified for now
+                unread.append(notice)
+    
+    # Enrich with creator names
+    for notice in unread:
+        user = await db.users.find_one({"id": notice.get("created_by")}, {"_id": 0, "name": 1})
+        if user:
+            notice["created_by_name"] = user["name"]
+    
+    return unread
+
+
+@api_router.get("/notices/unread-count")
+async def get_unread_notice_count(
+    school_id: str,
+    user_id: str
+):
+    """Get count of unread notices for badge display"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Count active notices
+    total = await db.notices.count_documents({
+        "school_id": school_id,
+        "is_active": True,
+        "$or": [
+            {"expires_at": {"$exists": False}},
+            {"expires_at": None},
+            {"expires_at": {"$gt": now}}
+        ]
+    })
+    
+    # Count read notices
+    read = await db.notice_reads.count_documents({"user_id": user_id})
+    
+    return {"count": max(0, total - read)}
+
+
+@api_router.post("/notices/{notice_id}/mark-read")
+async def mark_notice_as_read(notice_id: str, user_id: str):
+    """Mark a notice as read by a user"""
+    
+    # Check if already marked
+    existing = await db.notice_reads.find_one({
+        "notice_id": notice_id,
+        "user_id": user_id
+    })
+    
+    if not existing:
+        await db.notice_reads.insert_one({
+            "id": str(uuid.uuid4()),
+            "notice_id": notice_id,
+            "user_id": user_id,
+            "read_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    return {"success": True, "message": "Notice marked as read"}
+
+
 # ==================== AUDIT LOG ROUTES ====================
 
 @api_router.get("/audit-logs", response_model=List[AuditLogResponse])
