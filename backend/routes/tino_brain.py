@@ -1099,3 +1099,102 @@ async def counsel_student(
         "talking_points": talking_points,
         "recommendations": behavior['recommendations']
     }
+
+
+# ============== CHAT HISTORY ENDPOINTS ==============
+
+@router.get("/chat-history/{user_id}")
+async def get_chat_history(user_id: str, school_id: str, limit: int = 50):
+    """Get chat history for a user - grouped by sessions"""
+    db = get_database()
+    
+    # Get all conversations for user
+    conversations = await db.tino_conversations.find({
+        "user_id": user_id,
+        "school_id": school_id
+    }, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    # Group by date (session)
+    sessions = {}
+    for conv in reversed(conversations):
+        date_key = conv.get("timestamp", "")[:10]  # YYYY-MM-DD
+        if date_key not in sessions:
+            sessions[date_key] = {
+                "date": date_key,
+                "messages": [],
+                "message_count": 0
+            }
+        sessions[date_key]["messages"].append({
+            "id": conv.get("id"),
+            "message": conv.get("message"),
+            "is_user": conv.get("is_user"),
+            "timestamp": conv.get("timestamp")
+        })
+        sessions[date_key]["message_count"] += 1
+    
+    return {
+        "user_id": user_id,
+        "sessions": list(sessions.values()),
+        "total_messages": len(conversations)
+    }
+
+@router.delete("/chat-history/{user_id}/clear")
+async def clear_chat_history(user_id: str, school_id: str):
+    """Clear all chat history for a user"""
+    db = get_database()
+    
+    result = await db.tino_conversations.delete_many({
+        "user_id": user_id,
+        "school_id": school_id
+    })
+    
+    return {
+        "message": "Chat history cleared",
+        "deleted_count": result.deleted_count
+    }
+
+@router.delete("/chat-history/message/{message_id}")
+async def delete_chat_message(message_id: str):
+    """Delete a specific chat message"""
+    db = get_database()
+    
+    result = await db.tino_conversations.delete_one({"id": message_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    return {"message": "Message deleted", "id": message_id}
+
+@router.get("/chat-sessions/{user_id}")
+async def get_chat_sessions(user_id: str, school_id: str):
+    """Get list of chat sessions with preview"""
+    db = get_database()
+    
+    pipeline = [
+        {"$match": {"user_id": user_id, "school_id": school_id}},
+        {"$addFields": {"date": {"$substr": ["$timestamp", 0, 10]}}},
+        {"$group": {
+            "_id": "$date",
+            "first_message": {"$first": "$message"},
+            "message_count": {"$sum": 1},
+            "last_timestamp": {"$max": "$timestamp"}
+        }},
+        {"$sort": {"last_timestamp": -1}},
+        {"$limit": 30}
+    ]
+    
+    sessions = await db.tino_conversations.aggregate(pipeline).to_list(30)
+    
+    return {
+        "sessions": [
+            {
+                "date": s["_id"],
+                "preview": s["first_message"][:50] + "..." if len(s.get("first_message", "")) > 50 else s.get("first_message", ""),
+                "message_count": s["message_count"],
+                "last_activity": s["last_timestamp"]
+            }
+            for s in sessions
+        ],
+        "total_sessions": len(sessions)
+    }
+
