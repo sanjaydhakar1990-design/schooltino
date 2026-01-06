@@ -76,32 +76,32 @@ export const Sidebar = ({ isOpen, onClose }) => {
     }
   };
 
-  // Grouped navigation structure - Clean & Organized
+  // Grouped navigation structure - Clean & Organized (with translations)
   const navGroups = [
     {
       id: 'dashboard',
-      label: 'Dashboard',
+      label: t('dashboard'),
       icon: LayoutDashboard,
       items: [
-        { path: '/app/dashboard', icon: LayoutDashboard, label: 'Home', permKey: 'dashboard' },
-        { path: '/app/tino-brain', icon: Brain, label: 'Tino AI', permKey: 'dashboard' },
-        { path: '/app/school-analytics', icon: BarChart3, label: 'Analytics', permKey: 'school_analytics' },
+        { path: '/app/dashboard', icon: LayoutDashboard, label: t('dashboard'), permKey: 'dashboard' },
+        { path: '/app/tino-brain', icon: Brain, label: t('tino_brain'), permKey: 'dashboard' },
+        { path: '/app/school-analytics', icon: BarChart3, label: t('school_analytics'), permKey: 'school_analytics' },
       ]
     },
     {
       id: 'academic',
-      label: 'Academic',
+      label: t('academic') || 'Academic',
       icon: BookOpen,
       items: [
-        { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
-        { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes' },
-        { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance' },
-        { path: '/app/timetable', icon: Clock, label: 'Timetable', permKey: 'attendance' },
+        { path: '/app/students', icon: Users, label: t('students'), permKey: 'students' },
+        { path: '/app/classes', icon: GraduationCap, label: t('classes'), permKey: 'classes' },
+        { path: '/app/attendance', icon: CalendarCheck, label: t('attendance'), permKey: 'attendance' },
+        { path: '/app/timetable', icon: Clock, label: t('timetable'), permKey: 'attendance' },
       ]
     },
     {
       id: 'staff',
-      label: 'Staff & HR',
+      label: t('staff'),
       icon: Briefcase,
       items: [
         { path: '/app/staff', icon: UserCog, label: 'Staff', permKey: 'staff' },
