@@ -1440,38 +1440,3 @@ async def delete_all_enrollment_photos(person_type: str, person_id: str):
         "deleted_count": result.deleted_count,
         "message": "All photos deleted. Ready for re-enrollment."
     }
-
-        }
-    
-    # Compare faces
-    comparison = await compare_faces(enrolled["photo_data"], photo_base64)
-    
-    is_match = comparison.get("is_same_person", False)
-    confidence = comparison.get("confidence", 0)
-    
-    # Log verification
-    await db.staff_face_verifications.insert_one({
-        "id": str(uuid.uuid4()),
-        "staff_id": staff_id,
-        "verified": is_match,
-        "confidence": confidence,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    })
-    
-    if is_match:
-        staff = await db.users.find_one({"id": staff_id}, {"_id": 0, "name": 1, "role": 1})
-        return {
-            "success": True,
-            "verified": True,
-            "staff_name": staff.get("name") if staff else None,
-            "staff_role": staff.get("role") if staff else None,
-            "confidence": confidence,
-            "message": "Face verified successfully!"
-        }
-    else:
-        return {
-            "success": True,
-            "verified": False,
-            "confidence": confidence,
-            "message": "Face match nahi hua"
-        }
