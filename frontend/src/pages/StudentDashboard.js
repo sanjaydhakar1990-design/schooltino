@@ -647,6 +647,167 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Class Chat Dialog */}
+      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+        <DialogContent className="max-w-md h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-blue-500" />
+              {chatGroup?.name || 'Class Chat'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-2 p-2 bg-slate-50 rounded-lg">
+            {chatMessages.length === 0 ? (
+              <div className="text-center py-8 text-slate-400">
+                <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p>No messages yet. Start the conversation!</p>
+              </div>
+            ) : (
+              chatMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] rounded-xl px-3 py-2 ${
+                    msg.sender_id === user?.id 
+                      ? 'bg-blue-500 text-white rounded-br-sm' 
+                      : 'bg-white border rounded-bl-sm'
+                  }`}>
+                    {msg.sender_id !== user?.id && (
+                      <p className="text-xs font-medium text-blue-600 mb-1">{msg.sender_name}</p>
+                    )}
+                    <p className="text-sm">{msg.content}</p>
+                    <p className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                      {new Date(msg.created_at).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex gap-2 pt-2 border-t">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+            />
+            <Button onClick={sendChatMessage} className="bg-blue-500 hover:bg-blue-600">
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Complaint Dialog */}
+      <Dialog open={showComplaintDialog} onOpenChange={setShowComplaintDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertOctagon className="w-5 h-5 text-rose-500" />
+              Submit Complaint
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitComplaint} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Complaint To</Label>
+              <select
+                value={complaintForm.complaint_to}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, complaint_to: e.target.value }))}
+                className="w-full h-10 rounded-lg border px-3"
+              >
+                <option value="teacher">Class Teacher</option>
+                <option value="admin">Admin/Principal</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <select
+                value={complaintForm.category}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, category: e.target.value }))}
+                className="w-full h-10 rounded-lg border px-3"
+              >
+                <option value="academic">Academic Issues</option>
+                <option value="bullying">Bullying/Harassment</option>
+                <option value="facilities">Facilities</option>
+                <option value="teacher">Teacher Related</option>
+                <option value="fees">Fees Related</option>
+                <option value="transport">Transport</option>
+                <option value="food">Food/Canteen</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Subject *</Label>
+              <Input
+                value={complaintForm.subject}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, subject: e.target.value }))}
+                placeholder="Brief title of your complaint"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description *</Label>
+              <Textarea
+                value={complaintForm.description}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe your complaint in detail..."
+                rows={4}
+                required
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="anonymous"
+                checked={complaintForm.is_anonymous}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, is_anonymous: e.target.checked }))}
+                className="rounded"
+              />
+              <label htmlFor="anonymous" className="text-sm text-slate-600">Submit anonymously</label>
+            </div>
+            <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600">
+              Submit Complaint
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Activities Dialog */}
+      <Dialog open={showActivitiesDialog} onOpenChange={setShowActivitiesDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              My Activities & Sports
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {myActivities.length === 0 ? (
+              <div className="text-center py-8 text-slate-400">
+                <Activity className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p>You are not enrolled in any activities yet.</p>
+                <p className="text-sm mt-2">Ask your teacher to enroll you!</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {myActivities.map((activity, idx) => (
+                  <div key={idx} className="p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{activity.name}</p>
+                        <p className="text-xs text-slate-500">{activity.category} • {activity.schedule}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Voice Assistant */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
