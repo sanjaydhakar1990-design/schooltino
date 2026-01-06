@@ -23,7 +23,8 @@ import {
   Download, LogOut, School, ChevronRight, Search, Settings, 
   FileText, CalendarDays, AlertTriangle, Loader2, Brain, 
   Send, CreditCard, Wallet, Mic, Phone, Lock, Home,
-  Eye, Paperclip, Star, ClipboardList
+  Eye, Paperclip, Star, ClipboardList, MessageCircle, Users,
+  Trophy, Activity, AlertOctagon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
@@ -48,8 +49,28 @@ export default function StudyTinoDashboard() {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showAIHelper, setShowAIHelper] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [showComplaintDialog, setShowComplaintDialog] = useState(false);
+  const [showActivitiesDialog, setShowActivitiesDialog] = useState(false);
   
   const [selectedNotice, setSelectedNotice] = useState(null);
+  
+  // Chat State
+  const [chatMessages, setChatMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [chatGroup, setChatGroup] = useState(null);
+  
+  // Complaint State
+  const [complaintForm, setComplaintForm] = useState({
+    complaint_to: 'teacher',
+    category: 'academic',
+    subject: '',
+    description: '',
+    is_anonymous: false
+  });
+  
+  // Activities State
+  const [myActivities, setMyActivities] = useState([]);
   
   // Leave Form
   const [leaveForm, setLeaveForm] = useState({
