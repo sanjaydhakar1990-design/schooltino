@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -28,6 +29,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { schoolId, user, schoolData } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
@@ -38,16 +40,16 @@ export default function DashboardPage() {
   useEffect(() => {
     // Set greeting based on time
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 17) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
+    if (hour < 12) setGreeting(t('good_morning') || 'Good Morning');
+    else if (hour < 17) setGreeting(t('good_afternoon') || 'Good Afternoon');
+    else setGreeting(t('good_evening') || 'Good Evening');
 
     if (schoolId) {
       fetchStats();
     } else {
       setLoading(false);
     }
-  }, [schoolId]);
+  }, [schoolId, t]);
 
   const fetchStats = async () => {
     try {
