@@ -273,8 +273,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <LanguageProvider>
-          {/* Trial Banner - Top of page */}
-          <TrialBanner />
+          {/* Trial Banner removed from admin dashboard per user request */}
           
           <AppRoutes />
           
