@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
   const [schoolId, setSchoolId] = useState(localStorage.getItem('schoolId') || null);
+  const [schoolData, setSchoolData] = useState(null);
 
   useEffect(() => {
     if (token) {
