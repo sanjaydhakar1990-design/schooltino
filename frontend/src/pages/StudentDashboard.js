@@ -373,20 +373,20 @@ export default function StudyTinoDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50" data-testid="studytino-dashboard">
-      {/* Header - Simple & Clean */}
+      {/* Header - Responsive */}
       <header className="sticky top-0 z-50 bg-white border-b border-amber-100 shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-3">
+        <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                <School className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                <School className="w-6 h-6 md:w-7 md:h-7 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-slate-900">{profile?.name || 'Student'}</h1>
-                <p className="text-xs text-slate-500">{profile?.class_name || 'Class'}</p>
+                <h1 className="font-bold text-slate-900 text-base md:text-lg">{profile?.name || 'Student'}</h1>
+                <p className="text-xs md:text-sm text-slate-500">{profile?.class_name || 'Class'} • {profile?.school_name || 'School'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 md:gap-2">
               <Button variant="ghost" size="icon" onClick={() => setVoiceModalOpen(true)} className="text-purple-600">
                 <Mic className="w-5 h-5" />
               </Button>
@@ -401,57 +401,43 @@ export default function StudyTinoDashboard() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-4 space-y-4 pb-20">
-        {/* Welcome Card */}
+      <main className="max-w-4xl mx-auto px-4 py-4 md:py-6 space-y-4 md:space-y-6 pb-20">
+        {/* Welcome Card - Responsive */}
         <Card className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
-          <CardContent className="p-5">
-            <p className="text-amber-100 text-sm">{getGreeting()}</p>
-            <h2 className="text-xl font-bold mt-1">{profile?.name?.split(' ')[0] || 'Student'}!</h2>
-            <p className="text-amber-100 text-sm mt-1">{dateStr}</p>
-            
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-3 mt-4">
-              <div className="bg-white/20 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">{attendance.present}%</p>
-                <p className="text-xs text-amber-100">Attendance</p>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-amber-100 text-sm">{getGreeting()}</p>
+                <h2 className="text-xl md:text-2xl font-bold mt-1">{profile?.name?.split(' ')[0] || 'Student'}!</h2>
+                <p className="text-amber-100 text-sm mt-1">{dateStr}</p>
               </div>
-              <div className="bg-white/20 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">{pendingHomework}</p>
-                <p className="text-xs text-amber-100">Homework</p>
-              </div>
-              <div className="bg-white/20 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">{notices.length}</p>
-                <p className="text-xs text-amber-100">Notices</p>
+              
+              {/* Quick Stats - Responsive Grid */}
+              <div className="grid grid-cols-3 gap-2 md:gap-4 mt-4 md:mt-0">
+                <div className="bg-white/20 rounded-lg p-2 md:p-4 text-center">
+                  <p className="text-xl md:text-2xl font-bold">{attendance.present}%</p>
+                  <p className="text-xs text-amber-100">Attendance</p>
+                </div>
+                <div className="bg-white/20 rounded-lg p-2 md:p-4 text-center">
+                  <p className="text-xl md:text-2xl font-bold">{pendingHomework}</p>
+                  <p className="text-xs text-amber-100">Homework</p>
+                </div>
+                <div className="bg-white/20 rounded-lg p-2 md:p-4 text-center">
+                  <p className="text-xl md:text-2xl font-bold">{notices.length}</p>
+                  <p className="text-xs text-amber-100">Notices</p>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Quick Actions - Simple Grid */}
-        <div className="grid grid-cols-4 gap-3">
+        {/* Quick Actions - Responsive Grid */}
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-2 md:gap-3">
           {[
             { icon: Wallet, label: 'Pay Fees', color: 'bg-green-500', action: () => setShowPaymentDialog(true) },
             { icon: MessageCircle, label: 'Class Chat', color: 'bg-blue-500', action: () => openClassChat() },
             { icon: AlertOctagon, label: 'Complaint', color: 'bg-rose-500', action: () => setShowComplaintDialog(true) },
             { icon: Trophy, label: 'Activities', color: 'bg-amber-500', action: () => openActivities() },
-          ].map((item, idx) => (
-            <button
-              key={idx}
-              onClick={item.action || (() => navigate(item.path))}
-              className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-100 hover:shadow-md transition-all"
-              data-testid={`quick-action-${item.label.toLowerCase().replace(' ', '-')}`}
-            >
-              <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-2`}>
-                <item.icon className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium text-slate-700">{item.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Second Row Quick Actions */}
-        <div className="grid grid-cols-4 gap-3">
-          {[
             { icon: FileText, label: 'Receipts', color: 'bg-slate-500', path: '/studytino/receipts' },
             { icon: CalendarDays, label: 'Leave', color: 'bg-purple-500', action: () => setShowLeaveDialog(true) },
             { icon: Brain, label: 'AI Help', color: 'bg-indigo-500', action: () => setShowAIHelper(true) },
@@ -460,13 +446,13 @@ export default function StudyTinoDashboard() {
             <button
               key={idx}
               onClick={item.action || (() => navigate(item.path))}
-              className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-100 hover:shadow-md transition-all"
-              data-testid={`quick-action-2-${item.label.toLowerCase().replace(' ', '-')}`}
+              className="flex flex-col items-center p-2 md:p-3 bg-white rounded-xl border border-slate-100 hover:shadow-md transition-all"
+              data-testid={`quick-action-${item.label.toLowerCase().replace(' ', '-')}`}
             >
-              <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-2`}>
-                <item.icon className="w-5 h-5 text-white" />
+              <div className={`w-8 h-8 md:w-10 md:h-10 ${item.color} rounded-xl flex items-center justify-center mb-1 md:mb-2`}>
+                <item.icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-xs font-medium text-slate-700">{item.label}</span>
+              <span className="text-[10px] md:text-xs font-medium text-slate-700 text-center leading-tight">{item.label}</span>
             </button>
           ))}
         </div>
