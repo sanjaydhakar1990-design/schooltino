@@ -410,23 +410,29 @@
 │   │   ├── multi_year_fees.py
 │   │   ├── password_reset.py
 │   │   ├── salary_management.py
-│   │   └── school_auto_setup.py
-│   ├── static/marketing/         # Marketing brochures archive
-│   └── server.py                 # Main server (6500+ lines - needs refactoring)
+│   │   ├── school_auto_setup.py
+│   │   ├── tino_brain.py          # NEW: Master AI routes
+│   │   └── voice_assistant.py     # Updated: ElevenLabs, commands
+│   ├── static/marketing/          # Marketing brochures archive
+│   └── server.py                  # Main server (7000+ lines - needs refactoring)
 ├── frontend/
 │   └── src/
 │       ├── components/
-│       │   ├── Sidebar.js        # teacherOnly flag added
+│       │   ├── Layout.js          # UPDATED: Flex-based layout fix
+│       │   ├── Sidebar.js         # UPDATED: Grouped categories, light theme
+│       │   ├── VoiceAssistantFAB.js  # UPDATED: Push-to-talk, history
 │       │   └── ...
 │       └── pages/
-│           ├── UnifiedPortal.js  # NEW: Smart dashboard for all staff
-│           ├── DashboardPage.js
-│           ├── TeachTinoLogin.js # Updated redirect logic
+│           ├── DashboardPage.js      # REDESIGNED: Card-based, light theme
+│           ├── StudentDashboard.js   # REDESIGNED: Mobile-first, orange theme
+│           ├── TinoBrainDashboard.js # UPDATED: Light theme
+│           ├── UnifiedPortal.js      # Smart dashboard for all staff
+│           ├── TeachTinoDashboard.js # Simplified
 │           └── ...
-├── marketing_materials_final/    # HTML brochure files
+├── marketing_materials_final/     # HTML brochure files
 └── test_reports/
-    ├── iteration_20.json
-    └── iteration_21.json         # Latest test results
+    ├── iteration_22.json
+    └── iteration_23.json          # Latest test results
 ```
 
 ---
