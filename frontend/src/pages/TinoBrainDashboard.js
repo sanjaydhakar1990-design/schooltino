@@ -3,9 +3,10 @@
  * Single AI that manages everything
  * Clean, Simple, Professional Design
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -14,9 +15,9 @@ import { Badge } from '../components/ui/badge';
 import {
   Brain, Mic, MicOff, Send, AlertTriangle, CheckCircle, XCircle,
   Users, MapPin, Video, Shield, Bell, Activity, Eye, Sparkles,
-  Settings, User, Clock, TrendingUp, Loader2,
+  Settings, User, Clock, TrendingUp, Loader2, Trash2, History,
   Volume2, Camera, Target, Heart, Zap, RefreshCw, ArrowLeft,
-  BookOpen, Wallet, CalendarCheck, ChevronRight
+  BookOpen, Wallet, CalendarCheck, ChevronRight, MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -33,6 +34,7 @@ const PRIORITY_COLORS = {
 export default function TinoBrainDashboard() {
   const { user, schoolId } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   // States
   const [loading, setLoading] = useState(true);
@@ -45,11 +47,14 @@ export default function TinoBrainDashboard() {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [voiceGender, setVoiceGender] = useState(() => localStorage.getItem('tino_voice_gender') || 'female');
+  const [showHistory, setShowHistory] = useState(false);
+  const [chatSessions, setChatSessions] = useState([]);
   
   const messagesEndRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const audioRef = useRef(null);
+  const streamRef = useRef(null);
 
   useEffect(() => {
     fetchData();
