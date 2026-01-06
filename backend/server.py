@@ -65,6 +65,7 @@ from routes.password_reset import router as password_reset_router
 from routes.school_auto_setup import router as school_setup_router
 from routes.director_greeting import router as director_greeting_router
 from routes.tino_brain import router as tino_brain_router
+from routes.ai_greeting import router as ai_greeting_router
 
 # ==================== MODELS ====================
 
