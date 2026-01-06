@@ -131,6 +131,7 @@ export const AuthProvider = ({ children }) => {
       setToken,
       loading,
       schoolId,
+      schoolData,
       login,
       studentLogin,
       setupDirector,
