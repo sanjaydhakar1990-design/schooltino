@@ -221,43 +221,217 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-6" data-testid="profile-page">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center">
           <h1 className="text-2xl font-bold text-slate-900">My Profile</h1>
-          <p className="text-slate-500">Manage your account settings</p>
+          <p className="text-slate-500">Manage your account & AI settings</p>
         </div>
 
-        {/* Profile Card */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center text-center">
-              {/* Avatar */}
-              <div className="relative mb-4">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
-                  {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column - Photo & AI Features */}
+          <div className="space-y-4">
+            {/* Profile Photo Card */}
+            <Card>
+              <CardContent className="p-6 text-center">
+                {/* Avatar with Photo */}
+                <div className="relative inline-block mb-4">
+                  {photoUrl ? (
+                    <img 
+                      src={photoUrl} 
+                      alt={user?.name}
+                      className="w-28 h-28 rounded-full object-cover border-4 border-indigo-100"
+                    />
+                  ) : (
+                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                  
+                  {faceEnrolled && (
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                 </div>
-                <button className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50">
-                  <Camera className="w-4 h-4 text-slate-600" />
-                </button>
-              </div>
-
-              {/* Name & Role */}
-              <h2 className="text-xl font-bold text-slate-900">{user?.name}</h2>
-              <span className={`mt-2 px-3 py-1 rounded-full text-sm font-medium ${badge.color}`}>
-                {badge.label}
-              </span>
-
-              {/* Contact Info */}
-              <div className="mt-4 space-y-2 text-sm text-slate-600">
-                <div className="flex items-center justify-center gap-2">
-                  <Mail className="w-4 h-4 text-slate-400" />
-                  {user?.email}
+                
+                <h2 className="text-lg font-bold text-slate-900">{user?.name}</h2>
+                <span className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${badge.color}`}>
+                  {badge.label}
+                </span>
+                
+                {/* Face Enrollment Status */}
+                {faceEnrolled ? (
+                  <Badge className="mt-3 bg-green-100 text-green-700 block mx-auto w-fit">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Face Enrolled for AI
+                  </Badge>
+                ) : (
+                  <Badge className="mt-3 bg-amber-100 text-amber-700 block mx-auto w-fit">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Enroll Face for AI
+                  </Badge>
+                )}
+                
+                {/* Photo Upload Buttons */}
+                <div className="flex gap-2 mt-4 justify-center">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={startCamera}
+                    disabled={uploading}
+                  >
+                    <Camera className="w-4 h-4 mr-1" />
+                    Camera
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Upload className="w-4 h-4 mr-1" />
+                    Upload
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
                 </div>
-                {user?.mobile && (
-                  <div className="flex items-center justify-center gap-2">
-                    <Phone className="w-4 h-4 text-slate-400" />
-                    {user.mobile}
+                
+                {uploading && (
+                  <p className="text-xs text-indigo-600 mt-2 flex items-center justify-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Enrolling face...
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Camera Dialog */}
+            {showCamera && (
+              <Card className="border-2 border-indigo-200">
+                <CardContent className="p-4">
+                  <div className="relative rounded-lg overflow-hidden bg-black">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full"
+                    />
+                    <canvas ref={canvasRef} className="hidden" />
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={capturePhoto}>
+                      <Camera className="w-4 h-4 mr-2" />
+                      Capture
+                    </Button>
+                    <Button variant="outline" onClick={stopCamera}>
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* AI Features Card */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Fingerprint className="w-5 h-5 text-indigo-600" />
+                  AI Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* CCTV Command Authorization */}
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Video className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm">CCTV Commands</span>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant={cctvAuthorized ? "default" : "outline"}
+                    onClick={handleCCTVAuthorization}
+                    className={cctvAuthorized ? "bg-green-500 hover:bg-green-600" : ""}
+                  >
+                    {cctvAuthorized ? 'On' : 'Off'}
+                  </Button>
+                </div>
+                
+                <p className="text-xs text-slate-500 px-1">
+                  {cctvAuthorized 
+                    ? "✅ Aap CCTV se Tino ko command de sakte hain" 
+                    : "Enable karein to give voice commands via CCTV"}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Profile Info & Settings */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Contact Info Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="w-5 h-5 text-indigo-600" />
+                  Profile Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-slate-500 text-xs">Name</Label>
+                    <p className="font-medium">{user?.name}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-slate-500 text-xs">Role</Label>
+                    <p className="font-medium capitalize">{user?.role?.replace('_', ' ')}</p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-slate-500 text-xs">Email</Label>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-slate-400" />
+                      <p className="text-sm">{user?.email}</p>
+                    </div>
+                  </div>
+                  {user?.mobile && (
+                    <div className="space-y-1">
+                      <Label className="text-slate-500 text-xs">Mobile</Label>
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-slate-400" />
+                        <p className="text-sm">{user.mobile}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {user?.school_id && (
+                  <div className="space-y-1">
+                    <Label className="text-slate-500 text-xs">School ID</Label>
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-slate-400" />
+                      <p className="text-sm">{user.school_id}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Account Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-indigo-600" />
+                  Account Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                   </div>
                 )}
                 {user?.school_id && (
