@@ -36,6 +36,33 @@
 - **Password:** pCRNHsVr
 - **Class:** Class 10-A
 
+### Test Reports
+- `/app/test_reports/iteration_25.json` - All features verified (6/6 tests passed)
+
+---
+
+## Pending Tasks (Priority Order)
+
+### P0 - Critical
+- [ ] Notice Popup System - Connect NoticePopup.js to /api/notices/unread endpoint
+
+### P1 - High Priority
+- [ ] Mobile compatibility verification
+- [ ] PWA installation testing
+- [ ] AI Voice quality (ElevenLabs madhur voice)
+
+### P2 - Medium Priority
+- [ ] CCTV AI Greeting system complete
+- [ ] Backend server.py refactoring (7000+ lines monolith)
+
+### Future/Backlog
+- [ ] WhatsApp Integration
+- [ ] Razorpay Payment Integration
+- [ ] SMS Notifications (Twilio/MSG91)
+- [ ] AI Teacher Clone (HeyGen API)
+- [ ] Bus GPS Tracking
+- [ ] Google Meet Integration
+
 ---
 
 ## What's Been Implemented (Previous Session - 6 Jan 2026)
