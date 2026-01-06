@@ -280,6 +280,9 @@ function App() {
           
           <AppRoutes />
           
+          {/* Notice Popup - Shows unread notices as popup */}
+          <NoticePopup />
+          
           {/* Support FAB - Bottom right */}
           <SupportFAB />
           
