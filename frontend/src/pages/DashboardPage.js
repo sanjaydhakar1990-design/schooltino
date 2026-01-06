@@ -164,9 +164,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-8" data-testid="dashboard-page">
-      {/* Trial Status */}
-      <TrialStatusCard />
-
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
