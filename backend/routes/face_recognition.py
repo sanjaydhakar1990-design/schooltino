@@ -1228,6 +1228,7 @@ async def verify_staff_face(staff_id: str, photo_base64: str):
             "success": False,
             "verified": False,
             "error": "No enrolled photo found for this staff"
+        }
 
 
 # ==================== MULTI-PHOTO ENROLLMENT (4-5 Photos) ====================
