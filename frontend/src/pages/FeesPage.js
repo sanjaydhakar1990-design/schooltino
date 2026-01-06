@@ -537,6 +537,136 @@ export default function FeesPage() {
             </div>
           )}
         </TabsContent>
+
+        {/* Scholarships Tab */}
+        <TabsContent value="scholarships">
+          <div className="stat-card">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Government & Private Scholarships</h3>
+            <p className="text-slate-500 text-sm mb-6">Assign scholarships to students for fee exemption</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* RTE Scheme */}
+              <div className="border rounded-xl p-4 hover:border-emerald-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">RTE (Right to Education)</h4>
+                    <p className="text-xs text-slate-500">100% Fee Exemption</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">For students from economically weaker sections under RTE Act</p>
+                <Button variant="outline" size="sm" className="w-full">Assign to Student</Button>
+              </div>
+
+              {/* SC/ST Scholarship */}
+              <div className="border rounded-xl p-4 hover:border-blue-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">SC/ST Scholarship</h4>
+                    <p className="text-xs text-slate-500">Govt Scholarship</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">Pre-matric/Post-matric scholarship for SC/ST students</p>
+                <Button variant="outline" size="sm" className="w-full">Assign to Student</Button>
+              </div>
+
+              {/* OBC Scholarship */}
+              <div className="border rounded-xl p-4 hover:border-amber-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">OBC Scholarship</h4>
+                    <p className="text-xs text-slate-500">Govt Scholarship</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">Central/State OBC scholarship programs</p>
+                <Button variant="outline" size="sm" className="w-full">Assign to Student</Button>
+              </div>
+
+              {/* BPL Scheme */}
+              <div className="border rounded-xl p-4 hover:border-purple-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">BPL Scheme</h4>
+                    <p className="text-xs text-slate-500">Below Poverty Line</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">Fee waiver for BPL card holder families</p>
+                <Button variant="outline" size="sm" className="w-full">Assign to Student</Button>
+              </div>
+
+              {/* Merit Scholarship */}
+              <div className="border rounded-xl p-4 hover:border-rose-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-rose-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Merit Scholarship</h4>
+                    <p className="text-xs text-slate-500">School/Private</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">For top performing students based on academics</p>
+                <Button variant="outline" size="sm" className="w-full">Assign to Student</Button>
+              </div>
+
+              {/* Private Scholarship */}
+              <div className="border rounded-xl p-4 hover:border-teal-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-teal-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Private/NGO Scholarship</h4>
+                    <p className="text-xs text-slate-500">External Funding</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">Scholarships from private organizations or NGOs</p>
+                <Button variant="outline" size="sm" className="w-full">Assign to Student</Button>
+              </div>
+
+              {/* Sports Scholarship */}
+              <div className="border rounded-xl p-4 hover:border-orange-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Sports Scholarship</h4>
+                    <p className="text-xs text-slate-500">Sports Quota</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">For students excelling in sports activities</p>
+                <Button variant="outline" size="sm" className="w-full">Assign to Student</Button>
+              </div>
+
+              {/* Custom/Other */}
+              <div className="border rounded-xl p-4 hover:border-slate-300 transition-colors border-dashed">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <Plus className="w-5 h-5 text-slate-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Custom Scheme</h4>
+                    <p className="text-xs text-slate-500">Add New</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">Create a custom scholarship or concession</p>
+                <Button variant="outline" size="sm" className="w-full">Create Custom</Button>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Payment Dialog */}
