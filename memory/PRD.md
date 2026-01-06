@@ -370,19 +370,20 @@
 ## Upcoming Tasks
 
 ### P0 - High Priority
-- [ ] AI School Auto-Setup - Website URL se school details extract
-- [ ] Director AI Personalized Greeting - Time-based custom greeting
+- [ ] **Tino Brain Full Implementation** - Master AI with real-time school monitoring
+- [ ] **CCTV AI Integration** - Live face detection for alerts and attendance
 
 ### P1 - Medium Priority
-- [ ] Backend Refactoring (server.py is 6500+ lines)
+- [ ] Backend Refactoring (server.py is 7000+ lines)
+- [ ] AI School Auto-Setup improvements
 - [ ] Live CCTV Auto-Attendance
-- [ ] Homepage Guest Login/Demo
 
 ### P2 - Lower Priority
-- [ ] Live Razorpay integration
+- [ ] Live Razorpay integration (currently mocked)
 - [ ] WhatsApp Integration (Baileys)
 - [ ] AI Teacher Clone (HeyGen API)
 - [ ] Bus GPS Integration
+- [ ] Custom Hindi voice cloning with ElevenLabs
 
 ---
 
