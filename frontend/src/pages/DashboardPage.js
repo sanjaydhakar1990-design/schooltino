@@ -1,50 +1,48 @@
+/**
+ * Schooltino Admin Dashboard - Ultra Simple & Clean
+ * Inspired by: Vidyalaya, MyLeadingCampus, NextOS, Entrar
+ * Design: Light Theme, Card-Based, Color-Coded Categories
+ */
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import {
-  Users,
-  UserCog,
-  GraduationCap,
-  Wallet,
-  TrendingUp,
-  AlertCircle,
-  Clock,
-  ArrowUpRight,
-  CalendarCheck,
-  FileText,
-  Bell,
-  Calculator,
-  History,
-  Sparkles,
-  Video,
-  DoorOpen,
-  Settings,
-  Camera,
-  User,
-  CheckCircle
+  Users, UserCog, GraduationCap, Wallet, TrendingUp, Clock,
+  CalendarCheck, Bell, Calculator, Sparkles, Settings, Brain,
+  BookOpen, Bus, Heart, Fingerprint, Video, Shield,
+  FileText, MessageSquare, Image, Calendar, BarChart3,
+  ChevronRight, AlertCircle, CheckCircle, XCircle, Loader2,
+  Mic, DollarSign, Building, Phone, Mail, Globe
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { TrialStatusCard } from '../components/TrialMode';
-import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { Button } from '../components/ui/button';
 import StaffPhotoUpload from '../components/StaffPhotoUpload';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function DashboardPage() {
-  const { t } = useTranslation();
-  const { schoolId, user } = useAuth();
   const navigate = useNavigate();
+  const { schoolId, user, schoolData } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [greeting, setGreeting] = useState('');
 
   const isDirector = user?.role === 'director';
 
   useEffect(() => {
+    // Set greeting based on time
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good Morning');
+    else if (hour < 17) setGreeting('Good Afternoon');
+    else setGreeting('Good Evening');
+
     if (schoolId) {
       fetchStats();
     } else {
@@ -64,22 +62,15 @@ export default function DashboardPage() {
   };
 
   const attendanceData = stats ? [
-    { name: t('present'), value: stats.attendance_today.present, color: '#10B981' },
-    { name: t('absent'), value: stats.attendance_today.absent, color: '#EF4444' },
-    { name: t('late'), value: stats.attendance_today.late, color: '#F59E0B' }
+    { name: 'Present', value: stats.attendance_today?.present || 0, color: '#10B981' },
+    { name: 'Absent', value: stats.attendance_today?.absent || 0, color: '#EF4444' },
+    { name: 'Late', value: stats.attendance_today?.late || 0, color: '#F59E0B' }
   ] : [];
-
-  const feeData = [
-    { name: 'Jan', collected: 45000, pending: 12000 },
-    { name: 'Feb', collected: 52000, pending: 8000 },
-    { name: 'Mar', collected: 48000, pending: 15000 },
-    { name: 'Apr', collected: 55000, pending: 10000 },
-  ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="spinner w-10 h-10" />
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -89,198 +80,329 @@ export default function DashboardPage() {
       <div className="text-center py-20" data-testid="no-school-message">
         <GraduationCap className="w-16 h-16 text-slate-300 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-slate-700 mb-2">No School Selected</h2>
-        <p className="text-slate-500">Please create or select a school from Settings to view dashboard.</p>
+        <p className="text-slate-500">Please create or select a school from Settings.</p>
+        <Button onClick={() => navigate('/app/settings')} className="mt-4">
+          <Settings className="w-4 h-4 mr-2" />
+          Go to Settings
+        </Button>
       </div>
     );
   }
 
+  // Module categories - Competitor-inspired grouping
+  const moduleCategories = [
+    {
+      title: 'Academic',
+      color: 'bg-blue-500',
+      lightColor: 'bg-blue-50',
+      textColor: 'text-blue-700',
+      modules: [
+        { icon: Users, label: 'Students', path: '/app/students', count: stats?.total_students || 0 },
+        { icon: GraduationCap, label: 'Classes', path: '/app/classes', count: stats?.total_classes || 0 },
+        { icon: CalendarCheck, label: 'Attendance', path: '/app/attendance', badge: 'Live' },
+        { icon: Clock, label: 'Timetable', path: '/app/timetable' },
+      ]
+    },
+    {
+      title: 'Staff & HR',
+      color: 'bg-emerald-500',
+      lightColor: 'bg-emerald-50',
+      textColor: 'text-emerald-700',
+      modules: [
+        { icon: UserCog, label: 'Staff', path: '/app/staff', count: stats?.total_staff || 0 },
+        { icon: Calendar, label: 'Leave', path: '/app/leave' },
+        { icon: DollarSign, label: 'Salary', path: '/app/salary' },
+      ]
+    },
+    {
+      title: 'Finance',
+      color: 'bg-amber-500',
+      lightColor: 'bg-amber-50',
+      textColor: 'text-amber-700',
+      modules: [
+        { icon: Wallet, label: 'Fees', path: '/app/fees', count: `₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K` },
+        { icon: FileText, label: 'Fee Structure', path: '/app/fee-structure' },
+        { icon: Calculator, label: 'AI Accountant', path: '/app/accountant', badge: 'AI' },
+      ]
+    },
+    {
+      title: 'Communication',
+      color: 'bg-purple-500',
+      lightColor: 'bg-purple-50',
+      textColor: 'text-purple-700',
+      modules: [
+        { icon: Bell, label: 'Notices', path: '/app/notices', count: stats?.recent_notices?.length || 0 },
+        { icon: MessageSquare, label: 'SMS', path: '/app/sms' },
+        { icon: Video, label: 'Meetings', path: '/app/meetings' },
+        { icon: Image, label: 'Gallery', path: '/app/gallery' },
+      ]
+    },
+    {
+      title: 'AI Tools',
+      color: 'bg-indigo-500',
+      lightColor: 'bg-indigo-50',
+      textColor: 'text-indigo-700',
+      modules: [
+        { icon: Brain, label: 'Tino AI', path: '/app/tino-brain', badge: 'NEW' },
+        { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', badge: 'AI' },
+        { icon: Sparkles, label: 'AI Content', path: '/app/ai-content', badge: 'AI' },
+      ]
+    },
+    {
+      title: 'Infrastructure',
+      color: 'bg-slate-500',
+      lightColor: 'bg-slate-50',
+      textColor: 'text-slate-700',
+      modules: [
+        { icon: Bus, label: 'Transport', path: '/app/transport' },
+        { icon: Heart, label: 'Health', path: '/app/health' },
+        { icon: Fingerprint, label: 'Biometric', path: '/app/biometric' },
+        { icon: Video, label: 'CCTV', path: '/app/cctv' },
+      ]
+    },
+  ];
+
   return (
-    <div className="space-y-8" data-testid="dashboard-page">
-      {/* Trial Status Card */}
+    <div className="space-y-6 pb-8" data-testid="dashboard-page">
+      {/* Trial Status */}
       <TrialStatusCard />
 
-      {/* Quick Access Tabs - Competitor-style */}
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-3" data-testid="quick-access-tabs">
-        {[
-          { icon: CalendarCheck, label: 'Attendance', path: '/app/attendance', color: 'bg-emerald-500' },
-          { icon: Wallet, label: 'Fees', path: '/app/fees', color: 'bg-amber-500' },
-          { icon: History, label: 'Old Dues', path: '/app/multi-year-fees', color: 'bg-red-500' },
-          { icon: Users, label: 'Students', path: '/app/students', color: 'bg-blue-500' },
-          { icon: Calculator, label: 'Accountant', path: '/app/accountant', color: 'bg-purple-500' },
-          { icon: Bell, label: 'Notices', path: '/app/notices', color: 'bg-pink-500' },
-          { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: 'bg-indigo-500' },
-          { icon: Settings, label: 'My Profile', action: () => setShowProfileDialog(true), color: 'bg-slate-600' },
-        ].map((item, idx) => (
-          <button
-            key={idx}
-            onClick={() => item.action ? item.action() : navigate(item.path)}
-            className="flex flex-col items-center p-3 bg-white rounded-xl border border-slate-200 hover:shadow-lg hover:border-indigo-300 transition-all group"
-            data-testid={`quick-tab-${item.label.toLowerCase().replace(' ', '-')}`}
-          >
-            <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
-              <item.icon className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-medium text-slate-700">{item.label}</span>
-          </button>
-        ))}
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-indigo-200 text-sm">{greeting}</p>
+            <h1 className="text-2xl font-bold mt-1">{user?.name || 'Director'}</h1>
+            <p className="text-indigo-200 text-sm mt-1">
+              {schoolData?.name || 'Your School'} • {new Date().toLocaleDateString('hi-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => navigate('/app/tino-brain')}
+              className="bg-white/20 hover:bg-white/30 text-white border-0"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              Ask Tino AI
+            </Button>
+            <Button 
+              onClick={() => setShowProfileDialog(true)}
+              variant="outline"
+              className="border-white/30 text-white hover:bg-white/20"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold font-heading text-slate-900">{t('dashboard')}</h1>
-        <p className="text-slate-500 mt-1">Overview of your school's performance</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Quick Stats Row - Competitor Style */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-testid="quick-stats">
         <StatCard
           icon={Users}
-          label={t('total_students')}
+          label="Total Students"
           value={stats?.total_students || 0}
           trend="+12%"
-          color="indigo"
-          testId="stat-students"
+          color="blue"
         />
         <StatCard
           icon={UserCog}
-          label={t('total_staff')}
+          label="Total Staff"
           value={stats?.total_staff || 0}
           trend="+3%"
           color="emerald"
-          testId="stat-staff"
         />
         <StatCard
-          icon={GraduationCap}
-          label={t('total_classes')}
-          value={stats?.total_classes || 0}
-          color="amber"
-          testId="stat-classes"
+          icon={CalendarCheck}
+          label="Present Today"
+          value={stats?.attendance_today?.present || 0}
+          subtext={`of ${stats?.attendance_today?.total || 0}`}
+          color="green"
         />
         <StatCard
           icon={Wallet}
-          label={t('fee_collected')}
-          value={`₹${(stats?.fee_collection_month || 0).toLocaleString()}`}
-          subtext={`${t('pending_fees')}: ₹${(stats?.pending_fees || 0).toLocaleString()}`}
-          color="rose"
-          testId="stat-fees"
+          label="Fee Collected"
+          value={`₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`}
+          subtext="This Month"
+          color="amber"
         />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Attendance Chart */}
-        <div className="lg:col-span-4 stat-card" data-testid="attendance-chart">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">{t('attendance_today')}</h3>
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={attendanceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {attendanceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex justify-center gap-6 mt-4">
-            {attendanceData.map((item) => (
-              <div key={item.name} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-sm text-slate-600">{item.name}: {item.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Fee Collection Chart */}
-        <div className="lg:col-span-8 stat-card" data-testid="fee-chart">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Fee Collection Trend</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={feeData}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Bar dataKey="collected" fill="#4F46E5" radius={[4, 4, 0, 0]} name="Collected" />
-                <Bar dataKey="pending" fill="#F97316" radius={[4, 4, 0, 0]} name="Pending" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Row */}
+      {/* Module Categories - Card Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Notices */}
-        <div className="stat-card" data-testid="recent-notices">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-900">{t('recent_notices')}</h3>
-            <a href="/notices" className="text-indigo-600 text-sm font-medium hover:underline flex items-center gap-1">
-              View all <ArrowUpRight className="w-4 h-4" />
-            </a>
-          </div>
-          <div className="space-y-3">
-            {stats?.recent_notices?.length > 0 ? (
-              stats.recent_notices.map((notice) => (
-                <div
-                  key={notice.id}
-                  className={`p-3 rounded-lg border border-slate-100 priority-${notice.priority}`}
-                >
-                  <p className="font-medium text-slate-800">{notice.title}</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {new Date(notice.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-slate-500 text-sm py-4 text-center">No recent notices</p>
-            )}
-          </div>
-        </div>
-
-        {/* Recent Activities */}
-        <div className="stat-card" data-testid="recent-activities">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-900">{t('recent_activities')}</h3>
-            <a href="/audit-logs" className="text-indigo-600 text-sm font-medium hover:underline flex items-center gap-1">
-              View all <ArrowUpRight className="w-4 h-4" />
-            </a>
-          </div>
-          <div className="space-y-3">
-            {stats?.recent_activities?.length > 0 ? (
-              stats.recent_activities.slice(0, 5).map((activity, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-2">
-                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-4 h-4 text-slate-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-800">
-                      <span className="font-medium">{activity.user_name || 'User'}</span>
-                      {' '}{activity.action} in {activity.module}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {new Date(activity.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-slate-500 text-sm py-4 text-center">No recent activities</p>
-            )}
-          </div>
-        </div>
+        {moduleCategories.map((category, idx) => (
+          <Card key={idx} className="overflow-hidden border-0 shadow-sm">
+            <div className={`${category.color} px-4 py-3`}>
+              <h3 className="font-semibold text-white">{category.title}</h3>
+            </div>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 gap-3">
+                {category.modules.map((module, mIdx) => (
+                  <button
+                    key={mIdx}
+                    onClick={() => navigate(module.path)}
+                    className={`${category.lightColor} hover:shadow-md transition-all rounded-xl p-4 text-left group relative`}
+                    data-testid={`module-${module.label.toLowerCase().replace(' ', '-')}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center`}>
+                        <module.icon className="w-5 h-5 text-white" />
+                      </div>
+                      {module.badge && (
+                        <Badge className={`text-[10px] ${module.badge === 'AI' ? 'bg-purple-500' : module.badge === 'NEW' ? 'bg-green-500' : 'bg-blue-500'}`}>
+                          {module.badge}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className={`font-medium mt-3 ${category.textColor}`}>{module.label}</p>
+                    {module.count !== undefined && (
+                      <p className="text-sm text-slate-500 mt-1">{module.count}</p>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Profile Dialog for Director */}
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Attendance Pie Chart */}
+        <Card className="lg:col-span-4 border-0 shadow-sm">
+          <CardContent className="p-6">
+            <h3 className="font-semibold text-slate-900 mb-4">Today's Attendance</h3>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={attendanceData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={70}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {attendanceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-4 mt-2">
+              {attendanceData.map((item) => (
+                <div key={item.name} className="flex items-center gap-2 text-sm">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-slate-600">{item.name}: {item.value}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Notices */}
+        <Card className="lg:col-span-4 border-0 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900">Recent Notices</h3>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/app/notices')} className="text-indigo-600">
+                View All <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {stats?.recent_notices?.length > 0 ? (
+                stats.recent_notices.slice(0, 4).map((notice, idx) => (
+                  <div key={idx} className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">
+                    <p className="font-medium text-slate-800 text-sm line-clamp-1">{notice.title}</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {new Date(notice.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-slate-400 text-sm text-center py-4">No notices</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card className="lg:col-span-4 border-0 shadow-sm">
+          <CardContent className="p-6">
+            <h3 className="font-semibold text-slate-900 mb-4">Quick Actions</h3>
+            <div className="space-y-2">
+              <Button 
+                className="w-full justify-start bg-indigo-50 text-indigo-700 hover:bg-indigo-100" 
+                variant="ghost"
+                onClick={() => navigate('/app/students')}
+              >
+                <Users className="w-4 h-4 mr-3" />
+                New Admission
+              </Button>
+              <Button 
+                className="w-full justify-start bg-emerald-50 text-emerald-700 hover:bg-emerald-100" 
+                variant="ghost"
+                onClick={() => navigate('/app/attendance')}
+              >
+                <CalendarCheck className="w-4 h-4 mr-3" />
+                Mark Attendance
+              </Button>
+              <Button 
+                className="w-full justify-start bg-amber-50 text-amber-700 hover:bg-amber-100" 
+                variant="ghost"
+                onClick={() => navigate('/app/fees')}
+              >
+                <Wallet className="w-4 h-4 mr-3" />
+                Collect Fee
+              </Button>
+              <Button 
+                className="w-full justify-start bg-purple-50 text-purple-700 hover:bg-purple-100" 
+                variant="ghost"
+                onClick={() => navigate('/app/notices')}
+              >
+                <Bell className="w-4 h-4 mr-3" />
+                Send Notice
+              </Button>
+              <Button 
+                className="w-full justify-start bg-rose-50 text-rose-700 hover:bg-rose-100" 
+                variant="ghost"
+                onClick={() => navigate('/app/ai-paper')}
+              >
+                <Sparkles className="w-4 h-4 mr-3" />
+                Generate Paper
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Alerts Section */}
+      {stats?.pending_fees > 0 && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-amber-800">Fee Collection Alert</p>
+                <p className="text-sm text-amber-600">
+                  ₹{(stats?.pending_fees || 0).toLocaleString()} pending fees to collect
+                </p>
+              </div>
+              <Button onClick={() => navigate('/app/fees')} className="bg-amber-500 hover:bg-amber-600">
+                Collect Now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Profile Dialog */}
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -308,7 +430,7 @@ export default function DashboardPage() {
               staffName={user?.name}
               schoolId={schoolId}
               onComplete={() => {
-                toast.success('Face enrollment complete! Ab CCTV aapko recognize karega.');
+                toast.success('Face enrollment complete!');
               }}
             />
 
@@ -344,32 +466,35 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, trend, subtext, color, testId }) {
-  const colorClasses = {
-    indigo: 'bg-indigo-50 text-indigo-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    amber: 'bg-amber-50 text-amber-600',
-    rose: 'bg-rose-50 text-rose-600'
+// Stat Card Component - Clean & Simple
+function StatCard({ icon: Icon, label, value, trend, subtext, color }) {
+  const colorMap = {
+    blue: { bg: 'bg-blue-50', icon: 'bg-blue-500', text: 'text-blue-700' },
+    emerald: { bg: 'bg-emerald-50', icon: 'bg-emerald-500', text: 'text-emerald-700' },
+    green: { bg: 'bg-green-50', icon: 'bg-green-500', text: 'text-green-700' },
+    amber: { bg: 'bg-amber-50', icon: 'bg-amber-500', text: 'text-amber-700' },
   };
+  
+  const colors = colorMap[color] || colorMap.blue;
 
   return (
-    <div className="stat-card" data-testid={testId}>
-      <div className="flex items-start justify-between">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorClasses[color]}`}>
-          <Icon className="w-6 h-6" />
+    <Card className={`${colors.bg} border-0`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className={`w-10 h-10 ${colors.icon} rounded-lg flex items-center justify-center`}>
+            <Icon className="w-5 h-5 text-white" />
+          </div>
+          {trend && (
+            <Badge className="bg-green-100 text-green-700 text-xs">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              {trend}
+            </Badge>
+          )}
         </div>
-        {trend && (
-          <span className="badge badge-success flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" />
-            {trend}
-          </span>
-        )}
-      </div>
-      <div className="mt-4">
-        <p className="text-2xl font-bold font-heading text-slate-900">{value}</p>
-        <p className="text-sm text-slate-500 mt-1">{label}</p>
+        <p className={`text-2xl font-bold mt-3 ${colors.text}`}>{value}</p>
+        <p className="text-sm text-slate-500">{label}</p>
         {subtext && <p className="text-xs text-slate-400 mt-1">{subtext}</p>}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
