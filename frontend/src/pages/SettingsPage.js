@@ -195,7 +195,7 @@ export default function SettingsPage() {
           <Globe className="w-5 h-5 text-indigo-600" />
           <h2 className="text-lg font-semibold text-slate-900">Language / भाषा</h2>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => changeLanguage('en')}
             className={`px-6 py-3 rounded-xl border-2 transition-all ${
@@ -219,6 +219,18 @@ export default function SettingsPage() {
           >
             <span className="font-medium">हिंदी</span>
             {language === 'hi' && <Check className="w-4 h-4 inline ml-2" />}
+          </button>
+          <button
+            onClick={() => changeLanguage('hinglish')}
+            className={`px-6 py-3 rounded-xl border-2 transition-all ${
+              language === 'hinglish'
+                ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                : 'border-slate-200 hover:border-slate-300'
+            }`}
+            data-testid="lang-hinglish-btn"
+          >
+            <span className="font-medium">Hinglish 🔄</span>
+            {language === 'hinglish' && <Check className="w-4 h-4 inline ml-2" />}
           </button>
         </div>
       </div>
