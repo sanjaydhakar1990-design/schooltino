@@ -1,25 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import axios from 'axios';
 import { 
   User, Mail, Phone, Building2, Shield, Key, 
   Save, Loader2, CheckCircle, AlertCircle, Eye, EyeOff,
-  Camera, Edit, Lock
+  Camera, Edit, Lock, Upload, Video, Mic, Fingerprint
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function ProfilePage() {
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, schoolId } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  
+  // Photo & AI states
+  const [photoUrl, setPhotoUrl] = useState(null);
+  const [faceEnrolled, setFaceEnrolled] = useState(false);
+  const [cctvAuthorized, setCctvAuthorized] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
+  
+  // Edit profile states
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    designation: '',
+    phone: '',
+    department: ''
+  });
   
   const [passwordForm, setPasswordForm] = useState({
     oldPassword: '',
