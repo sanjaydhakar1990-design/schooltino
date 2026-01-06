@@ -42,6 +42,52 @@
 - **Syllabus Integration:** Board links to syllabus system for AI Paper generation
 - **File:** `frontend/src/pages/SettingsPage.js`
 
+### 73. Class-wise Subjects in AI Paper ✅ NEW! 📝
+- **Issue Fixed:** Previously Biology/Physics showed for Class 1-5
+- **Solution:** Created CLASS_SUBJECTS mapping with appropriate subjects per class
+- **Class 1-5:** Hindi, English, Mathematics, EVS, Computer
+- **Class 6-10:** Science, Social Science, Sanskrit added
+- **Class 11-12:** Physics, Chemistry, Biology, Computer Science, Commerce subjects
+- **File:** `frontend/src/pages/AIPaperPage.js`
+
+### 74. StudyTino Group Chat ✅ NEW! 💬
+- **Class Chat:** Students can chat with classmates in real-time
+- **Staff Chat:** Separate group for admin/staff communication
+- **Features:** Send messages, view history, grouped by class
+- **Backend:** `/api/chat/groups/class/{class_id}`, `/api/chat/messages/send`
+- **File:** `backend/routes/group_chat.py`
+
+### 75. Student Complaint System ✅ NEW! 📢
+- **Complaint To:** Teacher, Admin, or Both
+- **Categories:** Academic, Bullying, Facilities, Teacher, Fees, Transport, Food, Other
+- **Anonymous Option:** Students can submit anonymously
+- **Status Tracking:** Pending → In Progress → Resolved
+- **Backend:** `/api/complaints/create`, `/api/complaints/school/{school_id}`
+- **File:** `backend/routes/complaints.py`
+
+### 76. Sports & Activities System ✅ NEW! 🏆
+- **Categories:** Sports (Cricket, Football, etc), Cultural, Academic Clubs
+- **Enrollment:** Students can join activities
+- **Achievements:** Record medals, certificates, participation
+- **Events:** Create sports day, cultural fest events
+- **Backend:** `/api/activities/school/{school_id}`, `/api/activities/enroll`
+- **File:** `backend/routes/sports_activities.py`
+
+### 77. Fee Scholarships Tab ✅ NEW! 🎓
+- **Government Schemes:** RTE (100% exemption), SC/ST, OBC, BPL
+- **Private Scholarships:** Merit, Sports, NGO/Private
+- **Custom:** Create custom scholarship schemes
+- **UI:** Beautiful card-based layout with "Assign to Student" buttons
+- **File:** `frontend/src/pages/FeesPage.js`
+
+### 78. Razorpay Payment Integration ✅ NEW! 💳
+- **Order Creation:** `/api/razorpay/create-order`
+- **Payment Verification:** `/api/razorpay/verify-payment`
+- **Webhook Support:** `/api/razorpay/webhook`
+- **Status:** Backend ready, needs API keys in `.env`
+- **Required Keys:** RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+- **File:** `backend/routes/razorpay_payment.py`
+
 ---
 
 ## What's Been Implemented (Earlier - 6 Jan 2026 Evening)
