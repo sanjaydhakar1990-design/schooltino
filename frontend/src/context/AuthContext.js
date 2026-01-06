@@ -57,6 +57,13 @@ export const AuthProvider = ({ children }) => {
     if (userData.school_id) {
       setSchoolId(userData.school_id);
       localStorage.setItem('schoolId', userData.school_id);
+      // Fetch school data
+      try {
+        const schoolRes = await axios.get(`${API}/schools/${userData.school_id}`);
+        setSchoolData(schoolRes.data);
+      } catch (e) {
+        console.error('Failed to fetch school data:', e);
+      }
     }
     
     return userData;
