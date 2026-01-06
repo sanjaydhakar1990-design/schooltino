@@ -134,9 +134,10 @@ export default function AIPaperPage() {
             onChange={handleChange}
             className="w-full h-12 rounded-lg border border-slate-200 px-3"
             data-testid="paper-subject-select"
+            disabled={!formData.class_name}
           >
-            <option value="">Select Subject</option>
-            {subjects.map(s => (
+            <option value="">{formData.class_name ? 'Select Subject' : 'First select class'}</option>
+            {availableSubjects.map(s => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
