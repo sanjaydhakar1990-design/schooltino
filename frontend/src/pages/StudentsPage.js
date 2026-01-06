@@ -73,6 +73,8 @@ export default function StudentsPage() {
     class_id: '',
     father_name: '',
     mother_name: '',
+    guardian_name: '',
+    guardian_relation: '',
     dob: '',
     gender: 'male',
     address: '',
@@ -82,6 +84,17 @@ export default function StudentsPage() {
     aadhar_no: '',
     previous_school: ''
   });
+
+  // Parent/Guardian photo states
+  const [parentPhotos, setParentPhotos] = useState({
+    father_photo: null,
+    mother_photo: null,
+    guardian_photo: null
+  });
+  const [showParentCamera, setShowParentCamera] = useState(null); // 'father', 'mother', 'guardian'
+  const parentVideoRef = useRef(null);
+  const parentCanvasRef = useRef(null);
+  const [parentCameraStream, setParentCameraStream] = useState(null);
 
   const [suspendForm, setSuspendForm] = useState({
     reason: 'fees_pending',
