@@ -268,6 +268,14 @@ export default function StudyTinoDashboard() {
     setPaymentProcessing(true);
 
     try {
+      // Load Razorpay script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast.error('Payment gateway loading failed');
+        setPaymentProcessing(false);
+        return;
+      }
+
       // Create order
       const orderRes = await axios.post(`${API}/razorpay/create-order`, {
         amount: Math.round(Number(paymentAmount) * 100), // Convert to paise
@@ -321,7 +329,7 @@ export default function StudyTinoDashboard() {
         }
       };
 
-      const razorpayInstance = new Razorpay(options);
+      const razorpayInstance = new window.Razorpay(options);
       razorpayInstance.open();
       
     } catch (error) {
@@ -329,7 +337,7 @@ export default function StudyTinoDashboard() {
     } finally {
       setPaymentProcessing(false);
     }
-  }, [paymentAmount, user, profile, Razorpay]);
+  }, [paymentAmount, user, profile]);
 
   const handleLogout = () => {
     logout();
