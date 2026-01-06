@@ -34,6 +34,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [greeting, setGreeting] = useState('');
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [recentStudents, setRecentStudents] = useState([]);
 
   const isDirector = user?.role === 'director';
 
@@ -46,6 +48,8 @@ export default function DashboardPage() {
 
     if (schoolId) {
       fetchStats();
+      fetchStaffWithPhotos();
+      fetchRecentStudents();
     } else {
       setLoading(false);
     }
@@ -59,6 +63,24 @@ export default function DashboardPage() {
       console.error('Failed to fetch stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStaffWithPhotos = async () => {
+    try {
+      const response = await axios.get(`${API}/staff?school_id=${schoolId}&limit=8`);
+      setStaffMembers(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch staff:', error);
+    }
+  };
+
+  const fetchRecentStudents = async () => {
+    try {
+      const response = await axios.get(`${API}/students?school_id=${schoolId}&limit=8`);
+      setRecentStudents(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch students:', error);
     }
   };
 
