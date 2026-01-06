@@ -6983,6 +6983,7 @@ api_router.include_router(password_reset_router)
 api_router.include_router(school_setup_router)
 api_router.include_router(director_greeting_router)
 api_router.include_router(tino_brain_router)
+api_router.include_router(ai_greeting_router)
 
 app.include_router(api_router)
 
