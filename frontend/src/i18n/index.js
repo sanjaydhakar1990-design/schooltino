@@ -411,6 +411,174 @@ const resources = {
       "confirm_delete": "क्या आप इसे हटाना चाहते हैं?",
       "no_permission": "इस कार्रवाई के लिए अनुमति नहीं है"
     }
+  },
+  hinglish: {
+    translation: {
+      // Common
+      "app_name": "Schooltino",
+      "save": "Save karo",
+      "cancel": "Cancel",
+      "delete": "Delete karo",
+      "edit": "Edit karo",
+      "add": "Add karo",
+      "search": "Search karo",
+      "filter": "Filter",
+      "actions": "Actions",
+      "status": "Status",
+      "loading": "Load ho raha hai...",
+      "no_data": "Koi data nahi mila",
+      "success": "Ho gaya!",
+      "error": "Error aa gaya",
+      "confirm": "Confirm karo",
+      "back": "Back jao",
+      "view": "Dekho",
+      "download": "Download karo",
+      "print": "Print karo",
+      
+      // Auth
+      "login": "Login karo",
+      "logout": "Logout",
+      "email": "Email",
+      "password": "Password",
+      "remember_me": "Mujhe yaad rakho",
+      "forgot_password": "Password bhul gaye?",
+      "welcome_back": "Wapas aane par swagat hai",
+      "login_subtitle": "Apne school ko manage karo",
+      
+      // Navigation
+      "dashboard": "Dashboard",
+      "director_ai": "Director AI",
+      "tino_brain": "Tino Brain",
+      "users": "Users",
+      "students": "Students",
+      "staff": "Staff",
+      "classes": "Classes",
+      "attendance": "Attendance",
+      "leave_management": "Leave",
+      "fees": "Fees",
+      "notices": "Notices",
+      "ai_paper": "AI Paper",
+      "ai_content": "AI Content",
+      "ai_history": "AI History",
+      "voice_assistant": "Voice Assistant",
+      "gallery": "Gallery",
+      "sms_center": "SMS Center",
+      "front_office": "Front Office",
+      "transport": "Transport",
+      "health_module": "Health",
+      "biometric": "Biometric",
+      "timetable": "Timetable",
+      "cctv_dashboard": "CCTV",
+      "settings": "Settings",
+      
+      // Dashboard
+      "total_students": "Total Students",
+      "total_staff": "Total Staff",
+      "total_classes": "Total Classes",
+      "attendance_today": "Aaj ki Attendance",
+      "fee_collected": "Fee Collect",
+      "pending_fees": "Pending Fees",
+      "recent_notices": "Recent Notices",
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      
+      // Students
+      "add_student": "Student add karo",
+      "student_name": "Student ka naam",
+      "admission_no": "Admission No.",
+      "class_section": "Class/Section",
+      "father_name": "Father ka naam",
+      "mother_name": "Mother ka naam",
+      "dob": "Date of Birth",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "address": "Address",
+      "mobile": "Mobile",
+      
+      // Staff
+      "add_staff": "Staff add karo",
+      "employee_id": "Employee ID",
+      "designation": "Designation",
+      "department": "Department",
+      "joining_date": "Joining Date",
+      "salary": "Salary",
+      
+      // Classes
+      "add_class": "Class add karo",
+      "class_name": "Class ka naam",
+      "section": "Section",
+      "class_teacher": "Class Teacher",
+      "student_count": "Students",
+      
+      // Attendance
+      "mark_attendance": "Attendance lagao",
+      "select_class": "Class chuno",
+      "select_date": "Date chuno",
+      "all_present": "Sab Present",
+      "all_absent": "Sab Absent",
+      
+      // Fees
+      "fee_plans": "Fee Plans",
+      "invoices": "Invoices",
+      "payments": "Payments",
+      "create_invoice": "Invoice banao",
+      "record_payment": "Payment likho",
+      "amount": "Amount",
+      "due_date": "Due Date",
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "discount": "Discount",
+      
+      // Notices
+      "create_notice": "Notice banao",
+      "title": "Title",
+      "content": "Content",
+      "priority": "Priority",
+      "urgent": "Urgent",
+      "high": "High",
+      "normal": "Normal",
+      "low": "Low",
+      "all": "Sab",
+      "teachers": "Teachers",
+      "parents": "Parents",
+      
+      // AI Paper Generator
+      "generate_paper": "Paper banao",
+      "subject": "Subject",
+      "chapter": "Chapter",
+      "difficulty": "Difficulty",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "mixed": "Mixed",
+      "question_types": "Question Types",
+      "mcq": "MCQ",
+      "short_answer": "Short Answer",
+      "long_answer": "Long Answer",
+      "fill_blanks": "Fill Blanks",
+      "total_marks": "Total Marks",
+      "duration": "Time (minutes)",
+      "generating": "Paper ban raha hai...",
+      "paper_ready": "Paper ready hai!",
+      
+      // Roles
+      "director": "Director",
+      "principal": "Principal",
+      "vice_principal": "Vice Principal",
+      "teacher": "Teacher",
+      "accountant": "Accountant",
+      
+      // Messages
+      "saved_successfully": "Save ho gaya",
+      "deleted_successfully": "Delete ho gaya",
+      "something_went_wrong": "Kuch gadbad ho gayi",
+      "confirm_delete": "Kya aap ise delete karna chahte ho?",
+      "no_permission": "Permission nahi hai"
+    }
   }
 };
 
