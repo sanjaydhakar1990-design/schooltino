@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -10,11 +10,28 @@ import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Class-wise subjects mapping (NCERT/CBSE pattern)
+const CLASS_SUBJECTS = {
+  'Class 1': ['Hindi', 'English', 'Mathematics', 'EVS'],
+  'Class 2': ['Hindi', 'English', 'Mathematics', 'EVS'],
+  'Class 3': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
+  'Class 4': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
+  'Class 5': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
+  'Class 6': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
+  'Class 7': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
+  'Class 8': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
+  'Class 9': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer', 'Information Technology'],
+  'Class 10': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer', 'Information Technology'],
+  'Class 11': ['Hindi', 'English', 'Physics', 'Chemistry', 'Biology', 'Mathematics', 'Computer Science', 'Economics', 'Accountancy', 'Business Studies', 'History', 'Geography', 'Political Science', 'Psychology', 'Physical Education'],
+  'Class 12': ['Hindi', 'English', 'Physics', 'Chemistry', 'Biology', 'Mathematics', 'Computer Science', 'Economics', 'Accountancy', 'Business Studies', 'History', 'Geography', 'Political Science', 'Psychology', 'Physical Education']
+};
+
 export default function AIPaperPage() {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [paper, setPaper] = useState(null);
+  const [availableSubjects, setAvailableSubjects] = useState([]);
 
   const [formData, setFormData] = useState({
     subject: '',
@@ -27,7 +44,6 @@ export default function AIPaperPage() {
     language: 'english'
   });
 
-  const subjects = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'Economics', 'Political Science', 'EVS'];
   const classNames = ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
   const questionTypes = [
     { id: 'mcq', label: t('mcq'), marks: 1 },
@@ -37,6 +53,18 @@ export default function AIPaperPage() {
     { id: 'diagram', label: 'Diagram Based', marks: 3 },
     { id: 'hots', label: 'HOTS (Higher Order)', marks: 4 }
   ];
+
+  // Update subjects when class changes
+  useEffect(() => {
+    if (formData.class_name) {
+      const subjects = CLASS_SUBJECTS[formData.class_name] || [];
+      setAvailableSubjects(subjects);
+      // Reset subject if not in new list
+      if (!subjects.includes(formData.subject)) {
+        setFormData(prev => ({ ...prev, subject: '' }));
+      }
+    }
+  }, [formData.class_name]);
 
   const handleChange = (e) => {
     setFormData(prev => ({
