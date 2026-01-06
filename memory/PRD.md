@@ -424,4 +424,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Preview URL:** https://schooltino-1.preview.emergentagent.com
+- **Preview URL:** https://edumanage-ai.preview.emergentagent.com

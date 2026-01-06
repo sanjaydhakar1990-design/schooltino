@@ -8,7 +8,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://schooltino-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://edumanage-ai.preview.emergentagent.com')
 
 class TestAuthentication:
     """Authentication tests for Director and Teacher"""
