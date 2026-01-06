@@ -235,6 +235,58 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Razorpay Configuration - School ke liye */}
+      {(user?.role === 'director' || user?.role === 'principal') && (
+        <div className="stat-card">
+          <div className="flex items-center gap-3 mb-4">
+            <Wallet className="w-5 h-5 text-green-600" />
+            <h2 className="text-lg font-semibold text-slate-900">Payment Gateway (Razorpay)</h2>
+          </div>
+          <p className="text-sm text-slate-500 mb-4">
+            Apne school ka Razorpay account connect karein. Students ki fees directly aapke bank account mein aayegi.
+          </p>
+          
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> Razorpay account banane ke liye <a href="https://razorpay.com/signup/" target="_blank" rel="noopener noreferrer" className="text-amber-700 underline">yahan click karein</a>. 
+              Signup ke baad Dashboard → Settings → API Keys se Key ID aur Secret milega.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>Razorpay Key ID</Label>
+              <Input
+                placeholder="rzp_live_xxxxxxxxxxxxx"
+                className="mt-1"
+                data-testid="razorpay-key-id"
+              />
+            </div>
+            <div>
+              <Label>Razorpay Key Secret</Label>
+              <Input
+                type="password"
+                placeholder="••••••••••••••••••••"
+                className="mt-1"
+                data-testid="razorpay-key-secret"
+              />
+            </div>
+            <div>
+              <Label>Business Name (Receipt pe dikhega)</Label>
+              <Input
+                placeholder="ABC Public School"
+                className="mt-1"
+                data-testid="razorpay-business-name"
+              />
+            </div>
+            <Button className="bg-green-600 hover:bg-green-700">
+              <Check className="w-4 h-4 mr-2" />
+              Save Razorpay Config
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Signature & Seal Upload - Director/Principal only */}
       {(user?.role === 'director' || user?.role === 'principal') && (
         <div className="stat-card">
