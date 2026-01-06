@@ -155,6 +155,87 @@ export default function StudyTinoDashboard() {
     }
   };
 
+  // Open Class Chat
+  const openClassChat = async () => {
+    try {
+      // Get or create class group
+      const res = await axios.get(`${API}/chat/groups/class/${profile?.class_id}?school_id=${profile?.school_id}`);
+      setChatGroup(res.data);
+      
+      // Load messages
+      const msgRes = await axios.get(`${API}/chat/messages/${res.data.id}?limit=50`);
+      setChatMessages(msgRes.data.messages || []);
+      
+      setShowChatDialog(true);
+    } catch (error) {
+      toast.error('Failed to load chat');
+    }
+  };
+
+  // Send Chat Message
+  const sendChatMessage = async () => {
+    if (!newMessage.trim() || !chatGroup) return;
+    
+    try {
+      const res = await axios.post(`${API}/chat/messages/send`, {
+        group_id: chatGroup.id,
+        content: newMessage,
+        sender_id: user?.id,
+        sender_name: profile?.name || user?.name,
+        sender_role: 'student'
+      });
+      
+      setChatMessages(prev => [...prev, res.data.data]);
+      setNewMessage('');
+    } catch (error) {
+      toast.error('Failed to send message');
+    }
+  };
+
+  // Submit Complaint
+  const submitComplaint = async (e) => {
+    e.preventDefault();
+    if (!complaintForm.subject || !complaintForm.description) {
+      toast.error('Please fill all fields');
+      return;
+    }
+    
+    try {
+      await axios.post(`${API}/complaints/create`, {
+        student_id: user?.id,
+        student_name: profile?.name || user?.name,
+        class_id: profile?.class_id,
+        class_name: profile?.class_name,
+        school_id: profile?.school_id,
+        ...complaintForm
+      });
+      
+      toast.success('Complaint submitted successfully');
+      setShowComplaintDialog(false);
+      setComplaintForm({
+        complaint_to: 'teacher',
+        category: 'academic',
+        subject: '',
+        description: '',
+        is_anonymous: false
+      });
+    } catch (error) {
+      toast.error('Failed to submit complaint');
+    }
+  };
+
+  // Open Activities
+  const openActivities = async () => {
+    try {
+      const res = await axios.get(`${API}/activities/student/${user?.id}`);
+      setMyActivities(res.data.activities || []);
+      setShowActivitiesDialog(true);
+    } catch (error) {
+      setMyActivities([]);
+      setShowActivitiesDialog(true);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/login');
