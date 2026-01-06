@@ -104,30 +104,30 @@ export const Sidebar = ({ isOpen, onClose }) => {
       label: t('staff'),
       icon: Briefcase,
       items: [
-        { path: '/app/staff', icon: UserCog, label: 'Staff', permKey: 'staff' },
-        { path: '/app/leave', icon: Calendar, label: 'Leave', permKey: 'leave_management' },
-        { path: '/app/salary', icon: DollarSign, label: 'Salary', permKey: 'fees' },
+        { path: '/app/staff', icon: UserCog, label: t('staff'), permKey: 'staff' },
+        { path: '/app/leave', icon: Calendar, label: t('leave_management'), permKey: 'leave_management' },
+        { path: '/app/salary', icon: DollarSign, label: t('salary'), permKey: 'fees' },
       ]
     },
     {
       id: 'finance',
-      label: 'Finance',
+      label: t('fees') || 'Finance',
       icon: Wallet,
       items: [
-        { path: '/app/fees', icon: Wallet, label: 'Fees', permKey: 'fees' },
-        { path: '/app/fee-structure', icon: FileText, label: 'Fee Structure', permKey: 'fees' },
-        { path: '/app/accountant', icon: Calculator, label: 'AI Accountant', permKey: 'fees' },
+        { path: '/app/fees', icon: Wallet, label: t('fees'), permKey: 'fees' },
+        { path: '/app/fee-structure', icon: FileText, label: t('fee_structure'), permKey: 'fees' },
+        { path: '/app/accountant', icon: Calculator, label: t('ai_accountant'), permKey: 'fees' },
       ]
     },
     {
       id: 'communication',
-      label: 'Communication',
+      label: t('notices') || 'Communication',
       icon: Megaphone,
       items: [
-        { path: '/app/notices', icon: Bell, label: 'Notices', permKey: 'notices' },
-        { path: '/app/sms', icon: MessageSquare, label: 'SMS Center', permKey: 'sms_center' },
-        { path: '/app/meetings', icon: Video, label: 'Meetings', permKey: 'meetings' },
-        { path: '/app/gallery', icon: Image, label: 'Gallery', permKey: 'gallery' },
+        { path: '/app/notices', icon: Bell, label: t('notices'), permKey: 'notices' },
+        { path: '/app/sms', icon: MessageSquare, label: t('sms_center'), permKey: 'sms_center' },
+        { path: '/app/meetings', icon: Video, label: t('zoom_meetings'), permKey: 'meetings' },
+        { path: '/app/gallery', icon: Image, label: t('gallery'), permKey: 'gallery' },
       ]
     },
     {
@@ -135,30 +135,30 @@ export const Sidebar = ({ isOpen, onClose }) => {
       label: 'AI Tools',
       icon: Cpu,
       items: [
-        { path: '/app/ai-paper', icon: Sparkles, label: 'AI Paper', permKey: 'ai_paper' },
-        { path: '/app/ai-content', icon: Sparkles, label: 'AI Content', permKey: 'ai_content' },
+        { path: '/app/ai-paper', icon: Sparkles, label: t('ai_paper'), permKey: 'ai_paper' },
+        { path: '/app/ai-content', icon: Sparkles, label: t('ai_content'), permKey: 'ai_content' },
       ]
     },
     {
       id: 'infrastructure',
-      label: 'Infrastructure',
+      label: t('transport') || 'Infrastructure',
       icon: Building,
       items: [
-        { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance' },
-        { path: '/app/health', icon: Heart, label: 'Health', permKey: 'attendance' },
-        { path: '/app/biometric', icon: Fingerprint, label: 'Biometric', permKey: 'attendance' },
-        { path: '/app/cctv', icon: Video, label: 'CCTV', permKey: 'cctv' },
+        { path: '/app/transport', icon: Bus, label: t('transport'), permKey: 'attendance' },
+        { path: '/app/health', icon: Heart, label: t('health_module'), permKey: 'attendance' },
+        { path: '/app/biometric', icon: Fingerprint, label: t('biometric'), permKey: 'attendance' },
+        { path: '/app/cctv', icon: Video, label: t('cctv_dashboard'), permKey: 'cctv' },
       ]
     },
     {
       id: 'settings',
-      label: 'Settings',
+      label: t('settings'),
       icon: Wrench,
       items: [
-        { path: '/app/users', icon: UserPlus, label: 'Users', permKey: 'user_management' },
-        { path: '/app/permission-manager', icon: Shield, label: 'Permissions', permKey: 'user_management', directorOnly: true },
-        { path: '/app/website', icon: Globe, label: 'Website', permKey: 'website_integration' },
-        { path: '/app/settings', icon: Settings, label: 'Settings', permKey: 'settings' },
+        { path: '/app/users', icon: UserPlus, label: t('users'), permKey: 'user_management' },
+        { path: '/app/permission-manager', icon: Shield, label: t('permissions'), permKey: 'user_management', directorOnly: true },
+        { path: '/app/website', icon: Globe, label: t('website_integration'), permKey: 'website_integration' },
+        { path: '/app/settings', icon: Settings, label: t('settings'), permKey: 'settings' },
       ]
     }
   ];
