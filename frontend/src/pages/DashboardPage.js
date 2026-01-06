@@ -20,7 +20,6 @@ import {
   Mic, DollarSign, Building, Phone, Mail, Globe
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
-import { TrialStatusCard } from '../components/TrialMode';
 import StaffPhotoUpload from '../components/StaffPhotoUpload';
 import { toast } from 'sonner';
 
