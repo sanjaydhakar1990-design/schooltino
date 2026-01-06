@@ -58,6 +58,7 @@ export default function TinoBrainDashboard() {
 
   useEffect(() => {
     fetchData();
+    fetchChatSessions();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -84,6 +85,48 @@ export default function TinoBrainDashboard() {
       console.error('Fetch error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch chat sessions/history
+  const fetchChatSessions = async () => {
+    try {
+      const res = await axios.get(`${API}/tino-brain/chat-sessions/${user?.id}?school_id=${schoolId || 'default'}`);
+      setChatSessions(res.data.sessions || []);
+    } catch (err) {
+      console.error('Chat sessions fetch error:', err);
+    }
+  };
+
+  // Clear all chat history
+  const clearChatHistory = async () => {
+    if (!window.confirm('Kya aap puri chat history delete karna chahte hain?')) return;
+    try {
+      await axios.delete(`${API}/tino-brain/chat-history/${user?.id}/clear?school_id=${schoolId || 'default'}`);
+      setMessages([]);
+      setChatSessions([]);
+      toast.success('Chat history cleared');
+    } catch (err) {
+      toast.error('Failed to clear history');
+    }
+  };
+
+  // Load a specific session's messages
+  const loadChatSession = async (date) => {
+    try {
+      const res = await axios.get(`${API}/tino-brain/chat-history/${user?.id}?school_id=${schoolId || 'default'}&limit=100`);
+      const session = res.data.sessions?.find(s => s.date === date);
+      if (session) {
+        setMessages(session.messages.map(m => ({
+          type: m.is_user ? 'user' : 'ai',
+          text: m.message,
+          time: new Date(m.timestamp),
+          id: m.id
+        })));
+        setShowHistory(false);
+      }
+    } catch (err) {
+      toast.error('Failed to load session');
     }
   };
 
