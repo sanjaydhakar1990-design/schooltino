@@ -175,7 +175,7 @@ class TestProfileNavigation:
     def test_user_profile_endpoint(self):
         """Test user profile endpoint returns data"""
         response = requests.get(
-            f"{BASE_URL}/api/users/me",
+            f"{BASE_URL}/api/auth/me",
             headers=self.headers
         )
         assert response.status_code == 200, f"Profile fetch failed: {response.text}"
