@@ -355,15 +355,6 @@ async def bulk_reset_student_passwords(data: BulkStudentPasswordReset):
         "message": f"Passwords reset for {len([r for r in results if r['success']])} students",
         "results": results
     }
-    )
-    
-    return {
-        "success": True,
-        "message": "OTP verified! Ab naya password set karein",
-        "reset_token": reset_token,
-        "expires_in_hours": 1,
-        "user_type": otp_record.get("user_type")
-    }
 
 
 # ==================== RESET PASSWORD ====================
