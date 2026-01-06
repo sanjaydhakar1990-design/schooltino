@@ -889,6 +889,70 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-green-500" />
+              Pay School Fees
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-green-50 rounded-xl">
+              <p className="text-sm text-green-800 font-medium">Secure Payment via Razorpay</p>
+              <p className="text-xs text-green-600 mt-1">UPI, Cards, Net Banking accepted</p>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Amount (₹)</label>
+              <Input
+                type="number"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder="Enter amount to pay"
+                className="text-lg font-semibold"
+              />
+            </div>
+            
+            {/* Quick Amount Buttons */}
+            <div className="flex gap-2 flex-wrap">
+              {[500, 1000, 2000, 5000].map(amt => (
+                <button
+                  key={amt}
+                  onClick={() => setPaymentAmount(String(amt))}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:border-green-500 hover:bg-green-50 transition-colors"
+                >
+                  ₹{amt.toLocaleString()}
+                </button>
+              ))}
+            </div>
+            
+            <Button 
+              onClick={handlePayFees}
+              disabled={paymentProcessing || !paymentAmount}
+              className="w-full bg-green-600 hover:bg-green-700 text-white h-12"
+            >
+              {paymentProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Pay ₹{paymentAmount ? Number(paymentAmount).toLocaleString() : '0'}
+                </>
+              )}
+            </Button>
+            
+            <p className="text-xs text-center text-slate-400">
+              Powered by Razorpay • 100% Secure
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Voice Assistant */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
