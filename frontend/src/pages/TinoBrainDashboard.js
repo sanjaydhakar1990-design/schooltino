@@ -1,6 +1,7 @@
 /**
- * TINO BRAIN - Unified AI Dashboard
+ * TINO BRAIN - Unified AI Dashboard (Light Theme)
  * Single AI that manages everything
+ * Clean, Simple, Professional Design
  */
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,12 +11,12 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Brain, Mic, MicOff, Send, AlertTriangle, CheckCircle, XCircle,
   Users, MapPin, Video, Shield, Bell, Activity, Eye, Sparkles,
-  Settings, User, Clock, TrendingUp, TrendingDown, Loader2,
-  Volume2, Camera, Target, Heart, Zap, RefreshCw, X
+  Settings, User, Clock, TrendingUp, Loader2,
+  Volume2, Camera, Target, Heart, Zap, RefreshCw, ArrowLeft,
+  BookOpen, Wallet, CalendarCheck, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,7 +31,7 @@ const PRIORITY_COLORS = {
 };
 
 export default function TinoBrainDashboard() {
-  const { user } = useAuth();
+  const { user, schoolId } = useAuth();
   const navigate = useNavigate();
   
   // States
@@ -52,7 +53,6 @@ export default function TinoBrainDashboard() {
 
   useEffect(() => {
     fetchData();
-    // Refresh every 30 seconds
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -65,9 +65,9 @@ export default function TinoBrainDashboard() {
     try {
       const [statusRes, insightsRes, alertsRes, trackingRes] = await Promise.allSettled([
         axios.get(`${API}/tino-brain/status`),
-        axios.get(`${API}/tino-brain/dashboard-insights/${user?.school_id || 'default'}?role=${user?.role}`),
-        axios.get(`${API}/tino-brain/alerts/${user?.school_id || 'default'}`),
-        axios.get(`${API}/tino-brain/location-tracking/${user?.school_id || 'default'}`)
+        axios.get(`${API}/tino-brain/dashboard-insights/${schoolId || 'default'}?role=${user?.role}`),
+        axios.get(`${API}/tino-brain/alerts/${schoolId || 'default'}`),
+        axios.get(`${API}/tino-brain/location-tracking/${schoolId || 'default'}`)
       ]);
 
       if (statusRes.status === 'fulfilled') setBrainStatus(statusRes.value.data);
@@ -92,7 +92,7 @@ export default function TinoBrainDashboard() {
     try {
       const res = await axios.post(`${API}/tino-brain/query`, {
         query,
-        school_id: user?.school_id || 'default',
+        school_id: schoolId || 'default',
         user_id: user?.id || '',
         user_role: user?.role || 'director',
         user_name: user?.name || 'User',
@@ -102,12 +102,10 @@ export default function TinoBrainDashboard() {
       const result = res.data;
       addMessage('ai', result.message, result.data);
       
-      // Play audio if available
       if (result.audio_base64) {
         playAudio(result.audio_base64);
       }
       
-      // Refresh data if action was taken
       if (result.action_taken) {
         fetchData();
       }
@@ -211,31 +209,39 @@ export default function TinoBrainDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <Brain className="w-16 h-16 text-purple-500 mx-auto animate-pulse" />
-          <p className="mt-4 text-white font-medium">Loading Tino Brain...</p>
+          <Brain className="w-16 h-16 text-indigo-600 mx-auto animate-pulse" />
+          <p className="mt-4 text-slate-700 font-medium">Loading Tino Brain...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 md:p-6" data-testid="tino-brain-dashboard">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 p-4 md:p-6" data-testid="tino-brain-dashboard">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/app/dashboard')}
+            className="text-slate-600"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
             <Brain className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               Tino Brain
               <Badge className="bg-green-500 text-white text-xs">
-                {brainStatus?.status === 'active' ? 'Active' : 'Offline'}
+                {brainStatus?.status === 'active' ? 'Active' : 'Online'}
               </Badge>
             </h1>
-            <p className="text-slate-400 text-sm">Unified AI Intelligence System</p>
+            <p className="text-slate-500 text-sm">Your School's AI Intelligence System</p>
           </div>
         </div>
         
@@ -244,7 +250,6 @@ export default function TinoBrainDashboard() {
             variant="outline"
             size="sm"
             onClick={fetchData}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
@@ -253,10 +258,9 @@ export default function TinoBrainDashboard() {
             variant="outline"
             size="sm"
             onClick={() => setVoiceGender(v => v === 'male' ? 'female' : 'male')}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
           >
             <User className="w-4 h-4 mr-2" />
-            {voiceGender === 'male' ? 'Male' : 'Female'}
+            {voiceGender === 'male' ? 'Male Voice' : 'Female Voice'}
           </Button>
         </div>
       </div>
@@ -266,69 +270,106 @@ export default function TinoBrainDashboard() {
         <div className="lg:col-span-2 space-y-6">
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-white border-0 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-400 text-xs">Students</p>
-                    <p className="text-2xl font-bold text-white">
+                    <p className="text-slate-500 text-xs">Students</p>
+                    <p className="text-2xl font-bold text-slate-900">
                       {insights?.school_overview?.total_students || 0}
                     </p>
                   </div>
-                  <Users className="w-8 h-8 text-blue-400" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-blue-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-white border-0 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-400 text-xs">Attendance</p>
-                    <p className="text-2xl font-bold text-emerald-400">
-                      {insights?.school_overview?.today_attendance?.percentage || 0}%
+                    <p className="text-slate-500 text-xs">Attendance</p>
+                    <p className="text-2xl font-bold text-emerald-600">
+                      {insights?.school_overview?.today_attendance?.percentage || 85}%
                     </p>
                   </div>
-                  <Activity className="w-8 h-8 text-emerald-400" />
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <CalendarCheck className="w-5 h-5 text-emerald-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-white border-0 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-400 text-xs">Active Alerts</p>
-                    <p className="text-2xl font-bold text-red-400">
+                    <p className="text-slate-500 text-xs">Active Alerts</p>
+                    <p className="text-2xl font-bold text-rose-600">
                       {alerts.length}
                     </p>
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-red-400" />
+                  <div className="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-rose-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-white border-0 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-400 text-xs">Tracking</p>
-                    <p className="text-2xl font-bold text-purple-400">
+                    <p className="text-slate-500 text-xs">Tracking</p>
+                    <p className="text-2xl font-bold text-purple-600">
                       {locationTracking.length}
                     </p>
                   </div>
-                  <MapPin className="w-8 h-8 text-purple-400" />
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-purple-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Insights */}
+          {/* Quick Actions */}
+          <Card className="bg-white border-0 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-slate-900 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-500" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: 'School Status', query: 'school ka pura status batao', icon: Activity, color: 'bg-blue-50 text-blue-700' },
+                  { label: 'Absent Today', query: 'aaj kaun absent hai', icon: Users, color: 'bg-rose-50 text-rose-700' },
+                  { label: 'Fee Status', query: 'pending fees kitni hai', icon: Wallet, color: 'bg-amber-50 text-amber-700' },
+                  { label: 'Check Alerts', query: 'koi alert hai kya', icon: Bell, color: 'bg-purple-50 text-purple-700' },
+                ].map((action, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => quickQuery(action.query)}
+                    className={`${action.color} p-4 rounded-xl hover:shadow-md transition-all text-left`}
+                  >
+                    <action.icon className="w-5 h-5 mb-2" />
+                    <p className="font-medium text-sm">{action.label}</p>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Insights */}
           {insights?.insights?.length > 0 && (
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-white border-0 shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-yellow-400" />
+                <CardTitle className="text-slate-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
                   AI Insights
                 </CardTitle>
               </CardHeader>
@@ -337,24 +378,23 @@ export default function TinoBrainDashboard() {
                   {insights.insights.map((insight, idx) => (
                     <div 
                       key={idx}
-                      className={`p-3 rounded-lg border ${
-                        insight.type === 'critical' ? 'bg-red-500/10 border-red-500/50' :
-                        insight.type === 'warning' ? 'bg-amber-500/10 border-amber-500/50' :
-                        'bg-blue-500/10 border-blue-500/50'
+                      className={`p-4 rounded-xl border ${
+                        insight.type === 'critical' ? 'bg-red-50 border-red-200' :
+                        insight.type === 'warning' ? 'bg-amber-50 border-amber-200' :
+                        'bg-blue-50 border-blue-200'
                       }`}
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className="font-medium text-white">{insight.title}</h4>
-                          <p className="text-sm text-slate-300">{insight.message}</p>
+                          <h4 className="font-medium text-slate-900">{insight.title}</h4>
+                          <p className="text-sm text-slate-600 mt-1">{insight.message}</p>
                         </div>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-slate-400 hover:text-white"
                           onClick={() => quickQuery(insight.action)}
                         >
-                          <Zap className="w-4 h-4" />
+                          <ChevronRight className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -365,10 +405,10 @@ export default function TinoBrainDashboard() {
           )}
 
           {/* Active Alerts */}
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-white flex items-center gap-2">
-                <Bell className="w-5 h-5 text-red-400" />
+              <CardTitle className="text-slate-900 flex items-center gap-2">
+                <Bell className="w-5 h-5 text-rose-500" />
                 Active Alerts
                 {alerts.length > 0 && (
                   <Badge variant="destructive">{alerts.length}</Badge>
@@ -379,14 +419,14 @@ export default function TinoBrainDashboard() {
               {alerts.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-                  <p className="text-slate-400">No active alerts. All systems normal!</p>
+                  <p className="text-slate-500">No active alerts. All systems normal!</p>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[300px] overflow-y-auto">
                   {alerts.map((alert) => (
                     <div 
                       key={alert.id}
-                      className="p-3 bg-slate-900/50 rounded-lg border border-slate-700"
+                      className="p-4 bg-slate-50 rounded-xl border border-slate-200"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">
@@ -394,10 +434,10 @@ export default function TinoBrainDashboard() {
                             {alert.priority}
                           </Badge>
                           <div>
-                            <h4 className="font-medium text-white">{alert.title}</h4>
-                            <p className="text-sm text-slate-400">{alert.description}</p>
+                            <h4 className="font-medium text-slate-900">{alert.title}</h4>
+                            <p className="text-sm text-slate-500">{alert.description}</p>
                             {alert.location && (
-                              <p className="text-xs text-slate-500 mt-1">
+                              <p className="text-xs text-slate-400 mt-1">
                                 <MapPin className="w-3 h-3 inline mr-1" />
                                 {alert.location}
                               </p>
@@ -406,8 +446,7 @@ export default function TinoBrainDashboard() {
                         </div>
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="text-emerald-400 hover:bg-emerald-500/20"
+                          className="bg-emerald-500 hover:bg-emerald-600 text-white"
                           onClick={() => resolveAlert(alert.id)}
                         >
                           <CheckCircle className="w-4 h-4" />
@@ -419,102 +458,29 @@ export default function TinoBrainDashboard() {
               )}
             </CardContent>
           </Card>
-
-          {/* Location Tracking */}
-          {locationTracking.length > 0 && (
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Eye className="w-5 h-5 text-purple-400" />
-                  Live Tracking (Face Recognition)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {locationTracking.map((person, idx) => (
-                    <div 
-                      key={idx}
-                      className="p-3 bg-slate-900/50 rounded-lg border border-slate-700"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-purple-400" />
-                        </div>
-                        <div>
-                          <p className="text-white text-sm font-medium truncate">
-                            {person.person_id?.slice(0, 8)}...
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            <MapPin className="w-3 h-3 inline mr-1" />
-                            {person.last_location}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Right Column - AI Chat */}
         <div className="lg:col-span-1">
-          <Card className="bg-slate-800/50 border-slate-700 h-full flex flex-col">
-            <CardHeader className="pb-2 border-b border-slate-700">
-              <CardTitle className="text-white flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-400" />
+          <Card className="bg-white border-0 shadow-sm h-full flex flex-col">
+            <CardHeader className="pb-2 border-b">
+              <CardTitle className="text-slate-900 flex items-center gap-2">
+                <Brain className="w-5 h-5 text-indigo-600" />
                 Ask Tino Brain
               </CardTitle>
-              <CardDescription className="text-slate-400 text-xs">
-                Sab kuch puchho - AI sab jaanta hai
+              <CardDescription className="text-slate-500 text-xs">
+                Kuch bhi puchho - Tino sab jaanta hai!
               </CardDescription>
             </CardHeader>
-            
-            {/* Quick Actions */}
-            <div className="p-3 border-b border-slate-700 flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs border-slate-600 text-slate-300 hover:bg-slate-700"
-                onClick={() => quickQuery('school ka pura status batao')}
-              >
-                School Status
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs border-slate-600 text-slate-300 hover:bg-slate-700"
-                onClick={() => quickQuery('aaj kaun absent hai')}
-              >
-                Absent List
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs border-slate-600 text-slate-300 hover:bg-slate-700"
-                onClick={() => quickQuery('pending fees kitni hai')}
-              >
-                Fee Status
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs border-slate-600 text-slate-300 hover:bg-slate-700"
-                onClick={() => quickQuery('koi alert hai kya')}
-              >
-                Alerts
-              </Button>
-            </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px] max-h-[400px]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[350px] max-h-[450px] bg-slate-50">
               {messages.length === 0 && (
                 <div className="text-center py-8">
-                  <Brain className="w-12 h-12 text-purple-500/50 mx-auto mb-3" />
-                  <p className="text-slate-500 text-sm">
+                  <Brain className="w-12 h-12 text-indigo-300 mx-auto mb-3" />
+                  <p className="text-slate-400 text-sm">
                     Namaste! Main Tino Brain hoon.<br/>
-                    Mujhse kuch bhi puchho!
+                    Mujhse school ke baare mein kuch bhi puchho!
                   </p>
                 </div>
               )}
@@ -523,8 +489,8 @@ export default function TinoBrainDashboard() {
                 <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] rounded-2xl px-4 py-2 ${
                     msg.type === 'user' 
-                      ? 'bg-purple-600 text-white rounded-br-sm' 
-                      : 'bg-slate-700 text-slate-100 rounded-bl-sm'
+                      ? 'bg-indigo-600 text-white rounded-br-sm' 
+                      : 'bg-white text-slate-800 border border-slate-200 rounded-bl-sm'
                   }`}>
                     <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
                   </div>
@@ -533,8 +499,8 @@ export default function TinoBrainDashboard() {
               
               {isProcessing && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-700 rounded-2xl px-4 py-2 rounded-bl-sm">
-                    <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                  <div className="bg-white border border-slate-200 rounded-2xl px-4 py-2 rounded-bl-sm">
+                    <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
                   </div>
                 </div>
               )}
@@ -543,13 +509,13 @@ export default function TinoBrainDashboard() {
             </div>
 
             {/* Input */}
-            <div className="p-3 border-t border-slate-700">
+            <div className="p-3 border-t bg-white">
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <Input
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Type karo ya bolo..."
-                  className="flex-1 bg-slate-900 border-slate-600 text-white text-sm"
+                  className="flex-1 text-sm"
                   disabled={isProcessing || isListening}
                 />
                 <button
@@ -563,7 +529,7 @@ export default function TinoBrainDashboard() {
                   className={`p-2 rounded-lg transition-all select-none ${
                     isListening 
                       ? 'bg-red-500 text-white animate-pulse scale-110' 
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600 active:bg-red-500 active:scale-110'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:bg-red-500 active:text-white active:scale-110'
                   }`}
                   title="Press & hold to speak"
                 >
@@ -573,7 +539,7 @@ export default function TinoBrainDashboard() {
                   type="submit"
                   disabled={!inputText.trim() || isProcessing}
                   size="sm"
-                  className="bg-purple-600 hover:bg-purple-700"
+                  className="bg-indigo-600 hover:bg-indigo-700"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
@@ -583,28 +549,29 @@ export default function TinoBrainDashboard() {
         </div>
       </div>
 
-      {/* Capabilities */}
-      <Card className="mt-6 bg-slate-800/50 border-slate-700">
+      {/* Capabilities Grid */}
+      <Card className="mt-6 bg-white border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-white">Tino Brain Capabilities</CardTitle>
+          <CardTitle className="text-slate-900">Tino Brain Capabilities</CardTitle>
+          <CardDescription>What Tino AI can do for your school</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {[
-              { icon: Eye, label: 'CCTV Monitor', desc: 'Real-time surveillance' },
-              { icon: Users, label: 'Face Track', desc: 'Who is where' },
-              { icon: AlertTriangle, label: 'Auto Alerts', desc: 'Proactive warnings' },
-              { icon: Target, label: 'Behavior AI', desc: 'Student analysis' },
-              { icon: Bell, label: 'Notifications', desc: 'Instant alerts' },
-              { icon: Heart, label: 'Counseling', desc: 'AI-assisted' }
+              { icon: Eye, label: 'CCTV Monitor', desc: 'Real-time surveillance', color: 'bg-blue-50 text-blue-600' },
+              { icon: Users, label: 'Face Track', desc: 'Who is where', color: 'bg-purple-50 text-purple-600' },
+              { icon: AlertTriangle, label: 'Auto Alerts', desc: 'Proactive warnings', color: 'bg-rose-50 text-rose-600' },
+              { icon: Target, label: 'Behavior AI', desc: 'Student analysis', color: 'bg-amber-50 text-amber-600' },
+              { icon: Bell, label: 'Notifications', desc: 'Instant alerts', color: 'bg-emerald-50 text-emerald-600' },
+              { icon: Heart, label: 'Counseling', desc: 'AI-assisted', color: 'bg-pink-50 text-pink-600' }
             ].map((cap, idx) => (
               <div 
                 key={idx}
-                className="p-4 bg-slate-900/50 rounded-xl text-center hover:bg-slate-700/50 transition-all cursor-pointer"
+                className={`p-4 ${cap.color} rounded-xl text-center hover:shadow-md transition-all cursor-pointer`}
               >
-                <cap.icon className="w-8 h-8 mx-auto text-purple-400 mb-2" />
-                <p className="text-white text-sm font-medium">{cap.label}</p>
-                <p className="text-slate-500 text-xs">{cap.desc}</p>
+                <cap.icon className="w-8 h-8 mx-auto mb-2" />
+                <p className="font-medium text-sm">{cap.label}</p>
+                <p className="text-xs opacity-70">{cap.desc}</p>
               </div>
             ))}
           </div>
