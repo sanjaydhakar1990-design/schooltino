@@ -1,8 +1,8 @@
 """
 Razorpay Payment Integration for Schooltino
-- Create payment orders
-- Verify payments
-- Support for fee payments
+- Create payment orders using SCHOOL's Razorpay account
+- Platform subscription uses platform's account
+- Each school has their own payment credentials
 """
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
@@ -24,13 +24,9 @@ db = client[db_name]
 def get_database():
     return db
 
-# Initialize Razorpay client
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
-
-razorpay_client = None
-if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
-    razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+# Platform's Razorpay (for subscription only)
+PLATFORM_RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+PLATFORM_RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
 
 # Models
 class CreateOrder(BaseModel):
@@ -50,31 +46,129 @@ class VerifyPayment(BaseModel):
     student_id: str
     school_id: str
 
+class SchoolRazorpayConfig(BaseModel):
+    school_id: str
+    razorpay_key_id: str
+    razorpay_key_secret: str
+    business_name: Optional[str] = None
+
+# ============== SCHOOL RAZORPAY CONFIG ==============
+
+@router.post("/school/config")
+async def save_school_razorpay_config(config: SchoolRazorpayConfig):
+    """Save school's Razorpay credentials"""
+    db = get_database()
+    
+    # Verify the credentials work
+    try:
+        test_client = razorpay.Client(auth=(config.razorpay_key_id, config.razorpay_key_secret))
+        # Try to fetch balance to verify credentials
+        test_client.order.all({"count": 1})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid Razorpay credentials: {str(e)}")
+    
+    # Save to database (encrypted in production)
+    await db.school_razorpay_config.update_one(
+        {"school_id": config.school_id},
+        {"$set": {
+            "school_id": config.school_id,
+            "razorpay_key_id": config.razorpay_key_id,
+            "razorpay_key_secret": config.razorpay_key_secret,
+            "business_name": config.business_name,
+            "is_active": True,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    return {"message": "Razorpay configured successfully", "school_id": config.school_id}
+
+@router.get("/school/config/{school_id}")
+async def get_school_razorpay_config(school_id: str):
+    """Get school's Razorpay config status"""
+    db = get_database()
+    
+    config = await db.school_razorpay_config.find_one(
+        {"school_id": school_id},
+        {"_id": 0, "razorpay_key_secret": 0}  # Don't expose secret
+    )
+    
+    if config:
+        return {
+            "is_configured": True,
+            "key_id": config.get("razorpay_key_id", "")[:15] + "...",
+            "business_name": config.get("business_name")
+        }
+    
+    return {"is_configured": False}
+
+@router.delete("/school/config/{school_id}")
+async def remove_school_razorpay_config(school_id: str):
+    """Remove school's Razorpay configuration"""
+    db = get_database()
+    
+    await db.school_razorpay_config.delete_one({"school_id": school_id})
+    
+    return {"message": "Razorpay config removed"}
+
+# Helper function to get school's Razorpay client
+async def get_school_razorpay_client(school_id: str):
+    """Get Razorpay client for a specific school"""
+    db = get_database()
+    
+    config = await db.school_razorpay_config.find_one({"school_id": school_id, "is_active": True})
+    
+    if not config:
+        return None, None, "School has not configured Razorpay. Please contact school administration."
+    
+    try:
+        client = razorpay.Client(auth=(config["razorpay_key_id"], config["razorpay_key_secret"]))
+        return client, config["razorpay_key_id"], None
+    except Exception as e:
+        return None, None, f"Invalid school Razorpay config: {str(e)}"
+
 # ============== PAYMENT ENDPOINTS ==============
 
 @router.get("/config")
-async def get_razorpay_config():
-    """Get Razorpay public key for frontend"""
-    if not RAZORPAY_KEY_ID:
-        raise HTTPException(status_code=503, detail="Razorpay not configured")
+async def get_razorpay_config(school_id: str = None):
+    """Get Razorpay public key for frontend - uses school's account for fees"""
+    if school_id:
+        db = get_database()
+        config = await db.school_razorpay_config.find_one({"school_id": school_id, "is_active": True})
+        if config:
+            return {
+                "key_id": config["razorpay_key_id"],
+                "currency": "INR",
+                "name": config.get("business_name", "School"),
+                "description": "School Fee Payment",
+                "is_school_account": True
+            }
+    
+    # Fallback to platform account (for subscription)
+    if not PLATFORM_RAZORPAY_KEY_ID:
+        raise HTTPException(status_code=503, detail="Payment gateway not configured")
     
     return {
-        "key_id": RAZORPAY_KEY_ID,
+        "key_id": PLATFORM_RAZORPAY_KEY_ID,
         "currency": "INR",
         "name": "Schooltino",
-        "description": "School Fee Payment"
+        "description": "Subscription Payment",
+        "is_school_account": False
     }
 
 @router.post("/create-order")
 async def create_payment_order(data: CreateOrder):
-    """Create a Razorpay order for fee payment"""
-    if not razorpay_client:
-        raise HTTPException(status_code=503, detail="Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET")
-    
+    """Create a Razorpay order for fee payment - uses SCHOOL's account"""
     db = get_database()
     
+    # Get school's Razorpay client
+    razorpay_client, key_id, error = await get_school_razorpay_client(data.school_id)
+    
+    if error:
+        raise HTTPException(status_code=503, detail=error)
+    
     try:
-        # Create Razorpay order
+        # Create Razorpay order using SCHOOL's account
         order_data = {
             "amount": data.amount,  # Amount in paise
             "currency": data.currency,
@@ -102,6 +196,7 @@ async def create_payment_order(data: CreateOrder):
             "currency": data.currency,
             "description": data.description,
             "status": "created",
+            "payment_to": "school",  # Mark that this goes to school
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         
@@ -111,9 +206,10 @@ async def create_payment_order(data: CreateOrder):
             "order_id": razor_order["id"],
             "amount": razor_order["amount"],
             "currency": razor_order["currency"],
-            "key_id": RAZORPAY_KEY_ID,
+            "key_id": key_id,  # School's key
             "student_name": data.student_name,
-            "description": data.description or f"Fee payment - {data.fee_type}"
+            "description": data.description or f"Fee payment - {data.fee_type}",
+            "payment_to": "school"
         }
         
     except Exception as e:
