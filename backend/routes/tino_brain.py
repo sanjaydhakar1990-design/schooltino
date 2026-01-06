@@ -263,7 +263,251 @@ async def execute_tino_action(action: str, params: Dict, school_id: str, db) -> 
     
     return {"message": "Action executed"}
 
-async def get_ai_response(query: str, role: str, context: Dict, conversation_history: List = None) -> str:
+# ============== SMART ACTION FUNCTIONS ==============
+
+async def execute_attendance_action(query: str, school_id: str, db) -> Dict:
+    """Execute attendance marking based on query"""
+    today = date.today().isoformat()
+    
+    # Check if it's bulk attendance or individual
+    if "sab" in query or "all" in query or "puri class" in query:
+        # Mark all students present for today
+        students = await db.students.find({"school_id": school_id, "is_active": True}).to_list(1000)
+        marked = 0
+        for student in students:
+            existing = await db.attendance.find_one({
+                "student_id": student.get("id"),
+                "date": today
+            })
+            if not existing:
+                await db.attendance.insert_one({
+                    "id": str(uuid.uuid4()),
+                    "school_id": school_id,
+                    "student_id": student.get("id"),
+                    "student_name": student.get("name"),
+                    "class_id": student.get("class_id"),
+                    "date": today,
+                    "status": "present",
+                    "marked_by": "tino_brain",
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
+                marked += 1
+        return {"message": f"{marked} students ko present mark kar diya", "marked_count": marked, "date": today}
+    
+    return {"message": "Attendance command samajh nahi aaya. Kripya specify karein.", "error": True}
+
+async def execute_notice_action(query: str, school_id: str, user_id: str, db) -> Dict:
+    """Create notice based on query"""
+    # Extract notice content from query
+    # Simple extraction - after "notice" word
+    content = query
+    for word in ["notice bhejo", "notice create", "announcement karo", "notice laga", "sab ko batao"]:
+        content = content.replace(word, "").strip()
+    
+    if not content or len(content) < 5:
+        content = "Important Notice - Please check with administration"
+    
+    notice = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "title": "Tino AI Notice",
+        "content": content,
+        "type": "general",
+        "target_audience": ["all"],
+        "priority": "normal",
+        "is_popup": True,
+        "created_by": user_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "published"
+    }
+    await db.notices.insert_one(notice)
+    
+    return {
+        "message": f"Notice create kar diya: '{content[:50]}...'",
+        "notice_id": notice["id"],
+        "sent_to": "all"
+    }
+
+async def execute_fee_reminder(school_id: str, db) -> Dict:
+    """Send fee reminders to pending students"""
+    pending = await db.fees.find({
+        "school_id": school_id,
+        "status": {"$in": ["pending", "partial"]}
+    }).to_list(500)
+    
+    reminders_sent = 0
+    for fee in pending:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "user_id": fee.get("student_id"),
+            "title": "Fee Payment Reminder",
+            "message": f"Aapki pending fees ₹{fee.get('amount', 0)} hai. Kripya jaldi pay karein.",
+            "type": "fee_reminder",
+            "status": "unread",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.notifications.insert_one(notification)
+        reminders_sent += 1
+    
+    return {
+        "message": f"{reminders_sent} students ko fee reminder bhej diya",
+        "reminders_sent": reminders_sent
+    }
+
+async def execute_sms_action(query: str, school_id: str, db) -> Dict:
+    """Send SMS/notifications based on query"""
+    # Extract message
+    content = query
+    for word in ["sms bhejo", "message bhejo", "notification bhejo", "parents ko batao"]:
+        content = content.replace(word, "").strip()
+    
+    if not content or len(content) < 3:
+        content = "School se important message"
+    
+    # Get all parents/guardians
+    students = await db.students.find({"school_id": school_id, "is_active": True}).to_list(1000)
+    sent_count = 0
+    
+    for student in students:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "student_id": student.get("id"),
+            "parent_phone": student.get("parent_phone"),
+            "title": "School Notification",
+            "message": content,
+            "type": "sms",
+            "status": "queued",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.notifications.insert_one(notification)
+        sent_count += 1
+    
+    return {
+        "message": f"{sent_count} parents ko message queue kar diya",
+        "sent_count": sent_count,
+        "content": content[:50]
+    }
+
+async def get_student_details(query: str, school_id: str, db) -> Dict:
+    """Get student details"""
+    # Try to extract student name from query
+    students = await db.students.find(
+        {"school_id": school_id, "is_active": True},
+        {"_id": 0, "id": 1, "name": 1, "class_name": 1, "roll_no": 1, "parent_phone": 1}
+    ).limit(10).to_list(10)
+    
+    return {
+        "message": f"{len(students)} students found",
+        "students": students
+    }
+
+async def get_absent_students(school_id: str, db) -> Dict:
+    """Get today's absent students"""
+    today = date.today().isoformat()
+    
+    # Get all students
+    all_students = await db.students.find(
+        {"school_id": school_id, "is_active": True},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Get today's attendance
+    attendance = await db.attendance.find({
+        "school_id": school_id,
+        "date": today
+    }).to_list(1000)
+    
+    present_ids = {a.get("student_id") for a in attendance if a.get("status") == "present"}
+    absent_students = [s for s in all_students if s.get("id") not in present_ids]
+    
+    return {
+        "message": f"Aaj {len(absent_students)} students absent hain",
+        "absent_count": len(absent_students),
+        "absent_students": [{"name": s.get("name"), "class": s.get("class_name")} for s in absent_students[:20]],
+        "date": today
+    }
+
+async def get_pending_fees(school_id: str, db) -> Dict:
+    """Get pending fees summary"""
+    pending = await db.fees.find({
+        "school_id": school_id,
+        "status": {"$in": ["pending", "partial"]}
+    }, {"_id": 0}).to_list(500)
+    
+    total_pending = sum(f.get("amount", 0) for f in pending)
+    
+    return {
+        "message": f"Total ₹{total_pending:,.0f} pending hai {len(pending)} students se",
+        "total_pending": total_pending,
+        "pending_count": len(pending),
+        "top_defaulters": [
+            {"student_id": f.get("student_id"), "amount": f.get("amount")}
+            for f in sorted(pending, key=lambda x: x.get("amount", 0), reverse=True)[:5]
+        ]
+    }
+
+async def get_class_status(query: str, school_id: str, db) -> Dict:
+    """Get class status"""
+    classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
+    
+    class_stats = []
+    for cls in classes:
+        student_count = await db.students.count_documents({
+            "school_id": school_id,
+            "class_id": cls.get("id"),
+            "is_active": True
+        })
+        class_stats.append({
+            "class_name": cls.get("name"),
+            "section": cls.get("section"),
+            "students": student_count,
+            "teacher": cls.get("class_teacher")
+        })
+    
+    return {
+        "message": f"{len(classes)} classes hain school mein",
+        "classes": class_stats,
+        "total_classes": len(classes)
+    }
+
+async def create_smart_alert(query: str, school_id: str, db) -> Dict:
+    """Create alert from natural language"""
+    # Determine priority from query
+    priority = "medium"
+    if any(w in query for w in ["urgent", "emergency", "critical", "turant"]):
+        priority = "critical"
+    elif any(w in query for w in ["important", "jaruri", "high"]):
+        priority = "high"
+    
+    # Extract title
+    title = query.replace("alert banao", "").replace("alert create", "").replace("warning do", "").strip()
+    if not title or len(title) < 3:
+        title = "New Alert from Tino Brain"
+    
+    alert = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "type": "custom",
+        "priority": priority,
+        "title": title[:100],
+        "description": f"AI Generated Alert: {title}",
+        "status": "active",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": "tino_brain"
+    }
+    await db.tino_alerts.insert_one(alert)
+    
+    return {
+        "message": f"Alert create kar diya - Priority: {priority}",
+        "alert_id": alert["id"],
+        "title": title[:100],
+        "priority": priority
+    }
+
+# ============== AI RESPONSE GENERATION ==============
+
     """Get intelligent response from OpenAI"""
     if not openai_client:
         return "AI service not available. Please configure OpenAI API key."
