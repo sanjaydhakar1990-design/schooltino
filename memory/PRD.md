@@ -496,4 +496,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Preview URL:** https://edumanage-ai.preview.emergentagent.com
+- **Preview URL:** https://tino-brain.preview.emergentagent.com
