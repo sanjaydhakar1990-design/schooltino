@@ -29,13 +29,26 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
-import { useRazorpay } from 'react-razorpay';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Load Razorpay script
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function StudyTinoDashboard() {
   const { user, logout } = useAuth();
-  const [Razorpay] = useRazorpay();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
