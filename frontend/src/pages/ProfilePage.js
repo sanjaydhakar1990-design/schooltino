@@ -456,51 +456,21 @@ export default function ProfilePage() {
                   variant="outline" 
                   className="w-full justify-between h-14 border-red-200 hover:bg-red-50"
                   onClick={logout}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-red-600" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-red-600">Logout</p>
-                  <p className="text-xs text-slate-500">Sign out from your account</p>
-                </div>
-              </div>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Account Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Account Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-slate-500">User ID</span>
-                <span className="font-mono text-slate-700">{user?.id?.slice(0, 8)}...</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-slate-500">Role</span>
-                <span className="font-medium capitalize">{user?.role}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-slate-500">Status</span>
-                <span className="flex items-center gap-1 text-green-600">
-                  <CheckCircle className="w-4 h-4" />
-                  Active
-                </span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-slate-500">Member Since</span>
-                <span className="text-slate-700">
-                  {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN') : 'N/A'}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                      <Lock className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium text-red-600">Logout</p>
+                      <p className="text-xs text-slate-500">Sign out from your account</p>
+                    </div>
+                  </div>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* Change Password Dialog */}
