@@ -408,7 +408,7 @@ export default function StudyTinoDashboard() {
         {/* Quick Actions - Simple Grid */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { icon: Wallet, label: 'Pay Fees', color: 'bg-green-500', path: '/studytino/fees' },
+            { icon: Wallet, label: 'Pay Fees', color: 'bg-green-500', action: () => setShowPaymentDialog(true) },
             { icon: MessageCircle, label: 'Class Chat', color: 'bg-blue-500', action: () => openClassChat() },
             { icon: AlertOctagon, label: 'Complaint', color: 'bg-rose-500', action: () => setShowComplaintDialog(true) },
             { icon: Trophy, label: 'Activities', color: 'bg-amber-500', action: () => openActivities() },
