@@ -74,6 +74,12 @@ export default function StudyTinoDashboard() {
   // Activities State
   const [myActivities, setMyActivities] = useState([]);
   
+  // Payment State
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [pendingFees, setPendingFees] = useState(null);
+  
   // Leave Form
   const [leaveForm, setLeaveForm] = useState({
     leave_type: 'sick',
