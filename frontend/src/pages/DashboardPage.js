@@ -422,6 +422,92 @@ export default function DashboardPage() {
         </Card>
       )}
 
+      {/* Staff Members with Photos */}
+      {staffMembers.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                <UserCog className="w-5 h-5 text-emerald-500" />
+                Staff Members
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/app/staff')} className="text-indigo-600">
+                View All
+              </Button>
+            </div>
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+              {staffMembers.slice(0, 8).map((staff) => (
+                <div 
+                  key={staff.id} 
+                  className="text-center cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => navigate(`/app/staff/${staff.id}`)}
+                >
+                  <div className="relative mx-auto w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-slate-200 hover:border-indigo-400 transition-colors">
+                    {staff.photo_url ? (
+                      <img 
+                        src={staff.photo_url.startsWith('http') ? staff.photo_url : `${process.env.REACT_APP_BACKEND_URL}${staff.photo_url}`}
+                        alt={staff.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">{staff.name?.charAt(0)}</span>
+                      </div>
+                    )}
+                    {/* Online indicator */}
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                  </div>
+                  <p className="text-xs font-medium text-slate-700 mt-2 truncate">{staff.name?.split(' ')[0]}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{staff.designation || staff.role}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recent Students with Photos */}
+      {recentStudents.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-500" />
+                Recent Students
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/app/students')} className="text-indigo-600">
+                View All
+              </Button>
+            </div>
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+              {recentStudents.slice(0, 8).map((student) => (
+                <div 
+                  key={student.id} 
+                  className="text-center cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => navigate(`/app/students/${student.id}`)}
+                >
+                  <div className="relative mx-auto w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-400 transition-colors">
+                    {student.photo_url ? (
+                      <img 
+                        src={student.photo_url.startsWith('http') ? student.photo_url : `${process.env.REACT_APP_BACKEND_URL}${student.photo_url}`}
+                        alt={student.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">{student.name?.charAt(0)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs font-medium text-slate-700 mt-2 truncate">{student.name?.split(' ')[0]}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{student.class_name}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Profile Dialog */}
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
