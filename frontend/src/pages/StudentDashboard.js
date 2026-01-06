@@ -457,77 +457,86 @@ export default function StudyTinoDashboard() {
           ))}
         </div>
 
-        {/* Notices Section */}
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                <Bell className="w-4 h-4 text-purple-500" />
-                Notices
-                {unreadNotices > 0 && (
-                  <Badge className="bg-red-500 text-white text-xs">{unreadNotices}</Badge>
-                )}
-              </h3>
-              <Button variant="ghost" size="sm" className="text-amber-600 text-xs">
-                View All <ChevronRight className="w-3 h-3 ml-1" />
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {notices.slice(0, 3).map((notice) => (
-                <div
-                  key={notice.id}
-                  onClick={() => { setSelectedNotice(notice); setShowNoticeDialog(true); }}
-                  className={`p-3 rounded-lg cursor-pointer transition-all ${
-                    notice.priority === 'high' ? 'bg-red-50 border border-red-100' : 'bg-slate-50 hover:bg-slate-100'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{notice.title}</p>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-1">{notice.content}</p>
+        {/* Two Column Layout for PC */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          {/* Notices Section */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-purple-500" />
+                  Notices
+                  {unreadNotices > 0 && (
+                    <Badge className="bg-red-500 text-white text-xs">{unreadNotices}</Badge>
+                  )}
+                </h3>
+                <Button variant="ghost" size="sm" className="text-amber-600 text-xs">
+                  View All <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {notices.slice(0, 3).map((notice) => (
+                  <div
+                    key={notice.id}
+                    onClick={() => { setSelectedNotice(notice); setShowNoticeDialog(true); }}
+                    className={`p-3 rounded-lg cursor-pointer transition-all ${
+                      notice.priority === 'high' ? 'bg-red-50 border border-red-100' : 'bg-slate-50 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{notice.title}</p>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-1">{notice.content}</p>
+                      </div>
+                      {notice.priority === 'high' && (
+                        <Badge className="bg-red-500 text-white text-[10px]">Important</Badge>
+                      )}
                     </div>
-                    {notice.priority === 'high' && (
-                      <Badge className="bg-red-500 text-white text-[10px]">Important</Badge>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Homework Section */}
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-blue-500" />
-                Homework
-                {pendingHomework > 0 && (
-                  <Badge className="bg-amber-500 text-white text-xs">{pendingHomework}</Badge>
+                ))}
+                {notices.length === 0 && (
+                  <p className="text-center text-slate-400 py-4 text-sm">No notices yet</p>
                 )}
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {homework.slice(0, 3).map((hw) => (
-                <div key={hw.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-slate-900 text-sm">{hw.subject}</p>
-                    <p className="text-xs text-slate-500">{hw.topic}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Homework Section */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-blue-500" />
+                  Homework
+                  {pendingHomework > 0 && (
+                    <Badge className="bg-amber-500 text-white text-xs">{pendingHomework}</Badge>
+                  )}
+                </h3>
+              </div>
+              <div className="space-y-2">
+                {homework.slice(0, 3).map((hw) => (
+                  <div key={hw.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-slate-900 text-sm">{hw.subject}</p>
+                      <p className="text-xs text-slate-500">{hw.topic}</p>
+                    </div>
+                    <div className="text-right">
+                      <Badge className={hw.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
+                        {hw.status === 'pending' ? 'Pending' : 'Done'}
+                      </Badge>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Due: {new Date(hw.due_date).toLocaleDateString('hi-IN')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <Badge className={hw.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
-                      {hw.status === 'pending' ? 'Pending' : 'Done'}
-                    </Badge>
-                    <p className="text-[10px] text-slate-400 mt-1">
-                      Due: {new Date(hw.due_date).toLocaleDateString('hi-IN')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+                {homework.length === 0 && (
+                  <p className="text-center text-slate-400 py-4 text-sm">No homework assigned</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Syllabus Progress */}
         <Card className="border-0 shadow-sm">
