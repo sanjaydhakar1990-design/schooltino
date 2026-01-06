@@ -167,16 +167,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex" data-testid="login-page">
-      {/* Left side - Image & Info */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900">
-        <img
-          src="https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=srgb&fm=jpg&q=85"
-          alt="School"
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
-        />
+      {/* Left side - Gradient & Branding */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
         <div className="relative z-10 flex flex-col justify-center p-12">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
               <School className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-white font-heading">Schooltino</h1>
