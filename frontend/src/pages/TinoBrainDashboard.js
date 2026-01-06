@@ -186,9 +186,13 @@ export default function TinoBrainDashboard() {
     setInputText('');
   };
 
-  const startRecording = async () => {
+  // Improved Push-to-Talk: Press mic → Speak → Release → Auto execute
+  const startRecording = useCallback(async () => {
+    if (isProcessing) return;
+    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
       mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       audioChunksRef.current = [];
 
@@ -198,23 +202,30 @@ export default function TinoBrainDashboard() {
 
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        // Stop all tracks
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        // Auto process voice - command will execute automatically
         await processVoice(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorderRef.current.start();
       setIsListening(true);
+      toast.info('🎤 Bol rahe ho... Chhod do jab ho jaye', { duration: 2000 });
     } catch (err) {
       toast.error('Microphone access denied');
     }
-  };
+  }, [isProcessing]);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state !== 'inactive') {
       mediaRecorderRef.current.stop();
       setIsListening(false);
+      toast.info('🔄 Processing...', { duration: 1000 });
     }
-  };
+  }, []);
 
   const processVoice = async (audioBlob) => {
     setIsProcessing(true);
