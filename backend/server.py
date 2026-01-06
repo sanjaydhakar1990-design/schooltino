@@ -263,10 +263,10 @@ class SchoolCreate(BaseModel):
 class SchoolResponse(BaseModel):
     id: str
     name: str
-    address: str
-    board_type: str
-    city: str
-    state: str
+    address: Optional[str] = None
+    board_type: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
     pincode: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
