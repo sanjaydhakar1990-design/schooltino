@@ -355,24 +355,6 @@ async def bulk_reset_student_passwords(data: BulkStudentPasswordReset):
         "message": f"Passwords reset for {len([r for r in results if r['success']])} students",
         "results": results
     }
-
-        # Check direct match for demo
-        if otp_record.get("otp") != data.otp:
-            raise HTTPException(status_code=400, detail="Galat OTP. Dobara try karein")
-    
-    # Generate reset token
-    reset_token = generate_reset_token()
-    token_expiry = datetime.now(timezone.utc) + timedelta(hours=1)
-    
-    # Update OTP record
-    await db.password_reset_otps.update_one(
-        {"id": otp_record["id"]},
-        {"$set": {
-            "verified": True,
-            "reset_token": reset_token,
-            "token_expires_at": token_expiry.isoformat(),
-            "verified_at": datetime.now(timezone.utc).isoformat()
-        }}
     )
     
     return {
