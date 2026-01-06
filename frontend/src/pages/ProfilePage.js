@@ -13,6 +13,7 @@ import {
   Camera, Edit, Lock, Upload, Video, Mic, Fingerprint
 } from 'lucide-react';
 import { toast } from 'sonner';
+import MultiFaceEnrollment from '../components/MultiFaceEnrollment';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
