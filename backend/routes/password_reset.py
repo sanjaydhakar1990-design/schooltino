@@ -198,6 +198,14 @@ async def verify_otp(data: VerifyOTPRequest):
     
     # Verify OTP
     if not bcrypt.checkpw(data.otp.encode(), otp_record["otp_hash"].encode()):
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    return {
+        "valid": True,
+        "message": "OTP verified",
+        "user_type": otp_record.get("user_type"),
+        "expires_at": token_expiry
+    }
 
 
 # ==================== ADMIN RESET STUDENT PASSWORD ====================
