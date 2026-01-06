@@ -69,6 +69,7 @@ from routes.ai_greeting import router as ai_greeting_router
 from routes.group_chat import router as group_chat_router
 from routes.complaints import router as complaints_router
 from routes.sports_activities import router as activities_router
+from routes.razorpay_payment import router as razorpay_router
 
 # ==================== MODELS ====================
 
