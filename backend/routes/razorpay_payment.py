@@ -218,10 +218,13 @@ async def create_payment_order(data: CreateOrder):
 @router.post("/verify-payment")
 async def verify_payment(data: VerifyPayment):
     """Verify Razorpay payment signature and update records"""
-    if not razorpay_client:
-        raise HTTPException(status_code=503, detail="Razorpay not configured")
-    
     db = get_database()
+    
+    # Get school's Razorpay client
+    razorpay_client, _, error = await get_school_razorpay_client(data.school_id)
+    
+    if error:
+        raise HTTPException(status_code=503, detail=error)
     
     try:
         # Verify signature
