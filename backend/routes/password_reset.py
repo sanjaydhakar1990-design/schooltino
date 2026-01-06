@@ -198,6 +198,156 @@ async def verify_otp(data: VerifyOTPRequest):
     
     # Verify OTP
     if not bcrypt.checkpw(data.otp.encode(), otp_record["otp_hash"].encode()):
+
+
+# ==================== ADMIN RESET STUDENT PASSWORD ====================
+
+class AdminResetStudentPassword(BaseModel):
+    student_id: str
+    school_id: str
+    admin_id: str  # ID of the admin/admission staff doing the reset
+
+@router.post("/admin/reset-student-password")
+async def admin_reset_student_password(data: AdminResetStudentPassword):
+    """
+    Admin/Admission staff can reset student password
+    Generates a new temporary password that student must change on login
+    """
+    # Verify admin has permission
+    admin = await db.users.find_one(
+        {"id": data.admin_id},
+        {"_id": 0, "role": 1, "school_id": 1}
+    )
+    
+    if not admin:
+        raise HTTPException(status_code=403, detail="Admin not found")
+    
+    allowed_roles = ["director", "admission_staff", "admin", "principal", "vice_principal"]
+    if admin.get("role") not in allowed_roles:
+        raise HTTPException(status_code=403, detail="You don't have permission to reset student passwords")
+    
+    # Find student
+    student = await db.students.find_one(
+        {
+            "$or": [
+                {"id": data.student_id},
+                {"student_id": data.student_id}
+            ],
+            "school_id": data.school_id
+        }
+    )
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found in this school")
+    
+    # Generate new temporary password
+    temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    hashed_password = bcrypt.hashpw(temp_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    # Update student password
+    await db.students.update_one(
+        {"id": student["id"]},
+        {"$set": {
+            "password": hashed_password,
+            "password_reset_required": True,
+            "password_reset_by": data.admin_id,
+            "password_reset_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Log the action
+    await db.password_reset_logs.insert_one({
+        "id": str(uuid.uuid4()),
+        "student_id": student["id"],
+        "student_name": student.get("name"),
+        "student_sid": student.get("student_id"),
+        "school_id": data.school_id,
+        "reset_by": data.admin_id,
+        "reset_by_role": admin.get("role"),
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "success": True,
+        "message": f"Password reset for {student.get('name')}",
+        "student_id": student.get("student_id"),
+        "student_name": student.get("name"),
+        "temporary_password": temp_password,
+        "note": "Student ko ye password dein. Pehle login pe change karna hoga."
+    }
+
+
+@router.get("/admin/student-password-history/{school_id}")
+async def get_password_reset_history(school_id: str, limit: int = 50):
+    """Get password reset history for a school"""
+    
+    history = await db.password_reset_logs.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    return {
+        "school_id": school_id,
+        "total": len(history),
+        "history": history
+    }
+
+
+class BulkStudentPasswordReset(BaseModel):
+    student_ids: list
+    school_id: str
+    admin_id: str
+
+@router.post("/admin/bulk-reset-passwords")
+async def bulk_reset_student_passwords(data: BulkStudentPasswordReset):
+    """Reset passwords for multiple students at once"""
+    
+    # Verify admin
+    admin = await db.users.find_one({"id": data.admin_id}, {"_id": 0, "role": 1})
+    if not admin or admin.get("role") not in ["director", "admission_staff", "admin"]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    results = []
+    
+    for student_id in data.student_ids:
+        student = await db.students.find_one({
+            "$or": [{"id": student_id}, {"student_id": student_id}],
+            "school_id": data.school_id
+        })
+        
+        if not student:
+            results.append({
+                "student_id": student_id,
+                "success": False,
+                "error": "Not found"
+            })
+            continue
+        
+        temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+        hashed = bcrypt.hashpw(temp_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        await db.students.update_one(
+            {"id": student["id"]},
+            {"$set": {
+                "password": hashed,
+                "password_reset_required": True,
+                "password_reset_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        results.append({
+            "student_id": student.get("student_id"),
+            "student_name": student.get("name"),
+            "success": True,
+            "temporary_password": temp_password
+        })
+    
+    return {
+        "success": True,
+        "message": f"Passwords reset for {len([r for r in results if r['success']])} students",
+        "results": results
+    }
+
         # Check direct match for demo
         if otp_record.get("otp") != data.otp:
             raise HTTPException(status_code=400, detail="Galat OTP. Dobara try karein")
