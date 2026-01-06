@@ -1228,6 +1228,218 @@ async def verify_staff_face(staff_id: str, photo_base64: str):
             "success": False,
             "verified": False,
             "error": "No enrolled photo found for this staff"
+
+
+# ==================== MULTI-PHOTO ENROLLMENT (4-5 Photos) ====================
+
+class MultiPhotoEnrollment(BaseModel):
+    person_id: str
+    person_type: str  # student, staff, parent
+    person_name: str
+    school_id: str
+    photos: List[Dict]  # [{"angle": "front", "photo_data": "base64..."}]
+
+@router.post("/enroll-multiple")
+async def enroll_multiple_photos(data: MultiPhotoEnrollment):
+    """
+    Enroll multiple photos (4-5) for a person for better face recognition
+    Works for: students, staff, teachers, directors, parents
+    """
+    if len(data.photos) < 1:
+        raise HTTPException(status_code=400, detail="At least 1 photo required")
+    
+    if len(data.photos) > 10:
+        raise HTTPException(status_code=400, detail="Maximum 10 photos allowed")
+    
+    # Determine collection based on person_type
+    if data.person_type == "student":
+        collection = "student_face_photos"
+        person_check = await db.students.find_one(
+            {"$or": [{"id": data.person_id}, {"student_id": data.person_id}]},
+            {"_id": 0, "name": 1}
+        )
+    elif data.person_type == "parent":
+        collection = "parent_face_photos"
+        person_check = {"name": data.person_name}  # Parents may not have separate record
+    else:  # staff, teacher, director
+        collection = "staff_face_photos"
+        person_check = await db.users.find_one(
+            {"id": data.person_id},
+            {"_id": 0, "name": 1, "role": 1}
+        )
+        if not person_check:
+            person_check = await db.staff.find_one(
+                {"id": data.person_id},
+                {"_id": 0, "name": 1}
+            )
+    
+    if not person_check and data.person_type != "parent":
+        raise HTTPException(status_code=404, detail=f"{data.person_type.title()} not found")
+    
+    enrolled_photos = []
+    total_quality = 0
+    
+    for idx, photo in enumerate(data.photos):
+        angle = photo.get("angle", f"photo_{idx + 1}")
+        photo_data = photo.get("photo_data", "")
+        
+        if not photo_data:
+            continue
+        
+        # Remove data URL prefix if present
+        if photo_data.startswith("data:image"):
+            photo_data = photo_data.split(",")[1] if "," in photo_data else photo_data
+        
+        # Analyze photo quality with AI
+        quality_analysis = await analyze_photo_quality(photo_data, angle)
+        quality_score = quality_analysis.get("quality_score", 75)
+        face_detected = quality_analysis.get("face_detected", True)
+        
+        # Skip if no face detected
+        if not face_detected:
+            continue
+        
+        photo_id = str(uuid.uuid4())
+        
+        # Save photo record
+        photo_record = {
+            "id": photo_id,
+            "person_id": data.person_id,
+            "person_type": data.person_type,
+            "person_name": data.person_name,
+            "school_id": data.school_id,
+            "photo_type": angle,
+            "photo_data": photo_data,
+            "quality_score": quality_score,
+            "quality_analysis": quality_analysis,
+            "ai_verified": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db[collection].insert_one(photo_record)
+        
+        enrolled_photos.append({
+            "photo_id": photo_id,
+            "angle": angle,
+            "quality_score": quality_score
+        })
+        total_quality += quality_score
+    
+    if len(enrolled_photos) == 0:
+        return {
+            "success": False,
+            "error": "Kisi bhi photo mein face detect nahi hua",
+            "message": "Please try again with better photos"
+        }
+    
+    avg_quality = total_quality / len(enrolled_photos)
+    
+    # Update person's face enrollment status
+    update_data = {
+        "face_enrolled": True,
+        "face_photos_count": len(enrolled_photos),
+        "face_avg_quality": round(avg_quality, 1),
+        "face_updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if data.person_type == "student":
+        await db.students.update_one(
+            {"$or": [{"id": data.person_id}, {"student_id": data.person_id}]},
+            {"$set": update_data}
+        )
+    elif data.person_type != "parent":
+        await db.users.update_one(
+            {"id": data.person_id},
+            {"$set": update_data}
+        )
+    
+    return {
+        "success": True,
+        "message": f"{len(enrolled_photos)} photos enrolled successfully! AI ab aapko pehchan sakta hai.",
+        "enrolled_count": len(enrolled_photos),
+        "total_submitted": len(data.photos),
+        "average_quality": round(avg_quality, 1),
+        "photos": enrolled_photos,
+        "person_name": data.person_name,
+        "can_recognize": len(enrolled_photos) >= 2
+    }
+
+
+@router.get("/enrollment/{person_type}/{person_id}")
+async def get_person_enrollment_status(person_type: str, person_id: str):
+    """Get enrollment status for any person type"""
+    
+    # Determine collection
+    if person_type == "student":
+        collection = "student_face_photos"
+        person = await db.students.find_one(
+            {"$or": [{"id": person_id}, {"student_id": person_id}]},
+            {"_id": 0, "password": 0}
+        )
+    elif person_type == "parent":
+        collection = "parent_face_photos"
+        person = {"name": "Parent"}
+    else:
+        collection = "staff_face_photos"
+        person = await db.users.find_one(
+            {"id": person_id},
+            {"_id": 0, "password": 0}
+        )
+    
+    # Get photos count
+    photos = await db[collection].find(
+        {"person_id": person_id},
+        {"_id": 0, "photo_data": 0}
+    ).to_list(20)
+    
+    return {
+        "person_id": person_id,
+        "person_type": person_type,
+        "person_name": person.get("name") if person else None,
+        "face_enrolled": len(photos) >= 2,
+        "photos_count": len(photos),
+        "photos": [{
+            "id": p.get("id"),
+            "angle": p.get("photo_type"),
+            "quality": p.get("quality_score"),
+            "created": p.get("created_at")
+        } for p in photos],
+        "can_recognize": len(photos) >= 2,
+        "recommended_photos": 4
+    }
+
+
+@router.delete("/enrollment/{person_type}/{person_id}")
+async def delete_all_enrollment_photos(person_type: str, person_id: str):
+    """Delete all photos for re-enrollment"""
+    
+    if person_type == "student":
+        collection = "student_face_photos"
+    elif person_type == "parent":
+        collection = "parent_face_photos"
+    else:
+        collection = "staff_face_photos"
+    
+    result = await db[collection].delete_many({"person_id": person_id})
+    
+    # Reset enrollment status
+    if person_type == "student":
+        await db.students.update_one(
+            {"$or": [{"id": person_id}, {"student_id": person_id}]},
+            {"$set": {"face_enrolled": False, "face_photos_count": 0}}
+        )
+    elif person_type != "parent":
+        await db.users.update_one(
+            {"id": person_id},
+            {"$set": {"face_enrolled": False, "face_photos_count": 0}}
+        )
+    
+    return {
+        "success": True,
+        "deleted_count": result.deleted_count,
+        "message": "All photos deleted. Ready for re-enrollment."
+    }
+
         }
     
     # Compare faces
