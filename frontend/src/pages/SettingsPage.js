@@ -419,7 +419,9 @@ export default function SettingsPage() {
                         className="w-full h-10 rounded-lg border border-slate-200 px-3"
                         data-testid="school-board-select"
                       >
-                        <option value="CBSE">CBSE</option>
+                        <option value="CBSE">CBSE (NCERT)</option>
+                        <option value="NCERT">NCERT</option>
+                        <option value="MPBSE">MP Board (MPBSE)</option>
                         <option value="ICSE">ICSE</option>
                         <option value="State Board">State Board</option>
                         <option value="IB">IB</option>
