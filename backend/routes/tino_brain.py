@@ -381,32 +381,98 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         "timestamp": datetime.now(timezone.utc).isoformat()
     })
     
-    # Check for command patterns and execute
+    # Check for command patterns and execute REAL ACTIONS
     action_taken = None
     data = None
+    execution_results = []
     
     query_lower = request.query.lower()
     
-    # Command detection
-    if any(k in query_lower for k in ["school overview", "school ka status", "puri jankari", "sab batao"]):
+    # ============== ACTION EXECUTION ENGINE ==============
+    
+    # 1. ATTENDANCE ACTIONS
+    if any(k in query_lower for k in ["attendance laga", "attendance mark", "hazri laga", "present mark"]):
+        # Extract class/student info from query
+        result = await execute_attendance_action(query_lower, request.school_id, db)
+        data = result
+        action_taken = "attendance_marked"
+        execution_results.append(f"✅ {result.get('message', 'Attendance action completed')}")
+    
+    # 2. NOTICE/ANNOUNCEMENT ACTIONS
+    elif any(k in query_lower for k in ["notice bhejo", "announcement karo", "notice create", "sab ko batao", "notice laga"]):
+        result = await execute_notice_action(query_lower, request.school_id, request.user_id, db)
+        data = result
+        action_taken = "notice_created"
+        execution_results.append(f"✅ {result.get('message', 'Notice created')}")
+    
+    # 3. FEE REMINDER ACTIONS
+    elif any(k in query_lower for k in ["fee reminder", "fees yaad dila", "payment remind", "fee notice"]):
+        result = await execute_fee_reminder(request.school_id, db)
+        data = result
+        action_taken = "fee_reminder_sent"
+        execution_results.append(f"✅ {result.get('message', 'Fee reminders sent')}")
+    
+    # 4. SMS/NOTIFICATION ACTIONS
+    elif any(k in query_lower for k in ["sms bhejo", "message bhejo", "notification bhejo", "parents ko batao"]):
+        result = await execute_sms_action(query_lower, request.school_id, db)
+        data = result
+        action_taken = "notification_sent"
+        execution_results.append(f"✅ {result.get('message', 'Notifications sent')}")
+    
+    # 5. STUDENT INFO QUERIES
+    elif any(k in query_lower for k in ["student info", "student details", "bacche ki jankari", "student ka"]):
+        result = await get_student_details(query_lower, request.school_id, db)
+        data = result
+        action_taken = "student_info_fetched"
+    
+    # 6. ABSENT STUDENTS LIST
+    elif any(k in query_lower for k in ["kaun absent", "absent list", "absent hai", "nahi aaya", "gayab hai"]):
+        result = await get_absent_students(request.school_id, db)
+        data = result
+        action_taken = "absent_list_fetched"
+    
+    # 7. FEE STATUS/PENDING FEES
+    elif any(k in query_lower for k in ["pending fees", "fees pending", "fee status", "kitni fees"]):
+        result = await get_pending_fees(request.school_id, db)
+        data = result
+        action_taken = "fee_status_fetched"
+    
+    # 8. SCHOOL OVERVIEW
+    elif any(k in query_lower for k in ["school overview", "school ka status", "puri jankari", "sab batao", "school status"]):
         data = await get_school_context(request.school_id, db)
         action_taken = "get_school_overview"
     
+    # 9. LOCATION TRACKING
     elif any(k in query_lower for k in ["kaun kahan", "location", "track", "kahan hai"]):
+        result = await get_location_tracking(request.school_id)
+        data = result
         action_taken = "location_tracking"
-        # Would integrate with face recognition here
     
-    elif any(k in query_lower for k in ["alert", "problem", "issue", "emergency"]):
-        # Check for active alerts
+    # 10. ALERTS CHECK
+    elif any(k in query_lower for k in ["alert", "problem", "issue", "emergency", "koi dikkat"]):
         alerts = await db.tino_alerts.find({
             "school_id": request.school_id,
             "status": "active"
-        }).sort("created_at", -1).limit(5).to_list(5)
-        data = {"active_alerts": [
-            {"type": a.get("type"), "title": a.get("title"), "priority": a.get("priority")}
-            for a in alerts
-        ]}
+        }, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+        data = {"active_alerts": alerts, "count": len(alerts)}
         action_taken = "check_alerts"
+    
+    # 11. CLASS STATUS
+    elif any(k in query_lower for k in ["class status", "class ka", "class mein", "kitne students"]):
+        result = await get_class_status(query_lower, request.school_id, db)
+        data = result
+        action_taken = "class_status_fetched"
+    
+    # 12. CREATE ALERT
+    elif any(k in query_lower for k in ["alert banao", "alert create", "warning do", "emergency alert"]):
+        result = await create_smart_alert(query_lower, request.school_id, db)
+        data = result
+        action_taken = "alert_created"
+        execution_results.append(f"✅ Alert created: {result.get('title', 'New Alert')}")
+    
+    # Add execution results to AI response if actions were taken
+    if execution_results:
+        ai_response = ai_response + "\n\n" + "\n".join(execution_results)
     
     # Generate audio response
     audio_b64 = None
