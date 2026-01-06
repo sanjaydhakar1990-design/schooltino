@@ -432,52 +432,30 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Change Password Button */}
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-between h-14"
+                  onClick={() => setShowPasswordDialog(true)}
+                  data-testid="change-password-button"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                      <Key className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium">Change Password</p>
+                      <p className="text-xs text-slate-500">Update your account password</p>
+                    </div>
                   </div>
-                )}
-                {user?.school_id && (
-                  <div className="flex items-center justify-center gap-2">
-                    <Building2 className="w-4 h-4 text-slate-400" />
-                    School ID: {user.school_id}
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <Edit className="w-4 h-4 text-slate-400" />
+                </Button>
 
-        {/* Account Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="w-5 h-5 text-indigo-600" />
-              Account Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Change Password Button */}
-            <Button 
-              variant="outline" 
-              className="w-full justify-between h-14"
-              onClick={() => setShowPasswordDialog(true)}
-              data-testid="change-password-button"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <Key className="w-5 h-5 text-amber-600" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium">Change Password</p>
-                  <p className="text-xs text-slate-500">Update your account password</p>
-                </div>
-              </div>
-              <Edit className="w-4 h-4 text-slate-400" />
-            </Button>
-
-            {/* Logout Button */}
-            <Button 
-              variant="outline" 
-              className="w-full justify-between h-14 border-red-200 hover:bg-red-50"
-              onClick={logout}
+                {/* Logout Button */}
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-between h-14 border-red-200 hover:bg-red-50"
+                  onClick={logout}
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
