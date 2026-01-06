@@ -247,7 +247,7 @@ export default function FeesPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="invoices" className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <TabsList>
             <TabsTrigger value="invoices" data-testid="invoices-tab">
               <FileText className="w-4 h-4 mr-2" />
@@ -256,6 +256,10 @@ export default function FeesPage() {
             <TabsTrigger value="plans" data-testid="plans-tab">
               <Wallet className="w-4 h-4 mr-2" />
               {t('fee_plans')}
+            </TabsTrigger>
+            <TabsTrigger value="scholarships" data-testid="scholarships-tab">
+              <Receipt className="w-4 h-4 mr-2" />
+              Scholarships
             </TabsTrigger>
           </TabsList>
           
