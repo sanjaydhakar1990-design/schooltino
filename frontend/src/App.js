@@ -223,15 +223,32 @@ function AppRoutes() {
       
       {/* StudyTino Portal - Student Login */}
       <Route path="/studytino" element={<StudyTinoLogin />} />
-      <Route path="/studytino/receipts" element={<StudentReceiptsPage />} />
+      <Route 
+        path="/studytino/receipts" 
+        element={
+          <StudentOnlyRoute>
+            <StudentReceiptsPage />
+          </StudentOnlyRoute>
+        } 
+      />
 
-      {/* Protected Routes */}
+      {/* Student Dashboard - ONLY for students */}
+      <Route 
+        path="/student-dashboard" 
+        element={
+          <StudentOnlyRoute>
+            <StudentDashboard />
+          </StudentOnlyRoute>
+        } 
+      />
+
+      {/* Admin Protected Routes - Director/Principal only */}
       <Route
         path="/app"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <Layout />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       >
         <Route index element={<Navigate to="/app/dashboard" replace />} />
