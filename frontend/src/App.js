@@ -88,6 +88,92 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Role-based Protected Route - SECURITY
+const RoleProtectedRoute = ({ children, allowedRoles, redirectTo = "/login" }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Check if user's role is in allowed roles
+  if (!allowedRoles.includes(user?.role)) {
+    // Redirect based on role
+    if (user?.role === 'student') {
+      return <Navigate to="/student-dashboard" replace />;
+    } else if (user?.role === 'teacher') {
+      return <Navigate to="/portal" replace />;
+    } else {
+      return <Navigate to={redirectTo} replace />;
+    }
+  }
+  
+  return children;
+};
+
+// Student Only Route - BLOCKS admin/teacher access
+const StudentOnlyRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/studytino" replace />;
+  }
+  
+  // Only students can access
+  if (user?.role !== 'student') {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+  
+  return children;
+};
+
+// Admin Only Route - Director, Principal only
+const AdminOnlyRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Only director, principal, vice_principal, co_director
+  const adminRoles = ['director', 'principal', 'vice_principal', 'co_director'];
+  if (!adminRoles.includes(user?.role)) {
+    // Redirect to their appropriate dashboard
+    if (user?.role === 'student') {
+      return <Navigate to="/student-dashboard" replace />;
+    } else if (user?.role === 'teacher') {
+      return <Navigate to="/portal" replace />;
+    }
+    return <Navigate to="/portal" replace />;
+  }
+  
+  return children;
+};
+
 // Public Route Component (redirect if already logged in)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
