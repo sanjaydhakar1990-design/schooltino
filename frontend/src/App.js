@@ -307,23 +307,26 @@ function AppRoutes() {
       <Route path="/notices" element={<Navigate to="/app/notices" replace />} />
       <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
 
-      {/* TeachTino Portal - Standalone for Teachers */}
+      {/* TeachTino Portal - Only for Teachers */}
       <Route
         path="/teacher-dashboard"
         element={
-          <ProtectedRoute>
+          <RoleProtectedRoute allowedRoles={['teacher', 'principal', 'vice_principal']} redirectTo="/login">
             <TeachTinoDashboard />
-          </ProtectedRoute>
+          </RoleProtectedRoute>
         }
       />
 
-      {/* Unified Portal - Smart Dashboard for all Staff */}
+      {/* Unified Portal - For Staff (NOT students, NOT full admin access) */}
       <Route
         path="/portal"
         element={
-          <ProtectedRoute>
+          <RoleProtectedRoute 
+            allowedRoles={['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director']} 
+            redirectTo="/login"
+          >
             <UnifiedPortal />
-          </ProtectedRoute>
+          </RoleProtectedRoute>
         }
       />
 
