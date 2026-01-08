@@ -76,6 +76,7 @@ class TinoBrainQuery(BaseModel):
     user_role: str
     user_name: str = "User"
     voice_gender: str = "female"
+    language: str = "hinglish"  # hindi, english, hinglish - AI will respond in this language
     context: Optional[Dict] = None
 
 class TinoBrainResponse(BaseModel):
