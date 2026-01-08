@@ -7105,6 +7105,7 @@ api_router.include_router(group_chat_router)
 api_router.include_router(complaints_router)
 api_router.include_router(activities_router)
 api_router.include_router(razorpay_router)
+api_router.include_router(admit_card_router)
 
 app.include_router(api_router)
 
