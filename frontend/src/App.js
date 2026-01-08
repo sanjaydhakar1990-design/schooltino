@@ -59,6 +59,7 @@ import MarketingPage from './pages/MarketingPage';
 import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
 import AdmitCardManagement from './pages/AdmitCardManagement';
+import PDFDownloadPage from './pages/PDFDownloadPage';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
