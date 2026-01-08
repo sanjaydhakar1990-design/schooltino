@@ -55,6 +55,7 @@ import SalaryTrackingPage from './pages/SalaryTrackingPage';
 import StudentReceiptsPage from './pages/StudentReceiptsPage';
 import UnifiedPortal from './pages/UnifiedPortal';
 import TinoBrainDashboard from './pages/TinoBrainDashboard';
+import MarketingPage from './pages/MarketingPage';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
