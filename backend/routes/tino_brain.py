@@ -566,15 +566,42 @@ async def create_smart_alert(query: str, school_id: str, db) -> Dict:
 
 # ============== AI RESPONSE GENERATION ==============
 
-async def get_ai_response(query: str, role: str, context: Dict, conversation_history: List = None) -> str:
-    """Get intelligent response from OpenAI"""
+def detect_language_from_text(text: str) -> str:
+    """Detect language from user's text"""
+    # Check for Hindi characters (Devanagari)
+    hindi_chars = sum(1 for c in text if '\u0900' <= c <= '\u097F')
+    # Check for English words
+    english_words = ['the', 'is', 'are', 'what', 'how', 'please', 'show', 'tell']
+    english_count = sum(1 for word in english_words if word.lower() in text.lower())
+    
+    # Hinglish indicators
+    hinglish_words = ['kya', 'hai', 'karo', 'batao', 'bhai', 'yaar', 'achha', 'theek', 'haan', 'nahi', 'kaise', 'kyun', 'kaun', 'kahan', 'kitna']
+    hinglish_count = sum(1 for word in hinglish_words if word.lower() in text.lower())
+    
+    if hindi_chars > 5:
+        return "hindi"
+    elif hinglish_count >= 2:
+        return "hinglish"
+    elif english_count >= 2:
+        return "english"
+    else:
+        return "hinglish"  # Default to Hinglish
+
+async def get_ai_response(query: str, role: str, context: Dict, conversation_history: List = None, language: str = "hinglish", voice_gender: str = "female") -> str:
+    """Get intelligent response from OpenAI with language and tone support"""
     if not openai_client:
         return "AI service not available. Please configure OpenAI API key."
     
     try:
+        # Get language instruction
+        lang_instruction = LANGUAGE_INSTRUCTIONS.get(language, LANGUAGE_INSTRUCTIONS["hinglish"])
+        tone_instruction = GENDER_TONE.get(voice_gender, GENDER_TONE["female"])
+        
         system_prompt = TINO_SYSTEM_PROMPT.format(
             role=role,
-            school_name=context.get("school_name", "School")
+            school_name=context.get("school_name", "School"),
+            language_instruction=lang_instruction,
+            tone_instruction=tone_instruction
         )
         
         # Add context
