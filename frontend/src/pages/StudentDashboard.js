@@ -972,6 +972,22 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Admit Card Dialog */}
+      <Dialog open={showAdmitCardDialog} onOpenChange={setShowAdmitCardDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-indigo-600" />
+              Admit Cards / प्रवेश पत्र
+            </DialogTitle>
+          </DialogHeader>
+          <AdmitCardSection 
+            studentId={user?.id || profile?.id}
+            schoolId={user?.school_id || profile?.school_id}
+          />
+        </DialogContent>
+      </Dialog>
+
       {/* Voice Assistant */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
