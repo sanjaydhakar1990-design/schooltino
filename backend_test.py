@@ -573,7 +573,7 @@ class SchooltinoAPITester:
     
     def test_health_records(self):
         """Test Health Module - Records"""
-        return self.run_test("Health Records", "GET", "health/records/SCH-C497AFE7", 200)[0]
+        return self.run_test("Health Records", "GET", "health/records/STD-123?school_id=SCH-C497AFE7", 200)[0]
     
     def test_biometric_devices(self):
         """Test Biometric System - Devices"""
