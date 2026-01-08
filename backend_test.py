@@ -364,6 +364,128 @@ class SchooltinoAPITester:
         """Test audit logs"""
         return self.run_test("Get Audit Logs", "GET", "audit-logs", 200)[0]
 
+    # ============== TINO BRAIN TESTS ==============
+    
+    def test_tino_brain_status(self):
+        """Test Tino Brain status endpoint"""
+        return self.run_test("Tino Brain Status", "GET", "tino-brain/status", 200)[0]
+    
+    def test_class_intelligence_api(self):
+        """Test Class Intelligence API"""
+        if not self.school_id:
+            return False
+        
+        # Test with default school and class-10
+        endpoint = f"tino-brain/class-intelligence/default/class-10"
+        success, response = self.run_test("Class Intelligence API", "GET", endpoint, 200)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["class_id", "class_name", "summary", "attendance", "syllabus", "weak_students", "teacher_performance"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+        
+        return success
+    
+    def test_class_comparison_api(self):
+        """Test Class Comparison API"""
+        endpoint = "tino-brain/class-comparison/default"
+        success, response = self.run_test("Class Comparison API", "GET", endpoint, 200)
+        
+        if success:
+            # Check if response has rankings
+            if "rankings" not in response:
+                print(f"   ⚠️ Missing 'rankings' in response")
+        
+        return success
+    
+    def test_cctv_class_detection_api(self):
+        """Test CCTV Class Detection API"""
+        data = {
+            "school_id": "default",
+            "class_name": "Class 10",
+            "user_id": "test-user",
+            "user_role": "director"
+        }
+        
+        success, response = self.run_test("CCTV Class Detection API", "POST", "tino-brain/class-intelligence/from-camera", 200, data)
+        
+        if success:
+            # Check if response has class intelligence data
+            expected_keys = ["class_id", "class_name", "summary"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+        
+        return success
+    
+    def test_tino_brain_query_class_condition(self):
+        """Test Enhanced Tino Brain Query - Class Condition"""
+        data = {
+            "query": "Class 10 ki condition batao",
+            "school_id": "default",
+            "user_id": "test-user",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "male"
+        }
+        
+        success, response = self.run_test("Tino Brain Query - Class Condition", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["message", "data", "action_taken"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+        
+        return success
+    
+    def test_tino_brain_query_weak_students(self):
+        """Test Tino Brain Query - Weak Students"""
+        data = {
+            "query": "weak bachhe kaun hai Class 10 mein",
+            "school_id": "default",
+            "user_id": "test-user",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "male"
+        }
+        
+        success, response = self.run_test("Tino Brain Query - Weak Students", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["message", "data", "action_taken"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+        
+        return success
+    
+    def test_tino_brain_query_teacher_performance(self):
+        """Test Tino Brain Query - Teacher Performance"""
+        data = {
+            "query": "teacher kaisa padha raha hai",
+            "school_id": "default",
+            "user_id": "test-user",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "male"
+        }
+        
+        success, response = self.run_test("Tino Brain Query - Teacher Performance", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["message", "data", "action_taken"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+        
+        return success
+
     def run_all_tests(self):
         """Run all API tests in sequence"""
         print("🚀 Starting Schooltino API Tests...")
