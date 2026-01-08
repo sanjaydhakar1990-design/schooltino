@@ -217,6 +217,12 @@ NAVIGATION_COMMANDS = {
         "response_male": "Leave Management khol raha hoon.",
         "response_female": "Leave Management khol rahi hoon."
     },
+    "admit_card": {
+        "keywords": ["admit card", "admitcard", "admit", "प्रवेश पत्र", "hall ticket", "exam card"],
+        "url": "/app/admit-cards",
+        "response_male": "Admit Card section khol raha hoon. Yahan se admit cards generate kar sakte ho.",
+        "response_female": "Admit Card section khol rahi hoon. Yahan se admit cards generate kar sakte ho."
+    },
     "gallery": {
         "keywords": ["gallery", "photos", "images", "गैलरी"],
         "url": "/app/gallery",
