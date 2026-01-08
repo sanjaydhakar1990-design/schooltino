@@ -420,6 +420,33 @@ export default function TinoBrainDashboard() {
                   </button>
                 ))}
               </div>
+              
+              {/* Class Intelligence Quick Actions */}
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <p className="text-xs text-slate-500 mb-3 flex items-center gap-1">
+                  <Brain className="w-3 h-3" />
+                  CLASS INTELLIGENCE - Ask about any class
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {[
+                    { label: 'Class Condition', query: 'Class 10 ki condition batao', icon: Target },
+                    { label: 'Weak Students', query: 'weak bachhe kaun hai Class 10 mein', icon: Users },
+                    { label: 'Teacher Rating', query: 'Teacher kaisa padha raha hai Class 10 mein', icon: User },
+                    { label: 'Syllabus Status', query: 'Syllabus kitna complete hua Class 10 mein', icon: BookOpen },
+                    { label: 'Class Ranking', query: 'Sabse achhi class kaun si hai', icon: TrendingUp },
+                    { label: 'Attendance Trend', query: 'Class 10 ki attendance kaisi hai', icon: CalendarCheck },
+                  ].map((action, idx) => (
+                    <button
+                      key={`class-${idx}`}
+                      onClick={() => quickQuery(action.query)}
+                      className="bg-indigo-50 text-indigo-700 p-3 rounded-lg hover:shadow-md transition-all text-left flex items-center gap-2"
+                    >
+                      <action.icon className="w-4 h-4" />
+                      <span className="font-medium text-xs">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
