@@ -38,7 +38,8 @@ import {
   DollarSign,
   Megaphone,
   Cpu,
-  Building
+  Building,
+  Award
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
