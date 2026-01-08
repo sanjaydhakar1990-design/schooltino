@@ -562,9 +562,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend UI Testing Complete"
-    - "All Major Features Tested"
-  stuck_tasks: []
+    - "Admit Card System"
+    - "Tino Brain Admit Card Command"
+    - "Marketing Page Phone Numbers"
+  stuck_tasks:
+    - "Tino Brain Admit Card Command"
+    - "Marketing Page Phone Numbers"
   test_all: false
   test_priority: "high_first"
 
