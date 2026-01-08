@@ -18,6 +18,7 @@ class SchooltinoAPITester:
         self.fee_plan_id = None
         self.invoice_id = None
         self.notice_id = None
+        self.exam_id = None  # For admit card tests
         self.tests_run = 0
         self.tests_passed = 0
         self.failed_tests = []
