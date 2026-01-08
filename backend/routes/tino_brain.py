@@ -682,12 +682,21 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         for h in reversed(history)
     ]
     
-    # Detect intent and get AI response
+    # Detect language from user's query if not specified or default
+    language = request.language
+    if not language or language == "hinglish":
+        # Auto-detect from query
+        detected_lang = detect_language_from_text(request.query)
+        language = detected_lang
+    
+    # Detect intent and get AI response with language and voice gender
     ai_response = await get_ai_response(
         request.query, 
         request.user_role, 
         context,
-        conversation_history
+        conversation_history,
+        language=language,
+        voice_gender=request.voice_gender
     )
     
     # Save conversation
@@ -698,6 +707,7 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         "user_role": request.user_role,
         "message": request.query,
         "is_user": True,
+        "language": language,
         "timestamp": datetime.now(timezone.utc).isoformat()
     })
     
@@ -708,6 +718,7 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         "user_role": request.user_role,
         "message": ai_response,
         "is_user": False,
+        "language": language,
         "timestamp": datetime.now(timezone.utc).isoformat()
     })
     
