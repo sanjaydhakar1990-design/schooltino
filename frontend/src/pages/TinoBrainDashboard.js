@@ -134,6 +134,14 @@ export default function TinoBrainDashboard() {
     setMessages(prev => [...prev, { type, text, data, time: new Date() }]);
   };
 
+  // Get current language from i18n
+  const getCurrentLanguage = () => {
+    const lang = localStorage.getItem('i18nextLng') || 'en';
+    if (lang === 'hi') return 'hindi';
+    if (lang === 'hinglish') return 'hinglish';
+    return 'english';
+  };
+
   const queryTinoBrain = async (query) => {
     setIsProcessing(true);
     
@@ -144,7 +152,8 @@ export default function TinoBrainDashboard() {
         user_id: user?.id || '',
         user_role: user?.role || 'director',
         user_name: user?.name || 'User',
-        voice_gender: voiceGender
+        voice_gender: voiceGender,
+        language: getCurrentLanguage()  // Pass current app language
       });
       
       const result = res.data;
