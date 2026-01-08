@@ -27,7 +27,7 @@ db = db_client[db_name]
 def get_database():
     return db
 
-router = APIRouter(prefix="/api/admit-card", tags=["Admit Card"])
+router = APIRouter(prefix="/admit-card", tags=["Admit Card"])
 
 # ============== MODELS ==============
 
