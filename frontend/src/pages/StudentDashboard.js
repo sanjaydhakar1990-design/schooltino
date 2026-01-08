@@ -25,10 +25,11 @@ import {
   FileText, CalendarDays, AlertTriangle, Loader2, Brain, 
   Send, CreditCard, Wallet, Mic, Phone, Lock, Home,
   Eye, Paperclip, Star, ClipboardList, MessageCircle, Users,
-  Trophy, Activity, AlertOctagon
+  Trophy, Activity, AlertOctagon, Award
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
+import AdmitCardSection from '../components/AdmitCardSection';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
