@@ -101,3 +101,118 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Schooltino.in को advance करना है - Tino AI को Alexa/Siri जैसा बनाना है।
+  Admin voice command से class intelligence पूछे तो Tino बता दे:
+  - Syllabus progress
+  - Attendance status  
+  - Weak students
+  - Teacher performance
+  Class-wise separate intelligence system होना चाहिए।
+
+backend:
+  - task: "Class Intelligence API"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/tino_brain.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /api/tino-brain/class-intelligence/{school_id}/{class_id} endpoint with syllabus, weak students, teacher performance"
+
+  - task: "Weak Students Detection"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/tino_brain.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added get_weak_students() function based on attendance, marks, behavior incidents"
+
+  - task: "Teacher Performance Tracking"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/tino_brain.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added get_teacher_performance() with syllabus completion, student marks, class management score"
+
+  - task: "Class Comparison API"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/tino_brain.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /api/tino-brain/class-comparison/{school_id} for ranking all classes"
+
+  - task: "CCTV Class Detection"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/tino_brain.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /api/tino-brain/class-intelligence/from-camera endpoint for CCTV-based class detection"
+
+  - task: "Enhanced AI Commands"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/tino_brain.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added handling for 'class ki condition', 'weak bachhe', 'teacher kaisa', 'syllabus kitna' queries"
+
+frontend:
+  - task: "Class Intelligence Quick Actions"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/TinoBrainDashboard.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added 6 new Class Intelligence quick action buttons"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Class Intelligence API"
+    - "Weak Students Detection"
+    - "Teacher Performance Tracking"
+    - "Enhanced AI Commands"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Added Class Intelligence System for Tino AI. New APIs: /class-intelligence/{school_id}/{class_id}, /class-comparison/{school_id}, /class-intelligence/from-camera. Please test these endpoints."
