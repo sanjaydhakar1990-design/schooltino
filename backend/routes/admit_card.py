@@ -12,7 +12,20 @@ from typing import Optional, List, Dict
 from datetime import datetime, timezone, date
 import uuid
 import os
-from database import get_database
+import sys
+
+sys.path.append('/app/backend')
+
+from motor.motor_asyncio import AsyncIOMotorClient
+
+# Database connection
+mongo_url = os.environ.get('MONGO_URL')
+db_name = os.environ.get('DB_NAME', 'test_database')
+db_client = AsyncIOMotorClient(mongo_url)
+db = db_client[db_name]
+
+def get_database():
+    return db
 
 router = APIRouter(prefix="/api/admit-card", tags=["Admit Card"])
 
