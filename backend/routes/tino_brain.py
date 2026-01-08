@@ -1198,3 +1198,522 @@ async def get_chat_sessions(user_id: str, school_id: str):
         "total_sessions": len(sessions)
     }
 
+
+# ============== CLASS INTELLIGENCE SYSTEM ==============
+# Admin walks into class, asks "Is class ki condition batao" → Tino tells everything
+
+class ClassIntelligenceRequest(BaseModel):
+    school_id: str
+    class_id: Optional[str] = None
+    class_name: Optional[str] = None
+    camera_id: Optional[str] = None  # CCTV se class detect kare
+    user_id: str
+    user_role: str = "director"
+
+class TeacherPerformanceMetrics(BaseModel):
+    teacher_id: str
+    teacher_name: str
+    subjects: List[str]
+    syllabus_completion: float  # percentage
+    average_class_attendance: float
+    student_performance: float  # average marks
+    class_management_score: float  # based on incidents/complaints
+    rating: str  # excellent, good, needs_improvement, poor
+
+async def get_class_from_camera(camera_id: str, school_id: str, db) -> Optional[str]:
+    """Get class_id from CCTV camera location"""
+    camera = await db.cctv_devices.find_one({
+        "camera_id": camera_id,
+        "school_id": school_id
+    })
+    if camera:
+        return camera.get("class_id") or camera.get("location_class_id")
+    return None
+
+async def get_syllabus_progress(school_id: str, class_id: str, db) -> Dict:
+    """Get detailed syllabus progress for a class - subject wise"""
+    progress_data = await db.syllabus_progress.find({
+        "school_id": school_id,
+        "class_id": class_id
+    }).to_list(100)
+    
+    # Group by subject
+    subject_progress = {}
+    for p in progress_data:
+        subject = p.get("subject", "Unknown")
+        if subject not in subject_progress:
+            subject_progress[subject] = {
+                "subject": subject,
+                "total_chapters": 0,
+                "completed_chapters": 0,
+                "percentage": 0,
+                "teacher_name": p.get("teacher_name", ""),
+                "last_updated": p.get("updated_at", "")
+            }
+        subject_progress[subject]["total_chapters"] += 1
+        if p.get("status") == "completed":
+            subject_progress[subject]["completed_chapters"] += 1
+    
+    # Calculate percentages
+    for subject in subject_progress:
+        total = subject_progress[subject]["total_chapters"]
+        completed = subject_progress[subject]["completed_chapters"]
+        subject_progress[subject]["percentage"] = round((completed / total * 100), 1) if total > 0 else 0
+    
+    overall = sum(s["percentage"] for s in subject_progress.values()) / len(subject_progress) if subject_progress else 0
+    
+    return {
+        "subjects": list(subject_progress.values()),
+        "overall_percentage": round(overall, 1),
+        "behind_subjects": [s["subject"] for s in subject_progress.values() if s["percentage"] < 50]
+    }
+
+async def get_weak_students(school_id: str, class_id: str, db) -> Dict:
+    """Identify weak students based on attendance, marks, and behavior"""
+    students = await db.students.find({
+        "school_id": school_id,
+        "class_id": class_id,
+        "is_active": True
+    }).to_list(100)
+    
+    weak_students = []
+    at_risk_students = []
+    excellent_students = []
+    
+    for student in students:
+        student_id = student.get("id")
+        
+        # Get attendance
+        attendance = await db.attendance.find({
+            "student_id": student_id
+        }).to_list(100)
+        present = sum(1 for a in attendance if a.get("status") == "present")
+        attendance_rate = (present / len(attendance) * 100) if attendance else 100
+        
+        # Get marks/results
+        results = await db.results.find({
+            "student_id": student_id
+        }).to_list(50)
+        avg_marks = sum(r.get("marks", 0) for r in results) / len(results) if results else 50
+        
+        # Get behavior incidents
+        incidents = await db.tino_alerts.count_documents({
+            "related_ids": student_id,
+            "priority": {"$in": ["critical", "high"]}
+        })
+        
+        # Calculate overall score
+        score = (attendance_rate * 0.3) + (avg_marks * 0.5) + ((100 - incidents * 10) * 0.2)
+        score = max(0, min(100, score))
+        
+        student_info = {
+            "id": student_id,
+            "name": student.get("name", "Unknown"),
+            "roll_no": student.get("roll_no", ""),
+            "attendance_rate": round(attendance_rate, 1),
+            "avg_marks": round(avg_marks, 1),
+            "incidents": incidents,
+            "overall_score": round(score, 1)
+        }
+        
+        if score < 40:
+            student_info["reason"] = []
+            if attendance_rate < 60:
+                student_info["reason"].append("कम attendance")
+            if avg_marks < 40:
+                student_info["reason"].append("कम marks")
+            if incidents > 2:
+                student_info["reason"].append("behavior issues")
+            weak_students.append(student_info)
+        elif score < 60:
+            at_risk_students.append(student_info)
+        elif score > 85:
+            excellent_students.append(student_info)
+    
+    return {
+        "weak_students": weak_students,
+        "weak_count": len(weak_students),
+        "at_risk_students": at_risk_students,
+        "at_risk_count": len(at_risk_students),
+        "excellent_students": excellent_students[:5],  # Top 5
+        "excellent_count": len(excellent_students)
+    }
+
+async def get_teacher_performance(school_id: str, class_id: str, db) -> Dict:
+    """Get teacher performance for the class"""
+    # Get class teachers
+    class_info = await db.classes.find_one({"id": class_id})
+    
+    # Get subject allocations for this class
+    allocations = await db.subject_allocations.find({
+        "school_id": school_id,
+        "class_id": class_id
+    }).to_list(50)
+    
+    teachers_performance = []
+    
+    for alloc in allocations:
+        teacher_id = alloc.get("teacher_id")
+        teacher = await db.users.find_one({"id": teacher_id})
+        if not teacher:
+            continue
+        
+        # Get syllabus completion
+        syllabus = await db.syllabus_progress.find({
+            "school_id": school_id,
+            "class_id": class_id,
+            "teacher_id": teacher_id
+        }).to_list(50)
+        total_chapters = len(syllabus)
+        completed = sum(1 for s in syllabus if s.get("status") == "completed")
+        syllabus_completion = (completed / total_chapters * 100) if total_chapters > 0 else 0
+        
+        # Get student results in teacher's subjects
+        results = await db.results.find({
+            "school_id": school_id,
+            "class_id": class_id,
+            "subject": alloc.get("subject")
+        }).to_list(100)
+        avg_student_marks = sum(r.get("marks", 0) for r in results) / len(results) if results else 50
+        
+        # Get complaints against teacher
+        complaints = await db.complaints.count_documents({
+            "school_id": school_id,
+            "against_id": teacher_id,
+            "status": {"$ne": "resolved"}
+        })
+        
+        # Calculate class management score
+        class_management = max(0, 100 - complaints * 20)
+        
+        # Overall rating
+        overall = (syllabus_completion * 0.4) + (avg_student_marks * 0.4) + (class_management * 0.2)
+        
+        if overall >= 80:
+            rating = "excellent"
+            rating_hindi = "बहुत अच्छा पढ़ा रहे हैं 👍"
+        elif overall >= 60:
+            rating = "good"
+            rating_hindi = "अच्छा पढ़ा रहे हैं"
+        elif overall >= 40:
+            rating = "needs_improvement"
+            rating_hindi = "syllabus पीछे चल रहा है"
+        else:
+            rating = "poor"
+            rating_hindi = "class manage नहीं कर पा रहे 😟"
+        
+        teachers_performance.append({
+            "teacher_id": teacher_id,
+            "teacher_name": teacher.get("name", "Unknown"),
+            "subject": alloc.get("subject"),
+            "syllabus_completion": round(syllabus_completion, 1),
+            "avg_student_marks": round(avg_student_marks, 1),
+            "class_management_score": class_management,
+            "overall_score": round(overall, 1),
+            "rating": rating,
+            "rating_hindi": rating_hindi,
+            "complaints": complaints
+        })
+    
+    # Sort by overall score
+    teachers_performance.sort(key=lambda x: x["overall_score"], reverse=True)
+    
+    return {
+        "teachers": teachers_performance,
+        "best_teacher": teachers_performance[0] if teachers_performance else None,
+        "needs_attention": [t for t in teachers_performance if t["rating"] in ["needs_improvement", "poor"]]
+    }
+
+async def get_class_attendance_analysis(school_id: str, class_id: str, db) -> Dict:
+    """Detailed attendance analysis for class"""
+    today = date.today().isoformat()
+    
+    # Today's attendance
+    today_attendance = await db.attendance.find({
+        "school_id": school_id,
+        "class_id": class_id,
+        "date": today
+    }).to_list(100)
+    
+    present_today = sum(1 for a in today_attendance if a.get("status") == "present")
+    total_today = len(today_attendance)
+    
+    # Last 7 days trend
+    week_ago = (date.today() - timedelta(days=7)).isoformat()
+    week_attendance = await db.attendance.find({
+        "school_id": school_id,
+        "class_id": class_id,
+        "date": {"$gte": week_ago}
+    }).to_list(1000)
+    
+    present_week = sum(1 for a in week_attendance if a.get("status") == "present")
+    total_week = len(week_attendance)
+    
+    # Chronic absentees (absent > 3 times this week)
+    student_absences = {}
+    for a in week_attendance:
+        if a.get("status") == "absent":
+            sid = a.get("student_id")
+            student_absences[sid] = student_absences.get(sid, 0) + 1
+    
+    chronic_absentees = []
+    for sid, count in student_absences.items():
+        if count >= 3:
+            student = await db.students.find_one({"id": sid})
+            chronic_absentees.append({
+                "id": sid,
+                "name": student.get("name") if student else "Unknown",
+                "absent_days": count
+            })
+    
+    return {
+        "today": {
+            "present": present_today,
+            "absent": total_today - present_today,
+            "total": total_today,
+            "percentage": round((present_today / total_today * 100), 1) if total_today > 0 else 0
+        },
+        "week_average": round((present_week / total_week * 100), 1) if total_week > 0 else 0,
+        "chronic_absentees": chronic_absentees,
+        "attendance_marked": total_today > 0
+    }
+
+@router.get("/class-intelligence/{school_id}/{class_id}")
+async def get_class_intelligence(school_id: str, class_id: str):
+    """
+    🧠 COMPREHENSIVE CLASS INTELLIGENCE
+    Admin walks into class → Asks "Is class ki condition batao"
+    → Tino gives complete report
+    """
+    db = get_database()
+    
+    # Get class info
+    class_info = await db.classes.find_one({"id": class_id})
+    if not class_info:
+        # Try finding by name
+        class_info = await db.classes.find_one({
+            "school_id": school_id,
+            "name": {"$regex": class_id, "$options": "i"}
+        })
+    
+    class_name = class_info.get("name", class_id) if class_info else class_id
+    class_id = class_info.get("id", class_id) if class_info else class_id
+    
+    # Get all intelligence data
+    syllabus = await get_syllabus_progress(school_id, class_id, db)
+    weak_students = await get_weak_students(school_id, class_id, db)
+    teacher_perf = await get_teacher_performance(school_id, class_id, db)
+    attendance = await get_class_attendance_analysis(school_id, class_id, db)
+    
+    # Student count
+    total_students = await db.students.count_documents({
+        "school_id": school_id,
+        "class_id": class_id,
+        "is_active": True
+    })
+    
+    # Generate AI Summary in Hinglish
+    summary_parts = []
+    
+    # Attendance summary
+    if attendance["today"]["total"] > 0:
+        summary_parts.append(f"📊 आज {attendance['today']['present']}/{attendance['today']['total']} students present हैं ({attendance['today']['percentage']}%)")
+    else:
+        summary_parts.append("⚠️ आज attendance अभी नहीं लगी है")
+    
+    # Syllabus summary
+    summary_parts.append(f"📚 Overall syllabus {syllabus['overall_percentage']}% complete है")
+    if syllabus['behind_subjects']:
+        summary_parts.append(f"   ⚠️ {', '.join(syllabus['behind_subjects'])} में syllabus पीछे है")
+    
+    # Weak students
+    if weak_students['weak_count'] > 0:
+        summary_parts.append(f"📉 {weak_students['weak_count']} students weak हैं")
+        for ws in weak_students['weak_students'][:3]:
+            reasons = ", ".join(ws.get("reason", []))
+            summary_parts.append(f"   - {ws['name']}: {reasons}")
+    else:
+        summary_parts.append("✅ कोई weak student नहीं है!")
+    
+    # Teacher performance
+    if teacher_perf['needs_attention']:
+        for t in teacher_perf['needs_attention']:
+            summary_parts.append(f"👨‍🏫 {t['teacher_name']} ({t['subject']}): {t['rating_hindi']}")
+    
+    if teacher_perf['best_teacher']:
+        bt = teacher_perf['best_teacher']
+        summary_parts.append(f"🌟 Best Teacher: {bt['teacher_name']} ({bt['subject']}) - {bt['rating_hindi']}")
+    
+    return {
+        "class_id": class_id,
+        "class_name": class_name,
+        "total_students": total_students,
+        "summary": "\n".join(summary_parts),
+        "attendance": attendance,
+        "syllabus": syllabus,
+        "weak_students": weak_students,
+        "teacher_performance": teacher_perf,
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+@router.post("/class-intelligence/from-camera")
+async def get_class_intelligence_from_camera(request: ClassIntelligenceRequest):
+    """
+    🎥 CCTV-Based Class Detection
+    Admin is detected at a CCTV camera → System identifies which class
+    → Returns that class's complete intelligence
+    """
+    db = get_database()
+    
+    class_id = request.class_id
+    
+    # If camera_id provided, detect class from camera location
+    if request.camera_id and not class_id:
+        class_id = await get_class_from_camera(request.camera_id, request.school_id, db)
+    
+    # If class_name provided, find class_id
+    if request.class_name and not class_id:
+        class_info = await db.classes.find_one({
+            "school_id": request.school_id,
+            "name": {"$regex": request.class_name, "$options": "i"}
+        })
+        if class_info:
+            class_id = class_info.get("id")
+    
+    if not class_id:
+        return {
+            "error": True,
+            "message": "Class identify नहीं हो पाई। Please class name बताएं।",
+            "hint": "Example: 'Class 10-A ki condition batao'"
+        }
+    
+    # Get full class intelligence
+    intelligence = await get_class_intelligence(request.school_id, class_id)
+    
+    return intelligence
+
+@router.get("/class-comparison/{school_id}")
+async def get_class_comparison(school_id: str):
+    """Compare all classes - who's doing best, who needs attention"""
+    db = get_database()
+    
+    classes = await db.classes.find({"school_id": school_id}).to_list(50)
+    
+    class_rankings = []
+    for cls in classes:
+        class_id = cls.get("id")
+        
+        # Quick metrics
+        student_count = await db.students.count_documents({
+            "school_id": school_id,
+            "class_id": class_id,
+            "is_active": True
+        })
+        
+        # Today's attendance
+        today = date.today().isoformat()
+        attendance = await db.attendance.find({
+            "school_id": school_id,
+            "class_id": class_id,
+            "date": today
+        }).to_list(100)
+        present = sum(1 for a in attendance if a.get("status") == "present")
+        att_rate = (present / len(attendance) * 100) if attendance else 0
+        
+        # Syllabus
+        syllabus = await db.syllabus_progress.find({
+            "school_id": school_id,
+            "class_id": class_id
+        }).to_list(100)
+        completed = sum(1 for s in syllabus if s.get("status") == "completed")
+        syllabus_rate = (completed / len(syllabus) * 100) if syllabus else 0
+        
+        # Overall score
+        score = (att_rate * 0.4) + (syllabus_rate * 0.6)
+        
+        class_rankings.append({
+            "class_id": class_id,
+            "class_name": cls.get("name"),
+            "student_count": student_count,
+            "attendance_rate": round(att_rate, 1),
+            "syllabus_completion": round(syllabus_rate, 1),
+            "overall_score": round(score, 1),
+            "class_teacher": cls.get("class_teacher")
+        })
+    
+    # Sort by overall score
+    class_rankings.sort(key=lambda x: x["overall_score"], reverse=True)
+    
+    # Add rank
+    for i, c in enumerate(class_rankings):
+        c["rank"] = i + 1
+    
+    return {
+        "rankings": class_rankings,
+        "best_class": class_rankings[0] if class_rankings else None,
+        "needs_attention": [c for c in class_rankings if c["overall_score"] < 50]
+    }
+
+# ============== ENHANCED AI QUERY FOR CLASS INTELLIGENCE ==============
+
+async def handle_class_intelligence_query(query: str, school_id: str, db) -> Dict:
+    """
+    Handle natural language queries about class condition
+    Examples:
+    - "Is class ki condition batao"
+    - "Class 10 ka status kya hai"
+    - "Weak bachhe kaun hai"
+    - "Teacher kaisa padha raha hai"
+    """
+    query_lower = query.lower()
+    
+    # Extract class name from query
+    class_patterns = [
+        r"class\s*(\d+)[- ]?([a-zA-Z])?",
+        r"कक्षा\s*(\d+)",
+        r"(\d+)(th|st|nd|rd)?\s*(class|कक्षा)",
+    ]
+    
+    import re
+    class_id = None
+    class_name = None
+    
+    for pattern in class_patterns:
+        match = re.search(pattern, query_lower)
+        if match:
+            class_num = match.group(1)
+            section = match.group(2) if len(match.groups()) > 1 and match.group(2) else ""
+            class_name = f"Class {class_num}"
+            if section:
+                class_name += f"-{section.upper()}"
+            break
+    
+    # Find class in database
+    if class_name:
+        class_info = await db.classes.find_one({
+            "school_id": school_id,
+            "name": {"$regex": class_name, "$options": "i"}
+        })
+        if class_info:
+            class_id = class_info.get("id")
+    
+    if not class_id:
+        # Check if "is class" or "yahan" implies current location
+        if any(k in query_lower for k in ["is class", "yahan", "यहां", "इस class", "current class"]):
+            return {
+                "need_class_context": True,
+                "message": "Kaunsi class ki baat kar rahe ho? Class ka naam batao ya CCTV se detect karo.",
+                "hint": "Example: 'Class 10-A ki condition batao'"
+            }
+    
+    if class_id:
+        # Get full intelligence
+        intelligence = await get_class_intelligence(school_id, class_id)
+        return {
+            "class_intelligence": intelligence,
+            "message": intelligence.get("summary"),
+            "data": intelligence
+        }
+    
+    return {"error": True, "message": "Class identify nahi ho payi"}
+
