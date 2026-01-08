@@ -495,7 +495,7 @@ export default function SchoolRegistrationForm() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+91 9876543210"
+                  placeholder="+91 7879967616"
                 />
               </div>
               <div className="space-y-2">
@@ -520,7 +520,7 @@ export default function SchoolRegistrationForm() {
                   name="whatsapp_number"
                   value={formData.whatsapp_number}
                   onChange={handleChange}
-                  placeholder="+91 9876543210"
+                  placeholder="+91 7879967616"
                 />
               </div>
               <div className="space-y-2">

@@ -505,7 +505,7 @@ export default function LoginPage() {
                             name="mobile"
                             value={studentForm.mobile}
                             onChange={handleStudentChange}
-                            placeholder="9876543210"
+                            placeholder="7879967616"
                             required
                             className="h-12"
                             data-testid="student-mobile"

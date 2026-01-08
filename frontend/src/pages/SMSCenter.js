@@ -187,7 +187,7 @@ export default function SMSCenter() {
                 <Input
                   value={form.mobile}
                   onChange={(e) => setForm(f => ({ ...f, mobile: e.target.value }))}
-                  placeholder="9876543210"
+                  placeholder="7879967616"
                   required
                 />
               </div>
