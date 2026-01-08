@@ -569,7 +569,7 @@ class SchooltinoAPITester:
     
     def test_transport_vehicles(self):
         """Test Transport Management - Vehicles"""
-        return self.run_test("Transport Vehicles", "GET", "transport/vehicles/SCH-C497AFE7", 200)[0]
+        return self.run_test("Transport Vehicles", "GET", "transport/vehicles?school_id=SCH-C497AFE7", 200)[0]
     
     def test_health_records(self):
         """Test Health Module - Records"""
