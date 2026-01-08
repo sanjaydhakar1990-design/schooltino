@@ -457,10 +457,12 @@ async def check_status():
         "stt_available": stt_client is not None,
         "ai_available": openai_client is not None,
         "voices": {
-            "male": {"id": VOICE_IDS["male"], "name": "Daniel (Hindi)"},
-            "female": {"id": VOICE_IDS["female"], "name": "Matilda (Hindi)"}
+            "male": {"id": VOICE_IDS["male"], "name": "Liam (Multilingual)"},
+            "female": {"id": VOICE_IDS["female"], "name": "Sarah (Multilingual)"}
         },
-        "message": "Tino AI ready!"
+        "voice_options": VOICE_OPTIONS,
+        "model": ELEVENLABS_MODEL,
+        "message": "Tino AI ready with best multilingual voices!"
     }
 
 
