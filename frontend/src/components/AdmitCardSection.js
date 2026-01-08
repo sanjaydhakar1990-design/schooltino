@@ -20,19 +20,27 @@ const AdmitCardSection = ({ studentId, schoolId }) => {
   const [showPayment, setShowPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(null);
   const printRef = useRef();
 
   useEffect(() => {
-    fetchAdmitCards();
+    if (studentId && schoolId) {
+      fetchAdmitCards();
+    } else {
+      setLoading(false);
+      setError('Student या School ID नहीं मिली');
+    }
   }, [studentId, schoolId]);
 
   const fetchAdmitCards = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const res = await axios.get(`${API}/admit-card/student/${schoolId}/${studentId}`);
       setAdmitCards(res.data.admit_cards || []);
     } catch (err) {
       console.error('Error fetching admit cards:', err);
-      toast.error('Admit cards load नहीं हो पाए');
+      setError('Admit cards load नहीं हो पाए। शायद अभी कोई exam नहीं है।');
     } finally {
       setLoading(false);
     }
