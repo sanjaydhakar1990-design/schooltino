@@ -565,7 +565,7 @@ class SchooltinoAPITester:
     
     def test_front_office_visitors(self):
         """Test Front Office - Today's Visitors"""
-        return self.run_test("Front Office Visitors", "GET", "front-office/visitors/today/SCH-C497AFE7", 200)[0]
+        return self.run_test("Front Office Visitors", "GET", "front-office/visitors/today?school_id=SCH-C497AFE7", 200)[0]
     
     def test_transport_vehicles(self):
         """Test Transport Management - Vehicles"""
