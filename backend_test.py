@@ -976,9 +976,23 @@ class SchooltinoAPITester:
         print("🚀 Starting Schooltino API Tests...")
         print(f"📍 Base URL: {self.base_url}")
         
-        # Test sequence - Focus on Language & Voice System as requested
+        # Test sequence - Focus on NEW ADMIT CARD SYSTEM and requested features
         tests = [
             ("Health Check", self.test_health_check),
+            
+            # ============== ADMIT CARD SYSTEM TESTS ==============
+            ("Admit Card Settings - GET", self.test_admit_card_settings_get),
+            ("Admit Card Settings - POST", self.test_admit_card_settings_post),
+            ("Admit Card Exam - CREATE", self.test_admit_card_exam_create),
+            ("Admit Card Exams - GET", self.test_admit_card_exams_get),
+            ("Tino Brain - Admit Card Command", self.test_tino_brain_admit_card_command),
+            
+            # ============== SCHOOL AUTO SETUP TESTS ==============
+            ("School Setup Status", self.test_school_setup_status),
+            ("School Setup - Extract Website", self.test_school_setup_extract_website),
+            
+            # ============== MARKETING PAGE VERIFICATION ==============
+            ("Marketing Page Phone Number", self.test_marketing_page_phone_number),
             
             # ============== LANGUAGE & VOICE SYSTEM TESTS ==============
             ("Tino Brain - Pure Hindi Query", self.test_tino_brain_hindi_query),
