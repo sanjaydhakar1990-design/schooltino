@@ -592,16 +592,62 @@ class SchooltinoAPITester:
         print("🚀 Starting Schooltino API Tests...")
         print(f"📍 Base URL: {self.base_url}")
         
-        # Test sequence - Focus on Tino Brain APIs as requested
+        # Test sequence - Focus on Major Schooltino Features as requested
         tests = [
             ("Health Check", self.test_health_check),
+            
+            # AI Greeting System (CCTV Gate Greeting)
+            ("AI Greeting - Parent Detection", self.test_ai_greeting_detect),
+            ("AI Greeting - Staff Detection", self.test_ai_greeting_staff),
+            ("AI Greeting Settings", self.test_ai_greeting_settings),
+            
+            # Director Greeting System
+            ("Director Greeting", self.test_director_greeting),
+            
+            # Tino Brain AI
             ("Tino Brain Status", self.test_tino_brain_status),
+            ("Tino Brain - General Query", self.test_tino_brain_query_general),
+            ("Tino Brain - Class 10 Intelligence", self.test_tino_brain_class_intelligence_specific),
+            
+            # Voice Assistant
+            ("Voice Assistant Status", self.test_voice_assistant_status),
+            ("Voice Assistant TTS", self.test_voice_assistant_tts),
+            
+            # Face Recognition System
+            ("Face Recognition Status", self.test_face_recognition_status),
+            ("Face Recognition Devices", self.test_face_recognition_devices),
+            
+            # Fee Management
+            ("Fee Payment Structure", self.test_fee_payment_structure),
+            
+            # AI Accountant
+            ("AI Accountant Dashboard", self.test_ai_accountant_dashboard),
+            
+            # Front Office / Visitor Management
+            ("Front Office Visitors", self.test_front_office_visitors),
+            
+            # Transport Management
+            ("Transport Vehicles", self.test_transport_vehicles),
+            
+            # Health Module
+            ("Health Records", self.test_health_records),
+            
+            # Biometric System
+            ("Biometric Devices", self.test_biometric_devices),
+            
+            # Syllabus System
+            ("Syllabus Boards", self.test_syllabus_boards),
+            ("NCERT Syllabus Class 10", self.test_syllabus_ncert),
+            
+            # Previous Tino Brain Tests
             ("Class Intelligence API", self.test_class_intelligence_api),
             ("Class Comparison API", self.test_class_comparison_api),
             ("CCTV Class Detection API", self.test_cctv_class_detection_api),
             ("Tino Brain Query - Class Condition", self.test_tino_brain_query_class_condition),
             ("Tino Brain Query - Weak Students", self.test_tino_brain_query_weak_students),
             ("Tino Brain Query - Teacher Performance", self.test_tino_brain_query_teacher_performance),
+            
+            # Basic Auth & CRUD Tests (Optional)
             ("User Registration", self.test_register),
             ("User Login", self.test_login),
             ("Get Current User", self.test_get_me),
