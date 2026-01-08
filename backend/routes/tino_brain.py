@@ -701,13 +701,79 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         data = {"active_alerts": alerts, "count": len(alerts)}
         action_taken = "check_alerts"
     
-    # 11. CLASS STATUS
+    # 11. CLASS INTELLIGENCE - COMPREHENSIVE CLASS STATUS 🧠
+    elif any(k in query_lower for k in ["class ki condition", "class condition", "class ka status", "is class", "yahan ki condition", "class intelligence", "class report"]):
+        # Extract class from query and get full intelligence
+        result = await handle_class_intelligence_query(query_lower, request.school_id, db)
+        if result.get("class_intelligence"):
+            data = result["class_intelligence"]
+            ai_response = result["message"]  # Use the comprehensive summary
+            action_taken = "class_intelligence_fetched"
+        else:
+            data = result
+    
+    # 12. WEAK STUDENTS QUERY
+    elif any(k in query_lower for k in ["weak student", "weak bachhe", "kamzor", "kisko help", "peeche hai"]):
+        # Get class from query or show all
+        result = await handle_class_intelligence_query(query_lower, request.school_id, db)
+        if result.get("class_intelligence"):
+            weak_data = result["class_intelligence"].get("weak_students", {})
+            data = weak_data
+            if weak_data.get("weak_count", 0) > 0:
+                weak_list = "\n".join([f"• {s['name']} - {', '.join(s.get('reason', []))}" for s in weak_data.get("weak_students", [])[:5]])
+                ai_response = f"📉 {weak_data['weak_count']} weak students:\n{weak_list}"
+            else:
+                ai_response = "✅ Is class mein koi weak student nahi hai!"
+            action_taken = "weak_students_fetched"
+        else:
+            data = result
+    
+    # 13. TEACHER PERFORMANCE QUERY
+    elif any(k in query_lower for k in ["teacher kaisa", "teacher performance", "kaun achha padha", "teacher ki rating", "syllabus kaisa"]):
+        result = await handle_class_intelligence_query(query_lower, request.school_id, db)
+        if result.get("class_intelligence"):
+            teacher_data = result["class_intelligence"].get("teacher_performance", {})
+            data = teacher_data
+            teacher_summary = []
+            for t in teacher_data.get("teachers", [])[:5]:
+                teacher_summary.append(f"• {t['teacher_name']} ({t['subject']}): {t['rating_hindi']} - Syllabus {t['syllabus_completion']}%")
+            ai_response = "👨‍🏫 Teacher Performance:\n" + "\n".join(teacher_summary)
+            action_taken = "teacher_performance_fetched"
+        else:
+            data = result
+    
+    # 14. SYLLABUS PROGRESS QUERY
+    elif any(k in query_lower for k in ["syllabus kitna", "syllabus complete", "course kahan", "padhai kahan tak"]):
+        result = await handle_class_intelligence_query(query_lower, request.school_id, db)
+        if result.get("class_intelligence"):
+            syllabus_data = result["class_intelligence"].get("syllabus", {})
+            data = syllabus_data
+            subject_summary = []
+            for s in syllabus_data.get("subjects", []):
+                status = "✅" if s['percentage'] >= 70 else "⚠️" if s['percentage'] >= 50 else "❌"
+                subject_summary.append(f"{status} {s['subject']}: {s['percentage']}%")
+            ai_response = f"📚 Syllabus Status (Overall: {syllabus_data.get('overall_percentage', 0)}%):\n" + "\n".join(subject_summary)
+            action_taken = "syllabus_status_fetched"
+        else:
+            data = result
+    
+    # 15. CLASS COMPARISON
+    elif any(k in query_lower for k in ["class compare", "sabse achhi class", "best class", "class ranking"]):
+        result = await get_class_comparison(request.school_id)
+        data = result
+        ranking_text = []
+        for c in result.get("rankings", [])[:5]:
+            ranking_text.append(f"{c['rank']}. {c['class_name']} - Score: {c['overall_score']}% (Attendance: {c['attendance_rate']}%)")
+        ai_response = "🏆 Class Rankings:\n" + "\n".join(ranking_text)
+        action_taken = "class_comparison_fetched"
+    
+    # 16. BASIC CLASS STATUS
     elif any(k in query_lower for k in ["class status", "class ka", "class mein", "kitne students"]):
         result = await get_class_status(query_lower, request.school_id, db)
         data = result
         action_taken = "class_status_fetched"
     
-    # 12. CREATE ALERT
+    # 17. CREATE ALERT
     elif any(k in query_lower for k in ["alert banao", "alert create", "warning do", "emergency alert"]):
         result = await create_smart_alert(query_lower, request.school_id, db)
         data = result
