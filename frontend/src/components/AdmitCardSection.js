@@ -108,6 +108,17 @@ const AdmitCardSection = ({ studentId, schoolId }) => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <span className="ml-3 text-gray-600">Loading...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+        <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+        <p className="text-amber-800 font-medium">{error}</p>
+        <p className="text-sm text-amber-600 mt-2">Admin से संपर्क करें या बाद में try करें</p>
       </div>
     );
   }
