@@ -308,6 +308,7 @@ function AppRoutes() {
         <Route path="tino-brain" element={<TinoBrainDashboard />} />
         <Route path="multi-year-fees" element={<MultiYearFeesPage />} />
         <Route path="salary" element={<SalaryTrackingPage />} />
+        <Route path="admit-cards" element={<AdmitCardManagement />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
