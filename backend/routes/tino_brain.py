@@ -536,7 +536,7 @@ async def get_ai_response(query: str, role: str, context: Dict, conversation_his
         )
         
         # Add context
-        system_prompt += f"\n\nCurrent School Status:\n"
+        system_prompt += "\n\nCurrent School Status:\n"
         system_prompt += f"- Total Students: {context.get('total_students', 0)}\n"
         system_prompt += f"- Total Staff: {context.get('total_staff', 0)}\n"
         system_prompt += f"- Today's Attendance: {context.get('today_attendance', {}).get('percentage', 0)}%\n"
@@ -544,7 +544,7 @@ async def get_ai_response(query: str, role: str, context: Dict, conversation_his
         system_prompt += f"- Active Alerts: {context.get('active_alerts', 0)}\n"
         
         if context.get("recent_events"):
-            system_prompt += f"\nRecent CCTV Events:\n"
+            system_prompt += "\nRecent CCTV Events:\n"
             for event in context.get("recent_events", []):
                 system_prompt += f"- {event.get('type')} at {event.get('location')}\n"
         
