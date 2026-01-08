@@ -877,6 +877,18 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         action_taken = "alert_created"
         execution_results.append(f"✅ Alert created: {result.get('title', 'New Alert')}")
     
+    # 18. ADMIT CARD GENERATION
+    elif any(k in query_lower for k in ["admit card", "admitcard", "प्रवेश पत्र", "hall ticket"]):
+        from routes.admit_card import ai_generate_admit_cards
+        result = await ai_generate_admit_cards(query_lower, request.school_id, db)
+        data = result
+        if result.get("success"):
+            ai_response = result.get("message", "Admit cards generated!")
+            action_taken = "admit_cards_generated"
+            execution_results.append(f"✅ {result.get('generated', 0)} Admit Cards Generated")
+        else:
+            ai_response = result.get("message", "Admit card generation failed")
+    
     # Add execution results to AI response if actions were taken
     if execution_results:
         ai_response = ai_response + "\n\n" + "\n".join(execution_results)
