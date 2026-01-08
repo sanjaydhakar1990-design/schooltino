@@ -42,17 +42,36 @@ ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
 
-# ElevenLabs Hindi Voice IDs - TESTED for Hindi
+# ElevenLabs Best Multilingual Voices - Optimized for Hindi/English/Hinglish
+# Using eleven_multilingual_v2 model for best language support
 VOICE_IDS = {
-    "male": "onwK4e9ZLuTAKqWW03F9",      # Daniel - Hindi compatible male
-    "female": "XrExE9yKIg1WjnnlVkGX"     # Matilda - Hindi compatible female  
+    # Best all-rounder multilingual voices
+    "male": "TX3LPaxmHKxFdv7VOQHJ",        # Liam - Best multilingual male (clear Hindi/English)
+    "female": "EXAVITQu4vr4xnSDxMaL"       # Sarah - Best multilingual female (expressive, natural)
 }
 
-# Fallback voices
+# Alternative voices for different styles
+VOICE_OPTIONS = {
+    "male": {
+        "default": "TX3LPaxmHKxFdv7VOQHJ",      # Liam - Multilingual, professional
+        "conversational": "IKne3meq5aSn9XLyUdCD", # Charlie - Friendly, conversational
+        "deep": "pNInz6obpgDQGcFmaJgB",          # Adam - Deep, authoritative
+    },
+    "female": {
+        "default": "EXAVITQu4vr4xnSDxMaL",      # Sarah - Natural, expressive
+        "soft": "XrExE9yKIg1WjnnlVkGX",          # Matilda - Soft, warm
+        "energetic": "jBpfuIE2acCO8z3wKNLl",     # Gigi - Energetic, youthful
+    }
+}
+
+# Fallback voices if primary don't work
 FALLBACK_VOICES = {
     "male": "pNInz6obpgDQGcFmaJgB",      # Adam
     "female": "21m00Tcm4TlvDq8ikWAM"     # Rachel
 }
+
+# Model for best multilingual support
+ELEVENLABS_MODEL = "eleven_multilingual_v2"  # Best for Hindi/English/Hinglish
 
 # Initialize clients
 eleven_client = None
