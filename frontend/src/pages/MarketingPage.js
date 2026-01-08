@@ -519,7 +519,7 @@ const MarketingPage = () => {
               className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all"
             >
               <Phone className="w-6 h-6" />
-              Call: +91 98765 43210
+              Call: +91 78799 67616
             </a>
           </div>
         </div>
@@ -545,7 +545,7 @@ const MarketingPage = () => {
               </a>
               <a href="tel:+917879967616" className="hover:text-white transition-colors flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                +91 98765 43210
+                +91 78799 67616
               </a>
             </div>
           </div>
