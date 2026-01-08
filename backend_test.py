@@ -577,7 +577,7 @@ class SchooltinoAPITester:
     
     def test_biometric_devices(self):
         """Test Biometric System - Devices"""
-        return self.run_test("Biometric Devices", "GET", "biometric/devices/SCH-C497AFE7", 200)[0]
+        return self.run_test("Biometric Devices", "GET", "biometric/devices?school_id=SCH-C497AFE7", 200)[0]
     
     def test_syllabus_boards(self):
         """Test Syllabus System - Boards"""
