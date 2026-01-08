@@ -58,6 +58,7 @@ import TinoBrainDashboard from './pages/TinoBrainDashboard';
 import MarketingPage from './pages/MarketingPage';
 import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
+import AdmitCardManagement from './pages/AdmitCardManagement';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
