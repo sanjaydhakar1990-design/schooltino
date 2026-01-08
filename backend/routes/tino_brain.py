@@ -881,25 +881,38 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
     if execution_results:
         ai_response = ai_response + "\n\n" + "\n".join(execution_results)
     
-    # Generate audio response
+    # Generate audio response with best multilingual voices
     audio_b64 = None
     try:
         from elevenlabs import ElevenLabs
         ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
         if ELEVENLABS_API_KEY:
             eleven = ElevenLabs(api_key=ELEVENLABS_API_KEY)
-            voice_id = "pNInz6obpgDQGcFmaJgB" if request.voice_gender == "male" else "21m00Tcm4TlvDq8ikWAM"
+            
+            # Use best multilingual voices based on gender
+            if request.voice_gender == "male":
+                voice_id = "TX3LPaxmHKxFdv7VOQHJ"  # Liam - Best multilingual male
+            else:
+                voice_id = "EXAVITQu4vr4xnSDxMaL"  # Sarah - Best multilingual female
+            
             audio_gen = eleven.text_to_speech.convert(
                 text=ai_response[:500],  # Limit for TTS
                 voice_id=voice_id,
-                model_id="eleven_multilingual_v2"
+                model_id="eleven_multilingual_v2",  # Best for Hindi/English/Hinglish
+                voice_settings={
+                    "stability": 0.5,
+                    "similarity_boost": 0.75,
+                    "style": 0.5,  # Natural conversational style
+                    "use_speaker_boost": True
+                }
             )
             import base64
             audio_data = b""
             for chunk in audio_gen:
                 audio_data += chunk
             audio_b64 = base64.b64encode(audio_data).decode()
-    except:
+    except Exception as e:
+        logger.error(f"TTS error: {e}")
         pass
     
     return TinoBrainResponse(
