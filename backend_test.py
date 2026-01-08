@@ -796,6 +796,181 @@ class SchooltinoAPITester:
         
         return success
 
+    # ============== ADMIT CARD SYSTEM TESTS ==============
+    
+    def test_admit_card_settings_get(self):
+        """Test GET /api/admit-card/settings/SCH-C497AFE7"""
+        success, response = self.run_test("Admit Card Settings - GET", "GET", "admit-card/settings/SCH-C497AFE7", 200)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["school_id", "min_fee_percentage", "require_fee_clearance"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+            
+            # Check if min_fee_percentage is 30 as expected
+            min_fee = response.get("min_fee_percentage", 0)
+            if min_fee == 30:
+                print(f"   ✅ min_fee_percentage is correct: {min_fee}")
+            else:
+                print(f"   ⚠️ min_fee_percentage expected 30, got: {min_fee}")
+        
+        return success
+    
+    def test_admit_card_settings_post(self):
+        """Test POST /api/admit-card/settings"""
+        data = {
+            "school_id": "SCH-C497AFE7",
+            "min_fee_percentage": 40,
+            "require_fee_clearance": True
+        }
+        success, response = self.run_test("Admit Card Settings - POST", "POST", "admit-card/settings", 200, data)
+        
+        if success:
+            # Check if response indicates success
+            if response.get("success"):
+                print(f"   ✅ Settings saved successfully")
+            else:
+                print(f"   ⚠️ Settings save may have failed")
+        
+        return success
+    
+    def test_admit_card_exam_create(self):
+        """Test POST /api/admit-card/exam"""
+        data = {
+            "school_id": "SCH-C497AFE7",
+            "exam_name": "Half Yearly 2026",
+            "exam_type": "half_yearly",
+            "start_date": "2026-02-01",
+            "end_date": "2026-02-15",
+            "classes": ["Class 10"],
+            "created_by": "director"
+        }
+        success, response = self.run_test("Admit Card Exam - CREATE", "POST", "admit-card/exam", 200, data)
+        
+        if success:
+            # Check if exam_id is returned
+            exam_id = response.get("exam_id")
+            if exam_id:
+                print(f"   ✅ Exam created with ID: {exam_id}")
+                self.exam_id = exam_id  # Store for later use
+            else:
+                print(f"   ⚠️ No exam_id returned")
+        
+        return success
+    
+    def test_admit_card_exams_get(self):
+        """Test GET /api/admit-card/exams/SCH-C497AFE7"""
+        success, response = self.run_test("Admit Card Exams - GET", "GET", "admit-card/exams/SCH-C497AFE7", 200)
+        
+        if success:
+            # Check if response has exams list
+            exams = response.get("exams", [])
+            print(f"   📝 Found {len(exams)} exams")
+            if len(exams) > 0:
+                print(f"   ✅ Exams list returned successfully")
+            else:
+                print(f"   ⚠️ No exams found")
+        
+        return success
+    
+    def test_tino_brain_admit_card_command(self):
+        """Test Tino Brain - Admit Card Command"""
+        data = {
+            "query": "Class 10 ke admit card banao",
+            "school_id": "SCH-C497AFE7",
+            "user_id": "test",
+            "user_role": "director",
+            "user_name": "Director"
+        }
+        success, response = self.run_test("Tino Brain - Admit Card Command", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            
+            # Check if response recognizes admit card command
+            if any(word in message.lower() for word in ["admit", "card", "प्रवेश", "पत्र"]):
+                print(f"   ✅ Admit card command recognized")
+            else:
+                print(f"   ⚠️ Admit card command may not be recognized")
+        
+        return success
+    
+    # ============== SCHOOL AUTO SETUP TESTS ==============
+    
+    def test_school_setup_status(self):
+        """Test GET /api/school-setup/status (may not exist)"""
+        success, response = self.run_test("School Setup Status", "GET", "school-setup/status", 200)
+        
+        if not success:
+            # Try alternative endpoint
+            success, response = self.run_test("School Setup Wizard Status", "GET", "school-setup/wizard/status/SCH-C497AFE7", 200)
+        
+        return success
+    
+    def test_school_setup_extract_website(self):
+        """Test POST /api/school-setup/extract-website"""
+        data = {
+            "website_url": "https://example-school.com",
+            "school_id": "SCH-C497AFE7"
+        }
+        success, response = self.run_test("School Setup - Extract Website", "POST", "school-setup/extract-from-website", 200, data)
+        
+        if success:
+            # Check if extraction was attempted
+            if response.get("success"):
+                print(f"   ✅ Website extraction successful")
+            else:
+                print(f"   ⚠️ Website extraction failed: {response.get('message', 'Unknown error')}")
+        
+        return success
+    
+    # ============== MARKETING PAGE VERIFICATION ==============
+    
+    def test_marketing_page_phone_number(self):
+        """Test Marketing Page Phone Number Verification"""
+        import requests
+        
+        try:
+            # Check marketing page
+            response = requests.get("https://meri-schooltino.preview.emergentagent.com/marketing", timeout=10)
+            
+            if response.status_code == 200:
+                content = response.text
+                
+                # Check for expected phone number
+                if "+91 78799 67616" in content:
+                    print(f"   ✅ Correct phone number found: +91 78799 67616")
+                    phone_correct = True
+                else:
+                    print(f"   ⚠️ Expected phone number +91 78799 67616 not found")
+                    phone_correct = False
+                
+                # Check for WhatsApp link
+                if "917879967616" in content:
+                    print(f"   ✅ WhatsApp number found: 917879967616")
+                    whatsapp_correct = True
+                else:
+                    print(f"   ⚠️ WhatsApp number 917879967616 not found")
+                    whatsapp_correct = False
+                
+                # Look for any phone numbers in the content
+                import re
+                phone_numbers = re.findall(r'\+?91\s*\d{5}\s*\d{5}|\d{10}', content)
+                if phone_numbers:
+                    print(f"   📝 Found phone numbers: {phone_numbers[:3]}")
+                
+                return phone_correct and whatsapp_correct
+            else:
+                print(f"   ❌ Marketing page not accessible: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"   ❌ Error checking marketing page: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests in sequence"""
         print("🚀 Starting Schooltino API Tests...")
