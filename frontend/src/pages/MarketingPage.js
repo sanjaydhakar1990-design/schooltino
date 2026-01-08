@@ -209,7 +209,7 @@ const MarketingPage = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <a 
-                  href="https://wa.me/919876543210?text=Hi!%20I%20want%20demo%20of%20Schooltino"
+                  href="https://wa.me/917879967616?text=Hi!%20I%20want%20demo%20of%20Schooltino"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-2xl hover:shadow-green-500/30 transition-all transform hover:scale-105"
@@ -358,7 +358,7 @@ const MarketingPage = () => {
               </div>
 
               <a 
-                href="https://wa.me/919876543210?text=Hi!%20I%20want%20to%20try%20Tino%20AI"
+                href="https://wa.me/917879967616?text=Hi!%20I%20want%20to%20try%20Tino%20AI"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-gray-900 px-6 py-3 rounded-full font-semibold hover:shadow-xl transition-all"
@@ -482,7 +482,7 @@ const MarketingPage = () => {
                   ))}
                 </ul>
                 <a 
-                  href={`https://wa.me/919876543210?text=Hi!%20I%20want%20${pkg.name}%20plan%20for%20my%20school`}
+                  href={`https://wa.me/917879967616?text=Hi!%20I%20want%20${pkg.name}%20plan%20for%20my%20school`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`block text-center py-3 rounded-full font-semibold transition-all ${pkg.popular ? 'bg-white text-indigo-600 hover:shadow-lg' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
@@ -506,7 +506,7 @@ const MarketingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
-              href="https://wa.me/919876543210?text=Hi!%20I%20want%20free%20trial%20of%20Schooltino"
+              href="https://wa.me/917879967616?text=Hi!%20I%20want%20free%20trial%20of%20Schooltino"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-2xl transition-all transform hover:scale-105"
@@ -515,7 +515,7 @@ const MarketingPage = () => {
               WhatsApp पर Contact करें
             </a>
             <a 
-              href="tel:+919876543210"
+              href="tel:+917879967616"
               className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all"
             >
               <Phone className="w-6 h-6" />
@@ -543,7 +543,7 @@ const MarketingPage = () => {
                 <Mail className="w-5 h-5" />
                 support@schooltino.com
               </a>
-              <a href="tel:+919876543210" className="hover:text-white transition-colors flex items-center gap-2">
+              <a href="tel:+917879967616" className="hover:text-white transition-colors flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 +91 98765 43210
               </a>
@@ -557,7 +557,7 @@ const MarketingPage = () => {
 
       {/* Floating WhatsApp Button */}
       <a 
-        href="https://wa.me/919876543210?text=Hi!%20I%20want%20to%20know%20more%20about%20Schooltino"
+        href="https://wa.me/917879967616?text=Hi!%20I%20want%20to%20know%20more%20about%20Schooltino"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 transition-all transform hover:scale-110 animate-bounce"
