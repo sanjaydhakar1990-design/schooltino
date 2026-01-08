@@ -486,6 +486,107 @@ class SchooltinoAPITester:
         
         return success
 
+    # ============== MAJOR SCHOOLTINO FEATURES TESTS ==============
+    
+    def test_ai_greeting_detect(self):
+        """Test AI Greeting System - Person Detection"""
+        data = {
+            "school_id": "SCH-C497AFE7",
+            "person_type": "parent",
+            "person_name": "Sharma Ji",
+            "device_type": "cctv",
+            "device_location": "main_gate",
+            "entry_type": "entry"
+        }
+        return self.run_test("AI Greeting - Parent Detection", "POST", "ai-greeting/detect", 200, data)[0]
+    
+    def test_ai_greeting_staff(self):
+        """Test AI Greeting System - Staff Detection"""
+        data = {
+            "school_id": "SCH-C497AFE7",
+            "person_type": "staff",
+            "person_name": "Rajesh Sir",
+            "device_type": "cctv",
+            "device_location": "main_gate",
+            "entry_type": "entry"
+        }
+        return self.run_test("AI Greeting - Staff Detection", "POST", "ai-greeting/detect", 200, data)[0]
+    
+    def test_ai_greeting_settings(self):
+        """Test AI Greeting Settings"""
+        return self.run_test("AI Greeting Settings", "GET", "ai-greeting/settings/SCH-C497AFE7", 200)[0]
+    
+    def test_director_greeting(self):
+        """Test Director Greeting System"""
+        return self.run_test("Director Greeting", "GET", "director-greeting/greet/fb2c73b8-b633-4869-918e-974b6ffb2153?school_id=SCH-C497AFE7", 200)[0]
+    
+    def test_tino_brain_query_general(self):
+        """Test Tino Brain AI - General Query"""
+        data = {
+            "query": "school ka status batao",
+            "school_id": "SCH-C497AFE7",
+            "user_id": "test",
+            "user_role": "director",
+            "user_name": "Director"
+        }
+        return self.run_test("Tino Brain - General Query", "POST", "tino-brain/query", 200, data)[0]
+    
+    def test_tino_brain_class_intelligence_specific(self):
+        """Test Tino Brain - Class Intelligence for Class 10"""
+        return self.run_test("Tino Brain - Class 10 Intelligence", "GET", "tino-brain/class-intelligence/SCH-C497AFE7/class-10", 200)[0]
+    
+    def test_voice_assistant_status(self):
+        """Test Voice Assistant Status"""
+        return self.run_test("Voice Assistant Status", "GET", "voice-assistant/status", 200)[0]
+    
+    def test_voice_assistant_tts(self):
+        """Test Voice Assistant TTS"""
+        data = {
+            "text": "Namaste, school mein aapka swagat hai",
+            "voice_gender": "female"
+        }
+        return self.run_test("Voice Assistant TTS", "POST", "voice-assistant/tts", 200, data)[0]
+    
+    def test_face_recognition_status(self):
+        """Test Face Recognition Status"""
+        return self.run_test("Face Recognition Status", "GET", "face-recognition/status", 200)[0]
+    
+    def test_face_recognition_devices(self):
+        """Test Face Recognition CCTV Devices"""
+        return self.run_test("Face Recognition Devices", "GET", "face-recognition/cctv/devices/SCH-C497AFE7", 200)[0]
+    
+    def test_fee_payment_structure(self):
+        """Test Fee Payment Structure"""
+        return self.run_test("Fee Payment Structure", "GET", "fee-payment/structure/SCH-C497AFE7/class-10", 200)[0]
+    
+    def test_ai_accountant_dashboard(self):
+        """Test AI Accountant Dashboard"""
+        return self.run_test("AI Accountant Dashboard", "GET", "ai-accountant/dashboard/SCH-C497AFE7", 200)[0]
+    
+    def test_front_office_visitors(self):
+        """Test Front Office - Today's Visitors"""
+        return self.run_test("Front Office Visitors", "GET", "front-office/visitors/today/SCH-C497AFE7", 200)[0]
+    
+    def test_transport_vehicles(self):
+        """Test Transport Management - Vehicles"""
+        return self.run_test("Transport Vehicles", "GET", "transport/vehicles/SCH-C497AFE7", 200)[0]
+    
+    def test_health_records(self):
+        """Test Health Module - Records"""
+        return self.run_test("Health Records", "GET", "health/records/SCH-C497AFE7", 200)[0]
+    
+    def test_biometric_devices(self):
+        """Test Biometric System - Devices"""
+        return self.run_test("Biometric Devices", "GET", "biometric/devices/SCH-C497AFE7", 200)[0]
+    
+    def test_syllabus_boards(self):
+        """Test Syllabus System - Boards"""
+        return self.run_test("Syllabus Boards", "GET", "syllabus/boards", 200)[0]
+    
+    def test_syllabus_ncert(self):
+        """Test Syllabus System - NCERT Class 10"""
+        return self.run_test("NCERT Syllabus Class 10", "GET", "syllabus/ncert/syllabus/10", 200)[0]
+
     def run_all_tests(self):
         """Run all API tests in sequence"""
         print("🚀 Starting Schooltino API Tests...")
