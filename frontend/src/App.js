@@ -209,6 +209,10 @@ function AppRoutes() {
       {/* Landing Page - Marketing Home */}
       <Route path="/" element={<LandingPage />} />
       
+      {/* Marketing Brochure Page - Shareable on WhatsApp */}
+      <Route path="/marketing" element={<MarketingPage />} />
+      <Route path="/brochure" element={<MarketingPage />} />
+      
       {/* Public Routes */}
       <Route 
         path="/login" 
