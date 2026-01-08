@@ -801,9 +801,20 @@ class SchooltinoAPITester:
         print("🚀 Starting Schooltino API Tests...")
         print(f"📍 Base URL: {self.base_url}")
         
-        # Test sequence - Focus on Major Schooltino Features as requested
+        # Test sequence - Focus on Language & Voice System as requested
         tests = [
             ("Health Check", self.test_health_check),
+            
+            # ============== LANGUAGE & VOICE SYSTEM TESTS ==============
+            ("Tino Brain - Pure Hindi Query", self.test_tino_brain_hindi_query),
+            ("Tino Brain - English Query", self.test_tino_brain_english_query),
+            ("Tino Brain - Hinglish Auto-detect", self.test_tino_brain_hinglish_autodetect),
+            ("Voice Gender - Female Tone", self.test_voice_gender_female_tone),
+            ("Voice Gender - Male Tone", self.test_voice_gender_male_tone),
+            ("Voice Assistant - New Multilingual Voices", self.test_voice_assistant_new_voices),
+            ("AI Greeting - Hindi Parent", self.test_ai_greeting_hindi),
+            ("AI Greeting - English Staff", self.test_ai_greeting_english),
+            ("Voice Assistant - Multilingual TTS", self.test_voice_assistant_tts_multilingual),
             
             # AI Greeting System (CCTV Gate Greeting)
             ("AI Greeting - Parent Detection", self.test_ai_greeting_detect),
