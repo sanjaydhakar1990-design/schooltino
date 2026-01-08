@@ -389,7 +389,9 @@ metadata:
 test_plan:
   current_focus:
     - "Class Intelligence Quick Actions"
-  stuck_tasks: []
+    - "Voice Assistant System"
+  stuck_tasks:
+    - "Voice Assistant System"
   test_all: false
   test_priority: "high_first"
 
