@@ -587,6 +587,215 @@ class SchooltinoAPITester:
         """Test Syllabus System - NCERT Class 10"""
         return self.run_test("NCERT Syllabus Class 10", "GET", "syllabus/ncert/syllabus/10", 200)[0]
 
+    # ============== LANGUAGE & VOICE SYSTEM TESTS ==============
+    
+    def test_tino_brain_hindi_query(self):
+        """Test Tino Brain with Pure Hindi Query"""
+        data = {
+            "query": "विद्यालय का स्टेटस बताइये",
+            "school_id": "SCH-C497AFE7",
+            "user_id": "test",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "female",
+            "language": "hindi"
+        }
+        success, response = self.run_test("Tino Brain - Pure Hindi Query", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            # Check if response is in Hindi
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            # Check for Hindi characteristics
+            if any(word in message for word in ["जी", "आप", "है", "हैं"]):
+                print(f"   ✅ Response contains Hindi words")
+            else:
+                print(f"   ⚠️ Response may not be in pure Hindi")
+        
+        return success
+    
+    def test_tino_brain_english_query(self):
+        """Test Tino Brain with English Query"""
+        data = {
+            "query": "What is the school status?",
+            "school_id": "SCH-C497AFE7",
+            "user_id": "test",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "male",
+            "language": "english"
+        }
+        success, response = self.run_test("Tino Brain - English Query", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            # Check for English characteristics
+            if any(word in message.lower() for word in ["the", "is", "are", "school", "status"]):
+                print(f"   ✅ Response is in English")
+            else:
+                print(f"   ⚠️ Response may not be in proper English")
+        
+        return success
+    
+    def test_tino_brain_hinglish_autodetect(self):
+        """Test Tino Brain with Hinglish Auto-detect"""
+        data = {
+            "query": "Bhai school ka haal batao",
+            "school_id": "SCH-C497AFE7",
+            "user_id": "test",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "female"
+        }
+        success, response = self.run_test("Tino Brain - Hinglish Auto-detect", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            # Check for Hinglish characteristics
+            if any(word in message.lower() for word in ["hai", "hoon", "kar", "school", "status"]):
+                print(f"   ✅ Response is in Hinglish")
+            else:
+                print(f"   ⚠️ Response may not be in Hinglish")
+        
+        return success
+    
+    def test_voice_gender_female_tone(self):
+        """Test Female Voice Gender Tone"""
+        data = {
+            "query": "school ki attendance batao",
+            "school_id": "SCH-C497AFE7",
+            "user_id": "test",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "female"
+        }
+        success, response = self.run_test("Voice Gender - Female Tone", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            # Check for female tone indicators
+            if any(word in message.lower() for word in ["kar rahi hoon", "rahi hoon", "karungi"]):
+                print(f"   ✅ Female tone detected")
+            else:
+                print(f"   ⚠️ Female tone not clearly detected")
+        
+        return success
+    
+    def test_voice_gender_male_tone(self):
+        """Test Male Voice Gender Tone"""
+        data = {
+            "query": "school ki attendance batao",
+            "school_id": "SCH-C497AFE7",
+            "user_id": "test",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "male"
+        }
+        success, response = self.run_test("Voice Gender - Male Tone", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            # Check for male tone indicators
+            if any(word in message.lower() for word in ["kar raha hoon", "raha hoon", "karunga"]):
+                print(f"   ✅ Male tone detected")
+            else:
+                print(f"   ⚠️ Male tone not clearly detected")
+        
+        return success
+    
+    def test_voice_assistant_new_voices(self):
+        """Test Voice Assistant Status for New Multilingual Voices"""
+        success, response = self.run_test("Voice Assistant - New Multilingual Voices", "GET", "voice-assistant/status", 200)
+        
+        if success:
+            voices = response.get("voices", {})
+            print(f"   📝 Available voices: {voices}")
+            
+            # Check for new multilingual voices
+            male_voice = voices.get("male", {})
+            female_voice = voices.get("female", {})
+            
+            if "Liam" in male_voice.get("name", "") and "Multilingual" in male_voice.get("name", ""):
+                print(f"   ✅ Liam (Multilingual) male voice available")
+            else:
+                print(f"   ⚠️ Liam (Multilingual) male voice not found")
+            
+            if "Sarah" in female_voice.get("name", "") and "Multilingual" in female_voice.get("name", ""):
+                print(f"   ✅ Sarah (Multilingual) female voice available")
+            else:
+                print(f"   ⚠️ Sarah (Multilingual) female voice not found")
+        
+        return success
+    
+    def test_ai_greeting_hindi(self):
+        """Test AI Greeting System in Hindi"""
+        data = {
+            "school_id": "SCH-C497AFE7",
+            "person_type": "parent",
+            "person_name": "शर्मा जी",
+            "device_type": "cctv",
+            "device_location": "main_gate",
+            "entry_type": "entry"
+        }
+        success, response = self.run_test("AI Greeting - Hindi Parent", "POST", "ai-greeting/detect", 200, data)
+        
+        if success:
+            greeting_text = response.get("greeting_text", "")
+            print(f"   📝 Greeting: {greeting_text}")
+            
+            # Check if greeting is appropriate for Hindi
+            if "शर्मा जी" in greeting_text or "namaste" in greeting_text.lower() or "swagat" in greeting_text.lower():
+                print(f"   ✅ Hindi greeting generated correctly")
+            else:
+                print(f"   ⚠️ Hindi greeting may not be appropriate")
+        
+        return success
+    
+    def test_ai_greeting_english(self):
+        """Test AI Greeting System in English"""
+        data = {
+            "school_id": "SCH-C497AFE7",
+            "person_type": "staff",
+            "person_name": "John Sir",
+            "device_type": "cctv",
+            "device_location": "main_gate",
+            "entry_type": "entry"
+        }
+        success, response = self.run_test("AI Greeting - English Staff", "POST", "ai-greeting/detect", 200, data)
+        
+        if success:
+            greeting_text = response.get("greeting_text", "")
+            print(f"   📝 Greeting: {greeting_text}")
+            
+            # Check if greeting is in English
+            if any(word in greeting_text.lower() for word in ["good", "morning", "welcome", "john"]):
+                print(f"   ✅ English greeting generated correctly")
+            else:
+                print(f"   ⚠️ English greeting may not be appropriate")
+        
+        return success
+    
+    def test_voice_assistant_tts_multilingual(self):
+        """Test Voice Assistant TTS with Multilingual Support"""
+        data = {
+            "text": "Namaste, school mein aapka swagat hai. आपका बच्चा कक्षा में है।",
+            "voice_gender": "female"
+        }
+        success, response = self.run_test("Voice Assistant - Multilingual TTS", "POST", "voice-assistant/tts", 200, data)
+        
+        if success:
+            audio_base64 = response.get("audio_base64")
+            if audio_base64:
+                print(f"   ✅ Audio generated successfully (length: {len(audio_base64)} chars)")
+            else:
+                print(f"   ⚠️ No audio generated")
+        
+        return success
+
     def run_all_tests(self):
         """Run all API tests in sequence"""
         print("🚀 Starting Schooltino API Tests...")
