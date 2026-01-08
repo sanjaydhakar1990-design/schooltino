@@ -215,6 +215,13 @@ function AppRoutes() {
       <Route path="/marketing" element={<MarketingPage />} />
       <Route path="/brochure" element={<MarketingPage />} />
       
+      {/* WhatsApp Pamphlets - Daily Shareable Content */}
+      <Route path="/pamphlets" element={<WhatsAppPamphlets />} />
+      <Route path="/whatsapp" element={<WhatsAppPamphlets />} />
+      
+      {/* School Marketing Page - Each school can share their page */}
+      <Route path="/school/:schoolId" element={<SchoolMarketingPage />} />
+      
       {/* Public Routes */}
       <Route 
         path="/login" 
