@@ -436,13 +436,13 @@ export default function StudyTinoDashboard() {
         {/* Quick Actions - Responsive Grid */}
         <div className="grid grid-cols-4 md:grid-cols-8 gap-2 md:gap-3">
           {[
+            { icon: Award, label: 'Admit Card', color: 'bg-indigo-600', action: () => setShowAdmitCardDialog(true) },
             { icon: Wallet, label: 'Pay Fees', color: 'bg-green-500', action: () => setShowPaymentDialog(true) },
             { icon: MessageCircle, label: 'Class Chat', color: 'bg-blue-500', action: () => openClassChat() },
             { icon: AlertOctagon, label: 'Complaint', color: 'bg-rose-500', action: () => setShowComplaintDialog(true) },
             { icon: Trophy, label: 'Activities', color: 'bg-amber-500', action: () => openActivities() },
-            { icon: FileText, label: 'Receipts', color: 'bg-slate-500', path: '/studytino/receipts' },
             { icon: CalendarDays, label: 'Leave', color: 'bg-purple-500', action: () => setShowLeaveDialog(true) },
-            { icon: Brain, label: 'AI Help', color: 'bg-indigo-500', action: () => setShowAIHelper(true) },
+            { icon: Brain, label: 'AI Help', color: 'bg-violet-500', action: () => setShowAIHelper(true) },
             { icon: User, label: 'Profile', color: 'bg-teal-500', action: () => setShowProfileDialog(true) },
           ].map((item, idx) => (
             <button
