@@ -1016,11 +1016,11 @@ class SchooltinoAPITester:
         """Test Priority 1: Setup Progress APIs - Save Progress"""
         data = {
             "school_id": "default",
-            "step": 3,
-            "progress": {
-                "cctv_setup": True,
-                "speaker_setup": False,
-                "website_connected": True
+            "step": "cctv",
+            "status": "completed",
+            "config": {
+                "brand": "Hikvision",
+                "cameras": 4
             }
         }
         success, response = self.run_test("Setup Progress - Save", "POST", "school-setup/progress", 200, data)
