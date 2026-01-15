@@ -60,6 +60,10 @@ import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
 import AdmitCardManagement from './pages/AdmitCardManagement';
 import PDFDownloadPage from './pages/PDFDownloadPage';
+import SetupGuidePage from './pages/SetupGuidePage';
+
+// PWA Install Prompt
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
@@ -316,6 +320,7 @@ function AppRoutes() {
         <Route path="admit-cards" element={<AdmitCardManagement />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="setup-guide" element={<SetupGuidePage />} />
       </Route>
       
       {/* Old routes redirect to /app */}
@@ -377,6 +382,16 @@ function AppRoutes() {
   );
 }
 
+// PWA Install Prompt Wrapper - Only shows when logged in
+function PWAInstallPromptWrapper() {
+  const { isAuthenticated } = useAuth();
+  
+  // Only show PWA prompt when user is logged in
+  if (!isAuthenticated) return null;
+  
+  return <PWAInstallPrompt />;
+}
+
 // Smart redirect based on user role
 function SmartRedirect() {
   const { user, isAuthenticated } = useAuth();
@@ -406,6 +421,9 @@ function App() {
           {/* Trial Banner removed from admin dashboard per user request */}
           
           <AppRoutes />
+          
+          {/* PWA Install Prompt - Shows after login */}
+          <PWAInstallPromptWrapper />
           
           {/* Notice Popup - Shows unread notices as popup */}
           <NoticePopup />
