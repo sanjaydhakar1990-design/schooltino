@@ -637,10 +637,8 @@ def detect_language_from_text(text: str) -> str:
     else:
         return "hinglish"  # Default to Hinglish
 
-async def get_ai_response(query: str, role: str, context: Dict, conversation_history: List = None, language: str = "hinglish", voice_gender: str = "female") -> str:
-    """Get intelligent response from OpenAI with language and tone support"""
-    if not openai_client:
-        return "AI service not available. Please configure OpenAI API key."
+async def get_ai_response_with_context(query: str, role: str, context: Dict, conversation_history: List = None, language: str = "hinglish", voice_gender: str = "female") -> str:
+    """Get intelligent response from AI with language and tone support"""
     
     try:
         # Get language instruction
@@ -667,23 +665,15 @@ async def get_ai_response(query: str, role: str, context: Dict, conversation_his
             for event in context.get("recent_events", []):
                 system_prompt += f"- {event.get('type')} at {event.get('location')}\n"
         
-        messages = [{"role": "system", "content": system_prompt}]
-        
-        # Add conversation history
+        # Build prompt with history
+        full_prompt = query
         if conversation_history:
-            for msg in conversation_history[-5:]:  # Last 5 messages
-                messages.append({"role": msg["role"], "content": msg["content"]})
+            history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history[-5:]])
+            full_prompt = f"Previous conversation:\n{history_text}\n\nUser: {query}"
         
-        messages.append({"role": "user", "content": query})
-        
-        response = openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            max_tokens=500,
-            temperature=0.7
-        )
-        
-        return response.choices[0].message.content
+        # Use the unified AI response function
+        response = await get_ai_response(full_prompt, system_prompt)
+        return response
         
     except Exception as e:
         logger.error(f"AI response error: {e}")
