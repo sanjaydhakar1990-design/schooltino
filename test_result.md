@@ -517,27 +517,33 @@ backend:
 frontend:
   - task: "PWA Install Prompt"
     implemented: true
-    working: "NA"
+    working: false
     file: "frontend/src/components/PWAInstallPrompt.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created PWA install prompt component, shows after login, hides if already installed, works on iOS/Android/Desktop"
+      - working: false
+        agent: "testing"
+        comment: "❌ PWA Install Prompt NOT TESTED due to authentication issue. Login credentials director@testschool.com/password return 'Invalid credentials' error. PWA infrastructure is properly implemented (manifest.json accessible, service worker support detected), but cannot test install prompt without successful login. CRITICAL: Authentication system needs to be fixed or proper credentials provided."
 
   - task: "Setup Guide Page"
     implemented: true
-    working: "NA"
+    working: false
     file: "frontend/src/pages/SetupGuidePage.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Comprehensive setup guide with CCTV brands, Speaker systems, Website AI extraction, Data import, Skip/Resume options"
+      - working: false
+        agent: "testing"
+        comment: "❌ Setup Guide Page NOT ACCESSIBLE due to authentication issue. All attempts to access /app/setup-guide redirect to login page. Cannot verify 4 steps (CCTV, Speaker, Website, Data Import) or CCTV brand selection (Hikvision, Dahua, CP Plus) without proper authentication. Page implementation exists but requires login credentials to be fixed."
 
   - task: "Class Intelligence Quick Actions"
     implemented: true
