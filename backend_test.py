@@ -942,7 +942,7 @@ class SchooltinoAPITester:
                 content = response.text
                 
                 # Since it's a React app, check if the page loads correctly
-                if "Schooltino" in content and "AI-Powered School Management" in content:
+                if "Schooltino" in content and ("AI + CCTV" in content or "Smart School Management" in content):
                     print(f"   ✅ Marketing page loads correctly")
                     print(f"   📝 Note: Phone numbers are rendered by React (not in static HTML)")
                     print(f"   📝 Expected numbers: +91 78799 67616 and WhatsApp 917879967616")
