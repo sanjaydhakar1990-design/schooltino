@@ -485,3 +485,79 @@ async def quick_setup_wizard(
             "5. Students import karein"
         ]
     }
+
+
+
+# ==================== SETUP PROGRESS TRACKING ====================
+
+class SetupProgressRequest(BaseModel):
+    school_id: str
+    step: str  # cctv, speaker, website, dataImport
+    status: str  # completed, skipped, in_progress
+    config: Optional[Dict] = {}
+
+@router.post("/progress")
+async def save_setup_progress(data: SetupProgressRequest):
+    """
+    Save setup progress for each step
+    Allows resume from Profile page
+    """
+    await db.setup_progress.update_one(
+        {"school_id": data.school_id, "step": data.step},
+        {"$set": {
+            "status": data.status,
+            "config": data.config,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    # Update overall progress
+    all_steps = await db.setup_progress.find({"school_id": data.school_id}, {"_id": 0}).to_list(10)
+    completed = sum(1 for s in all_steps if s.get("status") == "completed")
+    total_steps = 4  # cctv, speaker, website, dataImport
+    
+    await db.schools.update_one(
+        {"id": data.school_id},
+        {"$set": {
+            "setup_progress": {
+                "completed_steps": completed,
+                "total_steps": total_steps,
+                "percentage": round((completed / total_steps) * 100),
+                "last_updated": datetime.now(timezone.utc).isoformat()
+            }
+        }}
+    )
+    
+    return {
+        "success": True,
+        "step": data.step,
+        "status": data.status,
+        "progress": f"{completed}/{total_steps}"
+    }
+
+
+@router.get("/progress/{school_id}")
+async def get_setup_progress(school_id: str):
+    """
+    Get setup progress for resume functionality
+    """
+    progress = await db.setup_progress.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(10)
+    
+    steps_map = {p["step"]: p for p in progress}
+    
+    return {
+        "school_id": school_id,
+        "steps": {
+            "cctv": steps_map.get("cctv", {"status": "pending"}),
+            "speaker": steps_map.get("speaker", {"status": "pending"}),
+            "website": steps_map.get("website", {"status": "pending"}),
+            "dataImport": steps_map.get("dataImport", {"status": "pending"})
+        },
+        "can_resume": any(p.get("status") == "skipped" for p in progress),
+        "all_complete": all(steps_map.get(s, {}).get("status") in ["completed", "skipped"] 
+                          for s in ["cctv", "speaker", "website", "dataImport"])
+    }
