@@ -110,6 +110,12 @@ user_problem_statement: |
   - Weak students
   - Teacher performance
   Class-wise separate intelligence system होना चाहिए।
+  
+  New Requirements:
+  - PWA Install button after login
+  - Setup Guide for CCTV, Speaker, Website connection
+  - Data Import from other software
+  - All Tino portals should work properly
 
 backend:
   - task: "Class Intelligence API"
@@ -467,6 +473,30 @@ backend:
         comment: "❌ Marketing page phone numbers INCORRECT. Expected +91 78799 67616 and WhatsApp 917879967616 NOT FOUND on https://tino-school-manage.preview.emergentagent.com/marketing. Marketing page is accessible but does not contain the required contact numbers. This needs to be fixed immediately."
 
 frontend:
+  - task: "PWA Install Prompt"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/PWAInstallPrompt.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created PWA install prompt component, shows after login, hides if already installed, works on iOS/Android/Desktop"
+
+  - task: "Setup Guide Page"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/SetupGuidePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Comprehensive setup guide with CCTV brands, Speaker systems, Website AI extraction, Data import, Skip/Resume options"
+
   - task: "Class Intelligence Quick Actions"
     implemented: true
     working: true
@@ -562,18 +592,18 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admit Card System"
-    - "Tino Brain Admit Card Command"
-    - "Marketing Page Phone Numbers"
+    - "PWA Install Prompt"
+    - "Setup Guide Page"
+    - "Emergent LLM Integration"
+    - "All Tino Portals (Schooltino, TeachTino, StudyTino)"
   stuck_tasks:
     - "Tino Brain Admit Card Command"
-    - "Marketing Page Phone Numbers"
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Added Class Intelligence System for Tino AI. New APIs: /class-intelligence/{school_id}/{class_id}, /class-comparison/{school_id}, /class-intelligence/from-camera. Please test these endpoints."
+    message: "Implemented PWA Install Prompt (shows after login, hides if installed), Setup Guide Page with CCTV/Speaker/Website/Data Import guides, Profile resume setup option, Emergent LLM integration for Tino Brain. Please test all features comprehensively."
   - agent: "testing"
     message: "✅ ALL TINO BRAIN APIS TESTED SUCCESSFULLY! All 7 endpoints working correctly: 1) GET /tino-brain/status ✅ 2) GET /tino-brain/class-intelligence/{school_id}/{class_id} ✅ 3) GET /tino-brain/class-comparison/{school_id} ✅ 4) POST /tino-brain/class-intelligence/from-camera ✅ 5) POST /tino-brain/query (Class condition) ✅ 6) POST /tino-brain/query (Weak students) ✅ 7) POST /tino-brain/query (Teacher performance) ✅. Database is empty so APIs return minimal data but response structures are correct. AI integration with OpenAI working. Hinglish responses working perfectly. Ready for production!"
   - agent: "testing"
