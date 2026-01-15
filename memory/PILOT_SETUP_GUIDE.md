@@ -17,7 +17,7 @@ export const TRIAL_CONFIG = {
 ```
 
 ### Step 2: School Register Karo
-1. Go to: https://meri-schooltino.preview.emergentagent.com/app/school-registration
+1. Go to: https://tino-school-manage.preview.emergentagent.com/app/school-registration
 2. Fill school details
 3. Note down the School ID
 
@@ -113,9 +113,9 @@ Weekly school se ye poochho:
 
 ## 📱 Quick Links:
 
-- **Admin Panel:** https://meri-schooltino.preview.emergentagent.com/login
-- **TeachTino:** https://meri-schooltino.preview.emergentagent.com/teachtino
-- **StudyTino:** https://meri-schooltino.preview.emergentagent.com/studytino
+- **Admin Panel:** https://tino-school-manage.preview.emergentagent.com/login
+- **TeachTino:** https://tino-school-manage.preview.emergentagent.com/teachtino
+- **StudyTino:** https://tino-school-manage.preview.emergentagent.com/studytino
 - **WhatsApp Support:** wa.me/917879967616
 
 ---

@@ -680,4 +680,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Preview URL:** https://meri-schooltino.preview.emergentagent.com
+- **Preview URL:** https://tino-school-manage.preview.emergentagent.com

@@ -1,206 +1,187 @@
 <analysis>**original_problem_statement:**
-The user wants to build a comprehensive, AI-powered school management platform named Schooltino. The core vision is to create a market-leading, feature-rich, affordable, and easy-to-use ERP system.
+The user wants to enhance their existing school management application, schooltino.in. The key feature requests are:
+1.  **Advanced Voice AI (Tino):** Upgrade the existing Tino Brain (OpenAI + ElevenLabs) to an Alexa/Siri level assistant. It should provide real-time, voice-activated class intelligence (syllabus progress, attendance, student performance, teacher analysis) based on the admin's location, detected via CCTV (to be simulated).
+2.  **Multilingual & Voice Improvements:**
+    *   Fix poor Hinglish pronunciation.
+    *   Make the app's language selector apply globally (UI and AI).
+    *   The AI should respond in the language it is queried in.
+    *   Use better, multilingual voices from ElevenLabs and fix gendered phrasing (e.g., female voice using masculine verbs).
+3.  **Marketing Materials:**
+    *   Create an impressive, shareable marketing brochure/page for WhatsApp.
+    *   Correct the user's contact number to **7879967616** on all marketing materials.
+    *   Create daily shareable WhatsApp pamphlets.
+    *   Create a marketing page template for individual schools.
+    *   Provide a downloadable PDF of the marketing brochure.
+4.  **Admit Card System:**
+    *   Develop a feature to generate admit cards for exams.
+    *   Students should access their admit cards in the StudyTino app.
+    *   Downloading should be conditional on fee payment. An admin-configurable minimum fee percentage (e.g., 30%) must be paid if fees are due.
+5.  **System Check:** Verify that the existing feature for importing data from other school software/websites is working.
 
-**Recent user requests driving the current work:**
-1.  **UI/UX Simplification:** A complete overhaul of the UI to be simpler, cleaner, and more intuitive, based on competitor examples. The theme must be light.
-2.  **Unified AI System (Tino Brain):** A single, master AI that controls the entire platform, performs actions, and has full access. The AI's voice should be madhur (sweet) and calm, using the provided ElevenLabs API key effectively.
-3.  **Director Profile Editing:** The director's profile page must be editable, allowing updates to name, designation, and photos for AI face recognition.
-4.  **Multi-Photo Face Enrollment:** For accurate AI recognition (greetings, attendance), the system must capture 4-5 photos for all users (students, staff, director).
-5.  **Password Reset System:**
-    *   Admins should be able to reset temporary passwords for students.
-    *   Staff/Teachers should be able to use a Forgot Password (OTP) feature.
-    *   All users should be able to change their password from their profile.
-6.  **AI Greeting System:** The AI should greet recognized individuals (parents, staff) via CCTV/tablet, identify their purpose, and take attendance automatically.
-7.  **Parent Photo Upload:** The student admission form must include a compulsory option to upload photos of parents/guardians for the AI greeting system.
-8.  **Notice Popups:** Important notices should appear as on-screen popups for the intended audience and persist until dismissed or expired.
-9.  **Mobile Compatibility & PWA:** The entire application must be mobile-compatible, providing an app-like experience and should be installable as a PWA.
-10. **Remove Free Trial Banners:** All Free Trial banners and mentions should be removed from the dashboards.
-11. **Language Toggle:** Add a language switcher (English, Hindi, Hinglish) to the UI.
-
-**User's preferred language**: Hinglish (The user communicates using a mix of Hindi and English. The next agent MUST respond in Hinglish.)
+**User's preferred language**: Hinglish
 
 **what currently exists?**
-*   **Complete UI Overhaul:** The agent successfully redesigned the , , and all major dashboards (, , ) with a clean, light, card-based theme inspired by competitor analysis.
-*   **Free Trial Banners Removed:** The trial banners have been removed from the main  and the top bar in .
-*   **Parent Photo Upload:** The  has been updated to include form fields for uploading parent/guardian photos during admission.
-*   **AI Greeting Backend:** A new route file, , has been created and registered in  to support the future AI greeting system.
-*   **Language Toggle:** A language selection dropdown has been added to the main  header.
-*   **Enhanced Profile Page:**  has been significantly updated to include a new  component, allowing users to upload multiple photos for AI face recognition. It also includes toggles for AI features like CCTV Commands.
-*   **Multi-Photo Enrollment Backend:** The  route was updated with a new endpoint () to handle the new multi-image enrollment process.
-*   **Student Password Reset:** A new endpoint was added to  allowing an admin to reset a student's password.
-*   **Notice Popup Foundation:** A new component  has been created, and a new backend endpoint () was added to  to fetch notices for the popup.
-*   **PWA Manifest:** A  file exists in , providing a basis for PWA functionality.
+A full-stack (React/FastAPI/MongoDB) school management platform named Schooltino. It includes a foundational Tino Brain AI assistant using OpenAI and ElevenLabs, a CCTV-based greeting system, user roles (admin, teacher, student), and various dashboards. Several marketing pages (, ) and a PDF brochure download page () have also been created. A backend structure for an admit card system has been put in place.
 
 **Last working item**:
-*   **Last item agent was working:** The user reported that the Director's profile page is not opening when clicking the user info section in the sidebar. The agent confirmed the link was not navigating and was about to debug and fix the  component.
+*   **Last item agent was working:** The agent was fixing the Admit Card feature. The user reported that the admin management page for admit cards was stuck in a loading state, and the AI voice command to open the section wasn't working.
 *   **Status:** IN PROGRESS
 *   **Agent Testing Done:** N
-*   **Which testing method agent to use?** Frontend testing agent. After fixing the navigation, a test should be run to confirm that clicking the user info in the sidebar successfully navigates to .
+*   **Which testing method agent to use?** both
+    *   **Frontend testing agent:** To perform a full user flow test. Log in as a student, navigate to the student dashboard, and verify that the admit card section loads correctly without getting stuck. Then, create a scenario with pending fees to test if the fee payment dialog appears upon trying to download the card.
+    *   **Backend testing agent:** To test the API logic in . Specifically, test the  and  functions with mock data to ensure the fee calculation and card generation logic is correct.
 *   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1: Director Profile Not Accessible From Sidebar (P0)**
-*   **Issue 2: Incorrect Student Credentials (P1)**
-*   **Issue 3: Backend Monolith () (P2)**
+*   **Issue 1:** The Admit Card feature is not fully functional and tested end-to-end. (Priority: P0)
+*   **Issue 2:** The existing data import system was requested to be checked but was only located, not tested or verified. (Priority: P2)
 
 **Issues Detail:**
-*   **Issue 1: Director Profile Not Accessible From Sidebar**
-    *   **Description:** The user info section at the bottom of the sidebar, which displays the logged-in user's name and role, is not clickable. It should navigate to the  page.
-    *   **Attempted fixes:** The agent identified the issue by attempting to navigate and confirmed the link is inactive. The agent viewed the  code but did not yet apply a fix.
+*   **Issue 1: Admit Card feature is incomplete and buggy**
+    *   **Attempted fixes:**
+        1.  In , the agent added checks to ensure API calls are not made with   or , which was likely causing the loading issue.
+        2.  In , the  command was added to the command map so the voice assistant can navigate to the correct page.
     *   **Next debug checklist:**
-        1.  View .
-        2.  Wrap the user profile  at the bottom of the sidebar with a  or  component from , pointing to . Alternatively, add an  handler that uses the  hook.
-        3.  Ensure the clickable area is intuitive and the styling remains consistent.
-    *   **Why fix this issue and what will be achieved with the fix?** This is a critical usability bug reported by the user, preventing access to a key feature (profile editing).
+        1.  **Admin Flow:** Log in as admin, navigate to the Admit Card Management page. Use the Create Exam functionality to set up a test examination.
+        2.  **Student Data:** Ensure a test student exists with pending fees associated with their account.
+        3.  **Student Flow:** Log in as the test student and navigate to their dashboard.
+        4.  **Verify Load:** Confirm the Admit Card section now loads correctly without getting stuck.
+        5.  **Test Download (Fees Due):** Click the download button for the admit card. Verify that a dialog appears prompting for fee payment, showing the correct minimum amount.
+        6.  **Test Download (Fees Paid):** Simulate fee payment or use a student with no dues. Verify that clicking download initiates the download directly.
     *   **Status:** IN PROGRESS
     *   **Is recurring issue?** N
-    *   **Should Test frontend/backend/both after fix?** frontend
-    *   **Blocked on other issue:** None.
+    *   **Should Test frontend/backend/both after fix?** both
+    *   **Blocked on other issue:** None
 
-*   **Issue 2: Incorrect Student Credentials**
-    *   **Description:** The user reported that the student login credentials provided earlier are not working. The agent created a new student but it seems the user still needs valid, accessible credentials to test the student portal.
-    *   **Attempted fixes:** The agent created a new student via an API call and discovered that the password is auto-generated and hashed. The agent then used the  endpoint which returns a temporary password. However, these new credentials were not shared with the user before the session ended.
+*   **Issue 2: Data Import System Untested**
+    *   **Attempted fixes:** The agent located the relevant file () but performed no further action.
     *   **Next debug checklist:**
-        1.  Use the  script if it exists, or create a new student using the  endpoint.
-        2.  Retrieve the  and  from the API response.
-        3.  Provide the valid credentials clearly to the user using .
-    *   **Why fix this issue and what will be achieved with the fix?** The user cannot test the student-facing features () without correct login details.
+        1.  Review the code in  to understand its expected inputs (e.g., a school's website URL).
+        2.  Create a backend test case that calls the  endpoint with a sample school website.
+        3.  Verify that the system correctly extracts information and populates the database.
+        4.  Test edge cases, such as websites with unusual structures or missing information.
     *   **Status:** NOT STARTED
-    *   **Is recurring issue?** Y
-    *   **Should Test frontend/backend/both after fix?** backend (for credential generation)
-    *   **Blocked on other issue:** None.
-
-*   **Issue 3: Critical Backend Monolith**
-    *   **Description:**  is over 7000 lines and contains legacy code, posing a significant risk to stability and maintainability.
-    *   **Attempted fixes:** New features are being created in modular files (), but no direct refactoring of  is being done.
-    *   **Next debug checklist:** Plan and execute the migration of a logical set of endpoints (e.g., all authentication-related routes) from  into a new file in .
-    *   **Why fix this issue and what will be achieved with the fix?** To improve backend stability, reduce complexity, and make future development faster and safer.
-    *   **Status:** IN PROGRESS
-    *   **Is recurring issue?** Y
-    *   **Should Test frontend/backend/both after fix?** backend (extensive regression testing needed).
-    *   **Blocked on other issue:** None.
+    *   **Is recurring issue?** N
+    *   **Should Test frontend/backend/both after fix?** backend
+    *   **Blocked on other issue:** None
 
 **In progress Task List**:
-*   **Task 1: Fix Director Profile Navigation (P0)**
-    *   **Where to resume:** Edit  to make the user profile section at the bottom a clickable link that navigates to .
-    *   **What will be achieved with this?** The user will be able to access and edit the Director's profile as requested.
-    *   **Status:** IN PROGRESS
-    *   **Should Test frontend/backend/both after fix?** frontend
-    *   **Blocked on something:** None.
+None
 
 **Upcoming and Future Tasks**
-
-**Upcoming Tasks:**
-*   **P0: Fully Implement Notice Popup System:** Connect the  component to the  endpoint so that new, unread notices are automatically displayed as popups upon login or page load.
-*   **P1: Fully Implement Tino Brain Logic:** Build the backend intelligence for the Tino Brain to make it a true, all-seeing master AI that can perform actions and answer complex queries as requested by the user.
-*   **P1: Enhance AI Voice & Commands:** Ensure the AI voice from ElevenLabs is consistently madhur (sweet) and calm. Expand the AI's ability to understand and execute a wider range of commands across the application.
-*   **P2: Implement AI CCTV Greeting System:** Build the logic in  to simulate a CCTV feed, use face recognition endpoints, and generate personalized greetings for recognized staff and parents.
-*   **P2: Verify Mobile Compatibility & PWA:** Thoroughly test the application on a mobile viewport. Ensure all pages are responsive, no data is cut off, and the PWA installation prompt works correctly.
-
-**Future Tasks:**
-*   AI School Auto-Setup (scrape website)
-*   Integrate Live Services: Razorpay, SMS Notifications, Cloud Storage
-*   AI Teacher Clone (HeyGen API)
-*   Bus GPS and CCTV Integration
-*   WhatsApp Integration
-*   Google Meet Integration
+*   **Upcoming Tasks:**
+    *   **P1: Complete Admit Card UI/UX:** Enhance the student-facing admit card section in  to properly display the generated card, payment status, and download links.
+*   **Future Tasks:**
+    *   **P2: CCTV Integration Simulation:** Implement the logic in  to simulate detecting an admin's location (classroom) from a  and use that context to answer class-specific questions.
+    *   **P3: Populate Demo Data:** Create a script or a backend utility to populate the database with realistic demo data (students, teachers, classes, attendance, marks) to make features like Class Intelligence more demonstrative.
 
 **Completed work in this session**
-- **UI/UX Simplification:** Redesigned , , , , and  to have a consistent, professional, light theme.
-- **Trial Banner Removal:** Successfully removed the Free Trial banners from all dashboards.
-- **Parent Photo Upload:** Added fields to the student admission form in  to capture parent/guardian photos.
-- **AI Greeting System Foundation:** Created the backend route  and registered it.
-- **Language Toggle:** Added a language switcher to the main layout.
-- **Multi-Photo Face Enrollment:** Created the  component, updated  to use it, and added the corresponding backend endpoint in .
-- **Student Password Reset:** Added an admin-only endpoint to  for resetting student passwords.
-- **Notice Popup System Foundation:** Created the  component and the  endpoint.
-- **Backend Stability:** Fixed numerous syntax and indentation errors in  and  that were causing the backend to crash.
+- **Class Intelligence Feature:** Implemented backend API () and added quick action buttons to the Tino Brain frontend dashboard. (Files: , ).
+- **Language & Voice System Overhaul:** Upgraded to ElevenLabs' multilingual model, added better voices ('Liam' & 'Sarah'), and made the AI language-aware based on user's query language. (Files: , ).
+- **Marketing Assets Creation:** Built new frontend pages for a main marketing brochure (), shareable WhatsApp pamphlets (), and a template for school-specific marketing ().
+- **PDF Brochure Generation:** Created a server-side script to generate a PDF of the marketing page and a static, public-facing HTML page () to ensure it's downloadable without login.
+- **Dependency & Bug Fixes:** Installed the missing  package, fixed multiple  errors, corrected API routing prefixes, and resolved a persistent contact number issue across all marketing materials.
 
 **Earlier issues found/mentioned but not fixed**
-*   **Backend Monolith ():** This is a long-standing technical debt issue that has not been addressed directly.
+*   **Issue 1: Data Import System Untested:** The user asked the agent to check the data import feature. The agent found the code in  but did not test or validate its functionality.
+    *   **Debug checklist:** See Issue 2 in the **All Pending/In progress Issue list** section.
+    *   **Why to solve this issue and what will be achieved with this?** This is a key onboarding feature for new schools, allowing them to migrate from existing systems easily.
+    *   **Should Test frontend/backend/both after fix:** backend
+    *   **Is recurring issue?** N
 
 **Known issue recurrence from previous fork**
-*   **Issue recurrence in previous fork:** Backend monolith ().
-*   **Recurrence count:** 10
-*   **Status:** IN PROGRESS
+None
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Frontend:** React, Shadcn UI, Tailwind CSS. Focus is on a clean, light-theme, card-based, responsive UI.
-*   **Backend:** FastAPI, Pydantic, MongoDB (). Modular route design is being encouraged.
-*   **AI/Voice:** OpenAI for NLU, ElevenLabs for TTS. Face recognition logic is being built out.
-*   **Architecture:** The UI has been significantly refactored for consistency. The backend remains a monolith () with new features being added as modular routes.
+- **Backend:** FastAPI
+- **Frontend:** React, TailwindCSS
+- **Database:** MongoDB
+- **AI/ML:**
+    - **NLU:** OpenAI (via )
+    - **TTS:** ElevenLabs API
+- **PDF Generation:** Playwright
 
 **key DB schema**
-*   **users/staff:** Schema will need to support multiple  instead of a single photo URL for the new enrollment process.
-*   **notices:** A  array of user IDs is needed to track who has dismissed the notice popup.
+- **schools:** Stores school registration details.
+- **users:** Manages user accounts (admins, teachers, etc.).
+- **students:** Student profiles.
+- **exams:** (Newly added) Stores details of examinations.
+- **admit_cards:** (Newly added) Manages generation status and settings for admit cards.
 
 **changes in tech stack**
-*   No new technologies were added. Existing stack (React, FastAPI, ElevenLabs) was utilized more deeply.
+None
 
 **All files of reference**
-*   : Needs to be edited to fix the profile navigation link.
-*   : The new profile page with multi-photo enrollment.
-*   : The component for capturing multiple face images.
-*   : Contains the new endpoint for multi-photo enrollment.
-*   : Contains the new endpoint for admin to reset student passwords.
-*   : The component for the new notice popup feature.
+*   **Created Files:**
+    *   : Handles all backend logic for admit card generation and settings.
+    *   : The primary marketing brochure page.
+    *   : Page with shareable marketing content for WhatsApp.
+    *   : A template page for schools to use for their own marketing.
+    *   : A static HTML page created as a workaround to provide a public, non-authenticated link to download the PDF brochure.
+    *   : Admin-facing page to manage admit card settings and create exams.
+    *   : React component for the student dashboard to view and download admit cards.
+*   **Updated Files:**
+    *   : Heavily modified to include class intelligence, language awareness, and admit card commands.
+    *   : Updated with new multilingual voices from ElevenLabs and a new command for admit cards.
+    *   : Added the new router for the admit card API.
+    *   : Added new routes for all the marketing and admit card pages.
+    *   : Integrated the  component.
+    *   : Added a link to the Admit Card Management page.
+    *   : Added .
 
 **Areas that need refactoring**:
-*   ** (CRITICAL):** This massive file must be broken down into smaller, logical route files.
-*   **AI Logic Consolidation:** The logic in  should eventually be controlled by or merged into the  service.
+- The use of a static  page is a workaround. The React routing in  should be refactored to properly handle public routes without triggering the authentication redirect. The  component or the main routing structure is too aggressive.
 
 **key api endpoints**
-*    (POST): New endpoint to save multiple face encodings for a user.
-*    (POST): New admin-only endpoint to generate a temporary password for a student.
-*    (GET): New endpoint to fetch notices that the current user hasn't seen yet.
-*    (POST): Placeholder for the AI greeting system.
+- : Configure admit card rules (min fee, signature, etc.).
+- : Generate admit cards for a specific exam.
+- : Fetch admit card status and data for a specific student.
+- : The main endpoint for the Tino AI Brain, now enhanced with language and gender parameters.
+- : Gets a detailed report for a specific class.
 
 **Critical Info for New Agent**
-*   **Top Priority is Fixing the Profile Link:** The user's most immediate blocker is not being able to access the director's profile page. Fix the link in  first.
-*   **Address All User Points:** The user has provided a detailed list of requirements in their recent messages. After fixing the profile link, systematically address the remaining points: providing valid student credentials, ensuring the AI voice is high-quality, verifying mobile compatibility, and fully implementing the notice popups.
-*   **Maintain UI Consistency:** The new simple, light-themed, card-based UI is a huge win. All new features must adhere to this design language.
-*   **Use Hinglish:** Continue communicating in Hinglish.
+- **User's Contact Number:** The user's correct contact number is **7879967616**. This has been a recurring point of concern. Double-check this number on any new UI.
+- **Browser Cache Issues:** The user frequently reports seeing outdated information on the frontend (like the wrong phone number). This is almost always a browser cache issue on their end. Before debugging, instruct the user to perform a hard refresh (Ctrl+Shift+R) or test in an Incognito window.
+- **PDF Download Workaround:** The PDF brochure download link () uses a static HTML file in  to bypass the React app's routing and authentication. Do not try to integrate it back into the React router unless you are prepared to fix the root cause of the public route redirection issue.
 
 **documents and test reports created in this job**
-*   
-*   
+-  (updated)
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Asks for login credentials for all roles to test the dashboards. (Status: **Partially Addressed** - new student creds not shared)
-2.  **user:** Points out the Free Trial banner and asks for it to be removed from dashboards. (Status: **Completed**)
-3.  **user:** Requests a redesign of the main homepage to be attractive and simple, like competitor sites. (Status: **Completed**)
-4.  **user:** Requests adding parent/guardian photo uploads during student admission for AI recognition. (Status: **Completed**)
-5.  **user:** Details the vision for an AI greeting system (CCTV/tablet-based) for all visitors, staff, and parents. (Status: **In Progress**)
-6.  **user:** Asks for a language toggle on the dashboard. (Status: **Completed**)
-7.  **user:** Asks for the director profile to be editable with name, designation, and photos for face recognition. (Status: **In Progress** - page created but not accessible)
-8.  **user:** Re-iterates that face recognition needs 4-5 photos, details the desired password reset flows, and emphasizes mobile compatibility/PWA. (Status: **In Progress**)
-9.  **user:** Re-emphasizes that the AI should have a madhur voice and full access to perform any action requested. (Status: **Pending**)
-10. **user:** Asks for notices to be shown as popups and for the login page background to be a high-quality, auto-updating image. (Status: **In Progress**)
-11. **user:** Asks where to edit the director's profile. (Status: **Pending**)
-12. **user:** Reports that the profile page is not opening from the sidebar. (Status: **Last working item - HIGHEST PRIORITY**)
+1.  **User:** Asks for a PDF of the marketing page with their correct number.
+2.  **Agent:** Creates the PDF but the user reports it's not downloadable.
+3.  **Agent:** Fixes the download by creating a dedicated download page ().
+4.  **User:** Reports the new download link redirects to the login page.
+5.  **User:** Expresses frustration that a simple link fix is taking so long.
+6.  **Agent:** Apologizes and creates a static HTML page () as a workaround, which finally works.
+7.  **User:** Reports a new issue: the WhatsApp share message from the download page still contains an incorrect number (this was a misunderstanding).
+8.  **User:** Expresses frustration again, stating the agent can't get it right and the marketing link is still showing wrong numbers.
+9.  **Agent:** Realizes it's a user-side cache issue, explains how to clear it, and force-restarts the frontend server.
+10. **User:** Pivots to a new bug: the Admit Card section is stuck loading, and the AI command to open it also fails.
 
 **Project Health Check:**
-*   **Broken:** The navigation to the user profile page is broken.
-*   **Mocked:** AI Greeting System, Razorpay, SMS Notifications, Cloud Storage, CCTV Face Detection (backend logic for greeting is a placeholder).
+- **Broken:**
+    - The end-to-end admit card generation and download flow for students is not working. The admin page loads, but the student component is buggy.
+- **Mocked:**
+    - The CCTV-based classroom detection for the AI assistant is not implemented; it's a planned simulation.
 
 **3rd Party Integrations**
-*   **OpenAI GPT-4o:** Used for Natural Language Understanding in the AI assistant. (Uses Emergent LLM Key)
-*   **ElevenLabs:** Used for high-quality Text-to-Speech for the AI assistant voice. (Requires User API Key - already present in )
+- **OpenAI:** Used for NLU in Tino Brain. It uses the Emergent LLM Key.
+- **ElevenLabs:** Used for Text-to-Speech (TTS). It requires a user-provided API key ( in the environment).
 
 **Testing status**
-*   **Testing agent used after significant changes:** YES.  and  were created, both reporting 100% success on the features tested.
-*   **Troubleshoot agent used after agent stuck in loop:** NO.
-*   **Test files created:** Yes, via testing agent.
-*   **Known regressions:** None.
+- **Testing agent used after significant changes:** YES (both backend and frontend testing agents were used).
+- **Troubleshoot agent used after agent stuck in loop:** NO
+- **Test files created:** None.
+- **Known regressions:** None identified.
 
 **Credentials to test flow:**
-*   **Director:**  / 
-*   **Teacher:**  / 
-*   **Student:** A new valid student ID and password needs to be generated and provided to the user.
+School and admin credentials are created during the registration flow. The agent used Test School and admin@test.com / password in the session.
 
 **What agent forgot to execute**
-*   The agent identified that the profile navigation link in  was broken but did not implement the fix before the session ended.
-*   The agent generated new student credentials but did not share them with the user.</analysis>
+- The agent located the data import system file () as requested by the user but never tested or verified if it actually works.
+- The end-to-end flow for the admit card feature was not fully tested after implementation. The agent only verified that the admin page loaded and the voice command was recognized, but not the core functionality for the student.</analysis>
