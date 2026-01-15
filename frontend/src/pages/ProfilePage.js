@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -10,7 +11,8 @@ import axios from 'axios';
 import { 
   User, Mail, Phone, Building2, Shield, Key, 
   Save, Loader2, CheckCircle, AlertCircle, Eye, EyeOff,
-  Camera, Edit, Lock, Upload, Video, Mic, Fingerprint
+  Camera, Edit, Lock, Upload, Video, Mic, Fingerprint,
+  Settings, ArrowRight, Wrench
 } from 'lucide-react';
 import { toast } from 'sonner';
 import MultiFaceEnrollment from '../components/MultiFaceEnrollment';
@@ -18,6 +20,7 @@ import MultiFaceEnrollment from '../components/MultiFaceEnrollment';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const { user, token, logout, schoolId } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -404,6 +407,26 @@ export default function ProfilePage() {
                   </div>
                   <Edit className="w-4 h-4 text-slate-400" />
                 </Button>
+
+                {/* Setup Guide - Resume Setup */}
+                {(user?.role === 'director' || user?.role === 'principal') && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-14 border-indigo-200 hover:bg-indigo-50"
+                    onClick={() => navigate('/app/setup-guide')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <Wrench className="w-5 h-5 text-indigo-600" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-medium text-indigo-700">Setup Guide / Resume Setup</p>
+                        <p className="text-xs text-slate-500">CCTV, Speaker, Website configure करें</p>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-indigo-400" />
+                  </Button>
+                )}
 
                 {/* Logout Button */}
                 <Button 
