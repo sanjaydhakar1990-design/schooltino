@@ -684,9 +684,11 @@ async def get_ai_response_with_context(query: str, role: str, context: Dict, con
 @router.get("/status")
 async def get_brain_status():
     """Get Tino Brain status"""
+    ai_available = bool(EMERGENT_LLM_KEY) or (openai_client is not None)
     return {
         "status": "active",
-        "ai_available": openai_client is not None,
+        "ai_available": ai_available,
+        "using_emergent": bool(EMERGENT_LLM_KEY),
         "capabilities": [
             "school_overview",
             "student_tracking",
