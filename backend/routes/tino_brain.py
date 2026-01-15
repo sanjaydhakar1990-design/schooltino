@@ -38,16 +38,66 @@ def get_database():
         db = get_db()
     return db
 
-# OpenAI client
+# OpenAI client - Use Emergent LLM Key for better reliability
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
 openai_client = None
 
+# Try Emergent Integrations first
+emergent_chat = None
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    if EMERGENT_LLM_KEY:
+        emergent_chat = True  # Flag to use emergent
+        logger.info("Using Emergent LLM Key for Tino Brain")
+except ImportError:
+    logger.warning("emergentintegrations not installed, falling back to direct OpenAI")
+
+# Fallback to direct OpenAI
 try:
     from openai import OpenAI
-    if OPENAI_API_KEY:
+    if OPENAI_API_KEY and not emergent_chat:
         openai_client = OpenAI(api_key=OPENAI_API_KEY)
 except:
     pass
+
+# Helper function to get AI response
+async def get_ai_response(prompt: str, system_message: str, session_id: str = None) -> str:
+    """Get AI response using Emergent LLM or fallback to OpenAI"""
+    try:
+        # Use Emergent LLM Key (preferred)
+        if EMERGENT_LLM_KEY:
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=session_id or f"tino-{uuid.uuid4().hex[:8]}",
+                system_message=system_message
+            ).with_model("openai", "gpt-4o")
+            
+            user_message = UserMessage(text=prompt)
+            response = await chat.send_message(user_message)
+            return response
+        
+        # Fallback to direct OpenAI
+        elif openai_client:
+            response = openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=1000,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
+        
+        else:
+            return "AI service unavailable. Please try again later."
+            
+    except Exception as e:
+        logger.error(f"AI response error: {str(e)}")
+        raise Exception(f"AI error: {str(e)}")
 
 # ============== ENUMS & MODELS ==============
 
