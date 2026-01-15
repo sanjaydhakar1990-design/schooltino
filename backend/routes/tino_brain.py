@@ -1286,7 +1286,9 @@ async def counsel_student(
     behavior = await analyze_student_behavior(student_id, school_id)
     
     # Generate counseling points using AI
-    if openai_client:
+    talking_points = "AI not available for counseling suggestions"
+    
+    if EMERGENT_LLM_KEY or openai_client:
         prompt = f"""
         Student Behavior Score: {behavior['behavior_score']}/100
         Concerns: {', '.join(behavior['concerns']) or 'None'}
@@ -1296,18 +1298,14 @@ async def counsel_student(
         Be empathetic but firm. Focus on improvement.
         """
         
-        response = openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are a school counselor AI assistant. Be empathetic and helpful."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=300
-        )
-        
-        talking_points = response.choices[0].message.content
-    else:
-        talking_points = "AI not available for counseling suggestions"
+        try:
+            talking_points = await get_ai_response(
+                prompt,
+                "You are a school counselor AI assistant. Be empathetic and helpful."
+            )
+        except Exception as e:
+            logger.error(f"Counseling AI error: {e}")
+            talking_points = "AI error occurred. Please try again."
     
     # Save counseling session
     session = {
