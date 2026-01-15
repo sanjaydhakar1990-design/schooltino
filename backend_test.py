@@ -960,7 +960,198 @@ class SchooltinoAPITester:
             print(f"   ❌ Error checking marketing page: {str(e)}")
             return False
 
-    # ============== NEW PRIORITY TESTS FOR REVIEW REQUEST ==============
+    # ============== NEW AI AUTO CONFIGURATION TESTS ==============
+    
+    def test_ai_config_status(self):
+        """Test Priority 1: AI Config Status API - GET /api/ai-config/status/{school_id}"""
+        success, response = self.run_test("AI Config Status API", "GET", "ai-config/status/SCH-0996D557", 200)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["school_id", "cctv", "speaker", "website", "api_integration"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+                else:
+                    print(f"   ✅ Found key: {key}")
+            
+            # Check overall progress
+            overall_progress = response.get("overall_progress", {})
+            print(f"   📝 Overall Progress: {overall_progress}")
+        
+        return success
+    
+    def test_cctv_manual_config(self):
+        """Test Priority 1: CCTV Manual Config API"""
+        data = {
+            "school_id": "SCH-0996D557",
+            "device_name": "Main Gate Camera",
+            "ip_address": "192.168.1.100",
+            "port": 554,
+            "username": "admin",
+            "password": "admin123",
+            "brand": "hikvision",
+            "location": "Main Gate"
+        }
+        success, response = self.run_test("CCTV Manual Config API", "POST", "ai-config/cctv/manual-config", 200, data)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["success", "device", "rtsp_url", "ai_guide"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+                else:
+                    print(f"   ✅ Found key: {key}")
+            
+            # Check device info
+            device = response.get("device", {})
+            if device.get("device_name") == "Main Gate Camera":
+                print(f"   ✅ Device name correctly saved")
+            
+            # Check AI guide
+            ai_guide = response.get("ai_guide", "")
+            if ai_guide:
+                print(f"   ✅ AI guide provided: {ai_guide[:50]}...")
+        
+        return success
+    
+    def test_website_ai_extract(self):
+        """Test Priority 1: Website AI Extract API"""
+        data = {
+            "school_id": "SCH-0996D557",
+            "website_url": "https://dpsrkp.net",
+            "extract_data": True
+        }
+        success, response = self.run_test("Website AI Extract API", "POST", "ai-config/website/auto-extract", 200, data)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["success", "extracted_data"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+                else:
+                    print(f"   ✅ Found key: {key}")
+            
+            # Check extracted data
+            extracted_data = response.get("extracted_data", {})
+            if extracted_data:
+                print(f"   ✅ Data extracted successfully")
+                # Check for school name, address, phone
+                if extracted_data.get("school_name"):
+                    print(f"   ✅ School name extracted: {extracted_data.get('school_name')}")
+                if extracted_data.get("address"):
+                    print(f"   ✅ Address extracted: {extracted_data.get('address')}")
+                if extracted_data.get("phone"):
+                    print(f"   ✅ Phone extracted: {extracted_data.get('phone')}")
+        
+        return success
+    
+    def test_speaker_auto_config(self):
+        """Test Priority 1: Speaker Auto Config API"""
+        data = {
+            "school_id": "SCH-0996D557",
+            "speaker_type": "direct_cctv"
+        }
+        success, response = self.run_test("Speaker Auto Config API", "POST", "ai-config/speaker/auto-config", 200, data)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["success", "speaker_config", "ai_guide"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+                else:
+                    print(f"   ✅ Found key: {key}")
+            
+            # Check speaker config
+            speaker_config = response.get("speaker_config", {})
+            if speaker_config.get("speaker_type") == "direct_cctv":
+                print(f"   ✅ Speaker type correctly configured")
+            
+            # Check AI guide
+            ai_guide = response.get("ai_guide", "")
+            if ai_guide:
+                print(f"   ✅ AI guide provided: {ai_guide[:50]}...")
+        
+        return success
+    
+    def test_software_supported_list(self):
+        """Test Priority 1: Software Supported List API"""
+        success, response = self.run_test("Software Supported List API", "GET", "ai-config/software/supported", 200)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["software", "import_methods"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+                else:
+                    print(f"   ✅ Found key: {key}")
+            
+            # Check supported software
+            software = response.get("software", {})
+            expected_software = ["tally", "fedena", "entab"]
+            for sw in expected_software:
+                if sw in software:
+                    print(f"   ✅ {sw.title()} supported")
+                else:
+                    print(f"   ⚠️ {sw.title()} not found in supported list")
+        
+        return success
+    
+    def test_software_auto_import(self):
+        """Test Priority 1: Software Auto Import API"""
+        data = {
+            "school_id": "SCH-0996D557",
+            "software_name": "tally",
+            "import_type": "excel"
+        }
+        success, response = self.run_test("Software Auto Import API", "POST", "ai-config/software/auto-import", 200, data)
+        
+        if success:
+            # Check if response has expected structure
+            expected_keys = ["success", "software", "import_method", "ai_mapping"]
+            for key in expected_keys:
+                if key not in response:
+                    print(f"   ⚠️ Missing key in response: {key}")
+                else:
+                    print(f"   ✅ Found key: {key}")
+            
+            # Check software name
+            if response.get("software") == "Tally ERP":
+                print(f"   ✅ Software correctly identified as Tally ERP")
+            
+            # Check AI mapping guide
+            ai_mapping = response.get("ai_mapping", "")
+            if ai_mapping:
+                print(f"   ✅ AI mapping guide provided: {ai_mapping[:50]}...")
+        
+        return success
+    
+    def test_tino_brain_query_hindi(self):
+        """Test Priority 2: Tino Brain Query in Hindi"""
+        data = {
+            "query": "School mein kitne students hain?",
+            "school_id": "SCH-0996D557",
+            "user_id": "test",
+            "user_role": "director",
+            "language": "hindi"
+        }
+        success, response = self.run_test("Tino Brain Query - Hindi", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            
+            # Check if response is in Hindi/Hinglish
+            if any(word in message for word in ["हैं", "है", "जी", "आप", "students", "school"]):
+                print(f"   ✅ AI responds properly in Hindi")
+            else:
+                print(f"   ⚠️ Response may not be in proper Hindi")
+        
+        return success
     
     def test_emergent_llm_integration(self):
         """Test Priority 1: Emergent LLM Integration Test"""
