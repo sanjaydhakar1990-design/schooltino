@@ -983,17 +983,10 @@ class SchooltinoAPITester:
     
     def test_cctv_manual_config(self):
         """Test Priority 1: CCTV Manual Config API"""
-        data = {
-            "school_id": "SCH-0996D557",
-            "device_name": "Main Gate Camera",
-            "ip_address": "192.168.1.100",
-            "port": 554,
-            "username": "admin",
-            "password": "admin123",
-            "brand": "hikvision",
-            "location": "Main Gate"
-        }
-        success, response = self.run_test("CCTV Manual Config API", "POST", "ai-config/cctv/manual-config", 200, data)
+        # This API uses query parameters, not JSON body
+        params = "school_id=SCH-0996D557&device_name=Main Gate Camera&ip_address=192.168.1.100&port=554&username=admin&password=admin123&brand=hikvision&location=Main Gate"
+        endpoint = f"ai-config/cctv/manual-config?{params}"
+        success, response = self.run_test("CCTV Manual Config API", "POST", endpoint, 200)
         
         if success:
             # Check if response has expected structure
