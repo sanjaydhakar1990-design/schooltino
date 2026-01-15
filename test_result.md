@@ -457,20 +457,62 @@ backend:
         agent: "testing"
         comment: "✅ School Auto Setup partially working. GET /api/school-setup/wizard/status/SCH-C497AFE7 works correctly ✅. POST /api/school-setup/extract-from-website fails with network error (expected for test URL) but API structure is correct. Core setup wizard functionality operational."
 
-  - task: "Marketing Page Phone Numbers"
-    implemented: false
-    working: false
-    file: "frontend/marketing"
-    stuck_count: 1
+  - task: "Emergent LLM Integration"
+    implemented: true
+    working: true
+    file: "backend/routes/tino_brain.py"
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
+        agent: "main"
+        comment: "Integrated Emergent LLM for Tino Brain queries with Hinglish support"
+      - working: true
         agent: "testing"
-        comment: "Verifying marketing page phone numbers"
+        comment: "✅ Emergent LLM Integration WORKING PERFECTLY! POST /api/tino-brain/query with Hinglish query 'School ka status batao' responds correctly in natural Hinglish. GET /api/tino-brain/status confirms using_emergent: true. AI integration fully operational."
+
+  - task: "Setup Progress APIs"
+    implemented: true
+    working: true
+    file: "backend/routes/school_auto_setup.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added setup progress tracking APIs for CCTV, Speaker, Website, Data Import steps"
+      - working: true
+        agent: "testing"
+        comment: "✅ Setup Progress APIs WORKING! POST /api/school-setup/progress saves progress correctly ✅ GET /api/school-setup/progress/{school_id} retrieves progress ✅ GET /api/school-setup/wizard/status/{school_id} returns wizard status ✅. All setup tracking functionality operational."
+
+  - task: "Voice Assistant TTS/STT Status"
+    implemented: true
+    working: true
+    file: "backend/routes/voice_assistant.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Voice Assistant TTS/STT Status CONFIRMED! GET /api/voice-assistant/status returns tts_available: true and stt_available: true. Both Text-to-Speech and Speech-to-Text services are available and working correctly."
+
+  - task: "Marketing Page Phone Numbers"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/MarketingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
       - working: false
         agent: "testing"
         comment: "❌ Marketing page phone numbers INCORRECT. Expected +91 78799 67616 and WhatsApp 917879967616 NOT FOUND on https://tino-school-manage.preview.emergentagent.com/marketing. Marketing page is accessible but does not contain the required contact numbers. This needs to be fixed immediately."
+      - working: true
+        agent: "testing"
+        comment: "✅ Marketing Page Phone Numbers VERIFIED! Phone numbers +91 78799 67616 and WhatsApp 917879967616 are present in the React component source code (lines 522, 548, and multiple WhatsApp links). Marketing page loads correctly. Note: Numbers are rendered by React, not in static HTML."
 
 frontend:
   - task: "PWA Install Prompt"
