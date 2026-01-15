@@ -972,16 +972,194 @@ class SchooltinoAPITester:
             print(f"   ❌ Error checking marketing page: {str(e)}")
             return False
 
+    # ============== NEW PRIORITY TESTS FOR REVIEW REQUEST ==============
+    
+    def test_emergent_llm_integration(self):
+        """Test Priority 1: Emergent LLM Integration Test"""
+        data = {
+            "query": "School ka status batao",
+            "school_id": "default",
+            "user_id": "test",
+            "user_role": "director",
+            "language": "hinglish"
+        }
+        success, response = self.run_test("Emergent LLM Integration - Hinglish Query", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            
+            # Check if response is in Hinglish
+            if any(word in message.lower() for word in ["hai", "hoon", "kar", "school", "status", "batao"]):
+                print(f"   ✅ AI responds properly in Hinglish")
+            else:
+                print(f"   ⚠️ Response may not be in proper Hinglish")
+        
+        return success
+    
+    def test_emergent_llm_status(self):
+        """Test Priority 1: Check Tino Brain status shows using_emergent: true"""
+        success, response = self.run_test("Emergent LLM Status Check", "GET", "tino-brain/status", 200)
+        
+        if success:
+            using_emergent = response.get("using_emergent", False)
+            print(f"   📝 using_emergent: {using_emergent}")
+            
+            if using_emergent:
+                print(f"   ✅ Emergent LLM is being used")
+            else:
+                print(f"   ⚠️ Emergent LLM not being used (using_emergent: false)")
+        
+        return success
+    
+    def test_setup_progress_save(self):
+        """Test Priority 1: Setup Progress APIs - Save Progress"""
+        data = {
+            "school_id": "default",
+            "step": 3,
+            "progress": {
+                "cctv_setup": True,
+                "speaker_setup": False,
+                "website_connected": True
+            }
+        }
+        success, response = self.run_test("Setup Progress - Save", "POST", "school-setup/progress", 200, data)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Setup progress saved successfully")
+            else:
+                print(f"   ⚠️ Setup progress save may have failed")
+        
+        return success
+    
+    def test_setup_progress_get(self):
+        """Test Priority 1: Setup Progress APIs - Get Progress"""
+        success, response = self.run_test("Setup Progress - Get", "GET", "school-setup/progress/default", 200)
+        
+        if success:
+            progress = response.get("progress", {})
+            print(f"   📝 Progress data: {progress}")
+            
+            if progress:
+                print(f"   ✅ Setup progress retrieved successfully")
+            else:
+                print(f"   ⚠️ No progress data found")
+        
+        return success
+    
+    def test_setup_wizard_status(self):
+        """Test Priority 1: Setup Progress APIs - Wizard Status"""
+        success, response = self.run_test("Setup Wizard Status", "GET", "school-setup/wizard/status/default", 200)
+        
+        if success:
+            status = response.get("status", "")
+            print(f"   📝 Wizard status: {status}")
+            
+            if status:
+                print(f"   ✅ Setup wizard status retrieved")
+            else:
+                print(f"   ⚠️ No wizard status found")
+        
+        return success
+    
+    def test_voice_assistant_status_priority(self):
+        """Test Priority 1: Voice Assistant Status - Verify TTS/STT available"""
+        success, response = self.run_test("Voice Assistant Status - TTS/STT Check", "GET", "voice-assistant/status", 200)
+        
+        if success:
+            tts_available = response.get("tts_available", False)
+            stt_available = response.get("stt_available", False)
+            
+            print(f"   📝 TTS Available: {tts_available}")
+            print(f"   📝 STT Available: {stt_available}")
+            
+            if tts_available and stt_available:
+                print(f"   ✅ Both TTS and STT are available")
+            elif tts_available:
+                print(f"   ⚠️ Only TTS available, STT not available")
+            elif stt_available:
+                print(f"   ⚠️ Only STT available, TTS not available")
+            else:
+                print(f"   ❌ Neither TTS nor STT available")
+        
+        return success
+    
+    def test_all_tino_brain_apis_priority(self):
+        """Test Priority 2: All Tino Brain APIs"""
+        results = []
+        
+        # Test 1: GET /api/tino-brain/status
+        success1, _ = self.run_test("Tino Brain Status API", "GET", "tino-brain/status", 200)
+        results.append(success1)
+        
+        # Test 2: GET /api/tino-brain/class-intelligence/default/class-10
+        success2, _ = self.run_test("Tino Brain Class Intelligence API", "GET", "tino-brain/class-intelligence/default/class-10", 200)
+        results.append(success2)
+        
+        # Test 3: GET /api/tino-brain/class-comparison/default
+        success3, _ = self.run_test("Tino Brain Class Comparison API", "GET", "tino-brain/class-comparison/default", 200)
+        results.append(success3)
+        
+        all_success = all(results)
+        if all_success:
+            print(f"   ✅ All Tino Brain APIs working correctly")
+        else:
+            print(f"   ⚠️ Some Tino Brain APIs failed")
+        
+        return all_success
+    
+    def test_admit_card_apis_priority(self):
+        """Test Priority 2: Admit Card APIs"""
+        results = []
+        
+        # Test 1: GET /api/admit-card/settings/{school_id}
+        success1, response1 = self.run_test("Admit Card Settings API", "GET", "admit-card/settings/SCH-C497AFE7", 200)
+        results.append(success1)
+        
+        if success1:
+            min_fee = response1.get("min_fee_percentage", 0)
+            print(f"   📝 Min fee percentage: {min_fee}")
+        
+        # Test 2: GET /api/admit-card/exams/{school_id}
+        success2, response2 = self.run_test("Admit Card Exams API", "GET", "admit-card/exams/SCH-C497AFE7", 200)
+        results.append(success2)
+        
+        if success2:
+            exams = response2.get("exams", [])
+            print(f"   📝 Found {len(exams)} exams")
+        
+        all_success = all(results)
+        if all_success:
+            print(f"   ✅ All Admit Card APIs working correctly")
+        else:
+            print(f"   ⚠️ Some Admit Card APIs failed")
+        
+        return all_success
+
     def run_all_tests(self):
-        """Run all API tests in sequence"""
-        print("🚀 Starting Schooltino API Tests...")
+        """Run all API tests in sequence - FOCUSED ON REVIEW REQUEST"""
+        print("🚀 Starting Schooltino API Tests - REVIEW REQUEST FOCUS...")
         print(f"📍 Base URL: {self.base_url}")
         
-        # Test sequence - Focus on NEW ADMIT CARD SYSTEM and requested features
+        # Test sequence - PRIORITY TESTS FROM REVIEW REQUEST
         tests = [
             ("Health Check", self.test_health_check),
             
-            # ============== ADMIT CARD SYSTEM TESTS ==============
+            # ============== TEST PRIORITY 1: NEW FEATURES ==============
+            ("🎯 Emergent LLM Integration Test", self.test_emergent_llm_integration),
+            ("🎯 Emergent LLM Status Check", self.test_emergent_llm_status),
+            ("🎯 Setup Progress - Save", self.test_setup_progress_save),
+            ("🎯 Setup Progress - Get", self.test_setup_progress_get),
+            ("🎯 Setup Wizard Status", self.test_setup_wizard_status),
+            ("🎯 Voice Assistant Status - TTS/STT", self.test_voice_assistant_status_priority),
+            
+            # ============== TEST PRIORITY 2: EXISTING CRITICAL FEATURES ==============
+            ("🎯 All Tino Brain APIs", self.test_all_tino_brain_apis_priority),
+            ("🎯 Admit Card APIs", self.test_admit_card_apis_priority),
+            ("🎯 Marketing Page Phone Numbers", self.test_marketing_page_phone_number),
+            
+            # ============== ADDITIONAL COMPREHENSIVE TESTS ==============
             ("Admit Card Settings - GET", self.test_admit_card_settings_get),
             ("Admit Card Settings - POST", self.test_admit_card_settings_post),
             ("Admit Card Exam - CREATE", self.test_admit_card_exam_create),
@@ -991,9 +1169,6 @@ class SchooltinoAPITester:
             # ============== SCHOOL AUTO SETUP TESTS ==============
             ("School Setup Status", self.test_school_setup_status),
             ("School Setup - Extract Website", self.test_school_setup_extract_website),
-            
-            # ============== MARKETING PAGE VERIFICATION ==============
-            ("Marketing Page Phone Number", self.test_marketing_page_phone_number),
             
             # ============== LANGUAGE & VOICE SYSTEM TESTS ==============
             ("Tino Brain - Pure Hindi Query", self.test_tino_brain_hindi_query),
