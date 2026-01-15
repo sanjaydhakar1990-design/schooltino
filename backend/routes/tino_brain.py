@@ -730,7 +730,7 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         language = detected_lang
     
     # Detect intent and get AI response with language and voice gender
-    ai_response = await get_ai_response(
+    ai_response = await get_ai_response_with_context(
         request.query, 
         request.user_role, 
         context,
