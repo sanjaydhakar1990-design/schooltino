@@ -1318,14 +1318,25 @@ class SchooltinoAPITester:
 
     def run_all_tests(self):
         """Run all API tests in sequence - FOCUSED ON REVIEW REQUEST"""
-        print("🚀 Starting Schooltino API Tests - REVIEW REQUEST FOCUS...")
+        print("🚀 Starting Schooltino API Tests - AI AUTO CONFIGURATION FOCUS...")
         print(f"📍 Base URL: {self.base_url}")
         
         # Test sequence - PRIORITY TESTS FROM REVIEW REQUEST
         tests = [
             ("Health Check", self.test_health_check),
             
-            # ============== TEST PRIORITY 1: NEW FEATURES ==============
+            # ============== TEST PRIORITY 1: AI AUTO CONFIG APIS ==============
+            ("🎯 AI Config Status API", self.test_ai_config_status),
+            ("🎯 CCTV Manual Config API", self.test_cctv_manual_config),
+            ("🎯 Website AI Extract API", self.test_website_ai_extract),
+            ("🎯 Speaker Auto Config API", self.test_speaker_auto_config),
+            ("🎯 Software Supported List API", self.test_software_supported_list),
+            ("🎯 Software Auto Import API", self.test_software_auto_import),
+            
+            # ============== TEST PRIORITY 2: TINO BRAIN AI ==============
+            ("🎯 Tino Brain Query in Hindi", self.test_tino_brain_query_hindi),
+            
+            # ============== ADDITIONAL PRIORITY TESTS ==============
             ("🎯 Emergent LLM Integration Test", self.test_emergent_llm_integration),
             ("🎯 Emergent LLM Status Check", self.test_emergent_llm_status),
             ("🎯 Setup Progress - Save", self.test_setup_progress_save),
