@@ -157,6 +157,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       label: t('settings'),
       icon: Wrench,
       items: [
+        { path: '/app/setup-guide', icon: Wrench, label: 'Setup Guide', permKey: 'settings', directorOnly: true },
         { path: '/app/users', icon: UserPlus, label: t('users'), permKey: 'user_management' },
         { path: '/app/permission-manager', icon: Shield, label: t('permissions'), permKey: 'user_management', directorOnly: true },
         { path: '/app/website', icon: Globe, label: t('website_integration'), permKey: 'website_integration' },
