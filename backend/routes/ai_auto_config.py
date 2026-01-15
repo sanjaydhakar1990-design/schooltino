@@ -381,8 +381,9 @@ async def manual_cctv_config(
         ip=ip_address, port=port, channel=1
     )
     
+    config_id = str(uuid.uuid4())
     config_data = {
-        "id": str(uuid.uuid4()),
+        "id": config_id,
         "school_id": school_id,
         "device_name": device_name,
         "ip_address": ip_address,
@@ -412,9 +413,21 @@ async def manual_cctv_config(
         "You are a CCTV expert for schools."
     )
     
+    # Return without _id
+    response_data = {
+        "id": config_id,
+        "school_id": school_id,
+        "device_name": device_name,
+        "ip_address": ip_address,
+        "port": port,
+        "brand": brand_config["name"],
+        "location": location,
+        "status": "configured"
+    }
+    
     return {
         "success": True,
-        "device": config_data,
+        "device": response_data,
         "rtsp_url": rtsp_url,
         "ai_guide": ai_guide,
         "test_command": f"vlc {rtsp_url}"
