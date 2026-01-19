@@ -381,6 +381,7 @@ export default function SuperAdminPanel() {
     if (activeTab === 'support' && isLoggedIn) loadTickets();
     if (activeTab === 'api-usage' && isLoggedIn) { loadApiUsage(); loadCostAlerts(); }
     if (activeTab === 'api-keys' && isLoggedIn) loadApiKeys();
+    if (activeTab === 'credits' && isLoggedIn) { loadSchoolCredits(); loadCreditStats(); }
     if (activeTab === 'whatsapp' && isLoggedIn) { 
       loadWhatsAppConfig(); 
       loadMessagePacks(); 
