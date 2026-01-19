@@ -251,22 +251,7 @@ export default function AIPaperPage() {
           )}
         </div>
       )}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Language</Label>
-          <select
-            name="language"
-            value={formData.language}
-            onChange={handleChange}
-            className="w-full h-12 rounded-lg border border-slate-200 px-3"
-            data-testid="paper-language-select"
-          >
-            <option value="english">English</option>
-            <option value="hindi">Hindi</option>
-          </select>
-        </div>
-      </div>
+
       <div className="flex justify-end">
         <Button
           onClick={() => setStep(2)}
