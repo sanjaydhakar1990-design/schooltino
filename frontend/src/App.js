@@ -62,6 +62,7 @@ import AdmitCardManagement from './pages/AdmitCardManagement';
 import PDFDownloadPage from './pages/PDFDownloadPage';
 import SetupGuidePage from './pages/SetupGuidePage';
 import SuperAdminPanel from './pages/SuperAdminPanel';
+import TeacherRoleManager from './pages/TeacherRoleManager';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
