@@ -557,18 +557,21 @@ class AuditLogResponse(BaseModel):
 class PaperGenerateRequest(BaseModel):
     subject: str
     class_name: str
-    chapter: str
+    chapter: str  # Can be single chapter or comma-separated multiple chapters
+    chapters: Optional[List[str]] = None  # New: List of specific chapters to include
     difficulty: str  # easy, medium, hard, mixed
     question_types: List[str]  # mcq, short, long, fill_blank
     total_marks: int
     time_duration: int  # in minutes
     language: str = "english"
+    include_all_chapters: bool = False  # If true, include all chapters of subject
 
 class PaperGenerateResponse(BaseModel):
     id: str
     subject: str
     class_name: str
     chapter: str
+    chapters_included: Optional[List[str]] = None
     questions: List[Dict[str, Any]]
     total_marks: int
     time_duration: int
