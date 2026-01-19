@@ -45,7 +45,7 @@ export default function TimetablePage() {
   const [showAllocationDialog, setShowAllocationDialog] = useState(false);
   const [showProxyDialog, setShowProxyDialog] = useState(false);
 
-  const schoolId = user?.school_id || 'school123';
+  const schoolId = user?.school_id || 'SCH-DEMO-2026';
 
   const [allocationForm, setAllocationForm] = useState({
     subject: '',
