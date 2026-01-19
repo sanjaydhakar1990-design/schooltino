@@ -326,6 +326,8 @@ export default function SuperAdminPanel() {
               { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
               { id: 'schools', label: 'Schools', icon: Building2 },
               { id: 'earnings', label: 'Earnings', icon: IndianRupee },
+              { id: 'api-usage', label: 'API Usage & Costs', icon: Zap },
+              { id: 'api-keys', label: 'API Keys', icon: Key },
               { id: 'support', label: 'Support Tickets', icon: HelpCircle },
               { id: 'settings', label: 'Settings', icon: Settings },
             ].map((item) => (
