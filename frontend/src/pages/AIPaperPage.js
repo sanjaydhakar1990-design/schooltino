@@ -180,23 +180,77 @@ export default function AIPaperPage() {
           </select>
         </div>
         <div className="space-y-2">
-          <Label>{t('chapter')} *</Label>
-          <Input
-            name="chapter"
-            value={formData.chapter}
-            onChange={handleChange}
-            placeholder="Enter chapter or topic name"
-            data-testid="paper-chapter-input"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Exam Name</Label>
+          <Label>Exam/Test Name *</Label>
           <Input
             name="exam_name"
             value={formData.exam_name}
             onChange={handleChange}
-            placeholder="e.g., Half Yearly, Unit Test, Final Exam"
+            placeholder="e.g., Half Yearly, Unit Test 1, Final Exam"
             data-testid="paper-exam-name-input"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Language</Label>
+          <select
+            name="language"
+            value={formData.language}
+            onChange={handleChange}
+            className="w-full h-12 rounded-lg border border-slate-200 px-3"
+            data-testid="paper-language-select"
+          >
+            <option value="english">English</option>
+            <option value="hindi">Hindi</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Chapter Selection */}
+      {formData.subject && (
+        <div className="space-y-3">
+          <Label>Select Chapters *</Label>
+          {loadingChapters ? (
+            <div className="flex items-center gap-2 text-slate-500">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading chapters...
+            </div>
+          ) : availableChapters.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-2 border rounded-lg">
+              {availableChapters.map((ch, idx) => (
+                <button
+                  key={ch.id || idx}
+                  type="button"
+                  onClick={() => handleChapterToggle(ch.name)}
+                  className={`p-3 rounded-lg border text-left transition-all text-sm ${
+                    formData.selectedChapters.includes(ch.name)
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                  data-testid={`chapter-${idx}`}
+                >
+                  <span className="font-medium">{ch.name}</span>
+                  {ch.weightage && <span className="text-xs text-slate-400 ml-1">({ch.weightage}%)</span>}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Input
+                name="chapter"
+                value={formData.chapter}
+                onChange={handleChange}
+                placeholder="Enter chapter or topic name (e.g., Quadratic Equations)"
+                data-testid="paper-chapter-input"
+              />
+              <p className="text-xs text-slate-500">Type chapter name manually or select multiple topics</p>
+            </div>
+          )}
+          {formData.selectedChapters.length > 0 && (
+            <p className="text-sm text-indigo-600">
+              Selected: {formData.selectedChapters.length} chapter(s)
+            </p>
+          )}
+        </div>
+      )}
           />
         </div>
         <div className="space-y-2">
