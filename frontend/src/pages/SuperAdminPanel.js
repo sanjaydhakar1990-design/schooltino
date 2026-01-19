@@ -286,6 +286,38 @@ export default function SuperAdminPanel() {
     }
   };
 
+  // Credit Functions
+  const loadSchoolCredits = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/message-credits/all-schools`);
+      setSchoolCredits(res.data.schools || []);
+    } catch (error) {
+      console.error('Failed to load credits');
+    }
+  };
+
+  const loadCreditStats = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/message-credits/stats`);
+      setCreditStats(res.data);
+    } catch (error) {
+      console.error('Failed to load credit stats');
+    }
+  };
+
+  const addCreditsToSchool = async () => {
+    try {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/message-credits/add`, addCreditsForm);
+      toast.success('Credits added successfully!');
+      setShowAddCreditsModal(false);
+      setAddCreditsForm({ school_id: '', credits: 1000, amount_paid: 500, payment_method: 'cash' });
+      loadSchoolCredits();
+      loadCreditStats();
+    } catch (error) {
+      toast.error('Failed to add credits');
+    }
+  };
+
   const updateSchoolStatus = async (schoolId, status, reason = '') => {
     try {
       await axios.put(`${API}/schools/${schoolId}/status?token=${token}`, {
