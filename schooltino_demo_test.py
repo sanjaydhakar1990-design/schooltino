@@ -226,9 +226,9 @@ class SchoolTinoDemoTester:
     # ============== FEES TESTS ==============
     
     def test_get_fees(self):
-        """Test GET /api/fees?school_id=SCH-DEMO-2026"""
-        endpoint = f"fees?school_id={self.school_id}"
-        success, response = self.run_test("Get Fees - Demo School", "GET", endpoint, 200)
+        """Test GET /api/fees/invoices?school_id=SCH-DEMO-2026"""
+        endpoint = f"fees/invoices?school_id={self.school_id}"
+        success, response = self.run_test("Get Fee Invoices - Demo School", "GET", endpoint, 200)
         
         if success:
             fees = response.get('fees', response) if isinstance(response, dict) else response
