@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { School, Eye, EyeOff, Loader2, GraduationCap, Users, Shield, ChevronRight } from 'lucide-react';
+import { School, Eye, EyeOff, Loader2, GraduationCap, Users, Shield, ChevronRight, Crown } from 'lucide-react';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -22,6 +22,12 @@ export default function LoginPage() {
   const [setupRequired, setSetupRequired] = useState(false);
   const [checkingSetup, setCheckingSetup] = useState(true);
   const [activePortal, setActivePortal] = useState('admin');
+  
+  // SECRET: Super Admin hidden login
+  const [secretClickCount, setSecretClickCount] = useState(0);
+  const [showSuperAdmin, setShowSuperAdmin] = useState(false);
+  const [superAdminForm, setSuperAdminForm] = useState({ email: '', password: '' });
+  const [superAdminLoading, setSuperAdminLoading] = useState(false);
   
   // Admin/Staff login form
   const [formData, setFormData] = useState({
@@ -39,6 +45,37 @@ export default function LoginPage() {
   });
 
   const [studentLoginMethod, setStudentLoginMethod] = useState('id'); // 'id' or 'mobile'
+
+  // SECRET: Logo click handler - 5 clicks to reveal Super Admin
+  const handleSecretClick = () => {
+    const newCount = secretClickCount + 1;
+    setSecretClickCount(newCount);
+    
+    if (newCount >= 5) {
+      setShowSuperAdmin(true);
+      setSecretClickCount(0);
+    }
+    
+    // Reset after 3 seconds
+    setTimeout(() => setSecretClickCount(0), 3000);
+  };
+
+  // Super Admin Login Handler
+  const handleSuperAdminLogin = async (e) => {
+    e.preventDefault();
+    setSuperAdminLoading(true);
+    setError('');
+    
+    try {
+      const res = await axios.post(`${API}/api/owner-console-x7k9m2/login`, superAdminForm);
+      localStorage.setItem('ownerToken', res.data.access_token);
+      navigate('/owner-x7k9m2');
+    } catch (err) {
+      setError('Invalid credentials');
+    } finally {
+      setSuperAdminLoading(false);
+    }
+  };
 
   // Check if initial setup is needed
   useEffect(() => {
