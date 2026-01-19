@@ -1542,39 +1542,60 @@ class SchooltinoAPITester:
         return all_success
 
     def run_all_tests(self):
-        """Run all API tests in sequence - FOCUSED ON REVIEW REQUEST"""
-        print("🚀 Starting Schooltino API Tests - AI AUTO CONFIGURATION FOCUS...")
+        """Run all API tests in sequence - FOCUSED ON REVIEW REQUEST NEW FEATURES"""
+        print("🚀 Starting Schooltino API Tests - NEW FEATURES FOCUS...")
         print(f"📍 Base URL: {self.base_url}")
+        print(f"🎯 Testing NEW features for SCHOOL_ID: SCH-DEMO-2026")
         
         # Test sequence - PRIORITY TESTS FROM REVIEW REQUEST
         tests = [
             ("Health Check", self.test_health_check),
             
-            # ============== TEST PRIORITY 1: AI AUTO CONFIG APIS ==============
-            ("🎯 AI Config Status API", self.test_ai_config_status),
-            ("🎯 CCTV Manual Config API", self.test_cctv_manual_config),
-            ("🎯 Website AI Extract API", self.test_website_ai_extract),
-            ("🎯 Speaker Auto Config API", self.test_speaker_auto_config),
-            ("🎯 Software Supported List API", self.test_software_supported_list),
-            ("🎯 Software Auto Import API", self.test_software_auto_import),
+            # ============== NEW FEATURES TESTS - REVIEW REQUEST PRIORITY ==============
+            ("🎯 NEW: Gallery Event Types", self.test_gallery_event_types),
+            ("🎯 NEW: Gallery Create Event", self.test_gallery_create_event),
+            ("🎯 NEW: Gallery Get Events SCH-DEMO-2026", self.test_gallery_get_events),
             
-            # ============== TEST PRIORITY 2: TINO BRAIN AI ==============
-            ("🎯 Tino Brain Query in Hindi", self.test_tino_brain_query_hindi),
+            ("🎯 NEW: Govt Exam Document Types", self.test_govt_exam_document_types),
+            ("🎯 NEW: Govt Exam Notifications SCH-DEMO-2026", self.test_govt_exam_notifications),
             
-            # ============== ADDITIONAL PRIORITY TESTS ==============
-            ("🎯 Emergent LLM Integration Test", self.test_emergent_llm_integration),
-            ("🎯 Emergent LLM Status Check", self.test_emergent_llm_status),
-            ("🎯 Setup Progress - Save", self.test_setup_progress_save),
-            ("🎯 Setup Progress - Get", self.test_setup_progress_get),
-            ("🎯 Setup Wizard Status", self.test_setup_wizard_status),
-            ("🎯 Voice Assistant Status - TTS/STT", self.test_voice_assistant_status_priority),
+            ("🎯 NEW: Transport GPS Setup Guide", self.test_transport_gps_setup_guide),
+            ("🎯 NEW: Transport GPS Status SCH-DEMO-2026", self.test_transport_gps_status),
             
-            # ============== TEST PRIORITY 2: EXISTING CRITICAL FEATURES ==============
+            ("🎯 NEW: Cash Payment with Receipt", self.test_cash_payment),
+            
+            ("🎯 NEW: AI Paper Subjects Class 10", self.test_ai_paper_subjects),
+            ("🎯 NEW: AI Paper Chapters Mathematics", self.test_ai_paper_chapters_mathematics),
+            ("🎯 NEW: AI Paper Chapters Science", self.test_ai_paper_chapters_science),
+            
+            ("🎯 NEW: Transport Parent Track STD-2026-0001", self.test_transport_parent_track),
+            
+            ("🎯 NEW: Tino Brain Absent Query (Verify Working)", self.test_tino_brain_absent_query),
+            
+            # ============== EXISTING CRITICAL FEATURES VERIFICATION ==============
+            ("🎯 Tino Brain Status", self.test_tino_brain_status),
             ("🎯 All Tino Brain APIs", self.test_all_tino_brain_apis_priority),
             ("🎯 Admit Card APIs", self.test_admit_card_apis_priority),
-            ("🎯 Marketing Page Phone Numbers", self.test_marketing_page_phone_number),
             
-            # ============== ADDITIONAL COMPREHENSIVE TESTS ==============
+            # ============== AI AUTO CONFIG APIS (Previous Priority) ==============
+            ("AI Config Status API", self.test_ai_config_status),
+            ("CCTV Manual Config API", self.test_cctv_manual_config),
+            ("Website AI Extract API", self.test_website_ai_extract),
+            ("Speaker Auto Config API", self.test_speaker_auto_config),
+            ("Software Supported List API", self.test_software_supported_list),
+            ("Software Auto Import API", self.test_software_auto_import),
+            
+            # ============== EMERGENT LLM & VOICE TESTS ==============
+            ("Emergent LLM Integration Test", self.test_emergent_llm_integration),
+            ("Emergent LLM Status Check", self.test_emergent_llm_status),
+            ("Voice Assistant Status - TTS/STT", self.test_voice_assistant_status_priority),
+            
+            # ============== SETUP PROGRESS TESTS ==============
+            ("Setup Progress - Save", self.test_setup_progress_save),
+            ("Setup Progress - Get", self.test_setup_progress_get),
+            ("Setup Wizard Status", self.test_setup_wizard_status),
+            
+            # ============== ADMIT CARD SYSTEM TESTS ==============
             ("Admit Card Settings - GET", self.test_admit_card_settings_get),
             ("Admit Card Settings - POST", self.test_admit_card_settings_post),
             ("Admit Card Exam - CREATE", self.test_admit_card_exam_create),
@@ -1596,50 +1617,27 @@ class SchooltinoAPITester:
             ("AI Greeting - English Staff", self.test_ai_greeting_english),
             ("Voice Assistant - Multilingual TTS", self.test_voice_assistant_tts_multilingual),
             
-            # AI Greeting System (CCTV Gate Greeting)
+            # ============== MAJOR SCHOOLTINO FEATURES TESTS ==============
             ("AI Greeting - Parent Detection", self.test_ai_greeting_detect),
             ("AI Greeting - Staff Detection", self.test_ai_greeting_staff),
             ("AI Greeting Settings", self.test_ai_greeting_settings),
-            
-            # Director Greeting System
             ("Director Greeting", self.test_director_greeting),
-            
-            # Tino Brain AI
-            ("Tino Brain Status", self.test_tino_brain_status),
             ("Tino Brain - General Query", self.test_tino_brain_query_general),
             ("Tino Brain - Class 10 Intelligence", self.test_tino_brain_class_intelligence_specific),
-            
-            # Voice Assistant
             ("Voice Assistant Status", self.test_voice_assistant_status),
             ("Voice Assistant TTS", self.test_voice_assistant_tts),
-            
-            # Face Recognition System
             ("Face Recognition Status", self.test_face_recognition_status),
             ("Face Recognition Devices", self.test_face_recognition_devices),
-            
-            # Fee Management
             ("Fee Payment Structure", self.test_fee_payment_structure),
-            
-            # AI Accountant
             ("AI Accountant Dashboard", self.test_ai_accountant_dashboard),
-            
-            # Front Office / Visitor Management
             ("Front Office Visitors", self.test_front_office_visitors),
-            
-            # Transport Management
             ("Transport Vehicles", self.test_transport_vehicles),
-            
-            # Health Module
             ("Health Records", self.test_health_records),
-            
-            # Biometric System
             ("Biometric Devices", self.test_biometric_devices),
-            
-            # Syllabus System
             ("Syllabus Boards", self.test_syllabus_boards),
             ("NCERT Syllabus Class 10", self.test_syllabus_ncert),
             
-            # Previous Tino Brain Tests
+            # ============== TINO BRAIN COMPREHENSIVE TESTS ==============
             ("Class Intelligence API", self.test_class_intelligence_api),
             ("Class Comparison API", self.test_class_comparison_api),
             ("CCTV Class Detection API", self.test_cctv_class_detection_api),
@@ -1647,7 +1645,10 @@ class SchooltinoAPITester:
             ("Tino Brain Query - Weak Students", self.test_tino_brain_query_weak_students),
             ("Tino Brain Query - Teacher Performance", self.test_tino_brain_query_teacher_performance),
             
-            # Basic Auth & CRUD Tests (Optional)
+            # ============== MARKETING PAGE VERIFICATION ==============
+            ("Marketing Page Phone Numbers", self.test_marketing_page_phone_number),
+            
+            # ============== BASIC AUTH & CRUD TESTS (Optional) ==============
             ("User Registration", self.test_register),
             ("User Login", self.test_login),
             ("Get Current User", self.test_get_me),
