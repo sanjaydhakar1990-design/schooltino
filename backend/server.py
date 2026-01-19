@@ -3133,6 +3133,178 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
         logging.error(f"AI Paper generation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate paper: {str(e)}")
 
+# ==================== AI PAPER - GET CHAPTERS ====================
+
+@api_router.get("/ai/paper/subjects/{class_name}")
+async def get_subjects_for_class(class_name: str):
+    """Get all subjects available for a class"""
+    # Standard subjects for different classes
+    class_num = int(''.join(filter(str.isdigit, class_name)) or 10)
+    
+    if class_num <= 5:
+        subjects = [
+            {"id": "hindi", "name": "Hindi", "chapters_count": 15},
+            {"id": "english", "name": "English", "chapters_count": 12},
+            {"id": "mathematics", "name": "Mathematics", "chapters_count": 14},
+            {"id": "evs", "name": "EVS (Environmental Studies)", "chapters_count": 10},
+            {"id": "computer", "name": "Computer", "chapters_count": 8}
+        ]
+    elif class_num <= 8:
+        subjects = [
+            {"id": "hindi", "name": "Hindi", "chapters_count": 16},
+            {"id": "english", "name": "English", "chapters_count": 12},
+            {"id": "mathematics", "name": "Mathematics", "chapters_count": 15},
+            {"id": "science", "name": "Science", "chapters_count": 18},
+            {"id": "social_science", "name": "Social Science", "chapters_count": 20},
+            {"id": "sanskrit", "name": "Sanskrit", "chapters_count": 12},
+            {"id": "computer", "name": "Computer", "chapters_count": 10}
+        ]
+    elif class_num <= 10:
+        subjects = [
+            {"id": "hindi", "name": "Hindi", "chapters_count": 17},
+            {"id": "english", "name": "English", "chapters_count": 12},
+            {"id": "mathematics", "name": "Mathematics", "chapters_count": 15},
+            {"id": "science", "name": "Science", "chapters_count": 16},
+            {"id": "social_science", "name": "Social Science", "chapters_count": 24},
+            {"id": "sanskrit", "name": "Sanskrit", "chapters_count": 14},
+            {"id": "computer", "name": "Computer", "chapters_count": 8}
+        ]
+    else:  # 11-12
+        subjects = [
+            {"id": "hindi", "name": "Hindi", "chapters_count": 18},
+            {"id": "english", "name": "English", "chapters_count": 14},
+            {"id": "physics", "name": "Physics", "chapters_count": 15},
+            {"id": "chemistry", "name": "Chemistry", "chapters_count": 16},
+            {"id": "mathematics", "name": "Mathematics", "chapters_count": 13},
+            {"id": "biology", "name": "Biology", "chapters_count": 16},
+            {"id": "accountancy", "name": "Accountancy", "chapters_count": 12},
+            {"id": "business_studies", "name": "Business Studies", "chapters_count": 12},
+            {"id": "economics", "name": "Economics", "chapters_count": 10},
+            {"id": "computer_science", "name": "Computer Science", "chapters_count": 10}
+        ]
+    
+    return {
+        "class": class_name,
+        "subjects": subjects
+    }
+
+@api_router.get("/ai/paper/chapters/{class_name}/{subject}")
+async def get_chapters_for_subject(class_name: str, subject: str):
+    """Get all chapters for a subject - for chapter selection in AI Paper Generator"""
+    
+    # NCERT-based chapter data (simplified)
+    chapters_data = {
+        # Class 10 subjects
+        "10_mathematics": [
+            {"id": "ch1", "name": "Real Numbers", "weightage": 6},
+            {"id": "ch2", "name": "Polynomials", "weightage": 6},
+            {"id": "ch3", "name": "Pair of Linear Equations in Two Variables", "weightage": 8},
+            {"id": "ch4", "name": "Quadratic Equations", "weightage": 8},
+            {"id": "ch5", "name": "Arithmetic Progressions", "weightage": 8},
+            {"id": "ch6", "name": "Triangles", "weightage": 8},
+            {"id": "ch7", "name": "Coordinate Geometry", "weightage": 6},
+            {"id": "ch8", "name": "Introduction to Trigonometry", "weightage": 8},
+            {"id": "ch9", "name": "Some Applications of Trigonometry", "weightage": 6},
+            {"id": "ch10", "name": "Circles", "weightage": 6},
+            {"id": "ch11", "name": "Constructions", "weightage": 4},
+            {"id": "ch12", "name": "Areas Related to Circles", "weightage": 6},
+            {"id": "ch13", "name": "Surface Areas and Volumes", "weightage": 8},
+            {"id": "ch14", "name": "Statistics", "weightage": 6},
+            {"id": "ch15", "name": "Probability", "weightage": 6}
+        ],
+        "10_science": [
+            {"id": "ch1", "name": "Chemical Reactions and Equations", "weightage": 7},
+            {"id": "ch2", "name": "Acids, Bases and Salts", "weightage": 7},
+            {"id": "ch3", "name": "Metals and Non-metals", "weightage": 7},
+            {"id": "ch4", "name": "Carbon and its Compounds", "weightage": 7},
+            {"id": "ch5", "name": "Life Processes", "weightage": 8},
+            {"id": "ch6", "name": "Control and Coordination", "weightage": 6},
+            {"id": "ch7", "name": "How do Organisms Reproduce", "weightage": 6},
+            {"id": "ch8", "name": "Heredity and Evolution", "weightage": 6},
+            {"id": "ch9", "name": "Light - Reflection and Refraction", "weightage": 8},
+            {"id": "ch10", "name": "Human Eye and Colourful World", "weightage": 5},
+            {"id": "ch11", "name": "Electricity", "weightage": 8},
+            {"id": "ch12", "name": "Magnetic Effects of Electric Current", "weightage": 6},
+            {"id": "ch13", "name": "Our Environment", "weightage": 4},
+            {"id": "ch14", "name": "Management of Natural Resources", "weightage": 5}
+        ],
+        "10_english": [
+            {"id": "ch1", "name": "A Letter to God", "weightage": 6},
+            {"id": "ch2", "name": "Nelson Mandela: Long Walk to Freedom", "weightage": 8},
+            {"id": "ch3", "name": "Two Stories about Flying", "weightage": 6},
+            {"id": "ch4", "name": "From the Diary of Anne Frank", "weightage": 8},
+            {"id": "ch5", "name": "The Hundred Dresses Part 1 & 2", "weightage": 8},
+            {"id": "ch6", "name": "Glimpses of India", "weightage": 6},
+            {"id": "ch7", "name": "Madam Rides the Bus", "weightage": 6},
+            {"id": "ch8", "name": "The Sermon at Benares", "weightage": 6},
+            {"id": "ch9", "name": "The Proposal", "weightage": 8},
+            {"id": "poetry", "name": "Poetry Section", "weightage": 20},
+            {"id": "grammar", "name": "Grammar & Writing", "weightage": 18}
+        ],
+        "10_hindi": [
+            {"id": "ch1", "name": "सूरदास के पद", "weightage": 6},
+            {"id": "ch2", "name": "राम-लक्ष्मण-परशुराम संवाद", "weightage": 6},
+            {"id": "ch3", "name": "आत्मत्राण", "weightage": 5},
+            {"id": "ch4", "name": "बालगोबिन भगत", "weightage": 7},
+            {"id": "ch5", "name": "नेताजी का चश्मा", "weightage": 7},
+            {"id": "ch6", "name": "मानवीय करुणा की दिव्य चमक", "weightage": 6},
+            {"id": "ch7", "name": "एक कहानी यह भी", "weightage": 7},
+            {"id": "ch8", "name": "संस्कृति", "weightage": 6},
+            {"id": "grammar", "name": "व्याकरण", "weightage": 15},
+            {"id": "writing", "name": "लेखन", "weightage": 20}
+        ],
+        "10_social_science": [
+            {"id": "hist1", "name": "The Rise of Nationalism in Europe", "weightage": 5},
+            {"id": "hist2", "name": "Nationalism in India", "weightage": 8},
+            {"id": "hist3", "name": "The Making of a Global World", "weightage": 5},
+            {"id": "hist4", "name": "The Age of Industrialisation", "weightage": 5},
+            {"id": "hist5", "name": "Print Culture and the Modern World", "weightage": 5},
+            {"id": "geo1", "name": "Resources and Development", "weightage": 6},
+            {"id": "geo2", "name": "Forest and Wildlife Resources", "weightage": 4},
+            {"id": "geo3", "name": "Water Resources", "weightage": 5},
+            {"id": "geo4", "name": "Agriculture", "weightage": 6},
+            {"id": "geo5", "name": "Minerals and Energy Resources", "weightage": 5},
+            {"id": "geo6", "name": "Manufacturing Industries", "weightage": 6},
+            {"id": "pol1", "name": "Power Sharing", "weightage": 5},
+            {"id": "pol2", "name": "Federalism", "weightage": 5},
+            {"id": "pol3", "name": "Democracy and Diversity", "weightage": 4},
+            {"id": "pol4", "name": "Gender, Religion and Caste", "weightage": 4},
+            {"id": "pol5", "name": "Political Parties", "weightage": 5},
+            {"id": "eco1", "name": "Development", "weightage": 5},
+            {"id": "eco2", "name": "Sectors of the Indian Economy", "weightage": 5},
+            {"id": "eco3", "name": "Money and Credit", "weightage": 5},
+            {"id": "eco4", "name": "Globalisation and the Indian Economy", "weightage": 5}
+        ]
+    }
+    
+    # Normalize subject and class
+    class_num = ''.join(filter(str.isdigit, class_name)) or "10"
+    subject_key = subject.lower().replace(" ", "_")
+    
+    lookup_key = f"{class_num}_{subject_key}"
+    
+    chapters = chapters_data.get(lookup_key)
+    
+    if not chapters:
+        # Return generic chapters
+        return {
+            "class": class_name,
+            "subject": subject,
+            "chapters": [
+                {"id": f"ch{i}", "name": f"Chapter {i}", "weightage": 6}
+                for i in range(1, 16)
+            ],
+            "note": "Generic chapters - specific syllabus not found"
+        }
+    
+    return {
+        "class": class_name,
+        "subject": subject,
+        "chapters": chapters,
+        "total_chapters": len(chapters),
+        "board": "NCERT/CBSE"
+    }
+
 @api_router.get("/ai/papers", response_model=List[PaperGenerateResponse])
 async def get_generated_papers(
     subject: Optional[str] = None,
