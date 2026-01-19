@@ -98,6 +98,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { path: '/app/classes', icon: GraduationCap, label: t('classes'), permKey: 'classes' },
         { path: '/app/attendance', icon: CalendarCheck, label: t('attendance'), permKey: 'attendance' },
         { path: '/app/timetable', icon: Clock, label: t('timetable'), permKey: 'attendance' },
+        { path: '/app/exams', icon: FileText, label: 'Online Exams', permKey: 'attendance' },
         { path: '/app/admit-cards', icon: Award, label: 'Admit Cards', permKey: 'attendance' },
       ]
     },
