@@ -784,6 +784,285 @@ export default function SuperAdminPanel() {
               </Card>
             </div>
           )}
+
+          {/* API Usage Tab */}
+          {activeTab === 'api-usage' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-slate-900">API Usage & Costs</h2>
+              
+              {/* Cost Alerts */}
+              {costAlerts && costAlerts.total_alerts > 0 && (
+                <Card className="border-red-200 bg-red-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="w-6 h-6 text-red-500" />
+                      <div>
+                        <p className="font-medium text-red-700">{costAlerts.total_alerts} Cost Alerts</p>
+                        <p className="text-sm text-red-600">{costAlerts.critical} critical, {costAlerts.warnings} warnings</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {apiUsage && (
+                <>
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="bg-gradient-to-br from-violet-500 to-purple-600 text-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-violet-200">OpenAI / Emergent LLM</p>
+                            <p className="text-2xl font-bold">{apiUsage.summary.openai.total_queries} queries</p>
+                            <p className="text-sm text-violet-200">Est. Cost: ₹{(apiUsage.summary.openai.estimated_cost * 83).toFixed(0)}</p>
+                          </div>
+                          <Bot className="w-10 h-10 text-violet-200" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-pink-500 to-rose-600 text-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-pink-200">ElevenLabs Voice</p>
+                            <p className="text-2xl font-bold">{apiUsage.summary.elevenlabs.total_requests} requests</p>
+                            <p className="text-sm text-pink-200">Est. Cost: ₹{(apiUsage.summary.elevenlabs.estimated_cost * 83).toFixed(0)}</p>
+                          </div>
+                          <Mic className="w-10 h-10 text-pink-200" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-blue-200">Razorpay</p>
+                            <p className="text-2xl font-bold">₹{apiUsage.summary.razorpay.total_amount.toLocaleString()}</p>
+                            <p className="text-sm text-blue-200">Fees: ₹{apiUsage.summary.razorpay.estimated_fees.toFixed(0)}</p>
+                          </div>
+                          <PaymentIcon className="w-10 h-10 text-blue-200" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Total Cost */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-slate-500">Total Estimated Monthly Cost</p>
+                          <p className="text-4xl font-bold text-red-600">₹{(apiUsage.summary.total_estimated_cost * 83).toFixed(0)}</p>
+                        </div>
+                        <TrendingDown className="w-12 h-12 text-red-300" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Top Consumers */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top API Consumers (OpenAI)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {(apiUsage.top_openai_consumers || []).map((school, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                            <div>
+                              <p className="font-medium">{school.school_name}</p>
+                              <p className="text-sm text-slate-500">{school.queries} queries</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-violet-600">{school.tokens} tokens</p>
+                              <p className="text-xs text-slate-500">~₹{(school.tokens * 0.001).toFixed(0)}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {(!apiUsage.top_openai_consumers || apiUsage.top_openai_consumers.length === 0) && (
+                          <p className="text-center text-slate-500 py-4">No usage data yet</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {!apiUsage && (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Zap className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-500">Loading API usage data...</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* API Keys Tab */}
+          {activeTab === 'api-keys' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-slate-900">API Keys Management</h2>
+                <Button onClick={() => setShowApiKeyModal(true)}>
+                  <Key className="w-4 h-4 mr-2" /> Add API Key
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* OpenAI / Emergent */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bot className="w-5 h-5 text-violet-500" />
+                      OpenAI / Emergent LLM
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {apiKeys.find(k => k.service === 'openai' || k.service === 'emergent') ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">API Key</span>
+                          <span className="font-mono text-sm">{apiKeys.find(k => k.service === 'openai' || k.service === 'emergent')?.api_key}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Status</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Active</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-center py-4">Not configured</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* ElevenLabs */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mic className="w-5 h-5 text-pink-500" />
+                      ElevenLabs Voice
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {apiKeys.find(k => k.service === 'elevenlabs') ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">API Key</span>
+                          <span className="font-mono text-sm">{apiKeys.find(k => k.service === 'elevenlabs')?.api_key}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Status</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Active</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-center py-4">Not configured</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Razorpay */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <PaymentIcon className="w-5 h-5 text-blue-500" />
+                      Razorpay Payments
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {apiKeys.find(k => k.service === 'razorpay') ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Key ID</span>
+                          <span className="font-mono text-sm">{apiKeys.find(k => k.service === 'razorpay')?.api_key}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Secret</span>
+                          <span className="font-mono text-sm">***hidden***</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-center py-4">Not configured</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Twilio/SMS */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-green-500" />
+                      Twilio SMS
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {apiKeys.find(k => k.service === 'twilio') ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Account SID</span>
+                          <span className="font-mono text-sm">{apiKeys.find(k => k.service === 'twilio')?.api_key}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-center py-4">Not configured</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Add API Key Modal */}
+              {showApiKeyModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <Card className="w-full max-w-md">
+                    <CardHeader>
+                      <CardTitle>Add API Key</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <select
+                        value={newApiKey.service}
+                        onChange={(e) => setNewApiKey({...newApiKey, service: e.target.value})}
+                        className="w-full p-2 border rounded-lg"
+                      >
+                        <option value="">Select Service</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="emergent">Emergent LLM</option>
+                        <option value="elevenlabs">ElevenLabs</option>
+                        <option value="razorpay">Razorpay</option>
+                        <option value="twilio">Twilio</option>
+                        <option value="sendgrid">SendGrid</option>
+                      </select>
+                      <Input
+                        placeholder="API Key"
+                        value={newApiKey.api_key}
+                        onChange={(e) => setNewApiKey({...newApiKey, api_key: e.target.value})}
+                      />
+                      {newApiKey.service === 'razorpay' && (
+                        <Input
+                          placeholder="Secret Key"
+                          type="password"
+                          value={newApiKey.secret_key}
+                          onChange={(e) => setNewApiKey({...newApiKey, secret_key: e.target.value})}
+                        />
+                      )}
+                      <Input
+                        placeholder="Monthly Limit (₹) - Optional"
+                        type="number"
+                        value={newApiKey.monthly_limit}
+                        onChange={(e) => setNewApiKey({...newApiKey, monthly_limit: e.target.value})}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={saveApiKey} className="flex-1">Save</Button>
+                        <Button variant="outline" onClick={() => setShowApiKeyModal(false)}>Cancel</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
     </div>
