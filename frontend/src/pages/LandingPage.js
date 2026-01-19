@@ -481,32 +481,71 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Simple, Affordable Pricing</h2>
-            <p className="text-slate-600">50% cheaper than competitors with 3x more features</p>
+            <p className="text-slate-600 mb-6">50% cheaper than competitors with 3x more features</p>
+            
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-indigo-600' : 'text-slate-500'}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                className={`relative w-14 h-7 rounded-full transition-colors ${billingCycle === 'yearly' ? 'bg-indigo-600' : 'bg-slate-300'}`}
+              >
+                <span className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${billingCycle === 'yearly' ? 'translate-x-8' : 'translate-x-1'}`} />
+              </button>
+              <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-indigo-600' : 'text-slate-500'}`}>
+                Yearly
+              </span>
+              {billingCycle === 'yearly' && (
+                <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
+                  Save upto ₹7,989/year
+                </span>
+              )}
+            </div>
+            
+            {/* Per-Student Pricing Note */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-w-2xl mx-auto mb-8">
+              <p className="text-amber-800 text-sm">
+                <strong>💡 Per-Student Pricing bhi available hai!</strong><br/>
+                Large schools ke liye: ₹10-30/student/month - Jitne students, utna pay karo
+              </p>
+            </div>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {pricing.map((plan, idx) => (
               <Card 
                 key={idx} 
-                className={`relative overflow-hidden ${plan.popular ? 'border-indigo-600 border-2 shadow-xl' : 'border-slate-200'}`}
+                className={`relative overflow-hidden ${plan.popular ? 'border-indigo-600 border-2 shadow-xl scale-105' : 'border-slate-200'}`}
               >
                 {plan.popular && (
                   <div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
-                    Most Popular
+                    ⭐ Most Popular
                   </div>
                 )}
-                <CardContent className="p-6">
+                {billingCycle === 'yearly' && (
+                  <div className="absolute top-0 left-0 bg-green-500 text-white text-xs font-medium px-2 py-1 rounded-br-lg">
+                    Save {plan.savings}
+                  </div>
+                )}
+                <CardContent className="p-6 pt-8">
                   <h3 className="text-lg font-semibold text-slate-900 mb-1">{plan.name}</h3>
                   <p className="text-sm text-slate-500 mb-4">{plan.desc}</p>
-                  <div className="flex items-baseline gap-1 mb-6">
+                  <div className="flex items-baseline gap-1 mb-2">
                     <span className="text-slate-400 text-sm">₹</span>
-                    <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
+                    <span className="text-4xl font-bold text-slate-900">
+                      {billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
+                    </span>
                     <span className="text-slate-500">{plan.period}</span>
                   </div>
+                  <p className="text-xs text-slate-400 mb-4">
+                    या ₹{plan.perStudentPrice}/student/month
+                  </p>
                   <ul className="space-y-3 mb-6">
                     {plan.features.map((feature, fIdx) => (
                       <li key={fIdx} className="flex items-center gap-2 text-sm text-slate-600">
-                        <Check className="w-4 h-4 text-emerald-500" />
+                        <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                         {feature}
                       </li>
                     ))}
