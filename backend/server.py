@@ -7288,6 +7288,7 @@ api_router.include_router(admit_card_router)
 api_router.include_router(ai_auto_config_router)
 api_router.include_router(gallery_router)
 api_router.include_router(govt_exam_router)
+api_router.include_router(super_admin_router)
 
 app.include_router(api_router)
 
