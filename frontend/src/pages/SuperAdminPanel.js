@@ -163,6 +163,33 @@ export default function SuperAdminPanel() {
     }
   };
 
+  const loadApiUsage = async () => {
+    try {
+      const res = await axios.get(`${API}/api-usage?token=${token}`);
+      setApiUsage(res.data);
+    } catch (error) {
+      toast.error('Failed to load API usage');
+    }
+  };
+
+  const loadApiKeys = async () => {
+    try {
+      const res = await axios.get(`${API}/api-keys?token=${token}`);
+      setApiKeys(res.data.keys || []);
+    } catch (error) {
+      toast.error('Failed to load API keys');
+    }
+  };
+
+  const loadCostAlerts = async () => {
+    try {
+      const res = await axios.get(`${API}/cost-alerts?token=${token}`);
+      setCostAlerts(res.data);
+    } catch (error) {
+      console.error('Failed to load cost alerts');
+    }
+  };
+
   const updateSchoolStatus = async (schoolId, status, reason = '') => {
     try {
       await axios.put(`${API}/schools/${schoolId}/status?token=${token}`, {
@@ -187,10 +214,45 @@ export default function SuperAdminPanel() {
     }
   };
 
+  const startTrial = async (schoolId) => {
+    try {
+      await axios.post(`${API}/trial/start/${schoolId}?days=${trialConfig.days}&features=${trialConfig.features}&token=${token}`);
+      toast.success(`Trial started for ${trialConfig.days} days`);
+      setShowTrialModal(false);
+      loadSchools();
+    } catch (error) {
+      toast.error('Failed to start trial');
+    }
+  };
+
+  const convertToPaid = async (schoolId, planType, billingCycle, amount) => {
+    try {
+      await axios.post(`${API}/trial/convert-to-paid/${schoolId}?plan_type=${planType}&billing_cycle=${billingCycle}&amount=${amount}&token=${token}`);
+      toast.success('Converted to paid subscription');
+      loadSchools();
+    } catch (error) {
+      toast.error('Failed to convert');
+    }
+  };
+
+  const saveApiKey = async () => {
+    try {
+      await axios.post(`${API}/api-keys?token=${token}`, newApiKey);
+      toast.success(`${newApiKey.service} API key saved`);
+      setShowApiKeyModal(false);
+      setNewApiKey({ service: '', api_key: '', secret_key: '', monthly_limit: '' });
+      loadApiKeys();
+    } catch (error) {
+      toast.error('Failed to save API key');
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'schools' && isLoggedIn) loadSchools();
     if (activeTab === 'earnings' && isLoggedIn) loadEarnings();
     if (activeTab === 'support' && isLoggedIn) loadTickets();
+    if (activeTab === 'api-usage' && isLoggedIn) { loadApiUsage(); loadCostAlerts(); }
+    if (activeTab === 'api-keys' && isLoggedIn) loadApiKeys();
   }, [activeTab, isLoggedIn]);
 
   // Login Screen
