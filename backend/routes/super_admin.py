@@ -1,10 +1,13 @@
 """
 SUPER ADMIN PANEL - Platform Owner Dashboard
 - View all registered schools
-- Manage subscriptions
+- Manage subscriptions & trials
 - Track earnings
-- Monitor issues
+- Monitor API usage (OpenAI, ElevenLabs, Razorpay)
 - School analytics
+- API Keys Management
+
+SECRET URL: /owner-console-x7k9m2
 """
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -18,7 +21,8 @@ import bcrypt
 import jwt
 from functools import wraps
 
-router = APIRouter(prefix="/super-admin", tags=["Super Admin"])
+# SECRET HIDDEN URL - Change this to your preferred secret path
+router = APIRouter(prefix="/owner-console-x7k9m2", tags=["Platform Owner"])
 
 # Database connection
 mongo_url = os.environ.get('MONGO_URL')
@@ -47,6 +51,20 @@ class SchoolSubscriptionUpdate(BaseModel):
     status: str  # active, suspended, cancelled, trial
     valid_until: str
     amount: float
+    notes: Optional[str] = None
+
+class TrialConfig(BaseModel):
+    school_id: str
+    trial_days: int
+    features: List[str]  # Which features to enable
+    notes: Optional[str] = None
+
+class APIKeyConfig(BaseModel):
+    service: str  # openai, elevenlabs, razorpay, emergent
+    api_key: str
+    secret_key: Optional[str] = None  # For Razorpay
+    is_active: bool = True
+    monthly_limit: Optional[float] = None  # Cost limit
     notes: Optional[str] = None
 
 class SchoolStatusUpdate(BaseModel):
