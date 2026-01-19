@@ -421,6 +421,7 @@ export default function SuperAdminPanel() {
             {[
               { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
               { id: 'schools', label: 'Schools', icon: Building2 },
+              { id: 'credits', label: 'Message Credits', icon: CreditCard },
               { id: 'earnings', label: 'Earnings', icon: IndianRupee },
               { id: 'whatsapp', label: 'WhatsApp Business', icon: MessageSquare },
               { id: 'api-usage', label: 'API Usage & Costs', icon: Zap },
