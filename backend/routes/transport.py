@@ -652,9 +652,8 @@ async def notify_bus_late(school_id: str, vehicle_id: str, route_id: str, delay_
     """Quick notification for bus delay"""
     db = get_database()
     
-    # Get vehicle and route info
+    # Get vehicle info
     vehicle = await db.vehicles.find_one({"id": vehicle_id})
-    route = await db.bus_routes.find_one({"id": route_id})
     
     message = f"🚌 Bus Update: {vehicle.get('vehicle_number', 'Bus')} aaj {delay_minutes} minute late hai. Reason: {reason}. Inconvenience ke liye sorry!"
     
