@@ -57,6 +57,12 @@ export default function SuperAdminPanel() {
   const [assignPack, setAssignPack] = useState({ school_id: '', pack_id: '', amount_paid: 0, payment_method: 'cash' });
   const [waConfig, setWaConfig] = useState({ api_key: '', api_secret: '', instance_id: '', phone_number: '' });
   
+  // Message Credits
+  const [schoolCredits, setSchoolCredits] = useState([]);
+  const [creditStats, setCreditStats] = useState(null);
+  const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
+  const [addCreditsForm, setAddCreditsForm] = useState({ school_id: '', credits: 1000, amount_paid: 500, payment_method: 'cash' });
+  
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
