@@ -318,6 +318,7 @@ function AppRoutes() {
         <Route path="health" element={<HealthModulePage />} />
         <Route path="biometric" element={<BiometricPage />} />
         <Route path="timetable" element={<TimetablePage />} />
+        <Route path="teacher-roles" element={<TeacherRoleManager />} />
         <Route path="director-ai" element={<DirectorAIDashboard />} />
         <Route path="tino-brain" element={<TinoBrainDashboard />} />
         <Route path="multi-year-fees" element={<MultiYearFeesPage />} />
