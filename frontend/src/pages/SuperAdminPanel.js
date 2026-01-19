@@ -76,13 +76,13 @@ export default function SuperAdminPanel() {
 
   const verifyToken = async () => {
     try {
-      const res = await axios.get(`${API}/super-admin/verify?token=${token}`);
+      const res = await axios.get(`${API}/verify?token=${token}`);
       if (res.data.valid) {
         setAdmin(res.data.admin);
         setIsLoggedIn(true);
       }
     } catch (error) {
-      localStorage.removeItem('superAdminToken');
+      localStorage.removeItem('ownerToken');
       setToken(null);
       setIsLoggedIn(false);
     }
@@ -92,12 +92,12 @@ export default function SuperAdminPanel() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/super-admin/login`, loginForm);
-      localStorage.setItem('superAdminToken', res.data.access_token);
+      const res = await axios.post(`${API}/login`, loginForm);
+      localStorage.setItem('ownerToken', res.data.access_token);
       setToken(res.data.access_token);
       setAdmin(res.data.admin);
       setIsLoggedIn(true);
-      toast.success('Welcome Super Admin!');
+      toast.success('Welcome Platform Owner!');
     } catch (error) {
       toast.error('Invalid credentials');
     } finally {
@@ -106,7 +106,7 @@ export default function SuperAdminPanel() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('superAdminToken');
+    localStorage.removeItem('ownerToken');
     setToken(null);
     setAdmin(null);
     setIsLoggedIn(false);
@@ -115,7 +115,7 @@ export default function SuperAdminPanel() {
 
   const loadDashboard = async () => {
     try {
-      const res = await axios.get(`${API}/super-admin/dashboard?token=${token}`);
+      const res = await axios.get(`${API}/dashboard?token=${token}`);
       setDashboard(res.data);
     } catch (error) {
       toast.error('Failed to load dashboard');
