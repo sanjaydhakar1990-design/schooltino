@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, Mic, Globe } from 'lucide-react';
+import { Menu, Mic, Globe, Download } from 'lucide-react';
 import Sidebar from './Sidebar';
 import VoiceAssistantFAB from './VoiceAssistantFAB';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,6 +10,50 @@ export const Layout = () => {
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const { language, changeLanguage } = useLanguage();
+  
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      setIsInstalled(true);
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handlePWAInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Show manual instructions for iOS/Safari
+      alert('📱 App Install करें:\n\n1. Safari में Share (⬆️) button दबाएं\n2. "Add to Home Screen" select करें\n3. "Add" पर tap करें\n\nDone! 🎉');
+    }
+  };
 
   const languages = [
     { code: 'en', label: 'English', flag: '🇬🇧' },
