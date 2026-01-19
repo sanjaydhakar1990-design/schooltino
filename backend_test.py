@@ -1280,6 +1280,238 @@ class SchooltinoAPITester:
             print(f"   ⚠️ Some Tino Brain APIs failed")
         
         return all_success
+
+    # ============== NEW FEATURES TESTS - REVIEW REQUEST ==============
+    
+    def test_gallery_event_types(self):
+        """Test NEW: GET /api/gallery/event-types - Check event types available"""
+        success, response = self.run_test("Gallery Event Types", "GET", "gallery/event-types", 200)
+        
+        if success:
+            event_types = response.get("event_types", [])
+            print(f"   📝 Found {len(event_types)} event types")
+            if event_types:
+                print(f"   ✅ Event types available: {[et.get('name', et) for et in event_types[:3]]}...")
+            else:
+                print(f"   ⚠️ No event types found")
+        
+        return success
+    
+    def test_gallery_create_event(self):
+        """Test NEW: POST /api/gallery/events - Create a test event"""
+        data = {
+            "school_id": "SCH-DEMO-2026",
+            "event_name": "Annual Sports Day 2026",
+            "event_type": "sports",
+            "event_date": "2026-03-15",
+            "description": "Annual sports competition for all classes",
+            "created_by": "director"
+        }
+        success, response = self.run_test("Gallery Create Event", "POST", "gallery/events", 200, data)
+        
+        if success:
+            event_id = response.get("event_id") or response.get("id")
+            if event_id:
+                print(f"   ✅ Event created with ID: {event_id}")
+                self.event_id = event_id  # Store for later use
+            else:
+                print(f"   ⚠️ No event_id returned")
+        
+        return success
+    
+    def test_gallery_get_events(self):
+        """Test NEW: GET /api/gallery/events/SCH-DEMO-2026 - Get events"""
+        success, response = self.run_test("Gallery Get Events", "GET", "gallery/events/SCH-DEMO-2026", 200)
+        
+        if success:
+            events = response.get("events", [])
+            print(f"   📝 Found {len(events)} events for SCH-DEMO-2026")
+            if events:
+                print(f"   ✅ Events retrieved successfully")
+                for event in events[:2]:  # Show first 2 events
+                    print(f"   📝 Event: {event.get('event_name', 'Unknown')} - {event.get('event_type', 'Unknown type')}")
+            else:
+                print(f"   ⚠️ No events found")
+        
+        return success
+    
+    def test_govt_exam_document_types(self):
+        """Test NEW: GET /api/govt-exam/document-types - Check document types"""
+        success, response = self.run_test("Govt Exam Document Types", "GET", "govt-exam/document-types", 200)
+        
+        if success:
+            document_types = response.get("document_types", [])
+            print(f"   📝 Found {len(document_types)} document types")
+            if document_types:
+                print(f"   ✅ Document types available: {[dt.get('name', dt) for dt in document_types[:3]]}...")
+            else:
+                print(f"   ⚠️ No document types found")
+        
+        return success
+    
+    def test_govt_exam_notifications(self):
+        """Test NEW: GET /api/govt-exam/app-open-notifications/SCH-DEMO-2026?user_type=student"""
+        success, response = self.run_test("Govt Exam Notifications", "GET", "govt-exam/app-open-notifications/SCH-DEMO-2026?user_type=student", 200)
+        
+        if success:
+            notifications = response.get("notifications", [])
+            print(f"   📝 Found {len(notifications)} notifications for students")
+            if notifications:
+                print(f"   ✅ Notifications retrieved successfully")
+                for notif in notifications[:2]:  # Show first 2 notifications
+                    print(f"   📝 Notification: {notif.get('title', 'Unknown')} - {notif.get('exam_type', 'Unknown exam')}")
+            else:
+                print(f"   ⚠️ No notifications found")
+        
+        return success
+    
+    def test_transport_gps_setup_guide(self):
+        """Test NEW: GET /api/transport/gps-setup/guide - Check setup guide has AI and Manual steps"""
+        success, response = self.run_test("Transport GPS Setup Guide", "GET", "transport/gps-setup/guide", 200)
+        
+        if success:
+            guide = response.get("guide", {})
+            ai_steps = guide.get("ai_steps", [])
+            manual_steps = guide.get("manual_steps", [])
+            
+            print(f"   📝 AI Steps: {len(ai_steps)}, Manual Steps: {len(manual_steps)}")
+            
+            if ai_steps and manual_steps:
+                print(f"   ✅ Both AI and Manual setup steps available")
+                print(f"   📝 AI Step 1: {ai_steps[0].get('title', 'Unknown') if ai_steps else 'None'}")
+                print(f"   📝 Manual Step 1: {manual_steps[0].get('title', 'Unknown') if manual_steps else 'None'}")
+            else:
+                print(f"   ⚠️ Missing AI or Manual steps")
+        
+        return success
+    
+    def test_transport_gps_status(self):
+        """Test NEW: GET /api/transport/gps-setup/status/SCH-DEMO-2026 - Check GPS status"""
+        success, response = self.run_test("Transport GPS Status", "GET", "transport/gps-setup/status/SCH-DEMO-2026", 200)
+        
+        if success:
+            status = response.get("status", {})
+            gps_enabled = status.get("gps_enabled", False)
+            devices_count = status.get("devices_count", 0)
+            
+            print(f"   📝 GPS Enabled: {gps_enabled}, Devices: {devices_count}")
+            
+            if status:
+                print(f"   ✅ GPS status retrieved successfully")
+            else:
+                print(f"   ⚠️ No GPS status found")
+        
+        return success
+    
+    def test_cash_payment(self):
+        """Test NEW: POST /api/fee-payment/cash-payment - Cash payment with receipt generation"""
+        data = {
+            "student_id": "STD-2026-0002",
+            "amount": 3000,
+            "fee_type": "tuition",
+            "school_id": "SCH-DEMO-2026",
+            "payment_mode": "cash",
+            "received_by": "accountant",
+            "remarks": "Monthly tuition fee payment"
+        }
+        success, response = self.run_test("Cash Payment", "POST", "fee-payment/cash-payment", 200, data)
+        
+        if success:
+            receipt_no = response.get("receipt_no") or response.get("receipt_id")
+            payment_id = response.get("payment_id") or response.get("id")
+            
+            print(f"   📝 Receipt No: {receipt_no}, Payment ID: {payment_id}")
+            
+            if receipt_no:
+                print(f"   ✅ Cash payment processed and receipt generated")
+            else:
+                print(f"   ⚠️ Payment processed but no receipt number returned")
+        
+        return success
+    
+    def test_ai_paper_subjects(self):
+        """Test NEW: GET /api/ai/paper/subjects/Class%2010 - Check subjects available"""
+        success, response = self.run_test("AI Paper Subjects Class 10", "GET", "ai/paper/subjects/Class%2010", 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            print(f"   📝 Found {len(subjects)} subjects for Class 10")
+            if subjects:
+                print(f"   ✅ Subjects available: {[s.get('name', s) for s in subjects[:5]]}...")
+            else:
+                print(f"   ⚠️ No subjects found for Class 10")
+        
+        return success
+    
+    def test_ai_paper_chapters_mathematics(self):
+        """Test NEW: GET /api/ai/paper/chapters/Class%2010/mathematics - Check mathematics chapters"""
+        success, response = self.run_test("AI Paper Chapters - Mathematics", "GET", "ai/paper/chapters/Class%2010/mathematics", 200)
+        
+        if success:
+            chapters = response.get("chapters", [])
+            print(f"   📝 Found {len(chapters)} mathematics chapters for Class 10")
+            if chapters:
+                print(f"   ✅ Mathematics chapters available: {[c.get('name', c) for c in chapters[:3]]}...")
+            else:
+                print(f"   ⚠️ No mathematics chapters found")
+        
+        return success
+    
+    def test_ai_paper_chapters_science(self):
+        """Test NEW: GET /api/ai/paper/chapters/Class%2010/science - Check science chapters"""
+        success, response = self.run_test("AI Paper Chapters - Science", "GET", "ai/paper/chapters/Class%2010/science", 200)
+        
+        if success:
+            chapters = response.get("chapters", [])
+            print(f"   📝 Found {len(chapters)} science chapters for Class 10")
+            if chapters:
+                print(f"   ✅ Science chapters available: {[c.get('name', c) for c in chapters[:3]]}...")
+            else:
+                print(f"   ⚠️ No science chapters found")
+        
+        return success
+    
+    def test_transport_parent_track(self):
+        """Test NEW: GET /api/transport/parent-track/STD-2026-0001 - Check parent tracking"""
+        success, response = self.run_test("Transport Parent Track", "GET", "transport/parent-track/STD-2026-0001", 200)
+        
+        if success:
+            tracking_data = response.get("tracking", {})
+            bus_info = tracking_data.get("bus_info", {})
+            location = tracking_data.get("current_location", {})
+            
+            print(f"   📝 Bus: {bus_info.get('bus_number', 'Unknown')}, Location: {location.get('status', 'Unknown')}")
+            
+            if tracking_data:
+                print(f"   ✅ Parent tracking data available")
+            else:
+                print(f"   ⚠️ No tracking data found")
+        
+        return success
+    
+    def test_tino_brain_absent_query(self):
+        """Test NEW: POST /api/tino-brain/query - Verify still working with absence query"""
+        data = {
+            "query": "Aaj kitne bachhe absent hain?",
+            "school_id": "SCH-DEMO-2026",
+            "user_id": "test-director",
+            "user_role": "director",
+            "user_name": "Director",
+            "voice_gender": "male"
+        }
+        success, response = self.run_test("Tino Brain Absent Query", "POST", "tino-brain/query", 200, data)
+        
+        if success:
+            message = response.get("message", "")
+            print(f"   📝 Response: {message[:100]}...")
+            
+            # Check if response handles absence query appropriately
+            if any(word in message.lower() for word in ["absent", "गैरहाजिर", "नहीं आए", "attendance", "उपस्थिति"]):
+                print(f"   ✅ Tino Brain handles absence query correctly")
+            else:
+                print(f"   ⚠️ Response may not be handling absence query properly")
+        
+        return success
     
     def test_admit_card_apis_priority(self):
         """Test Priority 2: Admit Card APIs"""
