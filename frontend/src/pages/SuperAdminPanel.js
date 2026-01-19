@@ -202,6 +202,84 @@ export default function SuperAdminPanel() {
     }
   };
 
+  // WhatsApp Functions
+  const loadWhatsAppConfig = async () => {
+    try {
+      const res = await axios.get(`${API}/whatsapp/config?token=${token}`);
+      setWhatsappConfig(res.data.config);
+    } catch (error) {
+      console.error('Failed to load WhatsApp config');
+    }
+  };
+
+  const loadMessagePacks = async () => {
+    try {
+      const res = await axios.get(`${API}/whatsapp/packs?token=${token}`);
+      setMessagePacks(res.data.packs || []);
+    } catch (error) {
+      console.error('Failed to load message packs');
+    }
+  };
+
+  const loadSchoolsWhatsApp = async () => {
+    try {
+      const res = await axios.get(`${API}/whatsapp/schools?token=${token}`);
+      setSchoolsWhatsApp(res.data.schools || []);
+    } catch (error) {
+      console.error('Failed to load schools WhatsApp status');
+    }
+  };
+
+  const loadWhatsAppUsage = async () => {
+    try {
+      const res = await axios.get(`${API}/whatsapp/usage?token=${token}`);
+      setWhatsappUsage(res.data);
+    } catch (error) {
+      console.error('Failed to load WhatsApp usage');
+    }
+  };
+
+  const saveWhatsAppConfig = async () => {
+    try {
+      await axios.post(`${API}/whatsapp/config?token=${token}`, waConfig);
+      toast.success('WhatsApp configuration saved!');
+      setShowWhatsAppConfigModal(false);
+      loadWhatsAppConfig();
+    } catch (error) {
+      toast.error('Failed to save configuration');
+    }
+  };
+
+  const createMessagePack = async () => {
+    try {
+      await axios.post(`${API}/whatsapp/packs?token=${token}`, newPack);
+      toast.success('Message pack created!');
+      setShowPackModal(false);
+      setNewPack({ name: '', messages_count: 1000, price: 500, validity_days: 30 });
+      loadMessagePacks();
+    } catch (error) {
+      toast.error('Failed to create pack');
+    }
+  };
+
+  const assignMessagePack = async () => {
+    try {
+      const pack = messagePacks.find(p => p.id === assignPack.pack_id);
+      await axios.post(`${API}/whatsapp/assign-pack?token=${token}`, {
+        school_id: assignPack.school_id,
+        pack_id: assignPack.pack_id,
+        messages_purchased: pack?.messages_count || 1000,
+        amount_paid: assignPack.amount_paid,
+        payment_method: assignPack.payment_method
+      });
+      toast.success('Message pack assigned!');
+      setShowAssignPackModal(false);
+      loadSchoolsWhatsApp();
+    } catch (error) {
+      toast.error('Failed to assign pack');
+    }
+  };
+
   const updateSchoolStatus = async (schoolId, status, reason = '') => {
     try {
       await axios.put(`${API}/schools/${schoolId}/status?token=${token}`, {
