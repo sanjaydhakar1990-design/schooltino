@@ -32,11 +32,14 @@ export default function AIPaperPage() {
   const [loading, setLoading] = useState(false);
   const [paper, setPaper] = useState(null);
   const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [availableChapters, setAvailableChapters] = useState([]);
+  const [loadingChapters, setLoadingChapters] = useState(false);
 
   const [formData, setFormData] = useState({
     subject: '',
     class_name: '',
     chapter: '',
+    selectedChapters: [],
     exam_name: '',
     difficulty: 'medium',
     question_types: ['mcq', 'short'],
