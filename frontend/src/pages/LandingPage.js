@@ -102,31 +102,42 @@ export default function LandingPage() {
     { icon: BarChart3, title: 'Analytics', desc: 'Reports, insights, performance tracking', color: 'bg-lime-500' },
   ];
 
-  // Pricing data
+  // Pricing data with Monthly and Yearly options
+  const [billingCycle, setBillingCycle] = useState('yearly'); // monthly or yearly
+  
   const pricing = [
     { 
       name: 'Basic ERP', 
-      price: '9,999', 
-      period: '/year',
-      desc: 'For small schools',
-      features: ['Student & Staff Management', 'Fee Collection', 'Attendance', 'Reports', 'SMS Alerts'],
-      popular: false
+      monthlyPrice: '999', 
+      yearlyPrice: '9,999',
+      perStudentPrice: '10',
+      period: billingCycle === 'monthly' ? '/month' : '/year',
+      desc: 'Small Schools (upto 200 students)',
+      features: ['Student & Staff Management', 'Fee Collection & Receipts', 'Attendance (Manual/Biometric)', 'SMS/WhatsApp Alerts', 'Reports & Analytics', 'Mobile App Access'],
+      popular: false,
+      savings: '₹1,989/year'
     },
     { 
       name: 'AI Powered', 
-      price: '17,999', 
-      period: '/year',
-      desc: 'Most Popular',
-      features: ['Everything in Basic', 'AI Paper Generator', 'AI Assistant', 'Voice Commands', 'Director AI Dashboard'],
-      popular: true
+      monthlyPrice: '1,999', 
+      yearlyPrice: '17,999',
+      perStudentPrice: '20',
+      period: billingCycle === 'monthly' ? '/month' : '/year',
+      desc: 'Medium Schools (200-500 students)',
+      features: ['Everything in Basic', 'Tino Brain AI Assistant 🧠', 'AI Paper Generator', 'Voice Commands (Hindi/English)', 'Smart Reports & Insights', 'Parent Portal'],
+      popular: true,
+      savings: '₹5,989/year'
     },
     { 
       name: 'Enterprise', 
-      price: '27,999', 
-      period: '/year',
-      desc: 'Complete Solution',
-      features: ['Everything in AI', 'CCTV Integration', 'Biometric Attendance', 'Parent Portal', 'WhatsApp Integration'],
-      popular: false
+      monthlyPrice: '2,999', 
+      yearlyPrice: '27,999',
+      perStudentPrice: '30',
+      period: billingCycle === 'monthly' ? '/month' : '/year',
+      desc: 'Large Schools (500+ students)',
+      features: ['Everything in AI', 'CCTV Integration 📹', 'Face Recognition Attendance', 'GPS Bus Tracking 🚌', 'Multi-Branch Support', 'Priority Support'],
+      popular: false,
+      savings: '₹7,989/year'
     },
   ];
 
