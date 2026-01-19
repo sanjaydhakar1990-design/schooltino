@@ -12,19 +12,54 @@
 ### 83. AI Paper Generator Fix & Enhancement ✅ NEW! 📝
 - **Issue:** User reported AI Paper Generator not working and missing Exam Name field
 - **Investigation:** Tested full flow - UI and API were actually working correctly
-- **Enhancement Added:** New "Exam Name" field (e.g., Half Yearly, Unit Test, Final Exam)
+- **Enhancement Added:** 
+  - New "Exam/Test Name" field (e.g., "Half Yearly", "Unit Test", "Final Exam")
+  - **Chapter Selection UI** - NCERT chapters with weightage % displayed
+  - Multi-chapter selection support
 - **Frontend Changes:**
-  - Added `exam_name` field to formData state
-  - Added "Exam Name" input field in Step 1 with placeholder
-  - Updated paper preview to show exam_name at top of paper
+  - Added `exam_name` and `selectedChapters` to formData state
+  - Added chapter dropdown that fetches from backend API
+  - Updated paper preview to show exam_name at top
 - **Backend Changes:**
-  - Added `exam_name` to `PaperGenerateRequest` model
-  - Added `exam_name` to `PaperGenerateResponse` model
-  - Updated paper_data to include exam_name
+  - Added `exam_name` to `PaperGenerateRequest` and `PaperGenerateResponse` models
 - **Files Modified:**
   - `frontend/src/pages/AIPaperPage.js`
   - `backend/server.py` (lines 559-582, 3117-3130)
 - **Testing Status:** ✅ Verified - Paper generation working with all fields
+
+### 84. PWA Install Button in Header ✅ NEW! 📲
+- **Issue:** User couldn't find PWA install option
+- **Fix:** Added green "Install" button in top header bar
+- **Features:**
+  - Shows only when app is not installed
+  - Works on Chrome/Edge (auto prompt) and iOS (manual instructions)
+  - Visible on all pages after login
+- **File Modified:** `frontend/src/components/Layout.js`
+- **Testing Status:** ✅ Verified - Install button visible in header
+
+### 85. Teacher Role Management System ✅ NEW! 👨‍🏫
+- **Issue:** User wanted Class Teacher vs Subject Teacher management
+- **New Page Created:** `/app/teacher-roles`
+- **Features:**
+  - View all teachers with their current assignments
+  - Assign teacher as "Class Teacher" for a specific class
+  - Assign teacher as "Subject Teacher" for multiple classes/subjects
+  - Stats cards showing teacher distribution
+  - Beautiful card-based UI with action buttons
+- **File Created:** `frontend/src/pages/TeacherRoleManager.js`
+- **Route Added:** `/app/teacher-roles` in App.js
+- **Sidebar Link:** Added under "Staff" section
+- **Testing Status:** ✅ Verified - Page working with all features
+
+### 86. Timetable Fix ✅ 
+- **Issue:** Timetable was using wrong school_id
+- **Fix:** Changed default school_id from 'school123' to 'SCH-DEMO-2026'
+- **File Modified:** `frontend/src/pages/TimetablePage.js`
+
+### 87. Online Exams Link Added ✅
+- **Issue:** Hard to navigate to exam creation page
+- **Fix:** Added "Online Exams" link in sidebar under Academic section
+- **File Modified:** `frontend/src/components/Sidebar.js`
 
 ---
 
