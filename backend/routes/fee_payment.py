@@ -540,6 +540,9 @@ async def record_cash_payment(request: CashPaymentRequest):
     )
     # ========== END INSTANT UPDATE ==========
     
+    # Remove MongoDB _id before returning
+    receipt.pop('_id', None)
+    
     return {
         "success": True,
         "message": f"₹{request.amount} cash payment recorded for {student.get('name')}",
