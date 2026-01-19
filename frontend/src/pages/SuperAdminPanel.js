@@ -851,6 +851,225 @@ export default function SuperAdminPanel() {
             </div>
           )}
 
+          {/* Message Credits Tab */}
+          {activeTab === 'credits' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-slate-900">Message Credits System</h2>
+                <Button onClick={() => setShowAddCreditsModal(true)}>
+                  <CreditCard className="w-4 h-4 mr-2" /> Add Credits
+                </Button>
+              </div>
+
+              {/* Credit Stats */}
+              {creditStats && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <Card className="bg-gradient-to-br from-emerald-500 to-green-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-emerald-200">Total Credits Sold</p>
+                      <p className="text-3xl font-bold">{creditStats.all_time?.total_credits_sold || 0}</p>
+                      <p className="text-sm text-emerald-200 mt-1">All time</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-blue-200">Revenue</p>
+                      <p className="text-3xl font-bold">₹{(creditStats.all_time?.total_revenue || 0).toLocaleString()}</p>
+                      <p className="text-sm text-blue-200 mt-1">From credits</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-gradient-to-br from-purple-500 to-violet-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-purple-200">Credits Used</p>
+                      <p className="text-3xl font-bold">{creditStats.all_time?.total_credits_used || 0}</p>
+                      <p className="text-sm text-purple-200 mt-1">Messages sent</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-amber-200">Low Balance Schools</p>
+                      <p className="text-3xl font-bold">{creditStats.alerts?.low_credit_schools || 0}</p>
+                      <p className="text-sm text-amber-200 mt-1">{creditStats.alerts?.no_credit_schools || 0} with zero</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* This Month Stats */}
+              {creditStats?.this_month && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>This Month</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className="p-4 bg-slate-50 rounded-lg">
+                        <p className="text-2xl font-bold text-emerald-600">{creditStats.this_month.credits_sold}</p>
+                        <p className="text-sm text-slate-500">Credits Sold</p>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-lg">
+                        <p className="text-2xl font-bold text-blue-600">₹{creditStats.this_month.revenue}</p>
+                        <p className="text-sm text-slate-500">Revenue</p>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-lg">
+                        <p className="text-2xl font-bold text-purple-600">{creditStats.this_month.credits_used}</p>
+                        <p className="text-sm text-slate-500">Credits Used</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Schools Credit Balance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Schools Credit Balance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">School</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Available</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Total Purchased</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Used</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">This Month</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Status</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {schoolCredits.map((school) => (
+                          <tr key={school.school_id} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 font-medium">{school.school_name}</td>
+                            <td className="px-4 py-3">
+                              <span className={`font-bold ${
+                                school.available_credits > 500 ? 'text-emerald-600' : 
+                                school.available_credits > 100 ? 'text-amber-600' : 
+                                school.available_credits > 0 ? 'text-orange-600' : 'text-red-600'
+                              }`}>
+                                {school.available_credits}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">{school.total_purchased}</td>
+                            <td className="px-4 py-3 text-slate-600">{school.total_used}</td>
+                            <td className="px-4 py-3 text-slate-600">{school.usage_this_month}</td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                school.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                              }`}>
+                                {school.status === 'active' ? '✅ Active' : '❌ No Credits'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  setAddCreditsForm({...addCreditsForm, school_id: school.school_id});
+                                  setShowAddCreditsModal(true);
+                                }}
+                              >
+                                Add Credits
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pricing Guide */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Message Credit Pricing (Suggested)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="border rounded-lg p-4 text-center hover:border-emerald-500">
+                      <p className="text-sm text-slate-500">Starter</p>
+                      <p className="text-2xl font-bold text-emerald-600">₹299</p>
+                      <p className="text-lg">500 Credits</p>
+                      <p className="text-xs text-slate-400">₹0.60/message</p>
+                    </div>
+                    <div className="border rounded-lg p-4 text-center hover:border-blue-500 border-blue-200 bg-blue-50">
+                      <p className="text-sm text-blue-600">Popular</p>
+                      <p className="text-2xl font-bold text-blue-600">₹499</p>
+                      <p className="text-lg">1000 Credits</p>
+                      <p className="text-xs text-slate-400">₹0.50/message</p>
+                    </div>
+                    <div className="border rounded-lg p-4 text-center hover:border-purple-500">
+                      <p className="text-sm text-slate-500">Pro</p>
+                      <p className="text-2xl font-bold text-purple-600">₹999</p>
+                      <p className="text-lg">2500 Credits</p>
+                      <p className="text-xs text-slate-400">₹0.40/message</p>
+                    </div>
+                    <div className="border rounded-lg p-4 text-center hover:border-amber-500">
+                      <p className="text-sm text-slate-500">Unlimited*</p>
+                      <p className="text-2xl font-bold text-amber-600">₹1999</p>
+                      <p className="text-lg">6000 Credits</p>
+                      <p className="text-xs text-slate-400">₹0.33/message</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Add Credits Modal */}
+              {showAddCreditsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <Card className="w-full max-w-md">
+                    <CardHeader>
+                      <CardTitle>Add Credits to School</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <select
+                        value={addCreditsForm.school_id}
+                        onChange={(e) => setAddCreditsForm({...addCreditsForm, school_id: e.target.value})}
+                        className="w-full p-2 border rounded-lg"
+                      >
+                        <option value="">Select School</option>
+                        {schools.map((s) => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                      <div>
+                        <label className="text-sm text-slate-600">Credits to Add</label>
+                        <Input
+                          type="number"
+                          value={addCreditsForm.credits}
+                          onChange={(e) => setAddCreditsForm({...addCreditsForm, credits: parseInt(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm text-slate-600">Amount Received (₹)</label>
+                        <Input
+                          type="number"
+                          value={addCreditsForm.amount_paid}
+                          onChange={(e) => setAddCreditsForm({...addCreditsForm, amount_paid: parseInt(e.target.value)})}
+                        />
+                      </div>
+                      <select
+                        value={addCreditsForm.payment_method}
+                        onChange={(e) => setAddCreditsForm({...addCreditsForm, payment_method: e.target.value})}
+                        className="w-full p-2 border rounded-lg"
+                      >
+                        <option value="cash">Cash</option>
+                        <option value="online">Online/UPI</option>
+                        <option value="free">Free/Promotional</option>
+                      </select>
+                      <div className="flex gap-2">
+                        <Button onClick={addCreditsToSchool} className="flex-1">Add Credits</Button>
+                        <Button variant="outline" onClick={() => setShowAddCreditsModal(false)}>Cancel</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Support Tab */}
           {activeTab === 'support' && (
             <div className="space-y-6">
