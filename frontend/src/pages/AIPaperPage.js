@@ -65,10 +65,43 @@ export default function AIPaperPage() {
       setAvailableSubjects(subjects);
       // Reset subject if not in new list
       if (!subjects.includes(formData.subject)) {
-        setFormData(prev => ({ ...prev, subject: '' }));
+        setFormData(prev => ({ ...prev, subject: '', chapter: '', selectedChapters: [] }));
+        setAvailableChapters([]);
       }
     }
   }, [formData.class_name]);
+
+  // Fetch chapters when subject changes
+  useEffect(() => {
+    const fetchChapters = async () => {
+      if (formData.class_name && formData.subject) {
+        setLoadingChapters(true);
+        try {
+          const classNum = formData.class_name.replace('Class ', '');
+          const res = await axios.get(`${API}/ai/paper/chapters/${classNum}/${formData.subject}`);
+          setAvailableChapters(res.data.chapters || []);
+        } catch (error) {
+          console.error('Error fetching chapters:', error);
+          setAvailableChapters([]);
+        } finally {
+          setLoadingChapters(false);
+        }
+      }
+    };
+    fetchChapters();
+  }, [formData.class_name, formData.subject]);
+
+  const handleChapterToggle = (chapterName) => {
+    setFormData(prev => {
+      const current = prev.selectedChapters;
+      if (current.includes(chapterName)) {
+        return { ...prev, selectedChapters: current.filter(c => c !== chapterName), chapter: current.filter(c => c !== chapterName).join(', ') };
+      } else {
+        const newChapters = [...current, chapterName];
+        return { ...prev, selectedChapters: newChapters, chapter: newChapters.join(', ') };
+      }
+    });
+  };
 
   const handleChange = (e) => {
     setFormData(prev => ({
