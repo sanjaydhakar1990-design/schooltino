@@ -218,9 +218,8 @@ function AppRoutes() {
       {/* Landing Page - Marketing Home */}
       <Route path="/" element={<LandingPage />} />
       
-      {/* Super Admin Panel - Platform Owner */}
-      <Route path="/super-admin" element={<SuperAdminPanel />} />
-      <Route path="/platform-admin" element={<SuperAdminPanel />} />
+      {/* Super Admin Panel - HIDDEN SECRET URL */}
+      <Route path="/owner-x7k9m2" element={<SuperAdminPanel />} />
       
       {/* Marketing Brochure Page - Shareable on WhatsApp */}
       <Route path="/marketing" element={<MarketingPage />} />
