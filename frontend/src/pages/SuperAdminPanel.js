@@ -1,6 +1,7 @@
 /**
  * Super Admin Panel - Platform Owner Dashboard
- * Manage all schools, subscriptions, earnings
+ * SECRET URL: /owner-x7k9m2 (hidden from public)
+ * Manage all schools, subscriptions, earnings, API usage
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,17 +15,20 @@ import {
   MoreVertical, Eye, Edit, Ban, RefreshCw, Download,
   MessageSquare, Settings, LogOut, BarChart3, Calendar,
   CreditCard, HelpCircle, ChevronRight, Mail, Phone,
-  Crown, Shield, Sparkles, Activity, XCircle
+  Crown, Shield, Sparkles, Activity, XCircle, Key, 
+  Zap, Database, AlertTriangle, Play, Pause, DollarSign,
+  Bot, Mic, CreditCard as PaymentIcon, TrendingDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+// SECRET API ENDPOINT - matches backend
+const API = `${process.env.REACT_APP_BACKEND_URL}/api/owner-console-x7k9m2`;
 
 export default function SuperAdminPanel() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [admin, setAdmin] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('superAdminToken'));
+  const [token, setToken] = useState(localStorage.getItem('ownerToken'));
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   
@@ -37,6 +41,9 @@ export default function SuperAdminPanel() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [earnings, setEarnings] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [apiUsage, setApiUsage] = useState(null);
+  const [apiKeys, setApiKeys] = useState([]);
+  const [costAlerts, setCostAlerts] = useState(null);
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,6 +52,15 @@ export default function SuperAdminPanel() {
   // Selected school for details
   const [selectedSchool, setSelectedSchool] = useState(null);
   const [schoolDetails, setSchoolDetails] = useState(null);
+  
+  // Trial modal
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [trialConfig, setTrialConfig] = useState({ days: 30, features: 'all' });
+  const [targetSchoolId, setTargetSchoolId] = useState(null);
+  
+  // API Key modal
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [newApiKey, setNewApiKey] = useState({ service: '', api_key: '', secret_key: '', monthly_limit: '' });
 
   useEffect(() => {
     if (token) {
