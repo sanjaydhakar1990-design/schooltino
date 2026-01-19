@@ -143,7 +143,7 @@ export default function AIPaperPage() {
             ))}
           </select>
         </div>
-        <div className="space-y-2 md:col-span-2">
+        <div className="space-y-2">
           <Label>{t('chapter')} *</Label>
           <Input
             name="chapter"
@@ -151,6 +151,16 @@ export default function AIPaperPage() {
             onChange={handleChange}
             placeholder="Enter chapter or topic name"
             data-testid="paper-chapter-input"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Exam Name</Label>
+          <Input
+            name="exam_name"
+            value={formData.exam_name}
+            onChange={handleChange}
+            placeholder="e.g., Half Yearly, Unit Test, Final Exam"
+            data-testid="paper-exam-name-input"
           />
         </div>
         <div className="space-y-2">
