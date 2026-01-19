@@ -231,10 +231,10 @@ class SchoolTinoDemoTester:
         success, response = self.run_test("Get Fee Invoices - Demo School", "GET", endpoint, 200)
         
         if success:
-            fees = response.get('fees', response) if isinstance(response, dict) else response
+            fees = response.get('invoices', response) if isinstance(response, dict) else response
             if isinstance(fees, list):
                 fee_count = len(fees)
-                print(f"   📊 Found {fee_count} fee records")
+                print(f"   📊 Found {fee_count} fee invoices")
                 
                 # Check for paid/pending status
                 paid_count = 0
@@ -248,10 +248,10 @@ class SchoolTinoDemoTester:
                 
                 print(f"   📊 Paid: {paid_count}, Pending: {pending_count}")
                 if fee_count > 0:
-                    print(f"   ✅ Fee records with status found")
+                    print(f"   ✅ Fee invoices with status found")
                     return True
                 else:
-                    print(f"   ⚠️ No fee records found")
+                    print(f"   ⚠️ No fee invoices found")
                     return True  # Still working, just no data
             else:
                 print(f"   ⚠️ Unexpected response format")
