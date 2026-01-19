@@ -649,3 +649,438 @@ async def message_all_schools(message: str, subject: str, token: str):
         "success": True,
         "message": f"Notice sent to {schools_count} schools"
     }
+
+# ==================== TRIAL CONTROL ====================
+
+@router.post("/trial/start/{school_id}")
+async def start_school_trial(school_id: str, days: int, features: str, token: str):
+    """Put a school on trial period with specific features"""
+    await verify_super_admin(token)
+    
+    school = await db.schools.find_one({"id": school_id})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    trial_end = (datetime.now(timezone.utc) + timedelta(days=days)).isoformat()
+    feature_list = [f.strip() for f in features.split(",")] if features else ["all"]
+    
+    # Update school
+    await db.schools.update_one(
+        {"id": school_id},
+        {"$set": {
+            "is_trial": True,
+            "is_active": True,
+            "trial_start_date": datetime.now(timezone.utc).isoformat(),
+            "trial_end_date": trial_end,
+            "trial_features": feature_list,
+            "subscription_status": "trial"
+        }}
+    )
+    
+    # Create/Update subscription record
+    await db.subscriptions.update_one(
+        {"school_id": school_id},
+        {"$set": {
+            "school_id": school_id,
+            "status": "trial",
+            "plan_type": "trial",
+            "valid_until": trial_end,
+            "trial_features": feature_list,
+            "amount": 0,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    # Log action
+    await db.admin_actions.insert_one({
+        "id": str(uuid.uuid4()),
+        "action": "start_trial",
+        "school_id": school_id,
+        "school_name": school.get("name"),
+        "trial_days": days,
+        "features": feature_list,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "success": True,
+        "message": f"Trial started for {school.get('name')} - {days} days",
+        "trial_end": trial_end,
+        "features": feature_list
+    }
+
+@router.post("/trial/convert-to-paid/{school_id}")
+async def convert_to_paid(school_id: str, plan_type: str, billing_cycle: str, amount: float, token: str):
+    """Convert trial school to paid subscription"""
+    await verify_super_admin(token)
+    
+    school = await db.schools.find_one({"id": school_id})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    # Calculate valid_until based on billing cycle
+    if billing_cycle == "monthly":
+        valid_until = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    else:  # yearly
+        valid_until = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
+    
+    # Update school
+    await db.schools.update_one(
+        {"id": school_id},
+        {"$set": {
+            "is_trial": False,
+            "is_active": True,
+            "subscription_plan": plan_type,
+            "subscription_status": "active",
+            "subscription_valid_until": valid_until,
+            "converted_from_trial": True,
+            "converted_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Update subscription
+    await db.subscriptions.update_one(
+        {"school_id": school_id},
+        {"$set": {
+            "status": "active",
+            "plan_type": plan_type,
+            "billing_cycle": billing_cycle,
+            "amount": amount,
+            "valid_until": valid_until,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    # Log action
+    await db.admin_actions.insert_one({
+        "id": str(uuid.uuid4()),
+        "action": "convert_to_paid",
+        "school_id": school_id,
+        "school_name": school.get("name"),
+        "plan_type": plan_type,
+        "amount": amount,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "success": True,
+        "message": f"{school.get('name')} converted to {plan_type} plan",
+        "subscription": {
+            "plan": plan_type,
+            "billing_cycle": billing_cycle,
+            "amount": amount,
+            "valid_until": valid_until
+        }
+    }
+
+@router.post("/trial/end/{school_id}")
+async def end_school_trial(school_id: str, token: str):
+    """End trial for a school (deactivate)"""
+    await verify_super_admin(token)
+    
+    school = await db.schools.find_one({"id": school_id})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    await db.schools.update_one(
+        {"id": school_id},
+        {"$set": {
+            "is_trial": False,
+            "is_active": False,
+            "subscription_status": "expired",
+            "trial_ended_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await db.subscriptions.update_one(
+        {"school_id": school_id},
+        {"$set": {"status": "expired"}}
+    )
+    
+    return {
+        "success": True,
+        "message": f"Trial ended for {school.get('name')}"
+    }
+
+# ==================== API KEYS MANAGEMENT ====================
+
+@router.get("/api-keys")
+async def get_api_keys(token: str):
+    """Get all configured API keys (masked)"""
+    await verify_super_admin(token)
+    
+    keys = await db.platform_api_keys.find({}, {"_id": 0}).to_list(20)
+    
+    # Mask API keys for security
+    for key in keys:
+        if key.get("api_key"):
+            key["api_key"] = key["api_key"][:8] + "..." + key["api_key"][-4:] if len(key.get("api_key", "")) > 12 else "***"
+        if key.get("secret_key"):
+            key["secret_key"] = "***hidden***"
+    
+    return {
+        "keys": keys,
+        "services": ["openai", "elevenlabs", "razorpay", "emergent", "twilio", "sendgrid"]
+    }
+
+@router.post("/api-keys")
+async def save_api_key(config: APIKeyConfig, token: str):
+    """Save or update an API key"""
+    await verify_super_admin(token)
+    
+    key_data = {
+        "service": config.service,
+        "api_key": config.api_key,
+        "secret_key": config.secret_key,
+        "is_active": config.is_active,
+        "monthly_limit": config.monthly_limit,
+        "notes": config.notes,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Check if exists
+    existing = await db.platform_api_keys.find_one({"service": config.service})
+    
+    if existing:
+        await db.platform_api_keys.update_one(
+            {"service": config.service},
+            {"$set": key_data}
+        )
+    else:
+        key_data["id"] = str(uuid.uuid4())
+        key_data["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.platform_api_keys.insert_one(key_data)
+    
+    return {
+        "success": True,
+        "message": f"{config.service} API key saved"
+    }
+
+@router.delete("/api-keys/{service}")
+async def delete_api_key(service: str, token: str):
+    """Delete an API key"""
+    await verify_super_admin(token)
+    
+    result = await db.platform_api_keys.delete_one({"service": service})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="API key not found")
+    
+    return {"success": True, "message": f"{service} API key deleted"}
+
+# ==================== API USAGE TRACKING ====================
+
+@router.get("/api-usage")
+async def get_api_usage(token: str, period: str = "month"):
+    """Get API usage statistics across all schools"""
+    await verify_super_admin(token)
+    
+    # Calculate date range
+    if period == "week":
+        start_date = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    elif period == "month":
+        start_date = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    else:  # all
+        start_date = "2020-01-01"
+    
+    # OpenAI/Emergent LLM Usage (Tino Brain queries)
+    tino_queries = await db.tino_queries.find(
+        {"timestamp": {"$gte": start_date}},
+        {"_id": 0, "school_id": 1, "tokens_used": 1, "cost": 1}
+    ).to_list(10000)
+    
+    openai_total_queries = len(tino_queries)
+    openai_total_tokens = sum([q.get("tokens_used", 0) for q in tino_queries])
+    openai_estimated_cost = openai_total_tokens * 0.00001  # Approximate cost
+    
+    # Group by school
+    school_openai_usage = {}
+    for q in tino_queries:
+        sid = q.get("school_id", "unknown")
+        if sid not in school_openai_usage:
+            school_openai_usage[sid] = {"queries": 0, "tokens": 0, "cost": 0}
+        school_openai_usage[sid]["queries"] += 1
+        school_openai_usage[sid]["tokens"] += q.get("tokens_used", 0)
+        school_openai_usage[sid]["cost"] += q.get("cost", 0)
+    
+    # ElevenLabs Usage (Voice/TTS)
+    voice_usage = await db.voice_usage.find(
+        {"timestamp": {"$gte": start_date}},
+        {"_id": 0, "school_id": 1, "characters": 1, "cost": 1}
+    ).to_list(10000)
+    
+    elevenlabs_total_chars = sum([v.get("characters", 0) for v in voice_usage])
+    elevenlabs_estimated_cost = elevenlabs_total_chars * 0.00003  # Approximate cost
+    
+    # Group by school
+    school_voice_usage = {}
+    for v in voice_usage:
+        sid = v.get("school_id", "unknown")
+        if sid not in school_voice_usage:
+            school_voice_usage[sid] = {"requests": 0, "characters": 0, "cost": 0}
+        school_voice_usage[sid]["requests"] += 1
+        school_voice_usage[sid]["characters"] += v.get("characters", 0)
+        school_voice_usage[sid]["cost"] += v.get("cost", 0)
+    
+    # Razorpay Transactions
+    razorpay_txns = await db.fee_payments.find(
+        {"created_at": {"$gte": start_date}, "payment_method": {"$ne": "cash"}},
+        {"_id": 0, "school_id": 1, "amount": 1, "status": 1}
+    ).to_list(10000)
+    
+    razorpay_total_txns = len(razorpay_txns)
+    razorpay_total_amount = sum([t.get("amount", 0) for t in razorpay_txns if t.get("status") == "success"])
+    razorpay_fees = razorpay_total_amount * 0.02  # 2% Razorpay fee
+    
+    # Get school names
+    schools = await db.schools.find({}, {"id": 1, "name": 1, "_id": 0}).to_list(500)
+    school_names = {s["id"]: s["name"] for s in schools}
+    
+    # Top consumers
+    top_openai_users = sorted(school_openai_usage.items(), key=lambda x: x[1]["tokens"], reverse=True)[:10]
+    top_openai_users = [
+        {"school_id": k, "school_name": school_names.get(k, "Unknown"), **v}
+        for k, v in top_openai_users
+    ]
+    
+    return {
+        "period": period,
+        "summary": {
+            "openai": {
+                "total_queries": openai_total_queries,
+                "total_tokens": openai_total_tokens,
+                "estimated_cost": round(openai_estimated_cost, 2)
+            },
+            "elevenlabs": {
+                "total_requests": len(voice_usage),
+                "total_characters": elevenlabs_total_chars,
+                "estimated_cost": round(elevenlabs_estimated_cost, 2)
+            },
+            "razorpay": {
+                "total_transactions": razorpay_total_txns,
+                "total_amount": round(razorpay_total_amount, 2),
+                "estimated_fees": round(razorpay_fees, 2)
+            },
+            "total_estimated_cost": round(openai_estimated_cost + elevenlabs_estimated_cost + razorpay_fees, 2)
+        },
+        "top_openai_consumers": top_openai_users,
+        "by_school": {
+            "openai": school_openai_usage,
+            "voice": school_voice_usage
+        }
+    }
+
+@router.get("/api-usage/school/{school_id}")
+async def get_school_api_usage(school_id: str, token: str):
+    """Get API usage for a specific school"""
+    await verify_super_admin(token)
+    
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0, "name": 1})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    # Last 30 days
+    start_date = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    
+    # Tino Brain queries
+    tino_queries = await db.tino_queries.count_documents({
+        "school_id": school_id,
+        "timestamp": {"$gte": start_date}
+    })
+    
+    # AI Papers generated
+    papers = await db.generated_papers.count_documents({
+        "school_id": school_id,
+        "created_at": {"$gte": start_date}
+    })
+    
+    # Voice usage
+    voice_requests = await db.voice_usage.count_documents({
+        "school_id": school_id,
+        "timestamp": {"$gte": start_date}
+    })
+    
+    # Fee transactions
+    fee_txns = await db.fee_payments.count_documents({
+        "school_id": school_id,
+        "created_at": {"$gte": start_date}
+    })
+    
+    return {
+        "school_id": school_id,
+        "school_name": school.get("name"),
+        "period": "last_30_days",
+        "usage": {
+            "tino_brain_queries": tino_queries,
+            "ai_papers_generated": papers,
+            "voice_requests": voice_requests,
+            "fee_transactions": fee_txns
+        },
+        "estimated_costs": {
+            "openai": round(tino_queries * 0.002, 2),  # ~$0.002 per query
+            "elevenlabs": round(voice_requests * 0.01, 2),  # ~$0.01 per request
+            "total": round(tino_queries * 0.002 + voice_requests * 0.01, 2)
+        }
+    }
+
+# ==================== COST ALERTS ====================
+
+@router.get("/cost-alerts")
+async def get_cost_alerts(token: str):
+    """Get cost alerts and high usage warnings"""
+    await verify_super_admin(token)
+    
+    alerts = []
+    
+    # Check schools with high usage
+    start_date = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    
+    # Get all schools
+    schools = await db.schools.find({}, {"id": 1, "name": 1, "_id": 0}).to_list(500)
+    
+    for school in schools:
+        queries = await db.tino_queries.count_documents({
+            "school_id": school["id"],
+            "timestamp": {"$gte": start_date}
+        })
+        
+        if queries > 500:  # High usage threshold
+            alerts.append({
+                "type": "high_openai_usage",
+                "severity": "warning" if queries < 1000 else "critical",
+                "school_id": school["id"],
+                "school_name": school["name"],
+                "metric": f"{queries} queries in 7 days",
+                "estimated_cost": f"₹{round(queries * 0.15, 2)}"
+            })
+    
+    # Check API key limits
+    api_keys = await db.platform_api_keys.find({}, {"_id": 0}).to_list(20)
+    for key in api_keys:
+        if key.get("monthly_limit"):
+            # Check current usage against limit
+            # This would need actual tracking
+            pass
+    
+    return {
+        "total_alerts": len(alerts),
+        "critical": sum(1 for a in alerts if a.get("severity") == "critical"),
+        "warnings": sum(1 for a in alerts if a.get("severity") == "warning"),
+        "alerts": alerts
+    }
+
+# ==================== ADMIN ACTIONS LOG ====================
+
+@router.get("/action-log")
+async def get_admin_action_log(token: str, limit: int = 50):
+    """Get log of all admin actions"""
+    await verify_super_admin(token)
+    
+    actions = await db.admin_actions.find({}, {"_id": 0}).sort("timestamp", -1).to_list(limit)
+    
+    return {
+        "total": len(actions),
+        "actions": actions
+    }
