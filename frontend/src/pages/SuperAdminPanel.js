@@ -45,6 +45,18 @@ export default function SuperAdminPanel() {
   const [apiKeys, setApiKeys] = useState([]);
   const [costAlerts, setCostAlerts] = useState(null);
   
+  // WhatsApp Management
+  const [whatsappConfig, setWhatsappConfig] = useState(null);
+  const [messagePacks, setMessagePacks] = useState([]);
+  const [schoolsWhatsApp, setSchoolsWhatsApp] = useState([]);
+  const [whatsappUsage, setWhatsappUsage] = useState(null);
+  const [showPackModal, setShowPackModal] = useState(false);
+  const [showAssignPackModal, setShowAssignPackModal] = useState(false);
+  const [showWhatsAppConfigModal, setShowWhatsAppConfigModal] = useState(false);
+  const [newPack, setNewPack] = useState({ name: '', messages_count: 1000, price: 500, validity_days: 30 });
+  const [assignPack, setAssignPack] = useState({ school_id: '', pack_id: '', amount_paid: 0, payment_method: 'cash' });
+  const [waConfig, setWaConfig] = useState({ api_key: '', api_secret: '', instance_id: '', phone_number: '' });
+  
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
