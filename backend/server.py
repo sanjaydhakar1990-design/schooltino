@@ -75,6 +75,7 @@ from routes.ai_auto_config import router as ai_auto_config_router
 from routes.school_gallery import router as gallery_router
 from routes.govt_exam_docs import router as govt_exam_router
 from routes.super_admin import router as super_admin_router
+from routes.message_credits import router as message_credits_router
 
 # ==================== MODELS ====================
 
