@@ -1084,3 +1084,360 @@ async def get_admin_action_log(token: str, limit: int = 50):
         "total": len(actions),
         "actions": actions
     }
+
+# ==================== WHATSAPP API MANAGEMENT (BOTBIZ) ====================
+
+class WhatsAppConfig(BaseModel):
+    api_key: str
+    api_secret: Optional[str] = None
+    instance_id: str
+    phone_number: str
+    webhook_url: Optional[str] = None
+    is_active: bool = True
+
+class MessagePackCreate(BaseModel):
+    name: str
+    messages_count: int
+    price: float
+    validity_days: int
+    description: Optional[str] = None
+    is_active: bool = True
+
+class SchoolMessagePack(BaseModel):
+    school_id: str
+    pack_id: str
+    messages_purchased: int
+    amount_paid: float
+    payment_method: str  # cash, online
+
+@router.get("/whatsapp/config")
+async def get_whatsapp_config(token: str):
+    """Get WhatsApp API configuration (BotBiz)"""
+    await verify_super_admin(token)
+    
+    config = await db.whatsapp_config.find_one({}, {"_id": 0})
+    
+    if config and config.get("api_key"):
+        # Mask API key
+        config["api_key"] = config["api_key"][:8] + "..." + config["api_key"][-4:] if len(config.get("api_key", "")) > 12 else "***"
+    
+    return {
+        "config": config,
+        "is_configured": config is not None
+    }
+
+@router.post("/whatsapp/config")
+async def save_whatsapp_config(config: WhatsAppConfig, token: str):
+    """Save WhatsApp API configuration"""
+    await verify_super_admin(token)
+    
+    config_data = {
+        "api_key": config.api_key,
+        "api_secret": config.api_secret,
+        "instance_id": config.instance_id,
+        "phone_number": config.phone_number,
+        "webhook_url": config.webhook_url,
+        "is_active": config.is_active,
+        "provider": "botbiz",
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    existing = await db.whatsapp_config.find_one({})
+    if existing:
+        await db.whatsapp_config.update_one({}, {"$set": config_data})
+    else:
+        config_data["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.whatsapp_config.insert_one(config_data)
+    
+    return {
+        "success": True,
+        "message": "WhatsApp configuration saved"
+    }
+
+# ==================== MESSAGE PACKS ====================
+
+@router.get("/whatsapp/packs")
+async def get_message_packs(token: str):
+    """Get all message packs available for sale"""
+    await verify_super_admin(token)
+    
+    packs = await db.message_packs.find({}, {"_id": 0}).to_list(50)
+    
+    return {
+        "packs": packs
+    }
+
+@router.post("/whatsapp/packs")
+async def create_message_pack(pack: MessagePackCreate, token: str):
+    """Create a new message pack for schools to buy"""
+    await verify_super_admin(token)
+    
+    pack_data = {
+        "id": str(uuid.uuid4()),
+        "name": pack.name,
+        "messages_count": pack.messages_count,
+        "price": pack.price,
+        "validity_days": pack.validity_days,
+        "description": pack.description,
+        "is_active": pack.is_active,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.message_packs.insert_one(pack_data)
+    pack_data.pop('_id', None)
+    
+    return {
+        "success": True,
+        "message": f"Pack '{pack.name}' created",
+        "pack": pack_data
+    }
+
+@router.put("/whatsapp/packs/{pack_id}")
+async def update_message_pack(pack_id: str, pack: MessagePackCreate, token: str):
+    """Update a message pack"""
+    await verify_super_admin(token)
+    
+    await db.message_packs.update_one(
+        {"id": pack_id},
+        {"$set": {
+            "name": pack.name,
+            "messages_count": pack.messages_count,
+            "price": pack.price,
+            "validity_days": pack.validity_days,
+            "description": pack.description,
+            "is_active": pack.is_active,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"success": True, "message": "Pack updated"}
+
+@router.delete("/whatsapp/packs/{pack_id}")
+async def delete_message_pack(pack_id: str, token: str):
+    """Delete a message pack"""
+    await verify_super_admin(token)
+    
+    await db.message_packs.delete_one({"id": pack_id})
+    return {"success": True, "message": "Pack deleted"}
+
+# ==================== SCHOOL MESSAGE MANAGEMENT ====================
+
+@router.get("/whatsapp/schools")
+async def get_schools_message_status(token: str):
+    """Get message balance and usage for all schools"""
+    await verify_super_admin(token)
+    
+    schools = await db.schools.find({}, {"id": 1, "name": 1, "_id": 0}).to_list(500)
+    
+    school_status = []
+    for school in schools:
+        # Get message balance
+        balance = await db.school_message_balance.find_one(
+            {"school_id": school["id"]},
+            {"_id": 0}
+        )
+        
+        # Get usage this month
+        start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0).isoformat()
+        usage = await db.whatsapp_messages.count_documents({
+            "school_id": school["id"],
+            "sent_at": {"$gte": start_of_month}
+        })
+        
+        school_status.append({
+            "school_id": school["id"],
+            "school_name": school["name"],
+            "balance": balance.get("balance", 0) if balance else 0,
+            "usage_this_month": usage,
+            "last_purchase": balance.get("last_purchase") if balance else None
+        })
+    
+    return {
+        "total_schools": len(schools),
+        "schools": school_status
+    }
+
+@router.post("/whatsapp/assign-pack")
+async def assign_message_pack_to_school(assignment: SchoolMessagePack, token: str):
+    """Assign a message pack to a school (manual sale)"""
+    await verify_super_admin(token)
+    
+    # Get pack details
+    pack = await db.message_packs.find_one({"id": assignment.pack_id})
+    if not pack:
+        raise HTTPException(status_code=404, detail="Pack not found")
+    
+    # Get school
+    school = await db.schools.find_one({"id": assignment.school_id})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    # Calculate expiry
+    expiry = (datetime.now(timezone.utc) + timedelta(days=pack.get("validity_days", 30))).isoformat()
+    
+    # Create purchase record
+    purchase = {
+        "id": str(uuid.uuid4()),
+        "school_id": assignment.school_id,
+        "school_name": school.get("name"),
+        "pack_id": assignment.pack_id,
+        "pack_name": pack.get("name"),
+        "messages_purchased": assignment.messages_purchased or pack.get("messages_count"),
+        "amount_paid": assignment.amount_paid,
+        "payment_method": assignment.payment_method,
+        "validity_until": expiry,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.message_purchases.insert_one(purchase)
+    
+    # Update school balance
+    current_balance = await db.school_message_balance.find_one({"school_id": assignment.school_id})
+    new_balance = (current_balance.get("balance", 0) if current_balance else 0) + purchase["messages_purchased"]
+    
+    await db.school_message_balance.update_one(
+        {"school_id": assignment.school_id},
+        {"$set": {
+            "school_id": assignment.school_id,
+            "balance": new_balance,
+            "last_purchase": datetime.now(timezone.utc).isoformat(),
+            "validity_until": expiry
+        }},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": f"{purchase['messages_purchased']} messages assigned to {school.get('name')}",
+        "new_balance": new_balance,
+        "purchase": purchase
+    }
+
+@router.get("/whatsapp/usage")
+async def get_whatsapp_usage(token: str, period: str = "month"):
+    """Get WhatsApp message usage statistics"""
+    await verify_super_admin(token)
+    
+    if period == "week":
+        start_date = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    elif period == "month":
+        start_date = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    else:
+        start_date = "2020-01-01"
+    
+    # Total messages sent
+    total_messages = await db.whatsapp_messages.count_documents({
+        "sent_at": {"$gte": start_date}
+    })
+    
+    # Messages by school
+    pipeline = [
+        {"$match": {"sent_at": {"$gte": start_date}}},
+        {"$group": {"_id": "$school_id", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 20}
+    ]
+    school_usage = await db.whatsapp_messages.aggregate(pipeline).to_list(20)
+    
+    # Get school names
+    schools = await db.schools.find({}, {"id": 1, "name": 1, "_id": 0}).to_list(500)
+    school_names = {s["id"]: s["name"] for s in schools}
+    
+    for usage in school_usage:
+        usage["school_name"] = school_names.get(usage["_id"], "Unknown")
+    
+    # Total purchases this period
+    purchases = await db.message_purchases.find(
+        {"created_at": {"$gte": start_date}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    total_revenue = sum([p.get("amount_paid", 0) for p in purchases])
+    
+    return {
+        "period": period,
+        "total_messages_sent": total_messages,
+        "total_purchases": len(purchases),
+        "total_revenue": total_revenue,
+        "top_schools": school_usage,
+        "recent_purchases": purchases[:10]
+    }
+
+@router.post("/whatsapp/send-broadcast")
+async def send_broadcast_message(
+    message: str,
+    school_ids: Optional[str] = None,  # Comma-separated, or 'all'
+    message_type: str = "announcement",  # announcement, subscription, fee_reminder
+    token: str = None
+):
+    """Send broadcast message to schools via WhatsApp"""
+    await verify_super_admin(token)
+    
+    # Get WhatsApp config
+    config = await db.whatsapp_config.find_one({})
+    if not config or not config.get("is_active"):
+        raise HTTPException(status_code=400, detail="WhatsApp not configured")
+    
+    # Determine target schools
+    if school_ids == "all" or not school_ids:
+        schools = await db.schools.find({"is_active": True}, {"id": 1, "name": 1, "phone": 1, "_id": 0}).to_list(500)
+    else:
+        ids = [s.strip() for s in school_ids.split(",")]
+        schools = await db.schools.find({"id": {"$in": ids}}, {"id": 1, "name": 1, "phone": 1, "_id": 0}).to_list(100)
+    
+    # Get directors' phone numbers
+    recipients = []
+    for school in schools:
+        director = await db.users.find_one(
+            {"school_id": school["id"], "role": "director"},
+            {"mobile": 1, "name": 1, "_id": 0}
+        )
+        if director and director.get("mobile"):
+            recipients.append({
+                "school_id": school["id"],
+                "school_name": school["name"],
+                "phone": director["mobile"],
+                "name": director["name"]
+            })
+    
+    # Log broadcast (actual sending would use BotBiz API)
+    broadcast = {
+        "id": str(uuid.uuid4()),
+        "message": message,
+        "message_type": message_type,
+        "recipients_count": len(recipients),
+        "status": "queued",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.whatsapp_broadcasts.insert_one(broadcast)
+    
+    return {
+        "success": True,
+        "message": f"Broadcast queued for {len(recipients)} schools",
+        "broadcast_id": broadcast["id"],
+        "recipients": len(recipients),
+        "note": "Messages will be sent via BotBiz API"
+    }
+
+@router.get("/whatsapp/purchases/{school_id}")
+async def get_school_purchases(school_id: str, token: str):
+    """Get purchase history for a school"""
+    await verify_super_admin(token)
+    
+    purchases = await db.message_purchases.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    balance = await db.school_message_balance.find_one(
+        {"school_id": school_id},
+        {"_id": 0}
+    )
+    
+    return {
+        "school_id": school_id,
+        "current_balance": balance.get("balance", 0) if balance else 0,
+        "validity_until": balance.get("validity_until") if balance else None,
+        "purchases": purchases
+    }
