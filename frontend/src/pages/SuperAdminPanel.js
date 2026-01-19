@@ -128,7 +128,7 @@ export default function SuperAdminPanel() {
       if (searchQuery) params.append('search', searchQuery);
       if (statusFilter !== 'all') params.append('status', statusFilter);
       
-      const res = await axios.get(`${API}/super-admin/schools?${params}`);
+      const res = await axios.get(`${API}/schools?${params}`);
       setSchools(res.data.schools);
     } catch (error) {
       toast.error('Failed to load schools');
@@ -137,7 +137,7 @@ export default function SuperAdminPanel() {
 
   const loadSchoolDetails = async (schoolId) => {
     try {
-      const res = await axios.get(`${API}/super-admin/schools/${schoolId}?token=${token}`);
+      const res = await axios.get(`${API}/schools/${schoolId}?token=${token}`);
       setSchoolDetails(res.data);
       setSelectedSchool(schoolId);
     } catch (error) {
@@ -147,7 +147,7 @@ export default function SuperAdminPanel() {
 
   const loadEarnings = async () => {
     try {
-      const res = await axios.get(`${API}/super-admin/earnings?token=${token}`);
+      const res = await axios.get(`${API}/earnings?token=${token}`);
       setEarnings(res.data);
     } catch (error) {
       toast.error('Failed to load earnings');
@@ -156,7 +156,7 @@ export default function SuperAdminPanel() {
 
   const loadTickets = async () => {
     try {
-      const res = await axios.get(`${API}/super-admin/support-tickets?token=${token}`);
+      const res = await axios.get(`${API}/support-tickets?token=${token}`);
       setTickets(res.data.tickets);
     } catch (error) {
       toast.error('Failed to load tickets');
@@ -165,7 +165,7 @@ export default function SuperAdminPanel() {
 
   const updateSchoolStatus = async (schoolId, status, reason = '') => {
     try {
-      await axios.put(`${API}/super-admin/schools/${schoolId}/status?token=${token}`, {
+      await axios.put(`${API}/schools/${schoolId}/status?token=${token}`, {
         school_id: schoolId,
         status,
         reason
@@ -179,7 +179,7 @@ export default function SuperAdminPanel() {
 
   const extendTrial = async (schoolId, days) => {
     try {
-      await axios.post(`${API}/super-admin/subscriptions/${schoolId}/extend-trial?days=${days}&token=${token}`);
+      await axios.post(`${API}/subscriptions/${schoolId}/extend-trial?days=${days}&token=${token}`);
       toast.success(`Trial extended by ${days} days`);
       loadSchools();
     } catch (error) {
