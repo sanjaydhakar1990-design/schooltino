@@ -7,7 +7,28 @@
 
 ---
 
-## What's Been Implemented (Latest Session - 8 Jan 2026)
+## What's Been Implemented (Latest Session - 19 Jan 2026)
+
+### 83. AI Paper Generator Fix & Enhancement ✅ NEW! 📝
+- **Issue:** User reported AI Paper Generator not working and missing Exam Name field
+- **Investigation:** Tested full flow - UI and API were actually working correctly
+- **Enhancement Added:** New "Exam Name" field (e.g., Half Yearly, Unit Test, Final Exam)
+- **Frontend Changes:**
+  - Added `exam_name` field to formData state
+  - Added "Exam Name" input field in Step 1 with placeholder
+  - Updated paper preview to show exam_name at top of paper
+- **Backend Changes:**
+  - Added `exam_name` to `PaperGenerateRequest` model
+  - Added `exam_name` to `PaperGenerateResponse` model
+  - Updated paper_data to include exam_name
+- **Files Modified:**
+  - `frontend/src/pages/AIPaperPage.js`
+  - `backend/server.py` (lines 559-582, 3117-3130)
+- **Testing Status:** ✅ Verified - Paper generation working with all fields
+
+---
+
+## What's Been Implemented (Previous Session - 8 Jan 2026)
 
 ### 79. Class Intelligence System ✅ NEW! 🧠
 - **Alexa/Siri Style Commands:** Admin बोले "Class 10 ki condition batao" → Tino instant response
