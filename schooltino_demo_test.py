@@ -505,8 +505,8 @@ class SchoolTinoDemoTester:
     # ============== DASHBOARD STATS TESTS ==============
     
     def test_dashboard_stats(self):
-        """Test GET /api/dashboard/stats/SCH-DEMO-2026"""
-        endpoint = f"dashboard/stats/{self.school_id}"
+        """Test GET /api/dashboard/stats?school_id=SCH-DEMO-2026"""
+        endpoint = f"dashboard/stats?school_id={self.school_id}"
         success, response = self.run_test("Dashboard Stats - Demo School", "GET", endpoint, 200)
         
         if success:
