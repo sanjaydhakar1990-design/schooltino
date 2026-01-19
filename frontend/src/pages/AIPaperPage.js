@@ -255,7 +255,7 @@ export default function AIPaperPage() {
       <div className="flex justify-end">
         <Button
           onClick={() => setStep(2)}
-          disabled={!formData.class_name || !formData.subject || !formData.chapter}
+          disabled={!formData.class_name || !formData.subject || (!formData.chapter && formData.selectedChapters.length === 0) || !formData.exam_name}
           className="btn-primary"
           data-testid="next-step-btn"
         >
