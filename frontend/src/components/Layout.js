@@ -104,7 +104,20 @@ export const Layout = () => {
           <div className="hidden lg:block" />
           
           {/* Right side buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* PWA Install Button - Only show if not installed */}
+            {!isInstalled && (
+              <button
+                onClick={handlePWAInstall}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm transition-colors"
+                data-testid="pwa-install-btn"
+                title="Install App"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Install</span>
+              </button>
+            )}
+            
             {/* Language Toggle */}
             <div className="relative">
               <button
