@@ -3119,6 +3119,7 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
             "subject": request.subject,
             "class_name": request.class_name,
             "chapter": request.chapter,
+            "exam_name": request.exam_name,
             "questions": questions,
             "total_marks": request.total_marks,
             "actual_marks": final_total,
