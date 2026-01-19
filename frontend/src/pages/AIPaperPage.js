@@ -282,6 +282,7 @@ export default function AIPaperPage() {
       {/* Paper Preview */}
       <div className="bg-white rounded-xl border border-slate-200 p-8 print:border-0 print:p-0" data-testid="paper-preview">
         <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
+          {paper?.exam_name && <p className="text-lg font-semibold text-indigo-600 mb-2">{paper.exam_name}</p>}
           <h2 className="text-2xl font-bold">{paper?.subject} - {paper?.class_name}</h2>
           <p className="text-slate-600 mt-1">{paper?.chapter}</p>
           <div className="flex justify-center gap-8 mt-4 text-sm">
