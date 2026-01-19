@@ -476,6 +476,65 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Key Highlights Section */}
+      <section className="py-16 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12">🎯 Schooltino Kyu Choose Karein?</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="p-4">
+              <div className="text-4xl font-bold mb-2">500+</div>
+              <div className="text-indigo-200">Schools Trust Us</div>
+            </div>
+            <div className="p-4">
+              <div className="text-4xl font-bold mb-2">50%</div>
+              <div className="text-indigo-200">Sasta Than Competitors</div>
+            </div>
+            <div className="p-4">
+              <div className="text-4xl font-bold mb-2">24/7</div>
+              <div className="text-indigo-200">AI Support</div>
+            </div>
+            <div className="p-4">
+              <div className="text-4xl font-bold mb-2">100%</div>
+              <div className="text-indigo-200">Hindi Support</div>
+            </div>
+          </div>
+          
+          {/* Main Features Grid */}
+          <div className="grid md:grid-cols-3 gap-6 mt-12">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">🧠</div>
+              <h3 className="font-bold text-lg mb-2">Tino Brain AI</h3>
+              <p className="text-indigo-200 text-sm">Hindi mein baat karo - "Aaj kitne bachhe absent hain?" AI turant jawab dega!</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">📹</div>
+              <h3 className="font-bold text-lg mb-2">CCTV + Biometric</h3>
+              <p className="text-indigo-200 text-sm">Face recognition se automatic attendance - No proxy possible!</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">🚌</div>
+              <h3 className="font-bold text-lg mb-2">GPS Bus Tracking</h3>
+              <p className="text-indigo-200 text-sm">Parents ko real-time bus location dikhe - "Bus late hai" notification automatic!</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">📝</div>
+              <h3 className="font-bold text-lg mb-2">AI Paper Generator</h3>
+              <p className="text-indigo-200 text-sm">Chapter select karo, AI paper bana dega - NCERT syllabus ke according!</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">💰</div>
+              <h3 className="font-bold text-lg mb-2">Fee Management</h3>
+              <p className="text-indigo-200 text-sm">Online + Cash payment - Receipt turant student app mein!</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-3xl mb-3">📱</div>
+              <h3 className="font-bold text-lg mb-2">Parent App</h3>
+              <p className="text-indigo-200 text-sm">Parents ko sab kuch phone par - Attendance, Fees, Results, Bus Location!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
