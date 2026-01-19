@@ -401,6 +401,176 @@ async def get_payment_history(student_id: str, limit: int = 20):
     }
 
 
+# ==================== CASH PAYMENT (SCHOOL COUNTER) ====================
+
+class CashPaymentRequest(BaseModel):
+    student_id: str
+    school_id: str
+    amount: float
+    fee_type: str  # tuition, exam, transport, etc.
+    month: Optional[str] = None
+    collected_by: str  # staff ID who collected
+    remarks: Optional[str] = None
+
+@router.post("/cash-payment")
+async def record_cash_payment(request: CashPaymentRequest):
+    """
+    Record cash payment collected at school counter.
+    Instantly reflects in student's account.
+    """
+    # Verify student exists
+    student = await db.students.find_one({
+        "$or": [
+            {"id": request.student_id},
+            {"student_id": request.student_id}
+        ],
+        "school_id": request.school_id
+    })
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get school info
+    school = await db.schools.find_one({"id": request.school_id})
+    school_name = school.get("name", "School") if school else "School"
+    
+    # Generate IDs
+    payment_id = generate_payment_id()
+    receipt_number = generate_receipt_number()
+    month = request.month or datetime.now().strftime('%Y-%m')
+    
+    # Create payment record - INSTANT SUCCESS for cash
+    payment_record = {
+        "id": payment_id,
+        "student_id": student.get("id"),
+        "student_sid": student.get("student_id"),
+        "student_name": student.get("name"),
+        "school_id": request.school_id,
+        "school_name": school_name,
+        "amount": request.amount,
+        "fee_type": request.fee_type,
+        "month": month,
+        "payment_method": "cash",
+        "status": "success",  # Cash is instantly successful
+        "receipt_number": receipt_number,
+        "collected_by": request.collected_by,
+        "remarks": request.remarks,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "verified_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.fee_payments.insert_one(payment_record)
+    
+    # Create receipt
+    receipt = {
+        "id": str(uuid.uuid4()),
+        "receipt_number": receipt_number,
+        "payment_id": payment_id,
+        "student_id": student.get("id"),
+        "student_sid": student.get("student_id"),
+        "student_name": student.get("name"),
+        "father_name": student.get("father_name"),
+        "class_name": student.get("class_name"),
+        "section": student.get("section"),
+        "school_id": request.school_id,
+        "school_name": school_name,
+        "amount": request.amount,
+        "amount_in_words": number_to_words(request.amount),
+        "fee_type": request.fee_type,
+        "month": month,
+        "payment_method": "cash",
+        "collected_by": request.collected_by,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.fee_receipts.insert_one(receipt)
+    
+    # ========== INSTANT UPDATE IN STUDENT'S APP ==========
+    # Update student's payment history and fee status
+    await db.students.update_one(
+        {"id": student.get("id")},
+        {
+            "$push": {"payment_history": {
+                "payment_id": payment_id,
+                "receipt_number": receipt_number,
+                "amount": request.amount,
+                "fee_type": request.fee_type,
+                "month": month,
+                "payment_method": "cash",
+                "paid_at": datetime.now(timezone.utc).isoformat()
+            }},
+            "$inc": {"total_paid_amount": request.amount},
+            "$set": {
+                "last_payment_date": datetime.now(timezone.utc).isoformat(),
+                "last_payment_amount": request.amount,
+                f"fee_status.{month.replace('-', '_')}": "paid"
+            }
+        }
+    )
+    
+    # Update any pending fee invoices for this month
+    await db.fee_invoices.update_many(
+        {
+            "student_id": student.get("id"),
+            "month": month,
+            "status": {"$in": ["pending", "partial", "overdue"]}
+        },
+        {"$set": {
+            "status": "paid",
+            "paid_amount": request.amount,
+            "paid_at": datetime.now(timezone.utc).isoformat(),
+            "receipt_number": receipt_number,
+            "payment_method": "cash"
+        }}
+    )
+    
+    # Update fees collection for this month
+    await db.fees.update_many(
+        {
+            "student_id": student.get("id"),
+            "month": month,
+            "school_id": request.school_id
+        },
+        {"$set": {
+            "status": "paid",
+            "paid_amount": request.amount,
+            "payment_date": datetime.now(timezone.utc).isoformat(),
+            "receipt_no": receipt_number,
+            "payment_mode": "cash"
+        }}
+    )
+    # ========== END INSTANT UPDATE ==========
+    
+    return {
+        "success": True,
+        "message": f"₹{request.amount} cash payment recorded for {student.get('name')}",
+        "receipt_number": receipt_number,
+        "payment_id": payment_id,
+        "receipt": receipt,
+        "student_updated": True,
+        "note": "Payment will instantly show in student's app"
+    }
+
+def number_to_words(num):
+    """Convert number to words (Indian format)"""
+    ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+            'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 
+            'Seventeen', 'Eighteen', 'Nineteen']
+    tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+    
+    if num < 20:
+        return ones[int(num)]
+    elif num < 100:
+        return tens[int(num)//10] + ('' if num%10 == 0 else ' ' + ones[int(num)%10])
+    elif num < 1000:
+        return ones[int(num)//100] + ' Hundred' + ('' if num%100 == 0 else ' and ' + number_to_words(num%100))
+    elif num < 100000:
+        return number_to_words(num//1000) + ' Thousand' + ('' if num%1000 == 0 else ' ' + number_to_words(num%1000))
+    elif num < 10000000:
+        return number_to_words(num//100000) + ' Lakh' + ('' if num%100000 == 0 else ' ' + number_to_words(num%100000))
+    else:
+        return number_to_words(num//10000000) + ' Crore' + ('' if num%10000000 == 0 else ' ' + number_to_words(num%10000000))
+
+
 # ==================== SCHOOL PAYMENT SETTINGS ====================
 
 @router.post("/school-settings")
