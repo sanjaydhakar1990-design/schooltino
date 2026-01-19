@@ -37,6 +37,7 @@ export default function AIPaperPage() {
     subject: '',
     class_name: '',
     chapter: '',
+    exam_name: '',
     difficulty: 'medium',
     question_types: ['mcq', 'short'],
     total_marks: 50,
