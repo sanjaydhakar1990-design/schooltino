@@ -218,7 +218,8 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
         
         <div className="relative z-10 flex flex-col justify-center p-12">
-          <div className="flex items-center gap-3 mb-8">
+          {/* SECRET: Click logo 5 times to reveal Super Admin */}
+          <div className="flex items-center gap-3 mb-8 cursor-pointer" onClick={handleSecretClick}>
             <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
               <School className="w-8 h-8 text-white" />
             </div>
@@ -267,13 +268,60 @@ export default function LoginPage() {
       {/* Right side - Login Forms */}
       <div className="flex-1 flex items-center justify-center p-6 bg-gradient-to-b from-slate-50 to-white">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
+          {/* Mobile Logo - SECRET: Click 5 times */}
+          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center cursor-pointer" onClick={handleSecretClick}>
             <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
               <School className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-2xl font-bold font-heading">Schooltino</h1>
           </div>
+
+          {/* SECRET: Super Admin Login Modal */}
+          {showSuperAdmin && (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-2xl w-full max-w-sm shadow-2xl border border-amber-500/30">
+                <div className="flex items-center gap-3 mb-6 justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <Crown className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Platform Owner</h2>
+                </div>
+                
+                <form onSubmit={handleSuperAdminLogin} className="space-y-4">
+                  <Input
+                    type="email"
+                    placeholder="Owner Email"
+                    value={superAdminForm.email}
+                    onChange={(e) => setSuperAdminForm({...superAdminForm, email: e.target.value})}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={superAdminForm.password}
+                    onChange={(e) => setSuperAdminForm({...superAdminForm, password: e.target.value})}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                  />
+                  {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                    disabled={superAdminLoading}
+                  >
+                    {superAdminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Access Control Panel'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="w-full text-white/60 hover:text-white"
+                    onClick={() => {setShowSuperAdmin(false); setError('');}}
+                  >
+                    Cancel
+                  </Button>
+                </form>
+              </div>
+            </div>
+          )}
 
           {/* Initial Setup Screen */}
           {setupRequired ? (
