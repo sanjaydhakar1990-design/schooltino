@@ -1160,6 +1160,275 @@ export default function SuperAdminPanel() {
               )}
             </div>
           )}
+
+          {/* WhatsApp Business Tab */}
+          {activeTab === 'whatsapp' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-slate-900">WhatsApp Business (BotBiz)</h2>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setShowWhatsAppConfigModal(true)}>
+                    <Settings className="w-4 h-4 mr-2" /> Configure API
+                  </Button>
+                  <Button onClick={() => setShowPackModal(true)}>
+                    <MessageSquare className="w-4 h-4 mr-2" /> Create Pack
+                  </Button>
+                </div>
+              </div>
+
+              {/* WhatsApp Stats */}
+              {whatsappUsage && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-green-200">Messages Sent</p>
+                      <p className="text-3xl font-bold">{whatsappUsage.total_messages_sent}</p>
+                      <p className="text-sm text-green-200 mt-1">This month</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-blue-200">Packs Sold</p>
+                      <p className="text-3xl font-bold">{whatsappUsage.total_purchases}</p>
+                      <p className="text-sm text-blue-200 mt-1">This month</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-amber-200">Revenue</p>
+                      <p className="text-3xl font-bold">₹{whatsappUsage.total_revenue?.toLocaleString() || 0}</p>
+                      <p className="text-sm text-amber-200 mt-1">From message packs</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-gradient-to-br from-purple-500 to-violet-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-purple-200">API Status</p>
+                      <p className="text-2xl font-bold">{whatsappConfig?.is_active ? '✅ Active' : '❌ Inactive'}</p>
+                      <p className="text-sm text-purple-200 mt-1">BotBiz Connection</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Message Packs */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Message Packs (Sell to Schools)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {messagePacks.map((pack) => (
+                      <div key={pack.id} className="border rounded-lg p-4 hover:border-green-500 transition-colors">
+                        <h3 className="font-bold text-lg">{pack.name}</h3>
+                        <p className="text-3xl font-bold text-green-600 my-2">₹{pack.price}</p>
+                        <div className="text-sm text-slate-600 space-y-1">
+                          <p>📩 {pack.messages_count} Messages</p>
+                          <p>📅 {pack.validity_days} Days Valid</p>
+                        </div>
+                        <Button 
+                          className="w-full mt-4" 
+                          variant="outline"
+                          onClick={() => {
+                            setAssignPack({...assignPack, pack_id: pack.id, amount_paid: pack.price});
+                            setShowAssignPackModal(true);
+                          }}
+                        >
+                          Assign to School
+                        </Button>
+                      </div>
+                    ))}
+                    {messagePacks.length === 0 && (
+                      <div className="col-span-3 text-center py-8 text-slate-500">
+                        <MessageSquare className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+                        <p>No message packs created yet</p>
+                        <Button className="mt-4" onClick={() => setShowPackModal(true)}>Create First Pack</Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Schools Message Balance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Schools Message Balance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">School</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Balance</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Used This Month</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Last Purchase</th>
+                          <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {schoolsWhatsApp.map((school) => (
+                          <tr key={school.school_id} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 font-medium">{school.school_name}</td>
+                            <td className="px-4 py-3">
+                              <span className={`font-bold ${school.balance > 100 ? 'text-green-600' : school.balance > 0 ? 'text-amber-600' : 'text-red-600'}`}>
+                                {school.balance} msgs
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">{school.usage_this_month}</td>
+                            <td className="px-4 py-3 text-sm text-slate-500">{school.last_purchase?.slice(0,10) || 'Never'}</td>
+                            <td className="px-4 py-3">
+                              <Button 
+                                size="sm" 
+                                onClick={() => {
+                                  setAssignPack({...assignPack, school_id: school.school_id});
+                                  setShowAssignPackModal(true);
+                                }}
+                              >
+                                Add Messages
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Create Pack Modal */}
+              {showPackModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <Card className="w-full max-w-md">
+                    <CardHeader>
+                      <CardTitle>Create Message Pack</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Input
+                        placeholder="Pack Name (e.g., Starter Pack)"
+                        value={newPack.name}
+                        onChange={(e) => setNewPack({...newPack, name: e.target.value})}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Messages Count"
+                        value={newPack.messages_count}
+                        onChange={(e) => setNewPack({...newPack, messages_count: parseInt(e.target.value)})}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Price (₹)"
+                        value={newPack.price}
+                        onChange={(e) => setNewPack({...newPack, price: parseInt(e.target.value)})}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Validity (Days)"
+                        value={newPack.validity_days}
+                        onChange={(e) => setNewPack({...newPack, validity_days: parseInt(e.target.value)})}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={createMessagePack} className="flex-1">Create Pack</Button>
+                        <Button variant="outline" onClick={() => setShowPackModal(false)}>Cancel</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Assign Pack Modal */}
+              {showAssignPackModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <Card className="w-full max-w-md">
+                    <CardHeader>
+                      <CardTitle>Assign Message Pack to School</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <select
+                        value={assignPack.school_id}
+                        onChange={(e) => setAssignPack({...assignPack, school_id: e.target.value})}
+                        className="w-full p-2 border rounded-lg"
+                      >
+                        <option value="">Select School</option>
+                        {schools.map((s) => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={assignPack.pack_id}
+                        onChange={(e) => {
+                          const pack = messagePacks.find(p => p.id === e.target.value);
+                          setAssignPack({...assignPack, pack_id: e.target.value, amount_paid: pack?.price || 0});
+                        }}
+                        className="w-full p-2 border rounded-lg"
+                      >
+                        <option value="">Select Pack</option>
+                        {messagePacks.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name} - ₹{p.price}</option>
+                        ))}
+                      </select>
+                      <Input
+                        type="number"
+                        placeholder="Amount Paid (₹)"
+                        value={assignPack.amount_paid}
+                        onChange={(e) => setAssignPack({...assignPack, amount_paid: parseInt(e.target.value)})}
+                      />
+                      <select
+                        value={assignPack.payment_method}
+                        onChange={(e) => setAssignPack({...assignPack, payment_method: e.target.value})}
+                        className="w-full p-2 border rounded-lg"
+                      >
+                        <option value="cash">Cash</option>
+                        <option value="online">Online</option>
+                        <option value="free">Free/Promo</option>
+                      </select>
+                      <div className="flex gap-2">
+                        <Button onClick={assignMessagePack} className="flex-1">Assign Pack</Button>
+                        <Button variant="outline" onClick={() => setShowAssignPackModal(false)}>Cancel</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* WhatsApp Config Modal */}
+              {showWhatsAppConfigModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <Card className="w-full max-w-md">
+                    <CardHeader>
+                      <CardTitle>WhatsApp API Configuration (BotBiz)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Input
+                        placeholder="API Key"
+                        value={waConfig.api_key}
+                        onChange={(e) => setWaConfig({...waConfig, api_key: e.target.value})}
+                      />
+                      <Input
+                        placeholder="API Secret (Optional)"
+                        type="password"
+                        value={waConfig.api_secret}
+                        onChange={(e) => setWaConfig({...waConfig, api_secret: e.target.value})}
+                      />
+                      <Input
+                        placeholder="Instance ID"
+                        value={waConfig.instance_id}
+                        onChange={(e) => setWaConfig({...waConfig, instance_id: e.target.value})}
+                      />
+                      <Input
+                        placeholder="WhatsApp Number (+91...)"
+                        value={waConfig.phone_number}
+                        onChange={(e) => setWaConfig({...waConfig, phone_number: e.target.value})}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={saveWhatsAppConfig} className="flex-1">Save Configuration</Button>
+                        <Button variant="outline" onClick={() => setShowWhatsAppConfigModal(false)}>Cancel</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
     </div>
