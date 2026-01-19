@@ -561,6 +561,7 @@ class PaperGenerateRequest(BaseModel):
     class_name: str
     chapter: str  # Can be single chapter or comma-separated multiple chapters
     chapters: Optional[List[str]] = None  # New: List of specific chapters to include
+    exam_name: Optional[str] = None  # Exam name like "Half Yearly", "Unit Test"
     difficulty: str  # easy, medium, hard, mixed
     question_types: List[str]  # mcq, short, long, fill_blank
     total_marks: int
@@ -573,6 +574,7 @@ class PaperGenerateResponse(BaseModel):
     subject: str
     class_name: str
     chapter: str
+    exam_name: Optional[str] = None
     chapters_included: Optional[List[str]] = None
     questions: List[Dict[str, Any]]
     total_marks: int
