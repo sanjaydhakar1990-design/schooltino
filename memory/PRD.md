@@ -227,17 +227,17 @@
 
 ### P0 - Critical
 - [x] AI Paper Generator Fix ✅ (19 Jan 2026)
+- [x] PWA Install Button ✅ (19 Jan 2026)
+- [x] Teacher Role Management ✅ (19 Jan 2026)
+- [x] Timetable Fix ✅ (19 Jan 2026)
+- [x] Exam Creation Access ✅ (19 Jan 2026)
 - [ ] Notice Popup System - Connect NoticePopup.js to /api/notices/unread endpoint
 
 ### P1 - High Priority
-- [ ] Timetable Creation Fix - User reported not working
-- [ ] Exam Creation Fix - User reported not working
 - [ ] Mobile compatibility verification
-- [ ] PWA installation testing
 - [ ] AI Voice quality (ElevenLabs madhur voice)
 
 ### P2 - Medium Priority
-- [ ] Teacher Role Management - Class Teacher vs Subject Teacher system
 - [ ] CCTV AI Greeting system complete
 - [ ] Backend server.py refactoring (7000+ lines monolith)
 
