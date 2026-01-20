@@ -473,10 +473,10 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-500" />
-                Recent Students
+                {t('students')}
               </h3>
               <Button variant="ghost" size="sm" onClick={() => navigate('/app/students')} className="text-indigo-600">
-                View All
+                {t('view')}
               </Button>
             </div>
             <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
