@@ -16,29 +16,52 @@ export const Layout = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [installStatus, setInstallStatus] = useState('checking'); // 'checking', 'ready', 'ios', 'installed', 'unsupported'
 
   // Detect browser/platform
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
   const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+  const isEdge = /Edg/.test(navigator.userAgent);
+  const isFirefox = /Firefox/.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
   useEffect(() => {
     // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    if (isStandalone) {
       setIsInstalled(true);
+      setInstallStatus('installed');
       return;
     }
+
+    // iOS doesn't support beforeinstallprompt
+    if (isIOS) {
+      setInstallStatus('ios');
+      return;
+    }
+
+    // Set a timeout - if no prompt received, browser doesn't support or criteria not met
+    const timeout = setTimeout(() => {
+      if (!deferredPrompt) {
+        setInstallStatus('unsupported');
+      }
+    }, 3000);
 
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      console.log('PWA install prompt ready');
+      setInstallStatus('ready');
+      console.log('✅ PWA install prompt ready!');
+      clearTimeout(timeout);
     };
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
+      setInstallStatus('installed');
       setDeferredPrompt(null);
       setShowInstallModal(false);
+      console.log('✅ PWA installed successfully!');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -47,20 +70,31 @@ export const Layout = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      clearTimeout(timeout);
     };
-  }, []);
+  }, [isIOS, isStandalone]);
 
   const handlePWAInstall = async () => {
     if (deferredPrompt) {
-      // Chrome/Edge - direct install
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setIsInstalled(true);
+      // Chrome/Edge/Samsung Browser - DIRECT INSTALL
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User ${outcome} the install prompt`);
+        if (outcome === 'accepted') {
+          setIsInstalled(true);
+          setInstallStatus('installed');
+        }
+        setDeferredPrompt(null);
+      } catch (err) {
+        console.error('Install error:', err);
+        setShowInstallModal(true);
       }
-      setDeferredPrompt(null);
+    } else if (isIOS) {
+      // iOS - Show Safari instructions (no other way)
+      setShowInstallModal(true);
     } else {
-      // Show modal with instructions
+      // Try to trigger install anyway or show instructions
       setShowInstallModal(true);
     }
   };
