@@ -741,17 +741,17 @@ export default function AIPaperPage() {
       {/* Header - Hidden in print */}
       <div className="print:hidden">
         <h1 className="text-2xl font-bold text-slate-900">
-          {formData.language === 'hindi' ? 'AI प्रश्न पत्र जनरेटर' : 'AI Question Paper Generator'}
+          {isAppHindi ? 'AI प्रश्न पत्र जनरेटर' : 'AI Question Paper Generator'}
         </h1>
-        <p className="text-slate-500 mt-1">{BOARDS[schoolBoard]?.name} 2024-25 Syllabus</p>
+        <p className="text-slate-500 mt-1">{BOARDS[schoolBoard]?.name} 2024-25 {isAppHindi ? 'पाठ्यक्रम' : 'Syllabus'}</p>
       </div>
 
       {/* Stepper - Hidden in print */}
       <div className="flex items-center justify-center gap-4 print:hidden">
         {[
-          { num: 1, label: formData.language === 'hindi' ? 'विषय चुनें' : 'Select Subject' },
-          { num: 2, label: formData.language === 'hindi' ? 'प्रश्न सेट करें' : 'Set Questions' },
-          { num: 3, label: formData.language === 'hindi' ? 'पेपर देखें' : 'View Paper' }
+          { num: 1, label: isAppHindi ? 'विषय चुनें' : 'Select Subject' },
+          { num: 2, label: isAppHindi ? 'प्रश्न सेट करें' : 'Set Questions' },
+          { num: 3, label: isAppHindi ? 'पेपर देखें' : 'View Paper' }
         ].map((s) => (
           <div key={s.num} className="flex items-center gap-2">
             <div className="flex flex-col items-center">
