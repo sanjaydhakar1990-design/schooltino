@@ -8,7 +8,6 @@ import { useLanguage } from '../context/LanguageContext';
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const { language, changeLanguage } = useLanguage();
   
   // PWA Install State
