@@ -220,30 +220,30 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-testid="quick-stats">
         <StatCard
           icon={Users}
-          label="Total Students"
+          label={t('total_students')}
           value={stats?.total_students || 0}
           trend="+12%"
           color="blue"
         />
         <StatCard
           icon={UserCog}
-          label="Total Staff"
+          label={t('total_staff')}
           value={stats?.total_staff || 0}
           trend="+3%"
           color="emerald"
         />
         <StatCard
           icon={CalendarCheck}
-          label="Present Today"
+          label={t('present')}
           value={stats?.attendance_today?.present || 0}
-          subtext={`of ${stats?.attendance_today?.total || 0}`}
+          subtext={`${stats?.attendance_today?.total || 0} ${t('total_students')}`}
           color="green"
         />
         <StatCard
           icon={Wallet}
-          label="Fee Collected"
+          label={t('fee_collected')}
           value={`₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`}
-          subtext="This Month"
+          subtext={t('this_month') || 'This Month'}
           color="amber"
         />
       </div>
