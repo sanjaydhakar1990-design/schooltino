@@ -481,7 +481,7 @@ export default function AIPaperPage() {
           className="bg-indigo-600 hover:bg-indigo-700"
           data-testid="next-step-btn"
         >
-          आगे बढ़ें <ChevronRight className="w-5 h-5 ml-2" />
+          {isAppHindi ? 'आगे बढ़ें' : 'Next'} <ChevronRight className="w-5 h-5 ml-2" />
         </Button>
       </div>
     </div>
@@ -490,7 +490,7 @@ export default function AIPaperPage() {
   const renderStep2 = () => (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Label className="text-sm font-medium">प्रश्न प्रकार चुनें ({schoolBoard} Pattern) *</Label>
+        <Label className="text-sm font-medium">{isAppHindi ? 'प्रश्न प्रकार चुनें' : 'Select Question Types'} ({schoolBoard} Pattern) *</Label>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {questionTypes.map(type => (
