@@ -55,7 +55,9 @@ export default function StudentsPage() {
   const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
   const [showFaceEnrollment, setShowFaceEnrollment] = useState(false);
   const [showIDCard, setShowIDCard] = useState(false);
+  const [showPrintableIDCard, setShowPrintableIDCard] = useState(false);
   const [idCardStudent, setIdCardStudent] = useState(null);
+  const [school, setSchool] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudentCredentials, setNewStudentCredentials] = useState(null);
