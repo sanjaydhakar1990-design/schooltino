@@ -1951,20 +1951,32 @@ def generate_temp_password() -> str:
 async def admit_student(student: StudentCreate, current_user: dict = Depends(get_current_user)):
     """
     Admission Staff adds new student.
-    Auto-generates Student ID and temporary password.
-    Director/Principal can later approve if needed.
+    Auto-generates Smart Student ID with school abbreviation and temporary password.
+    Format: STU-<SCHOOL_ABBR>-<YEAR>-<SEQ>
+    Example: STU-SCS-2026-001 (Sainath Convent School)
     """
     # Allow admission staff, clerk, accountant, teacher, principal, director
     allowed_roles = ["director", "principal", "vice_principal", "teacher", "accountant", "clerk", "admission_staff"]
     if current_user["role"] not in allowed_roles:
         raise HTTPException(status_code=403, detail="Not authorized for admission")
     
-    # Generate unique student ID
-    student_id = generate_student_id(student.school_id)
+    # Parse admission year from admission_date if provided
+    admission_year = None
+    if student.admission_date:
+        try:
+            admission_year = int(student.admission_date.split('-')[0])
+        except:
+            admission_year = datetime.now().year
+    
+    # Generate Smart Student ID with school abbreviation
+    student_id = await generate_smart_student_id(student.school_id, admission_year)
     
     # Check if student_id already exists (very rare)
-    while await db.students.find_one({"student_id": student_id}):
-        student_id = generate_student_id(student.school_id)
+    retry_count = 0
+    while await db.students.find_one({"student_id": student_id}) and retry_count < 10:
+        # Add random suffix if collision
+        student_id = await generate_smart_student_id(student.school_id, admission_year)
+        retry_count += 1
     
     # Generate temporary password
     temp_password = generate_temp_password()
