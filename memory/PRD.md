@@ -34,16 +34,55 @@
 - **Senior Secondary (Class 11-12):** Physics, Chemistry, Biology, Maths - all chapters
 - All boards supported: CBSE, MP Board (MPBSE), RBSE (Rajasthan), NCERT
 
-### 3. AI Paper Generator Working
-- Tested Class 5, Class 8 paper generation - Working ✅
-- Multiple question types: MCQ, Fill in Blanks, Short Answer, Long Answer, Diagram, HOTS
-- Hindi/English language selection
-- Board-specific marking patterns
+### 4. Smart Student ID System - NEW! 🆔
+- Format: `STU-<SCHOOL_ABBR>-<YEAR>-<SEQ>`
+- Example: `STU-SCS-2025-001` (Sainath Convent School, 2025, 1st student)
+- Abbreviation auto-generated from school name
+- Sequence number per year per school
+- Files: `/app/backend/server.py` - `generate_smart_student_id()` function
 
-### 4. Student Admission Working
-- API endpoint `/api/students/admit` tested and working ✅
-- Auto-generated Student ID and temporary password
-- All form fields validated
+### 5. Admission Date Field - NEW! 📅
+- Added "Admission Date (प्रवेश तिथि)" field in student admission form
+- Allows mid-session joining schools to enter old admission dates
+- DOB validation with min/max dates (1990-2026)
+- Files: `/app/frontend/src/pages/StudentsPage.js`
+
+### 6. Student ID Card Printable Component - NEW! 🪪
+- Professional ID card design with school watermark
+- Shows: Student photo, Name, ID, Class, DOB, Blood Group, Father's Name
+- Print button opens print dialog with proper card size
+- Files: `/app/frontend/src/components/StudentIDCard.js`
+
+### 7. School Logo Watermark - NEW! 🏫
+- Light watermark appears on entire app when logged in
+- Each school sees their own logo
+- Very subtle (3% opacity) - doesn't interfere with content
+- Files: `/app/frontend/src/components/Layout.js`
+
+### 8. School Calendar Page - NEW! 📆
+- Printable school calendar with government holidays
+- State-wise holidays (Rajasthan, Madhya Pradesh)
+- Add custom school events/functions
+- Month navigation
+- Print with school details
+- Files: `/app/frontend/src/pages/SchoolCalendarPage.js`
+
+### 9. Complaint & Feedback System - NEW! 📝
+- Parents/Students can submit complaints and feedback
+- Anonymous option available
+- Categories: General, Academic, Transport, Fees, Infrastructure, Staff, Safety
+- Admin can mark as: Pending, In Progress, Resolved
+- Star ratings for feedback
+- Files: `/app/frontend/src/pages/ComplaintFeedbackPage.js`
+
+### 10. Prayer Time & Smart Attendance Settings - NEW! 🙏
+- Prayer enabled/disabled option
+- Prayer start time and duration
+- "Attendance after prayer" option - AI won't mark students late during prayer
+- AI Learning Mode - learns school schedule
+- AI Voice Monitoring On/Off for CCTV classroom alerts
+- Silent Mode - notifications only, no voice
+- Files: `/app/frontend/src/pages/SchoolSettingsPage.js`
 
 ---
 
