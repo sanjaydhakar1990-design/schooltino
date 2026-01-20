@@ -331,7 +331,8 @@ export default function StudentsPage() {
       email: student.email || '',
       blood_group: student.blood_group || '',
       aadhar_no: student.aadhar_no || '',
-      previous_school: student.previous_school || ''
+      previous_school: student.previous_school || '',
+      admission_date: student.admission_date || new Date().toISOString().split('T')[0]
     });
     setIsDialogOpen(true);
   };
