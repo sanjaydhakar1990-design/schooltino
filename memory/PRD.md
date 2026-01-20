@@ -1,5 +1,15 @@
 # Schooltino - AI-Powered School Management Platform
 
+## Last Updated: January 20, 2026
+
+## ✅ Latest Fix (January 20, 2026)
+**Full-App Language Toggle Fixed**
+- Previously language toggle was only changing sidebar, not main pages
+- Fixed by adding `t()` translation function calls to all main page labels in DashboardPage.js
+- Now language toggle changes: Sidebar + Dashboard Stats + Module Cards + Quick Actions + Charts + All Buttons
+
+---
+
 ## Product Vision
 "AI + CCTV + Apps = Complete Smart School Management"
 
