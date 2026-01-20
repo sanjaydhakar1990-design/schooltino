@@ -112,75 +112,75 @@ export default function DashboardPage() {
     );
   }
 
-  // Module categories - Competitor-inspired grouping
+  // Module categories - Competitor-inspired grouping (with translations)
   const moduleCategories = [
     {
-      title: 'Academic',
+      title: t('academic'),
       color: 'bg-blue-500',
       lightColor: 'bg-blue-50',
       textColor: 'text-blue-700',
       modules: [
-        { icon: Users, label: 'Students', path: '/app/students', count: stats?.total_students || 0 },
-        { icon: GraduationCap, label: 'Classes', path: '/app/classes', count: stats?.total_classes || 0 },
-        { icon: CalendarCheck, label: 'Attendance', path: '/app/attendance', badge: 'Live' },
-        { icon: Clock, label: 'Timetable', path: '/app/timetable' },
+        { icon: Users, label: t('students'), path: '/app/students', count: stats?.total_students || 0 },
+        { icon: GraduationCap, label: t('classes'), path: '/app/classes', count: stats?.total_classes || 0 },
+        { icon: CalendarCheck, label: t('attendance'), path: '/app/attendance', badge: 'Live' },
+        { icon: Clock, label: t('timetable'), path: '/app/timetable' },
       ]
     },
     {
-      title: 'Staff & HR',
+      title: t('staff'),
       color: 'bg-emerald-500',
       lightColor: 'bg-emerald-50',
       textColor: 'text-emerald-700',
       modules: [
-        { icon: UserCog, label: 'Staff', path: '/app/staff', count: stats?.total_staff || 0 },
-        { icon: Calendar, label: 'Leave', path: '/app/leave' },
-        { icon: DollarSign, label: 'Salary', path: '/app/salary' },
+        { icon: UserCog, label: t('staff'), path: '/app/staff', count: stats?.total_staff || 0 },
+        { icon: Calendar, label: t('leave_management'), path: '/app/leave' },
+        { icon: DollarSign, label: t('salary'), path: '/app/salary' },
       ]
     },
     {
-      title: 'Finance',
+      title: t('fees'),
       color: 'bg-amber-500',
       lightColor: 'bg-amber-50',
       textColor: 'text-amber-700',
       modules: [
-        { icon: Wallet, label: 'Fees', path: '/app/fees', count: `₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K` },
-        { icon: FileText, label: 'Fee Structure', path: '/app/fee-structure' },
-        { icon: Calculator, label: 'AI Accountant', path: '/app/accountant', badge: 'AI' },
+        { icon: Wallet, label: t('fees'), path: '/app/fees', count: `₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K` },
+        { icon: FileText, label: t('fee_structure'), path: '/app/fee-structure' },
+        { icon: Calculator, label: t('ai_accountant'), path: '/app/accountant', badge: 'AI' },
       ]
     },
     {
-      title: 'Communication',
+      title: t('notices'),
       color: 'bg-purple-500',
       lightColor: 'bg-purple-50',
       textColor: 'text-purple-700',
       modules: [
-        { icon: Bell, label: 'Notices', path: '/app/notices', count: stats?.recent_notices?.length || 0 },
-        { icon: MessageSquare, label: 'SMS', path: '/app/sms' },
-        { icon: Video, label: 'Meetings', path: '/app/meetings' },
-        { icon: Image, label: 'Gallery', path: '/app/gallery' },
+        { icon: Bell, label: t('notices'), path: '/app/notices', count: stats?.recent_notices?.length || 0 },
+        { icon: MessageSquare, label: t('sms_center'), path: '/app/sms' },
+        { icon: Video, label: t('zoom_meetings'), path: '/app/meetings' },
+        { icon: Image, label: t('gallery'), path: '/app/gallery' },
       ]
     },
     {
-      title: 'AI Tools',
+      title: t('ai_tools') || 'AI Tools',
       color: 'bg-indigo-500',
       lightColor: 'bg-indigo-50',
       textColor: 'text-indigo-700',
       modules: [
-        { icon: Brain, label: 'Tino AI', path: '/app/tino-brain', badge: 'NEW' },
-        { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', badge: 'AI' },
-        { icon: Sparkles, label: 'AI Content', path: '/app/ai-content', badge: 'AI' },
+        { icon: Brain, label: t('tino_brain'), path: '/app/tino-brain', badge: 'NEW' },
+        { icon: Sparkles, label: t('ai_paper'), path: '/app/ai-paper', badge: 'AI' },
+        { icon: Sparkles, label: t('ai_content'), path: '/app/ai-content', badge: 'AI' },
       ]
     },
     {
-      title: 'Infrastructure',
+      title: t('infrastructure') || 'Infrastructure',
       color: 'bg-slate-500',
       lightColor: 'bg-slate-50',
       textColor: 'text-slate-700',
       modules: [
-        { icon: Bus, label: 'Transport', path: '/app/transport' },
-        { icon: Heart, label: 'Health', path: '/app/health' },
-        { icon: Fingerprint, label: 'Biometric', path: '/app/biometric' },
-        { icon: Video, label: 'CCTV', path: '/app/cctv' },
+        { icon: Bus, label: t('transport'), path: '/app/transport' },
+        { icon: Heart, label: t('health_module'), path: '/app/health' },
+        { icon: Fingerprint, label: t('biometric'), path: '/app/biometric' },
+        { icon: Video, label: t('cctv_dashboard'), path: '/app/cctv' },
       ]
     },
   ];
