@@ -7269,6 +7269,89 @@ async def save_school_settings(settings: SchoolSettingsModel, current_user: dict
     
     return {"message": "Settings saved successfully", "settings": settings_dict}
 
+# ==================== BOARD NOTIFICATIONS SYSTEM ====================
+
+@api_router.get("/board/applied-notifications")
+async def get_applied_notifications(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get list of applied board notifications for a school"""
+    notifications = await db.applied_board_notifications.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(100)
+    return notifications
+
+@api_router.post("/board/apply-notification")
+async def apply_board_notification(
+    school_id: str = Body(...),
+    notification_id: str = Body(...),
+    notification_type: str = Body(...),
+    title: str = Body(...),
+    apply_to: List[str] = Body(default=[]),
+    data: Dict[str, Any] = Body(default={}),
+    current_user: dict = Depends(get_current_user)
+):
+    """Apply a board notification to school system"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Check if already applied
+    existing = await db.applied_board_notifications.find_one({
+        "school_id": school_id,
+        "notification_id": notification_id
+    })
+    
+    if existing:
+        return {"message": "Already applied", "status": "exists"}
+    
+    # Save applied notification
+    applied_data = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "notification_id": notification_id,
+        "notification_type": notification_type,
+        "title": title,
+        "apply_to": apply_to,
+        "data": data,
+        "applied_at": datetime.now(timezone.utc).isoformat(),
+        "applied_by": current_user["id"],
+        "status": "applied"
+    }
+    
+    await db.applied_board_notifications.insert_one(applied_data)
+    
+    # Auto-apply to relevant modules
+    if "calendar" in apply_to and notification_type == "exam":
+        # Add exam dates to school calendar
+        exam_event = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "title": title,
+            "type": "board_exam",
+            "source": "board_notification",
+            "notification_id": notification_id,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.school_calendar.insert_one(exam_event)
+    
+    if "syllabus" in apply_to:
+        # Log syllabus update notification
+        await db.syllabus_updates.insert_one({
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "notification_id": notification_id,
+            "title": title,
+            "status": "pending_review",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    await log_audit(current_user["id"], "apply", "board_notification", {
+        "school_id": school_id,
+        "notification_id": notification_id,
+        "title": title
+    })
+    
+    return {"message": "Notification applied successfully", "status": "applied"}
+
 # ==================== TEACHER ACTIVITY TRACKING FOR ADMIN ====================
 
 @api_router.get("/admin/teacher-activities/{school_id}")
