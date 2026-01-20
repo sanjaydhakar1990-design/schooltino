@@ -82,7 +82,8 @@ export default function StudentsPage() {
     email: '',
     blood_group: '',
     aadhar_no: '',
-    previous_school: ''
+    previous_school: '',
+    admission_date: new Date().toISOString().split('T')[0] // Default to today
   });
 
   // Parent/Guardian photo states
