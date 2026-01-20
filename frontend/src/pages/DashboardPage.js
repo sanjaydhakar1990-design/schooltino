@@ -409,13 +409,13 @@ export default function DashboardPage() {
                 <AlertCircle className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-amber-800">Fee Collection Alert</p>
+                <p className="font-semibold text-amber-800">{t('pending_fees')} Alert</p>
                 <p className="text-sm text-amber-600">
-                  ₹{(stats?.pending_fees || 0).toLocaleString()} pending fees to collect
+                  ₹{(stats?.pending_fees || 0).toLocaleString()} {t('pending')}
                 </p>
               </div>
               <Button onClick={() => navigate('/app/fees')} className="bg-amber-500 hover:bg-amber-600">
-                Collect Now
+                {t('record_payment')}
               </Button>
             </div>
           </CardContent>
@@ -429,10 +429,10 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                 <UserCog className="w-5 h-5 text-emerald-500" />
-                Staff Members
+                {t('staff')}
               </h3>
               <Button variant="ghost" size="sm" onClick={() => navigate('/app/staff')} className="text-indigo-600">
-                View All
+                {t('view')}
               </Button>
             </div>
             <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
