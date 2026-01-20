@@ -9,7 +9,23 @@
 - Fixed by adding `t()` translation function calls to all main page labels in DashboardPage.js
 - Now language toggle changes: Sidebar + Dashboard Stats + Module Cards + Quick Actions + Charts + All Buttons
 
-### 2. Complete Syllabus Added (Nursery to Class 12)
+### 2. Dual Board System - MAJOR UPDATE! 🎯
+- **Indian schools follow 2 boards simultaneously:**
+  - MP Schools: MPBSE + NCERT
+  - Rajasthan Schools: RBSE + NCERT
+- **School Settings Page:** Now supports dual board selection
+  - Primary Board (State Board) dropdown
+  - "Enable NCERT" checkbox for core subjects
+  - Shows "Selected Boards: RBSE + NCERT" info
+- **AI Paper Generator:** 
+  - Shows "RBSE + NCERT Combined Syllabus"
+  - Syllabus Source options: Auto (Recommended), NCERT Only, State Board Only
+  - Auto mode uses NCERT for Hindi, English, Maths, Science
+- **Files Updated:**
+  - `/app/frontend/src/pages/SchoolSettingsPage.js` - Dual board UI
+  - `/app/frontend/src/pages/AIPaperPage.js` - Syllabus source selection
+
+### 3. Complete Syllabus Added (Nursery to Class 12)
 - Added complete syllabus data in `/app/frontend/src/data/boardSyllabus.js`
 - **Pre-Primary (Nursery, LKG, UKG):** Hindi, English, Mathematics, GK, Drawing
 - **Primary (Class 1-5):** Hindi, English, Maths, EVS with all NCERT chapters
