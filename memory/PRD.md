@@ -7,47 +7,65 @@
 
 ---
 
-## What's Been Implemented (Latest Session - 19 Jan 2026)
+## What's Been Implemented (Latest Session - 20 Jan 2026)
 
-### 83. AI Paper Generator Fix & Enhancement ✅ NEW! 📝
-- **Issue:** User reported AI Paper Generator not working and missing Exam Name field
-- **Investigation:** Tested full flow - UI and API were actually working correctly
-- **Enhancement Added:** 
-  - New "Exam/Test Name" field (e.g., "Half Yearly", "Unit Test", "Final Exam")
-  - **Chapter Selection UI** - NCERT chapters with weightage % displayed
-  - Multi-chapter selection support
-- **Frontend Changes:**
-  - Added `exam_name` and `selectedChapters` to formData state
-  - Added chapter dropdown that fetches from backend API
-  - Updated paper preview to show exam_name at top
-- **Backend Changes:**
-  - Added `exam_name` to `PaperGenerateRequest` and `PaperGenerateResponse` models
-- **Files Modified:**
-  - `frontend/src/pages/AIPaperPage.js`
-  - `backend/server.py` (lines 559-582, 3117-3130)
-- **Testing Status:** ✅ Verified - Paper generation working with all fields
+### 88. AI Paper Generator - COMPLETE REWRITE ✅ 📝
+- **Issue:** User wanted NCERT 2024-25 syllabus, proper marks pattern, diagram questions
+- **Complete Rewrite Done:**
+  - **NCERT 2024-25 Rationalized Syllabus** chapters embedded in frontend
+  - **CBSE 2024-25 Marks Pattern:**
+    - MCQ = 1 mark
+    - Fill in Blank = 1 mark
+    - Very Short Answer (VSAQ) = 2 marks
+    - Short Answer = 3 marks
+    - Long Answer = 4 marks (NOT 5 or 10!)
+    - Diagram Based = 3 marks
+    - HOTS = 4 marks
+    - Case Study = 4 marks
+  - **Custom Marks Override** - Manual marks adjustment for each question type
+  - **Exam Name** shows on paper (NOT chapter names!)
+  - **Chapter checkboxes** with proper selection UI
+  - **Hindi + English** question paper support
+- **File Rewritten:** `frontend/src/pages/AIPaperPage.js` (400+ lines)
+- **Backend Updated:** Prompt improved for CBSE 2024-25 pattern
+- **Testing Status:** ✅ Verified - Paper generation working perfectly
 
-### 84. PWA Install Button in Header ✅ NEW! 📲
-- **Issue:** User couldn't find PWA install option
-- **Fix:** Added green "Install" button in top header bar
-- **Features:**
-  - Shows only when app is not installed
-  - Works on Chrome/Edge (auto prompt) and iOS (manual instructions)
-  - Visible on all pages after login
-- **File Modified:** `frontend/src/components/Layout.js`
-- **Testing Status:** ✅ Verified - Install button visible in header
+### 89. School Settings Page - NEW! ⚙️
+- **State-wise Government Timings:**
+  - Rajasthan, Madhya Pradesh, Uttar Pradesh, Delhi, Gujarat, Maharashtra
+  - Auto-apply summer/winter timings based on state
+- **Grace Period Settings:**
+  - Late Grace Period: 10-15 minutes (configurable)
+  - Early Leave Grace: 10 minutes
+  - Half Day After: 4 hours
+- **Attendance Mode:**
+  - AI Automatic (CCTV/Biometric)
+  - Manual Entry
+  - Allow Manual Edit checkbox
+  - Require Approval checkbox
+- **Government Holidays Calendar 2024-25:**
+  - Pre-loaded national & gazetted holidays
+  - Custom holiday add feature
+- **Academic Year Settings:**
+  - Session type (April-March, July-June, June-May)
+  - Mid-year adoption support
+  - Manual syllabus progress entry
+  - Photo upload for verification
+- **File Created:** `frontend/src/pages/SchoolSettingsPage.js`
+- **Route:** `/app/school-settings`
+- **Backend API:** `/api/school/settings` (GET/POST)
+- **Testing Status:** ✅ Verified
 
-### 85. Teacher Role Management System ✅ NEW! 👨‍🏫
-- **Issue:** User wanted Class Teacher vs Subject Teacher management
-- **New Page Created:** `/app/teacher-roles`
-- **Features:**
-  - View all teachers with their current assignments
-  - Assign teacher as "Class Teacher" for a specific class
-  - Assign teacher as "Subject Teacher" for multiple classes/subjects
-  - Stats cards showing teacher distribution
-  - Beautiful card-based UI with action buttons
-- **File Created:** `frontend/src/pages/TeacherRoleManager.js`
-- **Route Added:** `/app/teacher-roles` in App.js
+### 90. Voice Assistant (Tino AI) - WORKING ✅ 🎙️
+- ElevenLabs TTS integration confirmed
+- Hindi greeting working
+- Male/Female voice toggle
+- Text + Voice input support
+- **Testing Status:** ✅ Verified - Modal opens, greeting speaks
+
+---
+
+## Previous Session (19 Jan 2026)
 - **Sidebar Link:** Added under "Staff" section
 - **Testing Status:** ✅ Verified - Page working with all features
 
