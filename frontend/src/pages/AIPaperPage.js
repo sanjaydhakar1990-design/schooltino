@@ -109,21 +109,61 @@ export default function AIPaperPage() {
 
   useEffect(() => {
     if (formData.class_name) {
-      const subjects = BOARD_SUBJECTS[schoolBoard]?.[formData.class_name] || [];
+      // Get subjects from primary board
+      let subjects = BOARD_SUBJECTS[schoolBoard]?.[formData.class_name] || [];
+      
+      // If using NCERT syllabus, merge with NCERT subjects
+      if (useNcertSyllabus && schoolBoard !== 'NCERT') {
+        const ncertSubjects = BOARD_SUBJECTS['NCERT']?.[formData.class_name] || 
+                              BOARD_SUBJECTS['CBSE']?.[formData.class_name] || [];
+        // Merge unique subjects (state board subjects + NCERT core subjects)
+        const allSubjects = [...new Set([...subjects, ...ncertSubjects])];
+        subjects = allSubjects;
+      }
+      
       setAvailableSubjects(subjects);
       if (!subjects.includes(formData.subject)) {
         setFormData(prev => ({ ...prev, subject: '', selectedChapters: [] }));
         setAvailableChapters([]);
       }
     }
-  }, [formData.class_name, schoolBoard]);
+  }, [formData.class_name, schoolBoard, useNcertSyllabus]);
 
   useEffect(() => {
     if (formData.class_name && formData.subject) {
-      const chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+      // Determine which board's chapters to use
+      let chapters = [];
+      
+      // Check if this is a core subject that typically follows NCERT
+      const ncertCoreSubjects = ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'EVS', 
+                                  'हिंदी', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'पर्यावरण'];
+      const isNcertSubject = ncertCoreSubjects.some(s => 
+        formData.subject.toLowerCase().includes(s.toLowerCase()) || 
+        s.toLowerCase().includes(formData.subject.toLowerCase())
+      );
+      
+      // Get chapters based on syllabus source selection or auto-detect
+      if (formData.syllabus_source === 'ncert' || (formData.syllabus_source === 'auto' && useNcertSyllabus && isNcertSubject)) {
+        // Use NCERT chapters for core subjects
+        chapters = getChapters('NCERT', formData.class_name, formData.subject);
+        if (chapters.length === 0) {
+          chapters = getChapters('CBSE', formData.class_name, formData.subject);
+        }
+      }
+      
+      // If no NCERT chapters or using state board
+      if (chapters.length === 0 || formData.syllabus_source === 'state_board') {
+        chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+      }
+      
+      // Fallback to CBSE if nothing found
+      if (chapters.length === 0) {
+        chapters = getChapters('CBSE', formData.class_name, formData.subject);
+      }
+      
       setAvailableChapters(chapters);
     }
-  }, [formData.class_name, formData.subject, schoolBoard]);
+  }, [formData.class_name, formData.subject, formData.syllabus_source, schoolBoard, useNcertSyllabus]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
