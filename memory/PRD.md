@@ -9,59 +9,59 @@
 
 ## What's Been Implemented (Latest Session - 20 Jan 2026)
 
-### 88. AI Paper Generator - COMPLETE REWRITE ✅ 📝
-- **Issue:** User wanted NCERT 2024-25 syllabus, proper marks pattern, diagram questions
-- **Complete Rewrite Done:**
-  - **NCERT 2024-25 Rationalized Syllabus** chapters embedded in frontend
-  - **CBSE 2024-25 Marks Pattern:**
-    - MCQ = 1 mark
-    - Fill in Blank = 1 mark
-    - Very Short Answer (VSAQ) = 2 marks
-    - Short Answer = 3 marks
-    - Long Answer = 4 marks (NOT 5 or 10!)
-    - Diagram Based = 3 marks
-    - HOTS = 4 marks
-    - Case Study = 4 marks
-  - **Custom Marks Override** - Manual marks adjustment for each question type
-  - **Exam Name** shows on paper (NOT chapter names!)
-  - **Chapter checkboxes** with proper selection UI
-  - **Hindi + English** question paper support
-- **File Rewritten:** `frontend/src/pages/AIPaperPage.js` (400+ lines)
-- **Backend Updated:** Prompt improved for CBSE 2024-25 pattern
-- **Testing Status:** ✅ Verified - Paper generation working perfectly
+### 88. AI Paper Generator - Board-wise Syllabus ✅ 📝
+- **Complete Rewrite with Multi-Board Support:**
+  - **CBSE** - Central Board syllabus
+  - **MP Board (MPBSE)** - मध्य प्रदेश बोर्ड syllabus (Hindi chapters)
+  - **RBSE** - राजस्थान बोर्ड syllabus (Hindi chapters + Rajasthan Adhyayan)
+  - **NCERT** - National syllabus
+- **School ke selected board ke hisab se syllabus automatically load hota hai**
+- **Board-specific marks pattern:**
+  - CBSE/NCERT: MCQ=1, VSAQ=2, Short=3, Long=4, HOTS=4
+  - MP Board: बहुविकल्पीय=1, अति लघु=2, लघु=3, दीर्घ=4, निबंधात्मक=5
+  - RBSE: Similar to MP Board with Hindi labels
+- **Files:**
+  - Created `frontend/src/data/boardSyllabus.js` - Complete board data
+  - Rewritten `frontend/src/pages/AIPaperPage.js`
 
-### 89. School Settings Page - NEW! ⚙️
+### 89. Board Notifications System - NEW! 🔔
+- **Auto-fetch notifications from board websites**
+- **Notifications types:**
+  - परीक्षा (Exam dates)
+  - पाठ्यक्रम (Syllabus updates)
+  - सर्कुलर (Circulars)
+  - संसाधन (Resources)
+- **AI Auto-Apply Feature:**
+  - Automatically adds exam dates to school calendar
+  - Updates syllabus in system
+  - Notifies staff about important circulars
+  - Admin approval required before changes apply
+- **Board-specific notifications:**
+  - CBSE: Date Sheet, Practical Guidelines, Syllabus Rationalization
+  - MPBSE: परीक्षा समय सारणी, प्रायोगिक परीक्षा निर्देश
+  - RBSE: Time Table, पाठ्यक्रम संशोधन
+- **Files:**
+  - Created `frontend/src/pages/BoardNotificationsPage.js`
+  - Added API: `/api/board/apply-notification`
+- **Route:** `/app/board-notifications`
+
+### 90. PWA Install Modal - FIXED! 📲
+- **Improved Install UX:**
+  - Chrome: Shows ⊕ icon instructions
+  - iOS Safari: Shows Share → Add to Home Screen steps
+  - Android: Shows browser menu instructions
+- **PWA Benefits displayed:**
+  - Offline access
+  - Fast loading
+  - No app store needed
+- **File Modified:** `frontend/src/components/Layout.js`
+
+### 91. School Settings Page - Enhanced ✅
 - **State-wise Government Timings:**
-  - Rajasthan, Madhya Pradesh, Uttar Pradesh, Delhi, Gujarat, Maharashtra
-  - Auto-apply summer/winter timings based on state
-- **Grace Period Settings:**
-  - Late Grace Period: 10-15 minutes (configurable)
-  - Early Leave Grace: 10 minutes
-  - Half Day After: 4 hours
-- **Attendance Mode:**
-  - AI Automatic (CCTV/Biometric)
-  - Manual Entry
-  - Allow Manual Edit checkbox
-  - Require Approval checkbox
-- **Government Holidays Calendar 2024-25:**
-  - Pre-loaded national & gazetted holidays
-  - Custom holiday add feature
-- **Academic Year Settings:**
-  - Session type (April-March, July-June, June-May)
-  - Mid-year adoption support
-  - Manual syllabus progress entry
-  - Photo upload for verification
-- **File Created:** `frontend/src/pages/SchoolSettingsPage.js`
-- **Route:** `/app/school-settings`
-- **Backend API:** `/api/school/settings` (GET/POST)
-- **Testing Status:** ✅ Verified
-
-### 90. Voice Assistant (Tino AI) - WORKING ✅ 🎙️
-- ElevenLabs TTS integration confirmed
-- Hindi greeting working
-- Male/Female voice toggle
-- Text + Voice input support
-- **Testing Status:** ✅ Verified - Modal opens, greeting speaks
+  - Rajasthan, Madhya Pradesh, UP, Delhi, Gujarat, Maharashtra
+- **Grace Period: 15 minutes** configurable
+- **Board selection** affects entire system (AI Paper, Notifications, etc.)
+- **File:** `frontend/src/pages/SchoolSettingsPage.js`
 
 ---
 
