@@ -350,6 +350,7 @@ class StudentCreate(BaseModel):
     photo_url: Optional[str] = None
     aadhar_no: Optional[str] = None
     previous_school: Optional[str] = None
+    admission_date: Optional[str] = None  # Date of admission (for mid-year joining schools)
 
 class StudentAdmissionResponse(BaseModel):
     id: str
