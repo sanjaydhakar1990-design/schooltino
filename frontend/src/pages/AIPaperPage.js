@@ -45,8 +45,9 @@ const LANG_TEXT = {
 };
 
 export default function AIPaperPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, schoolId } = useAuth();
+  const { language: appLanguage } = useLanguage(); // Get app language from header toggle
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [paper, setPaper] = useState(null);
@@ -65,14 +66,17 @@ export default function AIPaperPage() {
     question_types: ['mcq', 'short'],
     total_marks: 80,
     time_duration: 180,
-    language: 'hindi', // Default Hindi
+    language: 'hindi', // Paper language (separate from app UI language)
     custom_marks: {},
     syllabus_source: 'auto' // 'auto', 'ncert', 'state_board'
   });
 
   const classNames = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
 
-  // Get current language text
+  // UI text based on app language (header toggle)
+  const isAppHindi = appLanguage === 'hi' || i18n.language === 'hi';
+  
+  // Get current paper language text
   const langText = LANG_TEXT[formData.language] || LANG_TEXT.hindi;
 
   // Fetch school's board on mount
