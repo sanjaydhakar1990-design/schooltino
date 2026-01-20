@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, Mic, Globe, Download } from 'lucide-react';
+import { Menu, Mic, Globe, Download, X, Smartphone } from 'lucide-react';
 import Sidebar from './Sidebar';
 import VoiceAssistantFAB from './VoiceAssistantFAB';
 import { useLanguage } from '../context/LanguageContext';
@@ -14,6 +14,12 @@ export const Layout = () => {
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
+  // Detect browser/platform
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 
   useEffect(() => {
     // Check if already installed
@@ -25,11 +31,13 @@ export const Layout = () => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      console.log('PWA install prompt ready');
     };
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
+      setShowInstallModal(false);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -43,6 +51,7 @@ export const Layout = () => {
 
   const handlePWAInstall = async () => {
     if (deferredPrompt) {
+      // Chrome/Edge - direct install
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
@@ -50,8 +59,8 @@ export const Layout = () => {
       }
       setDeferredPrompt(null);
     } else {
-      // Show manual instructions for iOS/Safari
-      alert('📱 App Install करें:\n\n1. Safari में Share (⬆️) button दबाएं\n2. "Add to Home Screen" select करें\n3. "Add" पर tap करें\n\nDone! 🎉');
+      // Show modal with instructions
+      setShowInstallModal(true);
     }
   };
 
