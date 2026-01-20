@@ -190,6 +190,78 @@ export const Layout = () => {
 
       {/* Voice Assistant Modal */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
+
+      {/* PWA Install Modal */}
+      {showInstallModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-scale-in">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-900">📲 App Install करें</h3>
+              <button 
+                onClick={() => setShowInstallModal(false)}
+                className="p-2 hover:bg-slate-100 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Chrome/Desktop Instructions */}
+              {isChrome && !isIOS && (
+                <div className="p-4 bg-blue-50 rounded-xl">
+                  <p className="font-medium text-blue-800 mb-2">Chrome में Install:</p>
+                  <ol className="text-sm text-blue-700 space-y-2">
+                    <li>1. Address bar में <span className="font-bold">⊕</span> icon देखें</li>
+                    <li>2. "Install" पर click करें</li>
+                    <li>3. Done! App desktop पर install हो जाएगी</li>
+                  </ol>
+                </div>
+              )}
+
+              {/* iOS Safari Instructions */}
+              {isIOS && (
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="font-medium text-gray-800 mb-2">iPhone/iPad में Install:</p>
+                  <ol className="text-sm text-gray-700 space-y-2">
+                    <li>1. Safari में <span className="font-bold">Share ⬆️</span> button दबाएं</li>
+                    <li>2. Scroll करके <span className="font-bold">"Add to Home Screen"</span> select करें</li>
+                    <li>3. <span className="font-bold">"Add"</span> पर tap करें</li>
+                    <li>4. Done! App Home Screen पर दिखेगी 🎉</li>
+                  </ol>
+                </div>
+              )}
+
+              {/* Android Instructions */}
+              {!isIOS && !isChrome && (
+                <div className="p-4 bg-green-50 rounded-xl">
+                  <p className="font-medium text-green-800 mb-2">Android में Install:</p>
+                  <ol className="text-sm text-green-700 space-y-2">
+                    <li>1. Browser menu (⋮) खोलें</li>
+                    <li>2. <span className="font-bold">"Install app"</span> या <span className="font-bold">"Add to Home Screen"</span> select करें</li>
+                    <li>3. "Install" पर tap करें</li>
+                    <li>4. Done! 🎉</li>
+                  </ol>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg">
+                <Smartphone className="w-8 h-8 text-indigo-600" />
+                <div>
+                  <p className="font-medium text-indigo-900">PWA Benefits:</p>
+                  <p className="text-xs text-indigo-700">• Offline access • Fast loading • No app store needed</p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowInstallModal(false)}
+              className="w-full mt-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium"
+            >
+              समझ गया
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
