@@ -1,5 +1,6 @@
-// Board-wise Syllabus Data for India - 2024-25
+// Board-wise Complete Syllabus Data for India - 2024-25
 // CBSE, MP Board (MPBSE), RBSE (Rajasthan Board), NCERT
+// Nursery to Class 12 - All Subjects with Chapters
 
 export const BOARDS = {
   CBSE: { name: 'CBSE (Central Board)', fullName: 'Central Board of Secondary Education', website: 'https://www.cbse.gov.in' },
@@ -8,14 +9,17 @@ export const BOARDS = {
   NCERT: { name: 'NCERT', fullName: 'National Council of Educational Research and Training', website: 'https://ncert.nic.in' },
 };
 
-// Class-wise subjects for each board
+// Class-wise subjects for each board (Nursery to Class 12)
 export const BOARD_SUBJECTS = {
   CBSE: {
-    'Class 1': ['Hindi', 'English', 'Mathematics', 'EVS'],
-    'Class 2': ['Hindi', 'English', 'Mathematics', 'EVS'],
-    'Class 3': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
-    'Class 4': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
-    'Class 5': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
+    'Nursery': ['Hindi', 'English', 'Mathematics', 'Drawing', 'General Awareness', 'Rhymes'],
+    'LKG': ['Hindi', 'English', 'Mathematics', 'Drawing', 'General Awareness', 'Rhymes'],
+    'UKG': ['Hindi', 'English', 'Mathematics', 'Drawing', 'General Awareness', 'Rhymes'],
+    'Class 1': ['Hindi', 'English', 'Mathematics', 'EVS', 'Drawing', 'GK'],
+    'Class 2': ['Hindi', 'English', 'Mathematics', 'EVS', 'Drawing', 'GK'],
+    'Class 3': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer', 'Drawing', 'GK'],
+    'Class 4': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer', 'Drawing', 'GK'],
+    'Class 5': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer', 'Drawing', 'GK'],
     'Class 6': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
     'Class 7': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
     'Class 8': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
@@ -25,34 +29,43 @@ export const BOARD_SUBJECTS = {
     'Class 12': ['Hindi', 'English', 'Physics', 'Chemistry', 'Biology', 'Mathematics', 'Computer Science', 'Economics', 'Accountancy', 'Business Studies', 'History', 'Geography', 'Political Science'],
   },
   MPBSE: {
-    'Class 1': ['Hindi', 'English', 'Ganit (Mathematics)', 'Paryavaran (EVS)'],
-    'Class 2': ['Hindi', 'English', 'Ganit', 'Paryavaran'],
-    'Class 3': ['Hindi', 'English', 'Ganit', 'Paryavaran'],
-    'Class 4': ['Hindi', 'English', 'Ganit', 'Paryavaran'],
-    'Class 5': ['Hindi', 'English', 'Ganit', 'Paryavaran'],
-    'Class 6': ['Hindi', 'English', 'Ganit', 'Vigyan (Science)', 'Samajik Vigyan (Social Science)', 'Sanskrit'],
-    'Class 7': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit'],
-    'Class 8': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit'],
-    'Class 9': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit', 'Computer'],
-    'Class 10': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit', 'Computer'],
-    'Class 11': ['Hindi', 'English', 'Bhautik Vigyan (Physics)', 'Rasayan Vigyan (Chemistry)', 'Jeev Vigyan (Biology)', 'Ganit', 'Computer', 'Vanijya (Commerce)', 'Arthashastra (Economics)'],
-    'Class 12': ['Hindi', 'English', 'Bhautik Vigyan', 'Rasayan Vigyan', 'Jeev Vigyan', 'Ganit', 'Computer', 'Vanijya', 'Arthashastra'],
+    'Nursery': ['हिंदी', 'English', 'गणित', 'चित्रकला', 'सामान्य ज्ञान'],
+    'LKG': ['हिंदी', 'English', 'गणित', 'चित्रकला', 'सामान्य ज्ञान'],
+    'UKG': ['हिंदी', 'English', 'गणित', 'चित्रकला', 'सामान्य ज्ञान'],
+    'Class 1': ['हिंदी', 'English', 'गणित', 'पर्यावरण', 'चित्रकला'],
+    'Class 2': ['हिंदी', 'English', 'गणित', 'पर्यावरण', 'चित्रकला'],
+    'Class 3': ['हिंदी', 'English', 'गणित', 'पर्यावरण', 'चित्रकला'],
+    'Class 4': ['हिंदी', 'English', 'गणित', 'पर्यावरण', 'चित्रकला'],
+    'Class 5': ['हिंदी', 'English', 'गणित', 'पर्यावरण', 'चित्रकला'],
+    'Class 6': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत'],
+    'Class 7': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत'],
+    'Class 8': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत'],
+    'Class 9': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत', 'Computer'],
+    'Class 10': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत', 'Computer'],
+    'Class 11': ['हिंदी', 'English', 'भौतिक विज्ञान', 'रसायन विज्ञान', 'जीव विज्ञान', 'गणित', 'Computer', 'वाणिज्य', 'अर्थशास्त्र'],
+    'Class 12': ['हिंदी', 'English', 'भौतिक विज्ञान', 'रसायन विज्ञान', 'जीव विज्ञान', 'गणित', 'Computer', 'वाणिज्य', 'अर्थशास्त्र'],
   },
   RBSE: {
-    'Class 1': ['Hindi', 'English', 'Ganit', 'Paryavaran Adhyayan'],
-    'Class 2': ['Hindi', 'English', 'Ganit', 'Paryavaran Adhyayan'],
-    'Class 3': ['Hindi', 'English', 'Ganit', 'Paryavaran Adhyayan'],
-    'Class 4': ['Hindi', 'English', 'Ganit', 'Paryavaran Adhyayan'],
-    'Class 5': ['Hindi', 'English', 'Ganit', 'Paryavaran Adhyayan'],
-    'Class 6': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit', 'Third Language'],
-    'Class 7': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit'],
-    'Class 8': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit'],
-    'Class 9': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit', 'Computer', 'Rajasthan Adhyayan'],
-    'Class 10': ['Hindi', 'English', 'Ganit', 'Vigyan', 'Samajik Vigyan', 'Sanskrit', 'Computer', 'Rajasthan Adhyayan'],
-    'Class 11': ['Hindi', 'English', 'Bhautiki', 'Rasayan Shastra', 'Jeev Vigyan', 'Ganit', 'Computer', 'Vanijya Shastra', 'Lekhashastra'],
-    'Class 12': ['Hindi', 'English', 'Bhautiki', 'Rasayan Shastra', 'Jeev Vigyan', 'Ganit', 'Computer', 'Vanijya Shastra', 'Lekhashastra'],
+    'Nursery': ['हिंदी', 'English', 'गणित', 'चित्रकला', 'सामान्य ज्ञान'],
+    'LKG': ['हिंदी', 'English', 'गणित', 'चित्रकला', 'सामान्य ज्ञान'],
+    'UKG': ['हिंदी', 'English', 'गणित', 'चित्रकला', 'सामान्य ज्ञान'],
+    'Class 1': ['हिंदी', 'English', 'गणित', 'पर्यावरण अध्ययन', 'चित्रकला'],
+    'Class 2': ['हिंदी', 'English', 'गणित', 'पर्यावरण अध्ययन', 'चित्रकला'],
+    'Class 3': ['हिंदी', 'English', 'गणित', 'पर्यावरण अध्ययन', 'चित्रकला'],
+    'Class 4': ['हिंदी', 'English', 'गणित', 'पर्यावरण अध्ययन', 'चित्रकला'],
+    'Class 5': ['हिंदी', 'English', 'गणित', 'पर्यावरण अध्ययन', 'चित्रकला'],
+    'Class 6': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत'],
+    'Class 7': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत'],
+    'Class 8': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत'],
+    'Class 9': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत', 'Computer', 'राजस्थान अध्ययन'],
+    'Class 10': ['हिंदी', 'English', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'संस्कृत', 'Computer', 'राजस्थान अध्ययन'],
+    'Class 11': ['हिंदी', 'English', 'भौतिकी', 'रसायन शास्त्र', 'जीव विज्ञान', 'गणित', 'Computer', 'वाणिज्य शास्त्र', 'लेखाशास्त्र'],
+    'Class 12': ['हिंदी', 'English', 'भौतिकी', 'रसायन शास्त्र', 'जीव विज्ञान', 'गणित', 'Computer', 'वाणिज्य शास्त्र', 'लेखाशास्त्र'],
   },
   NCERT: {
+    'Nursery': ['Hindi', 'English', 'Mathematics', 'Drawing', 'General Awareness'],
+    'LKG': ['Hindi', 'English', 'Mathematics', 'Drawing', 'General Awareness'],
+    'UKG': ['Hindi', 'English', 'Mathematics', 'Drawing', 'General Awareness'],
     'Class 1': ['Hindi', 'English', 'Mathematics', 'EVS'],
     'Class 2': ['Hindi', 'English', 'Mathematics', 'EVS'],
     'Class 3': ['Hindi', 'English', 'Mathematics', 'EVS'],
@@ -68,8 +81,868 @@ export const BOARD_SUBJECTS = {
   },
 };
 
-// CBSE 2024-25 Rationalized Syllabus Chapters
+// ====================
+// COMPLETE CHAPTER DATA - NURSERY TO CLASS 12
+// ====================
+
+// Nursery, LKG, UKG Chapters
+export const PRE_PRIMARY_CHAPTERS = {
+  // Hindi
+  'Nursery_Hindi': [
+    { id: 'ch1', name: 'अ से अनार' },
+    { id: 'ch2', name: 'स्वर (अ-अः)' },
+    { id: 'ch3', name: 'व्यंजन (क-ङ)' },
+    { id: 'ch4', name: 'व्यंजन (च-ञ)' },
+    { id: 'ch5', name: 'व्यंजन (ट-ण)' },
+    { id: 'ch6', name: 'सरल शब्द पहचान' },
+    { id: 'ch7', name: 'चित्र पहचान' },
+  ],
+  'LKG_Hindi': [
+    { id: 'ch1', name: 'स्वर (अ-अः)' },
+    { id: 'ch2', name: 'व्यंजन (क-ज्ञ)' },
+    { id: 'ch3', name: 'दो अक्षर वाले शब्द' },
+    { id: 'ch4', name: 'तीन अक्षर वाले शब्द' },
+    { id: 'ch5', name: 'मात्राएं - आ की मात्रा' },
+    { id: 'ch6', name: 'मात्राएं - इ ई की मात्रा' },
+    { id: 'ch7', name: 'सरल वाक्य' },
+    { id: 'ch8', name: 'चित्र वर्णन' },
+  ],
+  'UKG_Hindi': [
+    { id: 'ch1', name: 'मात्राओं का अभ्यास' },
+    { id: 'ch2', name: 'उ ऊ की मात्रा' },
+    { id: 'ch3', name: 'ए ऐ की मात्रा' },
+    { id: 'ch4', name: 'ओ औ की मात्रा' },
+    { id: 'ch5', name: 'चार-पांच अक्षर वाले शब्द' },
+    { id: 'ch6', name: 'सरल कहानियां' },
+    { id: 'ch7', name: 'कविताएं और गीत' },
+    { id: 'ch8', name: 'वाक्य बनाना' },
+    { id: 'ch9', name: 'संयुक्त अक्षर' },
+  ],
+  // English
+  'Nursery_English': [
+    { id: 'ch1', name: 'Alphabet A-Z (Capital)' },
+    { id: 'ch2', name: 'Alphabet a-z (Small)' },
+    { id: 'ch3', name: 'Picture Recognition' },
+    { id: 'ch4', name: 'Simple Words (2 Letters)' },
+    { id: 'ch5', name: 'Simple Words (3 Letters)' },
+    { id: 'ch6', name: 'Colors' },
+    { id: 'ch7', name: 'Shapes' },
+  ],
+  'LKG_English': [
+    { id: 'ch1', name: 'Alphabet Writing (A-Z)' },
+    { id: 'ch2', name: 'Three Letter Words (CVC)' },
+    { id: 'ch3', name: 'Four Letter Words' },
+    { id: 'ch4', name: 'Simple Sentences' },
+    { id: 'ch5', name: 'Action Words' },
+    { id: 'ch6', name: 'Naming Words' },
+    { id: 'ch7', name: 'Rhymes and Poems' },
+    { id: 'ch8', name: 'Picture Reading' },
+  ],
+  'UKG_English': [
+    { id: 'ch1', name: 'Vowels and Consonants' },
+    { id: 'ch2', name: 'Blends (bl, cl, fl)' },
+    { id: 'ch3', name: 'Five Letter Words' },
+    { id: 'ch4', name: 'Sentence Formation' },
+    { id: 'ch5', name: 'Opposites' },
+    { id: 'ch6', name: 'Singular Plural' },
+    { id: 'ch7', name: 'Story Reading' },
+    { id: 'ch8', name: 'Comprehension' },
+    { id: 'ch9', name: 'Creative Writing' },
+  ],
+  // Mathematics
+  'Nursery_Mathematics': [
+    { id: 'ch1', name: 'Numbers 1-10' },
+    { id: 'ch2', name: 'Counting Objects' },
+    { id: 'ch3', name: 'Number Names (One-Ten)' },
+    { id: 'ch4', name: 'Before After Between' },
+    { id: 'ch5', name: 'Shapes - Circle, Square, Triangle' },
+    { id: 'ch6', name: 'Big and Small' },
+    { id: 'ch7', name: 'Long and Short' },
+  ],
+  'LKG_Mathematics': [
+    { id: 'ch1', name: 'Numbers 1-50' },
+    { id: 'ch2', name: 'Number Names (One-Twenty)' },
+    { id: 'ch3', name: 'Ascending and Descending' },
+    { id: 'ch4', name: 'Addition (Single Digit)' },
+    { id: 'ch5', name: 'Subtraction (Single Digit)' },
+    { id: 'ch6', name: 'Shapes Recognition' },
+    { id: 'ch7', name: 'Patterns' },
+    { id: 'ch8', name: 'Comparison (More/Less)' },
+  ],
+  'UKG_Mathematics': [
+    { id: 'ch1', name: 'Numbers 1-100' },
+    { id: 'ch2', name: 'Number Names (One-Fifty)' },
+    { id: 'ch3', name: 'Skip Counting (2s, 5s, 10s)' },
+    { id: 'ch4', name: 'Addition (Two Digits)' },
+    { id: 'ch5', name: 'Subtraction (Two Digits)' },
+    { id: 'ch6', name: 'Money Recognition' },
+    { id: 'ch7', name: 'Time (Clock Reading)' },
+    { id: 'ch8', name: 'Measurement' },
+    { id: 'ch9', name: 'Word Problems' },
+  ],
+  // General Awareness / EVS
+  'Nursery_GK': [
+    { id: 'ch1', name: 'My Body Parts' },
+    { id: 'ch2', name: 'My Family' },
+    { id: 'ch3', name: 'Fruits' },
+    { id: 'ch4', name: 'Vegetables' },
+    { id: 'ch5', name: 'Animals' },
+    { id: 'ch6', name: 'Birds' },
+    { id: 'ch7', name: 'Flowers' },
+  ],
+  'LKG_GK': [
+    { id: 'ch1', name: 'My School' },
+    { id: 'ch2', name: 'My Neighborhood' },
+    { id: 'ch3', name: 'Domestic Animals' },
+    { id: 'ch4', name: 'Wild Animals' },
+    { id: 'ch5', name: 'Seasons' },
+    { id: 'ch6', name: 'Festivals' },
+    { id: 'ch7', name: 'Vehicles' },
+    { id: 'ch8', name: 'Our Helpers' },
+  ],
+  'UKG_GK': [
+    { id: 'ch1', name: 'Our Country India' },
+    { id: 'ch2', name: 'National Symbols' },
+    { id: 'ch3', name: 'Great Leaders' },
+    { id: 'ch4', name: 'Solar System' },
+    { id: 'ch5', name: 'Weather and Climate' },
+    { id: 'ch6', name: 'Plants and Trees' },
+    { id: 'ch7', name: 'Food and Nutrition' },
+    { id: 'ch8', name: 'Safety Rules' },
+    { id: 'ch9', name: 'Good Habits' },
+  ],
+};
+
+// Class 1-5 CBSE/NCERT Chapters
+export const PRIMARY_CHAPTERS = {
+  // Class 1
+  '1_Hindi': [
+    { id: 'ch1', name: 'झूला' },
+    { id: 'ch2', name: 'आम की कहानी' },
+    { id: 'ch3', name: 'आम की टोकरी' },
+    { id: 'ch4', name: 'पत्ते ही पत्ते' },
+    { id: 'ch5', name: 'पकौड़ी' },
+    { id: 'ch6', name: 'छोटी का कमाल' },
+    { id: 'ch7', name: 'रसोईघर' },
+    { id: 'ch8', name: 'चूहो! म्याऊँ सो रही है' },
+    { id: 'ch9', name: 'बंदर और गिलहरी' },
+    { id: 'ch10', name: 'पगड़ी' },
+  ],
+  '1_English': [
+    { id: 'ch1', name: 'A Happy Child' },
+    { id: 'ch2', name: 'Three Little Pigs' },
+    { id: 'ch3', name: 'After a Bath' },
+    { id: 'ch4', name: 'The Bubble, the Straw, and the Shoe' },
+    { id: 'ch5', name: 'One Little Kitten' },
+    { id: 'ch6', name: 'Lalu and Peelu' },
+    { id: 'ch7', name: 'Once I Saw a Little Bird' },
+    { id: 'ch8', name: 'Mittu and the Yellow Mango' },
+    { id: 'ch9', name: 'Merry-Go-Round' },
+    { id: 'ch10', name: 'Circle' },
+  ],
+  '1_Mathematics': [
+    { id: 'ch1', name: 'Shapes and Space' },
+    { id: 'ch2', name: 'Numbers from One to Nine' },
+    { id: 'ch3', name: 'Addition' },
+    { id: 'ch4', name: 'Subtraction' },
+    { id: 'ch5', name: 'Numbers from Ten to Twenty' },
+    { id: 'ch6', name: 'Time' },
+    { id: 'ch7', name: 'Measurement' },
+    { id: 'ch8', name: 'Numbers from Twenty-one to Fifty' },
+    { id: 'ch9', name: 'Data Handling' },
+    { id: 'ch10', name: 'Patterns' },
+    { id: 'ch11', name: 'Numbers' },
+    { id: 'ch12', name: 'Money' },
+    { id: 'ch13', name: 'How Many' },
+  ],
+  '1_EVS': [
+    { id: 'ch1', name: 'My Family' },
+    { id: 'ch2', name: 'My Body' },
+    { id: 'ch3', name: 'My Home' },
+    { id: 'ch4', name: 'My School' },
+    { id: 'ch5', name: 'Food We Eat' },
+    { id: 'ch6', name: 'Plants Around Us' },
+    { id: 'ch7', name: 'Animals Around Us' },
+    { id: 'ch8', name: 'Weather and Seasons' },
+  ],
+  // Class 2
+  '2_Hindi': [
+    { id: 'ch1', name: 'ऊँट चला' },
+    { id: 'ch2', name: 'भालू ने खेली फुटबॉल' },
+    { id: 'ch3', name: 'म्याऊँ, म्याऊँ!!' },
+    { id: 'ch4', name: 'अधिक बलवान कौन?' },
+    { id: 'ch5', name: 'दोस्त की मदद' },
+    { id: 'ch6', name: 'बहुत हुआ' },
+    { id: 'ch7', name: 'मेरी किताब' },
+    { id: 'ch8', name: 'तितली और कली' },
+    { id: 'ch9', name: 'बुलबुल' },
+    { id: 'ch10', name: 'मीठी सारंगी' },
+  ],
+  '2_English': [
+    { id: 'ch1', name: 'First Day at School' },
+    { id: 'ch2', name: 'Haldi\'s Adventure' },
+    { id: 'ch3', name: 'A Smile' },
+    { id: 'ch4', name: 'Rain' },
+    { id: 'ch5', name: 'Zoo Manners' },
+    { id: 'ch6', name: 'The Enormous Turnip' },
+    { id: 'ch7', name: 'Mr. Nobody' },
+    { id: 'ch8', name: 'Curlylocks and the Three Bears' },
+    { id: 'ch9', name: 'On My Blackboard I Can Draw' },
+    { id: 'ch10', name: 'The Fox and the Crane' },
+  ],
+  '2_Mathematics': [
+    { id: 'ch1', name: 'What is Long, What is Round?' },
+    { id: 'ch2', name: 'Counting in Groups' },
+    { id: 'ch3', name: 'How Much Can You Carry?' },
+    { id: 'ch4', name: 'Counting in Tens' },
+    { id: 'ch5', name: 'Patterns' },
+    { id: 'ch6', name: 'Footprints' },
+    { id: 'ch7', name: 'Jugs and Mugs' },
+    { id: 'ch8', name: 'Tens and Ones' },
+    { id: 'ch9', name: 'My Funday' },
+    { id: 'ch10', name: 'Add Our Points' },
+    { id: 'ch11', name: 'Lines and Lines' },
+    { id: 'ch12', name: 'Give and Take' },
+    { id: 'ch13', name: 'The Longest Step' },
+    { id: 'ch14', name: 'Birds Come, Birds Go' },
+    { id: 'ch15', name: 'How Many Ponytails?' },
+  ],
+  '2_EVS': [
+    { id: 'ch1', name: 'My Family' },
+    { id: 'ch2', name: 'My Body Parts' },
+    { id: 'ch3', name: 'Good Habits' },
+    { id: 'ch4', name: 'Food and Health' },
+    { id: 'ch5', name: 'Clothes We Wear' },
+    { id: 'ch6', name: 'Our Home' },
+    { id: 'ch7', name: 'Plants' },
+    { id: 'ch8', name: 'Animals' },
+    { id: 'ch9', name: 'Water' },
+    { id: 'ch10', name: 'Air' },
+  ],
+  // Class 3
+  '3_Hindi': [
+    { id: 'ch1', name: 'कक्कू' },
+    { id: 'ch2', name: 'शेखीबाज़ मक्खी' },
+    { id: 'ch3', name: 'चाँद वाली अम्मा' },
+    { id: 'ch4', name: 'मन करता है' },
+    { id: 'ch5', name: 'बहादुर बित्तो' },
+    { id: 'ch6', name: 'हमसे सब कहते' },
+    { id: 'ch7', name: 'टिपटिपवा' },
+    { id: 'ch8', name: 'बंदर-बाँट' },
+    { id: 'ch9', name: 'अक्ल बड़ी या भैंस' },
+    { id: 'ch10', name: 'क्योंजीमल और कैसे कैसलिया' },
+    { id: 'ch11', name: 'मीरा बहन और बाघ' },
+    { id: 'ch12', name: 'जब मुझे साँप ने काटा' },
+    { id: 'ch13', name: 'मिर्च का मज़ा' },
+    { id: 'ch14', name: 'सबसे अच्छा पेड़' },
+  ],
+  '3_English': [
+    { id: 'ch1', name: 'Good Morning' },
+    { id: 'ch2', name: 'The Magic Garden' },
+    { id: 'ch3', name: 'Bird Talk' },
+    { id: 'ch4', name: 'Nina and the Baby Sparrows' },
+    { id: 'ch5', name: 'The Little Fir Tree' },
+    { id: 'ch6', name: 'Run!' },
+    { id: 'ch7', name: 'Nasruddin\'s Aim' },
+    { id: 'ch8', name: 'A Little Fish Story' },
+    { id: 'ch9', name: 'The Enormous Turnip' },
+    { id: 'ch10', name: 'The Balloon Man' },
+  ],
+  '3_Mathematics': [
+    { id: 'ch1', name: 'Where to Look From' },
+    { id: 'ch2', name: 'Fun with Numbers' },
+    { id: 'ch3', name: 'Give and Take' },
+    { id: 'ch4', name: 'Long and Short' },
+    { id: 'ch5', name: 'Shapes and Designs' },
+    { id: 'ch6', name: 'Fun with Give and Take' },
+    { id: 'ch7', name: 'Time Goes On' },
+    { id: 'ch8', name: 'Who is Heavier?' },
+    { id: 'ch9', name: 'How Many Times?' },
+    { id: 'ch10', name: 'Play with Patterns' },
+    { id: 'ch11', name: 'Jugs and Mugs' },
+    { id: 'ch12', name: 'Can We Share?' },
+    { id: 'ch13', name: 'Smart Charts!' },
+    { id: 'ch14', name: 'Rupees and Paise' },
+  ],
+  '3_EVS': [
+    { id: 'ch1', name: 'Poonam\'s Day Out' },
+    { id: 'ch2', name: 'The Plant Fairy' },
+    { id: 'ch3', name: 'Water O\' Water' },
+    { id: 'ch4', name: 'Our First School' },
+    { id: 'ch5', name: 'Chhotu\'s House' },
+    { id: 'ch6', name: 'Foods We Eat' },
+    { id: 'ch7', name: 'Saying Without Speaking' },
+    { id: 'ch8', name: 'Flying High' },
+    { id: 'ch9', name: 'It\'s Raining' },
+    { id: 'ch10', name: 'What is Cooking?' },
+    { id: 'ch11', name: 'From Here to There' },
+    { id: 'ch12', name: 'Work We Do' },
+    { id: 'ch13', name: 'Sharing Our Feelings' },
+    { id: 'ch14', name: 'The Story of Food' },
+  ],
+  // Class 4
+  '4_Hindi': [
+    { id: 'ch1', name: 'मन के भोले-भाले बादल' },
+    { id: 'ch2', name: 'जैसा सवाल वैसा जवाब' },
+    { id: 'ch3', name: 'किरमिच की गेंद' },
+    { id: 'ch4', name: 'पापा जब बच्चे थे' },
+    { id: 'ch5', name: 'दोस्त की पोशाक' },
+    { id: 'ch6', name: 'नाव बनाओ नाव बनाओ' },
+    { id: 'ch7', name: 'दान का हिसाब' },
+    { id: 'ch8', name: 'कौन?' },
+    { id: 'ch9', name: 'स्वतंत्रता की ओर' },
+    { id: 'ch10', name: 'थप्प रोटी थप्प दाल' },
+    { id: 'ch11', name: 'पढ़क्कू की सूझ' },
+    { id: 'ch12', name: 'सुनीता की पहिया कुर्सी' },
+    { id: 'ch13', name: 'हुदहुद' },
+    { id: 'ch14', name: 'मुफ़्त ही मुफ़्त' },
+  ],
+  '4_English': [
+    { id: 'ch1', name: 'Wake Up!' },
+    { id: 'ch2', name: 'Neha\'s Alarm Clock' },
+    { id: 'ch3', name: 'Noses' },
+    { id: 'ch4', name: 'The Little Fir Tree' },
+    { id: 'ch5', name: 'Run!' },
+    { id: 'ch6', name: 'Nasruddin\'s Aim' },
+    { id: 'ch7', name: 'Why?' },
+    { id: 'ch8', name: 'Alice in Wonderland' },
+    { id: 'ch9', name: 'Don\'t Be Afraid of the Dark' },
+    { id: 'ch10', name: 'Helen Keller' },
+    { id: 'ch11', name: 'The Donkey' },
+    { id: 'ch12', name: 'I Had a Little Pony' },
+  ],
+  '4_Mathematics': [
+    { id: 'ch1', name: 'Building with Bricks' },
+    { id: 'ch2', name: 'Long and Short' },
+    { id: 'ch3', name: 'A Trip to Bhopal' },
+    { id: 'ch4', name: 'Tick-Tick-Tick' },
+    { id: 'ch5', name: 'The Way The World Looks' },
+    { id: 'ch6', name: 'The Junk Seller' },
+    { id: 'ch7', name: 'Jugs and Mugs' },
+    { id: 'ch8', name: 'Carts and Wheels' },
+    { id: 'ch9', name: 'Halves and Quarters' },
+    { id: 'ch10', name: 'Play with Patterns' },
+    { id: 'ch11', name: 'Tables and Shares' },
+    { id: 'ch12', name: 'How Heavy? How Light?' },
+    { id: 'ch13', name: 'Fields and Fences' },
+    { id: 'ch14', name: 'Smart Charts' },
+  ],
+  '4_EVS': [
+    { id: 'ch1', name: 'Going to School' },
+    { id: 'ch2', name: 'Ear to Ear' },
+    { id: 'ch3', name: 'A Day with Nandu' },
+    { id: 'ch4', name: 'The Story of Amrita' },
+    { id: 'ch5', name: 'Anita and the Honeybees' },
+    { id: 'ch6', name: 'Omana\'s Journey' },
+    { id: 'ch7', name: 'From the Window' },
+    { id: 'ch8', name: 'Reaching Grandmother\'s House' },
+    { id: 'ch9', name: 'Changing Families' },
+    { id: 'ch10', name: 'Hu Tu Tu, Hu Tu Tu' },
+    { id: 'ch11', name: 'The Valley of Flowers' },
+    { id: 'ch12', name: 'Changing Times' },
+    { id: 'ch13', name: 'A River\'s Tale' },
+    { id: 'ch14', name: 'Basva\'s Farm' },
+  ],
+  // Class 5
+  '5_Hindi': [
+    { id: 'ch1', name: 'राख की रस्सी' },
+    { id: 'ch2', name: 'फ़सलों के त्योहार' },
+    { id: 'ch3', name: 'खिलौनेवाला' },
+    { id: 'ch4', name: 'गुरु और चेला' },
+    { id: 'ch5', name: 'जहाँ चाह वहाँ राह' },
+    { id: 'ch6', name: 'चिट्ठी का सफ़र' },
+    { id: 'ch7', name: 'डाकिए की कहानी' },
+    { id: 'ch8', name: 'वे दिन भी क्या दिन थे' },
+    { id: 'ch9', name: 'एक माँ की बेबसी' },
+    { id: 'ch10', name: 'एक दिन की बादशाहत' },
+    { id: 'ch11', name: 'चावल की रोटियाँ' },
+    { id: 'ch12', name: 'गुण और अवगुण' },
+    { id: 'ch13', name: 'स्वामी की दादी' },
+    { id: 'ch14', name: 'बाघ आया उस रात' },
+    { id: 'ch15', name: 'बिशन की दिलेरी' },
+    { id: 'ch16', name: 'पानी रे पानी' },
+    { id: 'ch17', name: 'छोटी-सी हमारी नदी' },
+    { id: 'ch18', name: 'सबसे अच्छा पेड़' },
+  ],
+  '5_English': [
+    { id: 'ch1', name: 'Ice-cream Man' },
+    { id: 'ch2', name: 'Wonderful Waste!' },
+    { id: 'ch3', name: 'Teamwork' },
+    { id: 'ch4', name: 'Flying Together' },
+    { id: 'ch5', name: 'My Shadow' },
+    { id: 'ch6', name: 'Robinson Crusoe' },
+    { id: 'ch7', name: 'Crying' },
+    { id: 'ch8', name: 'My Elder Brother' },
+    { id: 'ch9', name: 'The Lazy Frog' },
+    { id: 'ch10', name: 'Rip Van Winkle' },
+    { id: 'ch11', name: 'Class Discussion' },
+    { id: 'ch12', name: 'The Talkative Barber' },
+    { id: 'ch13', name: 'Topsy-turvy Land' },
+    { id: 'ch14', name: 'Gulliver\'s Travels' },
+    { id: 'ch15', name: 'Nobody\'s Friend' },
+    { id: 'ch16', name: 'The Little Bully' },
+    { id: 'ch17', name: 'Sing a Song of People' },
+    { id: 'ch18', name: 'Around the World' },
+  ],
+  '5_Mathematics': [
+    { id: 'ch1', name: 'The Fish Tale' },
+    { id: 'ch2', name: 'Shapes and Angles' },
+    { id: 'ch3', name: 'How Many Squares?' },
+    { id: 'ch4', name: 'Parts and Wholes' },
+    { id: 'ch5', name: 'Does it Look the Same?' },
+    { id: 'ch6', name: 'Be My Multiple, I\'ll be Your Factor' },
+    { id: 'ch7', name: 'Can You See the Pattern?' },
+    { id: 'ch8', name: 'Mapping Your Way' },
+    { id: 'ch9', name: 'Boxes and Sketches' },
+    { id: 'ch10', name: 'Tenths and Hundredths' },
+    { id: 'ch11', name: 'Area and Its Boundary' },
+    { id: 'ch12', name: 'Smart Charts' },
+    { id: 'ch13', name: 'Ways to Multiply and Divide' },
+    { id: 'ch14', name: 'How Big? How Heavy?' },
+  ],
+  '5_EVS': [
+    { id: 'ch1', name: 'Super Senses' },
+    { id: 'ch2', name: 'A Snake Charmer\'s Story' },
+    { id: 'ch3', name: 'From Tasting to Digesting' },
+    { id: 'ch4', name: 'Mangoes Round the Year' },
+    { id: 'ch5', name: 'Seeds and Seeds' },
+    { id: 'ch6', name: 'Every Drop Counts' },
+    { id: 'ch7', name: 'Experiments with Water' },
+    { id: 'ch8', name: 'A Treat for Mosquitoes' },
+    { id: 'ch9', name: 'Up You Go!' },
+    { id: 'ch10', name: 'Walls Tell Stories' },
+    { id: 'ch11', name: 'Sunita in Space' },
+    { id: 'ch12', name: 'What if it Finishes?' },
+    { id: 'ch13', name: 'A Shelter So High!' },
+    { id: 'ch14', name: 'When the Earth Shook!' },
+    { id: 'ch15', name: 'Blow Hot, Blow Cold' },
+    { id: 'ch16', name: 'Who Will Do This Work?' },
+    { id: 'ch17', name: 'Across the Wall' },
+    { id: 'ch18', name: 'No Place for Us?' },
+    { id: 'ch19', name: 'A Seed Tells a Farmer\'s Story' },
+    { id: 'ch20', name: 'Whose Forests?' },
+    { id: 'ch21', name: 'Like Father, Like Daughter' },
+    { id: 'ch22', name: 'On the Move Again' },
+  ],
+};
+
+// Class 6-8 CBSE/NCERT Chapters
+export const MIDDLE_SCHOOL_CHAPTERS = {
+  // Class 6
+  '6_Hindi': [
+    { id: 'ch1', name: 'वह चिड़िया जो' },
+    { id: 'ch2', name: 'बचपन' },
+    { id: 'ch3', name: 'नादान दोस्त' },
+    { id: 'ch4', name: 'चाँद से थोड़ी-सी गप्पें' },
+    { id: 'ch5', name: 'अक्षरों का महत्व' },
+    { id: 'ch6', name: 'पार नज़र के' },
+    { id: 'ch7', name: 'साथी हाथ बढ़ाना' },
+    { id: 'ch8', name: 'ऐसे-ऐसे' },
+    { id: 'ch9', name: 'टिकट-अलबम' },
+    { id: 'ch10', name: 'झाँसी की रानी' },
+    { id: 'ch11', name: 'जो देखकर भी नहीं देखते' },
+    { id: 'ch12', name: 'संसार पुस्तक है' },
+    { id: 'ch13', name: 'मैं सबसे छोटी होऊं' },
+    { id: 'ch14', name: 'लोकगीत' },
+    { id: 'ch15', name: 'नौकर' },
+    { id: 'ch16', name: 'वन के मार्ग में' },
+    { id: 'ch17', name: 'साँस-साँस में बाँस' },
+  ],
+  '6_English': [
+    { id: 'ch1', name: 'Who Did Patrick\'s Homework?' },
+    { id: 'ch2', name: 'How the Dog Found Himself a New Master!' },
+    { id: 'ch3', name: 'Taro\'s Reward' },
+    { id: 'ch4', name: 'An Indian-American Woman in Space: Kalpana Chawla' },
+    { id: 'ch5', name: 'A Different Kind of School' },
+    { id: 'ch6', name: 'Who I Am' },
+    { id: 'ch7', name: 'Fair Play' },
+    { id: 'ch8', name: 'A Game of Chance' },
+    { id: 'ch9', name: 'Desert Animals' },
+    { id: 'ch10', name: 'The Banyan Tree' },
+  ],
+  '6_Mathematics': [
+    { id: 'ch1', name: 'Knowing Our Numbers' },
+    { id: 'ch2', name: 'Whole Numbers' },
+    { id: 'ch3', name: 'Playing with Numbers' },
+    { id: 'ch4', name: 'Basic Geometrical Ideas' },
+    { id: 'ch5', name: 'Understanding Elementary Shapes' },
+    { id: 'ch6', name: 'Integers' },
+    { id: 'ch7', name: 'Fractions' },
+    { id: 'ch8', name: 'Decimals' },
+    { id: 'ch9', name: 'Data Handling' },
+    { id: 'ch10', name: 'Mensuration' },
+    { id: 'ch11', name: 'Algebra' },
+    { id: 'ch12', name: 'Ratio and Proportion' },
+    { id: 'ch13', name: 'Symmetry' },
+    { id: 'ch14', name: 'Practical Geometry' },
+  ],
+  '6_Science': [
+    { id: 'ch1', name: 'Food: Where Does It Come From?' },
+    { id: 'ch2', name: 'Components of Food' },
+    { id: 'ch3', name: 'Fibre to Fabric' },
+    { id: 'ch4', name: 'Sorting Materials into Groups' },
+    { id: 'ch5', name: 'Separation of Substances' },
+    { id: 'ch6', name: 'Changes Around Us' },
+    { id: 'ch7', name: 'Getting to Know Plants' },
+    { id: 'ch8', name: 'Body Movements' },
+    { id: 'ch9', name: 'The Living Organisms and Their Surroundings' },
+    { id: 'ch10', name: 'Motion and Measurement of Distances' },
+    { id: 'ch11', name: 'Light, Shadows and Reflections' },
+    { id: 'ch12', name: 'Electricity and Circuits' },
+    { id: 'ch13', name: 'Fun with Magnets' },
+    { id: 'ch14', name: 'Water' },
+    { id: 'ch15', name: 'Air Around Us' },
+    { id: 'ch16', name: 'Garbage In, Garbage Out' },
+  ],
+  '6_Social Science': [
+    { id: 'hist1', name: 'What, Where, How and When?' },
+    { id: 'hist2', name: 'From Hunting-Gathering to Growing Food' },
+    { id: 'hist3', name: 'In the Earliest Cities' },
+    { id: 'hist4', name: 'What Books and Burials Tell Us' },
+    { id: 'hist5', name: 'Kingdoms, Kings and an Early Republic' },
+    { id: 'hist6', name: 'New Questions and Ideas' },
+    { id: 'hist7', name: 'Ashoka, The Emperor Who Gave Up War' },
+    { id: 'hist8', name: 'Vital Villages, Thriving Towns' },
+    { id: 'hist9', name: 'Traders, Kings and Pilgrims' },
+    { id: 'hist10', name: 'New Empires and Kingdoms' },
+    { id: 'hist11', name: 'Buildings, Paintings and Books' },
+    { id: 'geo1', name: 'The Earth in the Solar System' },
+    { id: 'geo2', name: 'Globe: Latitudes and Longitudes' },
+    { id: 'geo3', name: 'Motions of the Earth' },
+    { id: 'geo4', name: 'Maps' },
+    { id: 'geo5', name: 'Major Domains of the Earth' },
+    { id: 'geo6', name: 'Major Landforms of the Earth' },
+    { id: 'geo7', name: 'Our Country - India' },
+    { id: 'geo8', name: 'India: Climate, Vegetation and Wildlife' },
+    { id: 'civ1', name: 'Understanding Diversity' },
+    { id: 'civ2', name: 'Diversity and Discrimination' },
+    { id: 'civ3', name: 'What is Government?' },
+    { id: 'civ4', name: 'Key Elements of a Democratic Government' },
+    { id: 'civ5', name: 'Panchayati Raj' },
+    { id: 'civ6', name: 'Rural Administration' },
+    { id: 'civ7', name: 'Urban Administration' },
+    { id: 'civ8', name: 'Rural Livelihoods' },
+    { id: 'civ9', name: 'Urban Livelihoods' },
+  ],
+  // Class 7
+  '7_Hindi': [
+    { id: 'ch1', name: 'हम पंछी उन्मुक्त गगन के' },
+    { id: 'ch2', name: 'दादी माँ' },
+    { id: 'ch3', name: 'हिमालय की बेटियाँ' },
+    { id: 'ch4', name: 'कठपुतली' },
+    { id: 'ch5', name: 'मिठाईवाला' },
+    { id: 'ch6', name: 'रक्त और हमारा शरीर' },
+    { id: 'ch7', name: 'पापा खो गए' },
+    { id: 'ch8', name: 'शाम-एक किसान' },
+    { id: 'ch9', name: 'चिड़िया की बच्ची' },
+    { id: 'ch10', name: 'अपूर्व अनुभव' },
+    { id: 'ch11', name: 'रहीम के दोहे' },
+    { id: 'ch12', name: 'कंचा' },
+    { id: 'ch13', name: 'एक तिनका' },
+    { id: 'ch14', name: 'खानपान की बदलती तस्वीर' },
+    { id: 'ch15', name: 'नीलकंठ' },
+    { id: 'ch16', name: 'भोर और बरखा' },
+    { id: 'ch17', name: 'वीर कुँवर सिंह' },
+    { id: 'ch18', name: 'संघर्ष के कारण मैं तुनुकमिज़ाज हो गया: धनराज' },
+    { id: 'ch19', name: 'आश्रम का अनुमानित व्यय' },
+    { id: 'ch20', name: 'विप्लव-गायन' },
+  ],
+  '7_English': [
+    { id: 'ch1', name: 'Three Questions' },
+    { id: 'ch2', name: 'A Gift of Chappals' },
+    { id: 'ch3', name: 'Gopal and the Hilsa Fish' },
+    { id: 'ch4', name: 'The Ashes That Made Trees Bloom' },
+    { id: 'ch5', name: 'Quality' },
+    { id: 'ch6', name: 'Expert Detectives' },
+    { id: 'ch7', name: 'The Invention of Vita-Wonk' },
+    { id: 'ch8', name: 'Fire: Friend and Foe' },
+    { id: 'ch9', name: 'A Bicycle in Good Repair' },
+    { id: 'ch10', name: 'The Story of Cricket' },
+  ],
+  '7_Mathematics': [
+    { id: 'ch1', name: 'Integers' },
+    { id: 'ch2', name: 'Fractions and Decimals' },
+    { id: 'ch3', name: 'Data Handling' },
+    { id: 'ch4', name: 'Simple Equations' },
+    { id: 'ch5', name: 'Lines and Angles' },
+    { id: 'ch6', name: 'The Triangle and Its Properties' },
+    { id: 'ch7', name: 'Congruence of Triangles' },
+    { id: 'ch8', name: 'Comparing Quantities' },
+    { id: 'ch9', name: 'Rational Numbers' },
+    { id: 'ch10', name: 'Practical Geometry' },
+    { id: 'ch11', name: 'Perimeter and Area' },
+    { id: 'ch12', name: 'Algebraic Expressions' },
+    { id: 'ch13', name: 'Exponents and Powers' },
+    { id: 'ch14', name: 'Symmetry' },
+    { id: 'ch15', name: 'Visualising Solid Shapes' },
+  ],
+  '7_Science': [
+    { id: 'ch1', name: 'Nutrition in Plants' },
+    { id: 'ch2', name: 'Nutrition in Animals' },
+    { id: 'ch3', name: 'Fibre to Fabric' },
+    { id: 'ch4', name: 'Heat' },
+    { id: 'ch5', name: 'Acids, Bases and Salts' },
+    { id: 'ch6', name: 'Physical and Chemical Changes' },
+    { id: 'ch7', name: 'Weather, Climate and Adaptations' },
+    { id: 'ch8', name: 'Winds, Storms and Cyclones' },
+    { id: 'ch9', name: 'Soil' },
+    { id: 'ch10', name: 'Respiration in Organisms' },
+    { id: 'ch11', name: 'Transportation in Animals and Plants' },
+    { id: 'ch12', name: 'Reproduction in Plants' },
+    { id: 'ch13', name: 'Motion and Time' },
+    { id: 'ch14', name: 'Electric Current and Its Effects' },
+    { id: 'ch15', name: 'Light' },
+    { id: 'ch16', name: 'Water: A Precious Resource' },
+    { id: 'ch17', name: 'Forests: Our Lifeline' },
+    { id: 'ch18', name: 'Wastewater Story' },
+  ],
+  '7_Social Science': [
+    { id: 'hist1', name: 'Tracing Changes Through a Thousand Years' },
+    { id: 'hist2', name: 'New Kings and Kingdoms' },
+    { id: 'hist3', name: 'The Delhi Sultans' },
+    { id: 'hist4', name: 'The Mughal Empire' },
+    { id: 'hist5', name: 'Rulers and Buildings' },
+    { id: 'hist6', name: 'Towns, Traders and Craftspersons' },
+    { id: 'hist7', name: 'Tribes, Nomads and Settled Communities' },
+    { id: 'hist8', name: 'Devotional Paths to the Divine' },
+    { id: 'hist9', name: 'The Making of Regional Cultures' },
+    { id: 'hist10', name: 'Eighteenth-Century Political Formations' },
+    { id: 'geo1', name: 'Environment' },
+    { id: 'geo2', name: 'Inside Our Earth' },
+    { id: 'geo3', name: 'Our Changing Earth' },
+    { id: 'geo4', name: 'Air' },
+    { id: 'geo5', name: 'Water' },
+    { id: 'geo6', name: 'Natural Vegetation and Wildlife' },
+    { id: 'geo7', name: 'Human Environment-Settlement, Transport and Communication' },
+    { id: 'geo8', name: 'Human Environment Interactions' },
+    { id: 'geo9', name: 'Life in the Deserts' },
+    { id: 'civ1', name: 'On Equality' },
+    { id: 'civ2', name: 'Role of the Government in Health' },
+    { id: 'civ3', name: 'How the State Government Works' },
+    { id: 'civ4', name: 'Growing up as Boys and Girls' },
+    { id: 'civ5', name: 'Women Change the World' },
+    { id: 'civ6', name: 'Understanding Media' },
+    { id: 'civ7', name: 'Markets Around Us' },
+    { id: 'civ8', name: 'A Shirt in the Market' },
+  ],
+  // Class 8
+  '8_Hindi': [
+    { id: 'ch1', name: 'ध्वनि' },
+    { id: 'ch2', name: 'लाख की चूड़ियाँ' },
+    { id: 'ch3', name: 'बस की यात्रा' },
+    { id: 'ch4', name: 'दीवानों की हस्ती' },
+    { id: 'ch5', name: 'चिट्ठियों की अनूठी दुनिया' },
+    { id: 'ch6', name: 'भगवान के डाकिए' },
+    { id: 'ch7', name: 'क्या निराश हुआ जाए' },
+    { id: 'ch8', name: 'यह सबसे कठिन समय नहीं' },
+    { id: 'ch9', name: 'कबीर की साखियाँ' },
+    { id: 'ch10', name: 'कामचोर' },
+    { id: 'ch11', name: 'जब सिनेमा ने बोलना सीखा' },
+    { id: 'ch12', name: 'सुदामा चरित' },
+    { id: 'ch13', name: 'जहाँ पहिया है' },
+    { id: 'ch14', name: 'अकबरी लोटा' },
+    { id: 'ch15', name: 'सूर के पद' },
+    { id: 'ch16', name: 'पानी की कहानी' },
+    { id: 'ch17', name: 'बाज और साँप' },
+    { id: 'ch18', name: 'टोपी' },
+  ],
+  '8_English': [
+    { id: 'ch1', name: 'The Best Christmas Present in the World' },
+    { id: 'ch2', name: 'The Tsunami' },
+    { id: 'ch3', name: 'Glimpses of the Past' },
+    { id: 'ch4', name: 'Bepin Choudhury\'s Lapse of Memory' },
+    { id: 'ch5', name: 'The Summit Within' },
+    { id: 'ch6', name: 'This is Jody\'s Fawn' },
+    { id: 'ch7', name: 'A Visit to Cambridge' },
+    { id: 'ch8', name: 'A Short Monsoon Diary' },
+    { id: 'ch9', name: 'The Great Stone Face - I' },
+    { id: 'ch10', name: 'The Great Stone Face - II' },
+  ],
+  '8_Mathematics': [
+    { id: 'ch1', name: 'Rational Numbers' },
+    { id: 'ch2', name: 'Linear Equations in One Variable' },
+    { id: 'ch3', name: 'Understanding Quadrilaterals' },
+    { id: 'ch4', name: 'Practical Geometry' },
+    { id: 'ch5', name: 'Data Handling' },
+    { id: 'ch6', name: 'Squares and Square Roots' },
+    { id: 'ch7', name: 'Cubes and Cube Roots' },
+    { id: 'ch8', name: 'Comparing Quantities' },
+    { id: 'ch9', name: 'Algebraic Expressions and Identities' },
+    { id: 'ch10', name: 'Visualising Solid Shapes' },
+    { id: 'ch11', name: 'Mensuration' },
+    { id: 'ch12', name: 'Exponents and Powers' },
+    { id: 'ch13', name: 'Direct and Inverse Proportions' },
+    { id: 'ch14', name: 'Factorisation' },
+    { id: 'ch15', name: 'Introduction to Graphs' },
+    { id: 'ch16', name: 'Playing with Numbers' },
+  ],
+  '8_Science': [
+    { id: 'ch1', name: 'Crop Production and Management' },
+    { id: 'ch2', name: 'Microorganisms: Friend and Foe' },
+    { id: 'ch3', name: 'Synthetic Fibres and Plastics' },
+    { id: 'ch4', name: 'Materials: Metals and Non-Metals' },
+    { id: 'ch5', name: 'Coal and Petroleum' },
+    { id: 'ch6', name: 'Combustion and Flame' },
+    { id: 'ch7', name: 'Conservation of Plants and Animals' },
+    { id: 'ch8', name: 'Cell - Structure and Functions' },
+    { id: 'ch9', name: 'Reproduction in Animals' },
+    { id: 'ch10', name: 'Reaching the Age of Adolescence' },
+    { id: 'ch11', name: 'Force and Pressure' },
+    { id: 'ch12', name: 'Friction' },
+    { id: 'ch13', name: 'Sound' },
+    { id: 'ch14', name: 'Chemical Effects of Electric Current' },
+    { id: 'ch15', name: 'Some Natural Phenomena' },
+    { id: 'ch16', name: 'Light' },
+    { id: 'ch17', name: 'Stars and the Solar System' },
+    { id: 'ch18', name: 'Pollution of Air and Water' },
+  ],
+  '8_Social Science': [
+    { id: 'hist1', name: 'How, When and Where' },
+    { id: 'hist2', name: 'From Trade to Territory' },
+    { id: 'hist3', name: 'Ruling the Countryside' },
+    { id: 'hist4', name: 'Tribals, Dikus and the Vision of a Golden Age' },
+    { id: 'hist5', name: 'When People Rebel' },
+    { id: 'hist6', name: 'Weavers, Iron Smelters and Factory Owners' },
+    { id: 'hist7', name: 'Civilising the "Native", Educating the Nation' },
+    { id: 'hist8', name: 'Women, Caste and Reform' },
+    { id: 'hist9', name: 'The Making of the National Movement: 1870s-1947' },
+    { id: 'hist10', name: 'India After Independence' },
+    { id: 'geo1', name: 'Resources' },
+    { id: 'geo2', name: 'Land, Soil, Water, Natural Vegetation and Wildlife Resources' },
+    { id: 'geo3', name: 'Mineral and Power Resources' },
+    { id: 'geo4', name: 'Agriculture' },
+    { id: 'geo5', name: 'Industries' },
+    { id: 'geo6', name: 'Human Resources' },
+    { id: 'civ1', name: 'The Indian Constitution' },
+    { id: 'civ2', name: 'Understanding Secularism' },
+    { id: 'civ3', name: 'Why do we need a Parliament?' },
+    { id: 'civ4', name: 'Understanding Laws' },
+    { id: 'civ5', name: 'Judiciary' },
+    { id: 'civ6', name: 'Understanding Our Criminal Justice System' },
+    { id: 'civ7', name: 'Understanding Marginalisation' },
+    { id: 'civ8', name: 'Confronting Marginalisation' },
+    { id: 'civ9', name: 'Public Facilities' },
+    { id: 'civ10', name: 'Law and Social Justice' },
+  ],
+};
+
+// Class 9-10 CBSE Chapters (NCERT 2024-25 Rationalized Syllabus)
 export const CBSE_CHAPTERS = {
+  // Class 9
+  '9_Hindi': [
+    { id: 'ch1', name: 'दो बैलों की कथा' },
+    { id: 'ch2', name: 'ल्हासा की ओर' },
+    { id: 'ch3', name: 'उपभोक्तावाद की संस्कृति' },
+    { id: 'ch4', name: 'साँवले सपनों की याद' },
+    { id: 'ch5', name: 'नाना साहब की पुत्री देवी मैना को भस्म कर दिया गया' },
+    { id: 'ch6', name: 'प्रेमचंद के फटे जूते' },
+    { id: 'ch7', name: 'मेरे बचपन के दिन' },
+    { id: 'ch8', name: 'एक कुत्ता और एक मैना' },
+    { id: 'ch9', name: 'साखियाँ एवं सबद' },
+    { id: 'ch10', name: 'वाख' },
+    { id: 'ch11', name: 'सवैये' },
+    { id: 'ch12', name: 'कैदी और कोकिला' },
+    { id: 'ch13', name: 'ग्राम श्री' },
+    { id: 'ch14', name: 'चंद्र गहना से लौटती बेर' },
+    { id: 'ch15', name: 'मेघ आए' },
+    { id: 'ch16', name: 'यमराज की दिशा' },
+    { id: 'ch17', name: 'बच्चे काम पर जा रहे हैं' },
+  ],
+  '9_English': [
+    { id: 'ch1', name: 'The Fun They Had' },
+    { id: 'ch2', name: 'The Sound of Music' },
+    { id: 'ch3', name: 'The Little Girl' },
+    { id: 'ch4', name: 'A Truly Beautiful Mind' },
+    { id: 'ch5', name: 'The Snake and the Mirror' },
+    { id: 'ch6', name: 'My Childhood' },
+    { id: 'ch7', name: 'Packing' },
+    { id: 'ch8', name: 'Reach for the Top' },
+    { id: 'ch9', name: 'The Bond of Love' },
+    { id: 'ch10', name: 'Kathmandu' },
+    { id: 'ch11', name: 'If I Were You' },
+  ],
+  '9_Mathematics': [
+    { id: 'ch1', name: 'Number Systems' },
+    { id: 'ch2', name: 'Polynomials' },
+    { id: 'ch3', name: 'Coordinate Geometry' },
+    { id: 'ch4', name: 'Linear Equations in Two Variables' },
+    { id: 'ch5', name: 'Introduction to Euclid\'s Geometry' },
+    { id: 'ch6', name: 'Lines and Angles' },
+    { id: 'ch7', name: 'Triangles' },
+    { id: 'ch8', name: 'Quadrilaterals' },
+    { id: 'ch9', name: 'Circles' },
+    { id: 'ch10', name: 'Heron\'s Formula' },
+    { id: 'ch11', name: 'Surface Areas and Volumes' },
+    { id: 'ch12', name: 'Statistics' },
+  ],
+  '9_Science': [
+    { id: 'ch1', name: 'Matter in Our Surroundings' },
+    { id: 'ch2', name: 'Is Matter Around Us Pure' },
+    { id: 'ch3', name: 'Atoms and Molecules' },
+    { id: 'ch4', name: 'Structure of the Atom' },
+    { id: 'ch5', name: 'The Fundamental Unit of Life' },
+    { id: 'ch6', name: 'Tissues' },
+    { id: 'ch7', name: 'Motion' },
+    { id: 'ch8', name: 'Force and Laws of Motion' },
+    { id: 'ch9', name: 'Gravitation' },
+    { id: 'ch10', name: 'Work and Energy' },
+    { id: 'ch11', name: 'Sound' },
+    { id: 'ch12', name: 'Improvement in Food Resources' },
+  ],
+  '9_Social Science': [
+    { id: 'hist1', name: 'The French Revolution' },
+    { id: 'hist2', name: 'Socialism in Europe and the Russian Revolution' },
+    { id: 'hist3', name: 'Nazism and the Rise of Hitler' },
+    { id: 'hist4', name: 'Forest Society and Colonialism' },
+    { id: 'hist5', name: 'Pastoralists in the Modern World' },
+    { id: 'geo1', name: 'India - Size and Location' },
+    { id: 'geo2', name: 'Physical Features of India' },
+    { id: 'geo3', name: 'Drainage' },
+    { id: 'geo4', name: 'Climate' },
+    { id: 'geo5', name: 'Natural Vegetation and Wild Life' },
+    { id: 'geo6', name: 'Population' },
+    { id: 'pol1', name: 'What is Democracy? Why Democracy?' },
+    { id: 'pol2', name: 'Constitutional Design' },
+    { id: 'pol3', name: 'Electoral Politics' },
+    { id: 'pol4', name: 'Working of Institutions' },
+    { id: 'pol5', name: 'Democratic Rights' },
+    { id: 'eco1', name: 'The Story of Village Palampur' },
+    { id: 'eco2', name: 'People as Resource' },
+    { id: 'eco3', name: 'Poverty as a Challenge' },
+    { id: 'eco4', name: 'Food Security in India' },
+  ],
+  // Class 10
+  '10_Hindi': [
+    { id: 'ch1', name: 'सूरदास के पद' },
+    { id: 'ch2', name: 'राम-लक्ष्मण-परशुराम संवाद' },
+    { id: 'ch3', name: 'आत्मकथ्य' },
+    { id: 'ch4', name: 'उत्साह और अट नहीं रही' },
+    { id: 'ch5', name: 'यह दंतुरहित मुस्कान और फसल' },
+    { id: 'ch6', name: 'छाया मत छूना' },
+    { id: 'ch7', name: 'कन्यादान' },
+    { id: 'ch8', name: 'संगतकार' },
+    { id: 'ch9', name: 'नेताजी का चश्मा' },
+    { id: 'ch10', name: 'बालगोबिन भगत' },
+    { id: 'ch11', name: 'लखनवी अंदाज़' },
+    { id: 'ch12', name: 'मानवीय करुणा की दिव्य चमक' },
+    { id: 'ch13', name: 'एक कहानी यह भी' },
+    { id: 'ch14', name: 'स्त्री शिक्षा के विरोधी कुतर्कों का खंडन' },
+    { id: 'ch15', name: 'नौबतखाने में इबादत' },
+    { id: 'ch16', name: 'संस्कृति' },
+  ],
+  '10_English': [
+    { id: 'ch1', name: 'A Letter to God' },
+    { id: 'ch2', name: 'Nelson Mandela: Long Walk to Freedom' },
+    { id: 'ch3', name: 'Two Stories about Flying' },
+    { id: 'ch4', name: 'From the Diary of Anne Frank' },
+    { id: 'ch5', name: 'The Hundred Dresses - I' },
+    { id: 'ch6', name: 'The Hundred Dresses - II' },
+    { id: 'ch7', name: 'Glimpses of India' },
+    { id: 'ch8', name: 'Mijbil the Otter' },
+    { id: 'ch9', name: 'Madam Rides the Bus' },
+    { id: 'ch10', name: 'The Sermon at Benares' },
+    { id: 'ch11', name: 'The Proposal' },
+  ],
   '10_Mathematics': [
     { id: 'ch1', name: 'Real Numbers' },
     { id: 'ch2', name: 'Polynomials' },
@@ -126,70 +999,188 @@ export const CBSE_CHAPTERS = {
     { id: 'eco4', name: 'Globalisation and the Indian Economy' },
     { id: 'eco5', name: 'Consumer Rights' },
   ],
-  '9_Mathematics': [
-    { id: 'ch1', name: 'Number Systems' },
-    { id: 'ch2', name: 'Polynomials' },
-    { id: 'ch3', name: 'Coordinate Geometry' },
-    { id: 'ch4', name: 'Linear Equations in Two Variables' },
-    { id: 'ch5', name: 'Introduction to Euclid\'s Geometry' },
-    { id: 'ch6', name: 'Lines and Angles' },
-    { id: 'ch7', name: 'Triangles' },
-    { id: 'ch8', name: 'Quadrilaterals' },
-    { id: 'ch9', name: 'Circles' },
-    { id: 'ch10', name: 'Heron\'s Formula' },
-    { id: 'ch11', name: 'Surface Areas and Volumes' },
-    { id: 'ch12', name: 'Statistics' },
+};
+
+// Class 11-12 CBSE Chapters
+export const SENIOR_SECONDARY_CHAPTERS = {
+  // Class 11 Physics
+  '11_Physics': [
+    { id: 'ch1', name: 'Physical World' },
+    { id: 'ch2', name: 'Units and Measurements' },
+    { id: 'ch3', name: 'Motion in a Straight Line' },
+    { id: 'ch4', name: 'Motion in a Plane' },
+    { id: 'ch5', name: 'Laws of Motion' },
+    { id: 'ch6', name: 'Work, Energy and Power' },
+    { id: 'ch7', name: 'System of Particles and Rotational Motion' },
+    { id: 'ch8', name: 'Gravitation' },
+    { id: 'ch9', name: 'Mechanical Properties of Solids' },
+    { id: 'ch10', name: 'Mechanical Properties of Fluids' },
+    { id: 'ch11', name: 'Thermal Properties of Matter' },
+    { id: 'ch12', name: 'Thermodynamics' },
+    { id: 'ch13', name: 'Kinetic Theory' },
+    { id: 'ch14', name: 'Oscillations' },
+    { id: 'ch15', name: 'Waves' },
   ],
-  '9_Science': [
-    { id: 'ch1', name: 'Matter in Our Surroundings' },
-    { id: 'ch2', name: 'Is Matter Around Us Pure' },
-    { id: 'ch3', name: 'Atoms and Molecules' },
-    { id: 'ch4', name: 'Structure of the Atom' },
-    { id: 'ch5', name: 'The Fundamental Unit of Life' },
-    { id: 'ch6', name: 'Tissues' },
-    { id: 'ch7', name: 'Motion' },
-    { id: 'ch8', name: 'Force and Laws of Motion' },
-    { id: 'ch9', name: 'Gravitation' },
-    { id: 'ch10', name: 'Work and Energy' },
-    { id: 'ch11', name: 'Sound' },
-    { id: 'ch12', name: 'Improvement in Food Resources' },
+  '11_Chemistry': [
+    { id: 'ch1', name: 'Some Basic Concepts of Chemistry' },
+    { id: 'ch2', name: 'Structure of Atom' },
+    { id: 'ch3', name: 'Classification of Elements and Periodicity' },
+    { id: 'ch4', name: 'Chemical Bonding and Molecular Structure' },
+    { id: 'ch5', name: 'States of Matter' },
+    { id: 'ch6', name: 'Thermodynamics' },
+    { id: 'ch7', name: 'Equilibrium' },
+    { id: 'ch8', name: 'Redox Reactions' },
+    { id: 'ch9', name: 'Hydrogen' },
+    { id: 'ch10', name: 's-Block Elements' },
+    { id: 'ch11', name: 'p-Block Elements' },
+    { id: 'ch12', name: 'Organic Chemistry - Some Basic Principles' },
+    { id: 'ch13', name: 'Hydrocarbons' },
+    { id: 'ch14', name: 'Environmental Chemistry' },
+  ],
+  '11_Biology': [
+    { id: 'ch1', name: 'The Living World' },
+    { id: 'ch2', name: 'Biological Classification' },
+    { id: 'ch3', name: 'Plant Kingdom' },
+    { id: 'ch4', name: 'Animal Kingdom' },
+    { id: 'ch5', name: 'Morphology of Flowering Plants' },
+    { id: 'ch6', name: 'Anatomy of Flowering Plants' },
+    { id: 'ch7', name: 'Structural Organisation in Animals' },
+    { id: 'ch8', name: 'Cell: The Unit of Life' },
+    { id: 'ch9', name: 'Biomolecules' },
+    { id: 'ch10', name: 'Cell Cycle and Cell Division' },
+    { id: 'ch11', name: 'Transport in Plants' },
+    { id: 'ch12', name: 'Mineral Nutrition' },
+    { id: 'ch13', name: 'Photosynthesis in Higher Plants' },
+    { id: 'ch14', name: 'Respiration in Plants' },
+    { id: 'ch15', name: 'Plant Growth and Development' },
+    { id: 'ch16', name: 'Digestion and Absorption' },
+    { id: 'ch17', name: 'Breathing and Exchange of Gases' },
+    { id: 'ch18', name: 'Body Fluids and Circulation' },
+    { id: 'ch19', name: 'Excretory Products and their Elimination' },
+    { id: 'ch20', name: 'Locomotion and Movement' },
+    { id: 'ch21', name: 'Neural Control and Coordination' },
+    { id: 'ch22', name: 'Chemical Coordination and Integration' },
+  ],
+  '11_Mathematics': [
+    { id: 'ch1', name: 'Sets' },
+    { id: 'ch2', name: 'Relations and Functions' },
+    { id: 'ch3', name: 'Trigonometric Functions' },
+    { id: 'ch4', name: 'Complex Numbers and Quadratic Equations' },
+    { id: 'ch5', name: 'Linear Inequalities' },
+    { id: 'ch6', name: 'Permutations and Combinations' },
+    { id: 'ch7', name: 'Binomial Theorem' },
+    { id: 'ch8', name: 'Sequences and Series' },
+    { id: 'ch9', name: 'Straight Lines' },
+    { id: 'ch10', name: 'Conic Sections' },
+    { id: 'ch11', name: 'Introduction to Three Dimensional Geometry' },
+    { id: 'ch12', name: 'Limits and Derivatives' },
+    { id: 'ch13', name: 'Statistics' },
+    { id: 'ch14', name: 'Probability' },
+  ],
+  // Class 12 Physics
+  '12_Physics': [
+    { id: 'ch1', name: 'Electric Charges and Fields' },
+    { id: 'ch2', name: 'Electrostatic Potential and Capacitance' },
+    { id: 'ch3', name: 'Current Electricity' },
+    { id: 'ch4', name: 'Moving Charges and Magnetism' },
+    { id: 'ch5', name: 'Magnetism and Matter' },
+    { id: 'ch6', name: 'Electromagnetic Induction' },
+    { id: 'ch7', name: 'Alternating Current' },
+    { id: 'ch8', name: 'Electromagnetic Waves' },
+    { id: 'ch9', name: 'Ray Optics and Optical Instruments' },
+    { id: 'ch10', name: 'Wave Optics' },
+    { id: 'ch11', name: 'Dual Nature of Radiation and Matter' },
+    { id: 'ch12', name: 'Atoms' },
+    { id: 'ch13', name: 'Nuclei' },
+    { id: 'ch14', name: 'Semiconductor Electronics' },
+  ],
+  '12_Chemistry': [
+    { id: 'ch1', name: 'The Solid State' },
+    { id: 'ch2', name: 'Solutions' },
+    { id: 'ch3', name: 'Electrochemistry' },
+    { id: 'ch4', name: 'Chemical Kinetics' },
+    { id: 'ch5', name: 'Surface Chemistry' },
+    { id: 'ch6', name: 'General Principles and Processes of Isolation of Elements' },
+    { id: 'ch7', name: 'p-Block Elements' },
+    { id: 'ch8', name: 'd and f Block Elements' },
+    { id: 'ch9', name: 'Coordination Compounds' },
+    { id: 'ch10', name: 'Haloalkanes and Haloarenes' },
+    { id: 'ch11', name: 'Alcohols, Phenols and Ethers' },
+    { id: 'ch12', name: 'Aldehydes, Ketones and Carboxylic Acids' },
+    { id: 'ch13', name: 'Amines' },
+    { id: 'ch14', name: 'Biomolecules' },
+    { id: 'ch15', name: 'Polymers' },
+    { id: 'ch16', name: 'Chemistry in Everyday Life' },
+  ],
+  '12_Biology': [
+    { id: 'ch1', name: 'Reproduction in Organisms' },
+    { id: 'ch2', name: 'Sexual Reproduction in Flowering Plants' },
+    { id: 'ch3', name: 'Human Reproduction' },
+    { id: 'ch4', name: 'Reproductive Health' },
+    { id: 'ch5', name: 'Principles of Inheritance and Variation' },
+    { id: 'ch6', name: 'Molecular Basis of Inheritance' },
+    { id: 'ch7', name: 'Evolution' },
+    { id: 'ch8', name: 'Human Health and Disease' },
+    { id: 'ch9', name: 'Strategies for Enhancement in Food Production' },
+    { id: 'ch10', name: 'Microbes in Human Welfare' },
+    { id: 'ch11', name: 'Biotechnology: Principles and Processes' },
+    { id: 'ch12', name: 'Biotechnology and Its Applications' },
+    { id: 'ch13', name: 'Organisms and Populations' },
+    { id: 'ch14', name: 'Ecosystem' },
+    { id: 'ch15', name: 'Biodiversity and Conservation' },
+    { id: 'ch16', name: 'Environmental Issues' },
+  ],
+  '12_Mathematics': [
+    { id: 'ch1', name: 'Relations and Functions' },
+    { id: 'ch2', name: 'Inverse Trigonometric Functions' },
+    { id: 'ch3', name: 'Matrices' },
+    { id: 'ch4', name: 'Determinants' },
+    { id: 'ch5', name: 'Continuity and Differentiability' },
+    { id: 'ch6', name: 'Application of Derivatives' },
+    { id: 'ch7', name: 'Integrals' },
+    { id: 'ch8', name: 'Application of Integrals' },
+    { id: 'ch9', name: 'Differential Equations' },
+    { id: 'ch10', name: 'Vector Algebra' },
+    { id: 'ch11', name: 'Three Dimensional Geometry' },
+    { id: 'ch12', name: 'Linear Programming' },
+    { id: 'ch13', name: 'Probability' },
   ],
 };
 
-// MP Board 2024-25 Syllabus Chapters
+// MP Board Hindi Medium Chapters
 export const MPBSE_CHAPTERS = {
-  '10_Ganit': [
-    { id: 'ch1', name: 'वास्तविक संख्याएँ (Real Numbers)' },
-    { id: 'ch2', name: 'बहुपद (Polynomials)' },
+  '10_गणित': [
+    { id: 'ch1', name: 'वास्तविक संख्याएँ' },
+    { id: 'ch2', name: 'बहुपद' },
     { id: 'ch3', name: 'दो चरों वाले रैखिक समीकरण युग्म' },
-    { id: 'ch4', name: 'द्विघात समीकरण (Quadratic Equations)' },
-    { id: 'ch5', name: 'समांतर श्रेढ़ी (Arithmetic Progression)' },
-    { id: 'ch6', name: 'त्रिभुज (Triangles)' },
-    { id: 'ch7', name: 'निर्देशांक ज्यामिति (Coordinate Geometry)' },
+    { id: 'ch4', name: 'द्विघात समीकरण' },
+    { id: 'ch5', name: 'समांतर श्रेढ़ी' },
+    { id: 'ch6', name: 'त्रिभुज' },
+    { id: 'ch7', name: 'निर्देशांक ज्यामिति' },
     { id: 'ch8', name: 'त्रिकोणमिति का परिचय' },
     { id: 'ch9', name: 'त्रिकोणमिति के कुछ अनुप्रयोग' },
-    { id: 'ch10', name: 'वृत्त (Circles)' },
+    { id: 'ch10', name: 'वृत्त' },
     { id: 'ch11', name: 'वृत्तों से संबंधित क्षेत्रफल' },
     { id: 'ch12', name: 'पृष्ठीय क्षेत्रफल और आयतन' },
-    { id: 'ch13', name: 'सांख्यिकी (Statistics)' },
-    { id: 'ch14', name: 'प्रायिकता (Probability)' },
+    { id: 'ch13', name: 'सांख्यिकी' },
+    { id: 'ch14', name: 'प्रायिकता' },
   ],
-  '10_Vigyan': [
+  '10_विज्ञान': [
     { id: 'ch1', name: 'रासायनिक अभिक्रियाएँ एवं समीकरण' },
     { id: 'ch2', name: 'अम्ल, क्षारक एवं लवण' },
     { id: 'ch3', name: 'धातु एवं अधातु' },
     { id: 'ch4', name: 'कार्बन एवं उसके यौगिक' },
-    { id: 'ch5', name: 'जैव प्रक्रम (Life Processes)' },
+    { id: 'ch5', name: 'जैव प्रक्रम' },
     { id: 'ch6', name: 'नियंत्रण एवं समन्वय' },
     { id: 'ch7', name: 'जीव जनन कैसे करते हैं' },
-    { id: 'ch8', name: 'आनुवंशिकता (Heredity)' },
+    { id: 'ch8', name: 'आनुवंशिकता' },
     { id: 'ch9', name: 'प्रकाश - परावर्तन तथा अपवर्तन' },
     { id: 'ch10', name: 'मानव नेत्र तथा रंगबिरंगा संसार' },
-    { id: 'ch11', name: 'विद्युत (Electricity)' },
+    { id: 'ch11', name: 'विद्युत' },
     { id: 'ch12', name: 'विद्युत धारा के चुंबकीय प्रभाव' },
     { id: 'ch13', name: 'हमारा पर्यावरण' },
   ],
-  '10_Samajik Vigyan': [
+  '10_सामाजिक विज्ञान': [
     { id: 'hist1', name: 'यूरोप में राष्ट्रवाद का उदय' },
     { id: 'hist2', name: 'भारत में राष्ट्रवाद' },
     { id: 'hist3', name: 'भूमंडलीकृत विश्व का बनना' },
@@ -216,9 +1207,9 @@ export const MPBSE_CHAPTERS = {
   ],
 };
 
-// RBSE 2024-25 Syllabus Chapters
+// RBSE Chapters
 export const RBSE_CHAPTERS = {
-  '10_Ganit': [
+  '10_गणित': [
     { id: 'ch1', name: 'वास्तविक संख्याएँ' },
     { id: 'ch2', name: 'बहुपद' },
     { id: 'ch3', name: 'दो चरों वाले रैखिक समीकरण युग्म' },
@@ -235,7 +1226,7 @@ export const RBSE_CHAPTERS = {
     { id: 'ch14', name: 'सांख्यिकी' },
     { id: 'ch15', name: 'प्रायिकता' },
   ],
-  '10_Vigyan': [
+  '10_विज्ञान': [
     { id: 'ch1', name: 'रासायनिक अभिक्रियाएँ एवं समीकरण' },
     { id: 'ch2', name: 'अम्ल, क्षार एवं लवण' },
     { id: 'ch3', name: 'धातु एवं अधातु' },
@@ -253,7 +1244,7 @@ export const RBSE_CHAPTERS = {
     { id: 'ch15', name: 'हमारा पर्यावरण' },
     { id: 'ch16', name: 'प्राकृतिक संसाधनों का प्रबंधन' },
   ],
-  '10_Rajasthan Adhyayan': [
+  '10_राजस्थान अध्ययन': [
     { id: 'ch1', name: 'राजस्थान: एक परिचय' },
     { id: 'ch2', name: 'राजस्थान के भौतिक प्रदेश' },
     { id: 'ch3', name: 'राजस्थान की जलवायु' },
@@ -269,36 +1260,110 @@ export const RBSE_CHAPTERS = {
 
 // Get chapters based on board, class and subject
 export const getChapters = (board, className, subject) => {
-  const classNum = className.replace('Class ', '');
-  
-  // Normalize subject names
-  const subjectMap = {
-    'Mathematics': 'Mathematics',
-    'Ganit': 'Ganit',
-    'Ganit (Mathematics)': 'Ganit',
-    'Science': 'Science',
-    'Vigyan': 'Vigyan',
-    'Vigyan (Science)': 'Vigyan',
-    'Social Science': 'Social Science',
-    'Samajik Vigyan': 'Samajik Vigyan',
-    'Samajik Vigyan (Social Science)': 'Samajik Vigyan',
-    'Rajasthan Adhyayan': 'Rajasthan Adhyayan',
-  };
-  
-  const normalizedSubject = subjectMap[subject] || subject;
-  const key = `${classNum}_${normalizedSubject}`;
-  
-  switch (board) {
-    case 'CBSE':
-    case 'NCERT':
-      return CBSE_CHAPTERS[key] || [];
-    case 'MPBSE':
-      return MPBSE_CHAPTERS[key] || CBSE_CHAPTERS[key] || [];
-    case 'RBSE':
-      return RBSE_CHAPTERS[key] || CBSE_CHAPTERS[key] || [];
-    default:
-      return CBSE_CHAPTERS[key] || [];
+  // Handle Pre-Primary Classes
+  if (['Nursery', 'LKG', 'UKG'].includes(className)) {
+    // Normalize subject names
+    let subjectKey = subject;
+    if (subject.includes('GK') || subject.includes('General') || subject.includes('Awareness') || subject === 'EVS' || subject === 'पर्यावरण') {
+      subjectKey = 'GK';
+    }
+    if (subject.includes('गणित') || subject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (subject === 'हिंदी') {
+      subjectKey = 'Hindi';
+    }
+    const key = `${className}_${subjectKey}`;
+    return PRE_PRIMARY_CHAPTERS[key] || [];
   }
+  
+  // Handle Primary Classes (1-5)
+  const classNum = className.replace('Class ', '');
+  if (['1', '2', '3', '4', '5'].includes(classNum)) {
+    let subjectKey = subject;
+    // Normalize subject names for primary
+    if (subject.includes('EVS') || subject.includes('पर्यावरण') || subject.includes('GK')) {
+      subjectKey = 'EVS';
+    }
+    if (subject.includes('गणित') || subject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (subject === 'हिंदी') {
+      subjectKey = 'Hindi';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    return PRIMARY_CHAPTERS[key] || [];
+  }
+  
+  // Handle Middle School (6-8)
+  if (['6', '7', '8'].includes(classNum)) {
+    let subjectKey = subject;
+    // Normalize subject names
+    if (subject.includes('विज्ञान') && !subject.includes('सामाजिक')) {
+      subjectKey = 'Science';
+    }
+    if (subject.includes('सामाजिक') || subject.includes('Social')) {
+      subjectKey = 'Social Science';
+    }
+    if (subject.includes('गणित') || subject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (subject === 'हिंदी') {
+      subjectKey = 'Hindi';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    return MIDDLE_SCHOOL_CHAPTERS[key] || [];
+  }
+  
+  // Handle Secondary Classes (9-10)
+  if (['9', '10'].includes(classNum)) {
+    let subjectKey = subject;
+    // Normalize subject names
+    if (subject.includes('विज्ञान') && !subject.includes('सामाजिक')) {
+      subjectKey = 'Science';
+    }
+    if (subject.includes('सामाजिक') || subject.includes('Social')) {
+      subjectKey = 'Social Science';
+    }
+    if (subject.includes('गणित') || subject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (subject === 'हिंदी') {
+      subjectKey = 'Hindi';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    
+    // Check board-specific chapters first
+    if (board === 'MPBSE') {
+      return MPBSE_CHAPTERS[`${classNum}_${subject}`] || CBSE_CHAPTERS[key] || [];
+    }
+    if (board === 'RBSE') {
+      return RBSE_CHAPTERS[`${classNum}_${subject}`] || CBSE_CHAPTERS[key] || [];
+    }
+    return CBSE_CHAPTERS[key] || [];
+  }
+  
+  // Handle Senior Secondary (11-12)
+  if (['11', '12'].includes(classNum)) {
+    let subjectKey = subject;
+    // Normalize subject names
+    if (subject.includes('भौतिक') || subject === 'Physics') {
+      subjectKey = 'Physics';
+    }
+    if (subject.includes('रसायन') || subject === 'Chemistry') {
+      subjectKey = 'Chemistry';
+    }
+    if (subject.includes('जीव') || subject === 'Biology') {
+      subjectKey = 'Biology';
+    }
+    if (subject.includes('गणित') || subject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    return SENIOR_SECONDARY_CHAPTERS[key] || [];
+  }
+  
+  return [];
 };
 
 // Marks pattern per board
