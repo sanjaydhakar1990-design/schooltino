@@ -182,7 +182,10 @@ export default function SchoolSettingsPage() {
     setSettings(prev => ({
       ...prev,
       state,
-      board: stateData.board,
+      primary_board: stateData.board,
+      secondary_board: 'NCERT', // Most Indian schools use NCERT for core subjects
+      use_ncert_syllabus: true,
+      board: stateData.board, // Backward compatibility
       school_start_time: isSummer ? stateData.summer.start : stateData.winter.start,
       school_end_time: isSummer ? stateData.summer.end : stateData.winter.end,
     }));
