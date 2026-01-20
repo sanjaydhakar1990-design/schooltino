@@ -7524,6 +7524,68 @@ async def get_admin_overview(school_id: str, current_user: dict = Depends(get_cu
         "summary": f"Today: {exams_created_today} exams created, {attendance_marked_today} attendance entries, {leaves_pending} leaves pending"
     }
 
+# ==================== EVENT DESIGNER (AI Pamphlets & Invitations) ====================
+
+class EventDesignRequest(BaseModel):
+    school_id: str
+    template_type: str
+    design_style: str
+    design_type: str  # 'pamphlet' or 'invitation'
+    event_details: Dict[str, Any]
+    school_info: Dict[str, Any]
+    language: str = "hi"
+
+@api_router.post("/events/generate-design")
+async def generate_event_design(request: EventDesignRequest, current_user: dict = Depends(get_current_user)):
+    """Generate AI-powered event design (pamphlet or invitation card)"""
+    
+    # Get school info
+    school = await db.schools.find_one({"id": request.school_id}, {"_id": 0})
+    
+    school_info = {
+        "name": school.get("name", request.school_info.get("name", "School Name")) if school else request.school_info.get("name", "School Name"),
+        "address": school.get("address", "") if school else "",
+        "phone": school.get("phone", "") if school else "",
+        "logo": school.get("logo_url", None) if school else None
+    }
+    
+    # Save event design to database
+    design_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": request.school_id,
+        "template_type": request.template_type,
+        "design_style": request.design_style,
+        "design_type": request.design_type,
+        "event_details": request.event_details,
+        "school_info": school_info,
+        "language": request.language,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    
+    await db.event_designs.insert_one(design_record)
+    
+    return {
+        "success": True,
+        "type": request.design_type,
+        "template": request.template_type,
+        "style": request.design_style,
+        "event": request.event_details,
+        "school": school_info,
+        "design_id": design_record["id"],
+        "generated_at": design_record["created_at"]
+    }
+
+@api_router.get("/events/designs/{school_id}")
+async def get_school_event_designs(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all event designs for a school"""
+    designs = await db.event_designs.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(50).to_list(50)
+    
+    return designs
+
 # ==================== APP CONFIG ====================
 
 # Include modular routers
