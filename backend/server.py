@@ -2981,9 +2981,13 @@ async def generate_paper(request: PaperGenerateRequest, current_user: dict = Dep
             "difficulty": "hard"
         }}''')
         
-        system_prompt = f"""You are an expert question paper generator for Indian schools following NCERT 2024-25 syllabus.
+        # Get custom marks if provided
+        marks_config = getattr(request, 'marks_config', None) or {}
+        
+        system_prompt = f"""You are an expert question paper generator for Indian schools following NCERT 2024-25 Rationalized Syllabus.
 Generate questions for {request.class_name} students in {request.subject} subject.
 Chapter/Topic: {request.chapter}
+Exam Name: {request.exam_name or 'Exam'}
 Difficulty: {request.difficulty}
 Language: {request.language}
 
@@ -2991,26 +2995,34 @@ CRITICAL REQUIREMENT - MARKS DISTRIBUTION:
 Total Marks Required: EXACTLY {request.total_marks} marks (NOT MORE, NOT LESS)
 Time Duration: {request.time_duration} minutes
 
-Question Types and Marks:
+Question Types and Marks (CBSE 2024-25 Pattern):
 {dist_str}
+
+CBSE 2024-25 MARKS PATTERN (STRICTLY FOLLOW):
+- MCQ = 1 mark
+- Fill in the blank = 1 mark  
+- Very Short Answer (VSAQ) = 2 marks
+- Short Answer = 3 marks
+- Long Answer = 4 marks (NOT 5, NOT 10 - EXACTLY 4 MARKS)
+- Diagram Based = 3 marks (MUST require drawing and labeling a diagram)
+- HOTS = 4 marks (Higher Order Thinking Skills)
+- Case Study = 4 marks
 
 STRICT RULES:
 1. You MUST generate questions that add up to EXACTLY {request.total_marks} marks
-2. Marks per question type:
-   - MCQ = 1 mark
-   - Fill in the blank = 1 mark  
-   - Short answer = 2 marks
-   - Long answer = 5 marks
-   - Diagram based = 3 marks (MUST require drawing a diagram)
-   - HOTS = 4 marks (MUST be analysis/evaluation type)
+2. LONG ANSWER = 4 marks ONLY (as per latest CBSE pattern 2024-25)
 3. Generate questions ONLY from the specified chapter(s)
-4. Use NCERT 2024-25 rationalized syllabus content only
+4. Use NCERT 2024-25 rationalized syllabus content ONLY
 5. Do NOT include questions from deleted/old syllabus topics
 6. Ensure all questions are appropriate for {request.class_name} level
-7. For DIAGRAM questions: Ask to "Draw and label" or "Draw a neat diagram showing..."
-8. For HOTS questions: Use words like "Analyze", "Compare", "Evaluate", "Justify", "Predict"
+7. For DIAGRAM questions: 
+   - MUST ask to "Draw and label" or "Draw a neat diagram showing..."
+   - Question should require actual drawing with proper labeling
+   - Example: "Draw a neat diagram of human heart and label its parts"
+8. For HOTS questions: Use "Analyze", "Compare", "Evaluate", "Justify", "Predict", "Design", "Create"
 9. EVERY question MUST have a clear, complete answer in the answer key
-10. Double-check that marks sum to EXACTLY {request.total_marks}
+10. For diagram answers, describe what should be drawn and labeled
+11. Double-check that marks sum to EXACTLY {request.total_marks}
 
 Return ONLY valid JSON (no extra text):
 {{
@@ -3024,18 +3036,32 @@ Return ONLY valid JSON (no extra text):
             "difficulty": "easy"
         }},
         {{
+            "type": "vsaq",
+            "question": "Question text",
+            "answer": "Answer in 1-2 sentences",
+            "marks": 2,
+            "difficulty": "easy"
+        }},
+        {{
             "type": "short",
             "question": "Question text",
-            "answer": "Complete answer in 2-3 sentences with all key points",
-            "marks": 2,
+            "answer": "Complete answer in 50-60 words",
+            "marks": 3,
             "difficulty": "medium"
         }},
         {{
             "type": "long",
-            "question": "question text",
-            "answer": "detailed answer",
-            "marks": 5,
+            "question": "Question text requiring detailed answer",
+            "answer": "Detailed answer in 100-120 words with all key points",
+            "marks": 4,
             "difficulty": "hard"
+        }},
+        {{
+            "type": "diagram",
+            "question": "Draw a neat labeled diagram of...",
+            "answer": "Diagram should show [parts] with labels [A, B, C...]",
+            "marks": 3,
+            "difficulty": "medium"
         }}
     ],
     "total_marks": {request.total_marks}
