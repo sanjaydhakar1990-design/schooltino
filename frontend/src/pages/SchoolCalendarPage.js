@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
-import { Calendar, Printer, Plus, Edit2, Trash2, Bell, ChevronLeft, ChevronRight, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Calendar, Printer, Plus, Edit2, Trash2, Bell, ChevronLeft, ChevronRight, MapPin, Phone, Mail, Globe, Image, Upload, Star, Quote } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
