@@ -65,6 +65,8 @@ import PDFDownloadPage from './pages/PDFDownloadPage';
 import SetupGuidePage from './pages/SetupGuidePage';
 import SuperAdminPanel from './pages/SuperAdminPanel';
 import TeacherRoleManager from './pages/TeacherRoleManager';
+import SchoolCalendarPage from './pages/SchoolCalendarPage';
+import ComplaintFeedbackPage from './pages/ComplaintFeedbackPage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
