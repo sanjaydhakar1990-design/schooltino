@@ -102,7 +102,10 @@ export default function SchoolSettingsPage() {
   const [settings, setSettings] = useState({
     // School Timing Settings
     state: 'Rajasthan',
-    board: 'RBSE',
+    primary_board: 'RBSE', // Main State Board
+    secondary_board: 'NCERT', // Most schools follow NCERT for core subjects
+    use_ncert_syllabus: true, // Use NCERT syllabus for main subjects
+    board: 'RBSE', // Backward compatibility
     school_start_time: '08:00',
     school_end_time: '14:00',
     use_government_timing: true,
