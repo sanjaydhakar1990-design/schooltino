@@ -465,8 +465,24 @@ export default function StudentsPage() {
                     value={formData.dob}
                     onChange={handleChange}
                     required
+                    max={new Date().toISOString().split('T')[0]}
+                    min="1990-01-01"
                     data-testid="dob-input"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Admission Date (प्रवेश तिथि) *</Label>
+                  <Input
+                    name="admission_date"
+                    type="date"
+                    value={formData.admission_date}
+                    onChange={handleChange}
+                    required
+                    max={new Date().toISOString().split('T')[0]}
+                    min="2000-01-01"
+                    data-testid="admission-date-input"
+                  />
+                  <p className="text-xs text-slate-500">Mid-session joining schools के लिए पुरानी date डाल सकते हैं</p>
                 </div>
                 <div className="space-y-2">
                   <Label>{t('father_name')} *</Label>
