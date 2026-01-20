@@ -275,24 +275,74 @@ export default function AIPaperPage() {
 
   const renderStep1 = () => (
     <div className="space-y-6">
-      {/* Board Info */}
-      <div className="flex items-center gap-3 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-        <BookOpen className="w-6 h-6 text-indigo-600" />
-        <div>
-          <p className="font-medium text-indigo-900">
-            {BOARDS[schoolBoard]?.name || schoolBoard} - Session 2024-25
-          </p>
-          <p className="text-sm text-indigo-600">{BOARDS[schoolBoard]?.fullName}</p>
+      {/* Board Info with Dual Board Support */}
+      <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+        <div className="flex items-center gap-3 mb-3">
+          <BookOpen className="w-6 h-6 text-indigo-600" />
+          <div className="flex-1">
+            <p className="font-medium text-indigo-900">
+              {BOARDS[schoolBoard]?.name || schoolBoard} - Session 2024-25
+            </p>
+            <p className="text-sm text-indigo-600">
+              {useNcertSyllabus && schoolBoard !== 'NCERT' ? 
+                `${schoolBoard} + NCERT Combined Syllabus` : 
+                BOARDS[schoolBoard]?.fullName}
+            </p>
+          </div>
+          <select
+            value={schoolBoard}
+            onChange={(e) => setSchoolBoard(e.target.value)}
+            className="h-9 rounded-lg border border-indigo-300 px-2 text-sm bg-white"
+          >
+            {Object.entries(BOARDS).map(([key, val]) => (
+              <option key={key} value={key}>{val.name}</option>
+            ))}
+          </select>
         </div>
-        <select
-          value={schoolBoard}
-          onChange={(e) => setSchoolBoard(e.target.value)}
-          className="ml-auto h-9 rounded-lg border border-indigo-300 px-2 text-sm bg-white"
-        >
-          {Object.entries(BOARDS).map(([key, val]) => (
-            <option key={key} value={key}>{val.name}</option>
-          ))}
-        </select>
+        
+        {/* Syllabus Source Selection */}
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-indigo-200">
+          <span className="text-xs text-indigo-700 font-medium mr-2">Syllabus Source:</span>
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input
+              type="radio"
+              name="syllabus_source"
+              value="auto"
+              checked={formData.syllabus_source === 'auto'}
+              onChange={(e) => setFormData(prev => ({ ...prev, syllabus_source: e.target.value }))}
+              className="w-3 h-3"
+            />
+            <span className={formData.syllabus_source === 'auto' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
+              Auto (Recommended)
+            </span>
+          </label>
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input
+              type="radio"
+              name="syllabus_source"
+              value="ncert"
+              checked={formData.syllabus_source === 'ncert'}
+              onChange={(e) => setFormData(prev => ({ ...prev, syllabus_source: e.target.value }))}
+              className="w-3 h-3"
+            />
+            <span className={formData.syllabus_source === 'ncert' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
+              NCERT Only
+            </span>
+          </label>
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input
+              type="radio"
+              name="syllabus_source"
+              value="state_board"
+              checked={formData.syllabus_source === 'state_board'}
+              onChange={(e) => setFormData(prev => ({ ...prev, syllabus_source: e.target.value }))}
+              className="w-3 h-3"
+            />
+            <span className={formData.syllabus_source === 'state_board' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
+              {schoolBoard} Only
+            </span>
+          </label>
+        </div>
       </div>
 
       {/* Basic Info */}
