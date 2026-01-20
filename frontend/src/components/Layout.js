@@ -4,11 +4,13 @@ import { Menu, Mic, Globe, Download, X, Smartphone } from 'lucide-react';
 import Sidebar from './Sidebar';
 import VoiceAssistantFAB from './VoiceAssistantFAB';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const { language, changeLanguage } = useLanguage();
+  const { user } = useAuth();
   
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState(null);
