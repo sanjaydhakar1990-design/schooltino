@@ -166,7 +166,8 @@ class TestVoiceAssistantAPI:
         })
         if response.status_code == 200:
             data = response.json()
-            return data.get("token"), data.get("user", {}).get("school_id"), data.get("user", {}).get("id")
+            token = data.get("access_token") or data.get("token")
+            return token, data.get("user", {}).get("school_id"), data.get("user", {}).get("id")
         pytest.skip("Login failed - skipping authenticated tests")
     
     def test_voice_assistant_status(self):
