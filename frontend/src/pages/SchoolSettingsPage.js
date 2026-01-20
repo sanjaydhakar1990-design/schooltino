@@ -277,14 +277,59 @@ export default function SchoolSettingsPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Board</Label>
-                  <Input
-                    value={settings.board}
-                    onChange={(e) => setSettings(prev => ({ ...prev, board: e.target.value }))}
-                    className="h-11"
-                    data-testid="board-input"
-                  />
+                  <Label>Primary Board (State Board)</Label>
+                  <select
+                    value={settings.primary_board}
+                    onChange={(e) => setSettings(prev => ({ ...prev, primary_board: e.target.value, board: e.target.value }))}
+                    className="w-full h-11 rounded-lg border border-slate-200 px-3"
+                    data-testid="primary-board-select"
+                  >
+                    <option value="CBSE">CBSE</option>
+                    <option value="MPBSE">MP Board (MPBSE)</option>
+                    <option value="RBSE">RBSE (Rajasthan Board)</option>
+                    <option value="UP Board">UP Board</option>
+                    <option value="GSEB">Gujarat Board (GSEB)</option>
+                    <option value="MSBSHSE">Maharashtra Board</option>
+                    <option value="NCERT">NCERT Only</option>
+                  </select>
                 </div>
+              </div>
+
+              {/* Secondary Board - NCERT for core subjects */}
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800">📚 NCERT Syllabus (Core Subjects)</p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      Most state board schools follow NCERT syllabus for Hindi, English, Maths, Science
+                    </p>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.use_ncert_syllabus}
+                      onChange={(e) => setSettings(prev => ({ 
+                        ...prev, 
+                        use_ncert_syllabus: e.target.checked,
+                        secondary_board: e.target.checked ? 'NCERT' : prev.primary_board
+                      }))}
+                      className="w-5 h-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="text-sm font-medium text-amber-700">Enable NCERT</span>
+                  </label>
+                </div>
+                {settings.use_ncert_syllabus && (
+                  <div className="mt-3 pt-3 border-t border-amber-200">
+                    <p className="text-xs text-amber-700">
+                      <strong>Selected Boards:</strong> {settings.primary_board} + NCERT
+                    </p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      • AI Paper Generator will show chapters from both boards<br/>
+                      • {settings.primary_board} chapters for board-specific subjects<br/>
+                      • NCERT chapters for Hindi, English, Maths, Science
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Government Timing Info */}
