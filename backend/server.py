@@ -7203,6 +7203,72 @@ async def get_storage_usage(school_id: str, current_user: dict = Depends(get_cur
         "retention_days": config.get("retention_days", 60) if config else 60
     }
 
+# ==================== SCHOOL SETTINGS MANAGEMENT ====================
+
+class SchoolSettingsModel(BaseModel):
+    school_id: str
+    state: str = "Rajasthan"
+    board: str = "RBSE"
+    school_start_time: str = "08:00"
+    school_end_time: str = "14:00"
+    use_government_timing: bool = True
+    late_grace_period: int = 15  # minutes
+    early_leave_grace: int = 10
+    half_day_after: int = 4
+    academic_session: str = "april"
+    session_start_date: str = ""
+    current_session: str = "2024-25"
+    attendance_mode: str = "auto"
+    allow_manual_edit: bool = True
+    require_approval_for_edit: bool = True
+    custom_holidays: List[Dict[str, Any]] = []
+    syllabus_manual_progress: bool = False
+    syllabus_photo_upload: bool = True
+
+@api_router.get("/school/settings")
+async def get_school_settings(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get school settings"""
+    settings = await db.school_settings.find_one(
+        {"school_id": school_id},
+        {"_id": 0}
+    )
+    
+    if not settings:
+        # Return defaults
+        return {
+            "school_id": school_id,
+            "state": "Rajasthan",
+            "board": "RBSE",
+            "school_start_time": "08:00",
+            "school_end_time": "14:00",
+            "late_grace_period": 15,
+            "attendance_mode": "auto",
+            "allow_manual_edit": True,
+            "current_session": "2024-25"
+        }
+    
+    return settings
+
+@api_router.post("/school/settings")
+async def save_school_settings(settings: SchoolSettingsModel, current_user: dict = Depends(get_current_user)):
+    """Save school settings"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    settings_dict = settings.dict()
+    settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    settings_dict["updated_by"] = current_user["id"]
+    
+    await db.school_settings.update_one(
+        {"school_id": settings.school_id},
+        {"$set": settings_dict},
+        upsert=True
+    )
+    
+    await log_audit(current_user["id"], "update", "school_settings", {"school_id": settings.school_id})
+    
+    return {"message": "Settings saved successfully", "settings": settings_dict}
+
 # ==================== TEACHER ACTIVITY TRACKING FOR ADMIN ====================
 
 @api_router.get("/admin/teacher-activities/{school_id}")
