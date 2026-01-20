@@ -378,7 +378,7 @@ export default function AIPaperPage() {
             data-testid="paper-subject-select"
             disabled={!formData.class_name}
           >
-            <option value="">{formData.class_name ? 'विषय चुनें' : 'पहले कक्षा चुनें'}</option>
+            <option value="">{formData.class_name ? (isAppHindi ? 'विषय चुनें' : 'Select Subject') : (isAppHindi ? 'पहले कक्षा चुनें' : 'First select class')}</option>
             {availableSubjects.map(s => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -386,19 +386,19 @@ export default function AIPaperPage() {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-medium">परीक्षा का नाम (Exam Name) *</Label>
+          <Label className="text-sm font-medium">{isAppHindi ? 'परीक्षा का नाम (Exam Name)' : 'Exam Name'} *</Label>
           <Input
             name="exam_name"
             value={formData.exam_name}
             onChange={handleChange}
-            placeholder="जैसे: अर्धवार्षिक परीक्षा, Unit Test 1"
+            placeholder={isAppHindi ? 'जैसे: अर्धवार्षिक परीक्षा, Unit Test 1' : 'e.g., Half Yearly, Unit Test 1'}
             className="h-11"
             data-testid="paper-exam-name-input"
           />
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-medium">पेपर की भाषा (Paper Language) *</Label>
+          <Label className="text-sm font-medium">{isAppHindi ? 'पेपर की भाषा (Paper Language)' : 'Paper Language'} *</Label>
           <select
             name="language"
             value={formData.language}
@@ -406,13 +406,13 @@ export default function AIPaperPage() {
             className="w-full h-11 rounded-lg border border-slate-200 px-3 font-medium"
             data-testid="paper-language-select"
           >
-            <option value="hindi">🇮🇳 पूर्ण हिंदी (Full Hindi)</option>
-            <option value="english">🇬🇧 Full English</option>
+            <option value="hindi">🇮🇳 {isAppHindi ? 'पूर्ण हिंदी (Full Hindi)' : 'Hindi'}</option>
+            <option value="english">🇬🇧 {isAppHindi ? 'Full English' : 'English'}</option>
           </select>
           <p className="text-xs text-slate-500">
             {formData.language === 'hindi' 
-              ? 'पूरा पेपर हिंदी में बनेगा' 
-              : 'Complete paper will be in English'}
+              ? (isAppHindi ? 'पूरा पेपर हिंदी में बनेगा' : 'Complete paper in Hindi')
+              : (isAppHindi ? 'पूरा पेपर English में बनेगा' : 'Complete paper in English')}
           </p>
         </div>
       </div>
