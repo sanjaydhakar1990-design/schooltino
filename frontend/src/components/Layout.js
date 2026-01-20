@@ -78,7 +78,21 @@ export const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex relative">
+      {/* School Logo Watermark - Light Background */}
+      {user?.school_logo && (
+        <div 
+          className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center print:hidden"
+          style={{ opacity: 0.03 }}
+        >
+          <img 
+            src={user.school_logo} 
+            alt="" 
+            className="w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] object-contain"
+          />
+        </div>
+      )}
+      
       {/* Sidebar Overlay - Mobile */}
       {sidebarOpen && (
         <div 
