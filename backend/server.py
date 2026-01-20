@@ -3082,13 +3082,20 @@ Return ONLY valid JSON (no extra text):
         {{
             "type": "diagram",
             "question": "Draw a neat labeled diagram of...",
-            "answer": "Diagram should show [parts] with labels [A, B, C...]",
+            "answer": "Step-by-step description of what to draw",
+            "diagram_description": "DETAILED DESCRIPTION: 1. Draw [shape] in center. 2. Label parts: A-[name], B-[name], C-[name], D-[name]. 3. Show connections with arrows. 4. Add legends if needed. Parts to include: [list all parts with positions]",
             "marks": 3,
             "difficulty": "medium"
         }}
     ],
     "total_marks": {request.total_marks}
 }}
+
+IMPORTANT FOR DIAGRAM ANSWERS:
+- Include "diagram_description" field with DETAILED step-by-step drawing instructions
+- List ALL parts that should be labeled with their positions
+- Describe the shape and structure clearly
+- This helps teachers verify student diagrams
 
 VERIFY: Sum of all question marks = {request.total_marks}"""
 
