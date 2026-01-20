@@ -161,6 +161,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       items: [
         { path: '/app/setup-guide', icon: Wrench, label: 'Setup Guide', permKey: 'settings', directorOnly: true },
         { path: '/app/school-settings', icon: Clock, label: 'School Settings', permKey: 'settings', directorOnly: true },
+        { path: '/app/board-notifications', icon: Bell, label: 'Board Updates', permKey: 'settings', directorOnly: true },
         { path: '/app/users', icon: UserPlus, label: t('users'), permKey: 'user_management' },
         { path: '/app/permission-manager', icon: Shield, label: t('permissions'), permKey: 'user_management', directorOnly: true },
         { path: '/app/website', icon: Globe, label: t('website_integration'), permKey: 'website_integration' },
