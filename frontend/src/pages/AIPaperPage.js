@@ -50,6 +50,7 @@ export default function AIPaperPage() {
   const [loading, setLoading] = useState(false);
   const [paper, setPaper] = useState(null);
   const [schoolBoard, setSchoolBoard] = useState('CBSE');
+  const [useNcertSyllabus, setUseNcertSyllabus] = useState(true); // Dual board support
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [availableChapters, setAvailableChapters] = useState([]);
   const [marksPattern, setMarksPattern] = useState(BOARD_MARKS_PATTERN.CBSE);
@@ -64,7 +65,8 @@ export default function AIPaperPage() {
     total_marks: 80,
     time_duration: 180,
     language: 'hindi', // Default Hindi
-    custom_marks: {}
+    custom_marks: {},
+    syllabus_source: 'auto' // 'auto', 'ncert', 'state_board'
   });
 
   const classNames = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
@@ -80,15 +82,22 @@ export default function AIPaperPage() {
         const response = await axios.get(`${API}/school/settings?school_id=${schoolId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (response.data?.board) {
-          const board = response.data.board.toUpperCase();
-          if (board.includes('MP') || board.includes('MPBSE')) setSchoolBoard('MPBSE');
-          else if (board.includes('RBSE') || board.includes('RAJASTHAN')) setSchoolBoard('RBSE');
-          else if (board.includes('NCERT')) setSchoolBoard('NCERT');
-          else setSchoolBoard('CBSE');
+        if (response.data) {
+          // Check for dual board system
+          const primaryBoard = response.data.primary_board || response.data.board;
+          const useNcert = response.data.use_ncert_syllabus !== false; // Default true
+          
+          if (primaryBoard) {
+            const board = primaryBoard.toUpperCase();
+            if (board.includes('MP') || board.includes('MPBSE')) setSchoolBoard('MPBSE');
+            else if (board.includes('RBSE') || board.includes('RAJASTHAN')) setSchoolBoard('RBSE');
+            else if (board.includes('NCERT')) setSchoolBoard('NCERT');
+            else setSchoolBoard('CBSE');
+          }
+          setUseNcertSyllabus(useNcert);
         }
       } catch (error) {
-        console.log('Using default board: CBSE');
+        console.log('Using default board: CBSE with NCERT');
       }
     };
     fetchSchoolBoard();
