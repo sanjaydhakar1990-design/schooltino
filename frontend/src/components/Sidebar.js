@@ -28,6 +28,7 @@ import {
   Heart,
   Fingerprint,
   Clock,
+  Music,
   Brain,
   ChevronDown,
   ChevronRight,
