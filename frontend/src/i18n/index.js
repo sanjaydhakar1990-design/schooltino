@@ -241,6 +241,10 @@ const resources = {
       "view": "देखें",
       "download": "डाउनलोड",
       "print": "प्रिंट",
+      "this_month": "इस महीने",
+      "quick_actions": "त्वरित कार्य",
+      "ai_tools": "AI टूल्स",
+      "infrastructure": "इंफ्रास्ट्रक्चर",
       
       // Auth
       "login": "लॉगिन",
