@@ -2984,12 +2984,35 @@ async def generate_paper(request: PaperGenerateRequest, current_user: dict = Dep
         # Get custom marks if provided
         marks_config = getattr(request, 'marks_config', None) or {}
         
+        # Language instruction
+        if request.language == "hindi":
+            lang_instruction = """
+LANGUAGE REQUIREMENT - STRICTLY HINDI:
+- Write ALL questions in PURE HINDI (Devanagari script)
+- Write ALL answers in PURE HINDI (Devanagari script)
+- Write ALL MCQ options in PURE HINDI
+- DO NOT mix English words in Hindi text
+- Use proper Hindi scientific terms (e.g., 'ऑक्सीजन' not 'Oxygen', 'प्रकाश संश्लेषण' not 'Photosynthesis')
+- Example Hindi question: "प्रकाश संश्लेषण की प्रक्रिया को समझाइए।"
+- Example Hindi answer: "प्रकाश संश्लेषण वह प्रक्रिया है जिसमें पौधे सूर्य के प्रकाश का उपयोग करके..."
+"""
+        else:
+            lang_instruction = """
+LANGUAGE REQUIREMENT - STRICTLY ENGLISH:
+- Write ALL questions in PURE ENGLISH only
+- Write ALL answers in PURE ENGLISH only
+- Write ALL MCQ options in PURE ENGLISH only
+- DO NOT use any Hindi words or Devanagari script
+- Use proper scientific terminology in English
+"""
+        
         system_prompt = f"""You are an expert question paper generator for Indian schools following NCERT 2024-25 Rationalized Syllabus.
 Generate questions for {request.class_name} students in {request.subject} subject.
 Chapter/Topic: {request.chapter}
 Exam Name: {request.exam_name or 'Exam'}
 Difficulty: {request.difficulty}
-Language: {request.language}
+
+{lang_instruction}
 
 CRITICAL REQUIREMENT - MARKS DISTRIBUTION:
 Total Marks Required: EXACTLY {request.total_marks} marks (NOT MORE, NOT LESS)
