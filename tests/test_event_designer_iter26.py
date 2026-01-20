@@ -51,7 +51,8 @@ class TestEventDesignerAPI:
         })
         if response.status_code == 200:
             data = response.json()
-            return data.get("token"), data.get("user", {}).get("school_id")
+            token = data.get("access_token") or data.get("token")
+            return token, data.get("user", {}).get("school_id")
         pytest.skip("Login failed - skipping authenticated tests")
     
     def test_generate_pamphlet_design(self, auth_token):
