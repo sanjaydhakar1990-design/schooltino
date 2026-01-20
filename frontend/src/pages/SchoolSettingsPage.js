@@ -110,6 +110,12 @@ export default function SchoolSettingsPage() {
     school_end_time: '14:00',
     use_government_timing: true,
     
+    // Prayer Time Settings (NEW)
+    prayer_enabled: true,
+    prayer_start_time: '08:00', // Prayer starts when school opens
+    prayer_duration: 15, // Prayer duration in minutes
+    attendance_after_prayer: true, // Take attendance only after prayer
+    
     // Grace Period Settings
     late_grace_period: 15, // minutes
     early_leave_grace: 10, // minutes
@@ -124,6 +130,13 @@ export default function SchoolSettingsPage() {
     attendance_mode: 'auto', // 'auto' or 'manual'
     allow_manual_edit: true,
     require_approval_for_edit: true,
+    
+    // AI Settings (NEW)
+    ai_learning_mode: true, // AI learns school schedule
+    ai_auto_attendance: false, // AI can mark attendance automatically
+    ai_voice_monitoring: false, // AI CCTV voice alerts in classroom
+    ai_silent_mode: true, // AI sends notifications silently (no voice)
+    ai_classroom_alerts: 'notification', // 'voice', 'notification', 'both', 'off'
     
     // Custom Holidays
     custom_holidays: [],
