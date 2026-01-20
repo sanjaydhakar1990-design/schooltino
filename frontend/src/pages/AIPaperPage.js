@@ -5,166 +5,22 @@ import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Sparkles, FileText, Loader2, Download, ChevronRight, ChevronLeft, Check, AlertCircle } from 'lucide-react';
+import { Sparkles, FileText, Loader2, Download, ChevronRight, ChevronLeft, Check, AlertCircle, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { BOARDS, BOARD_SUBJECTS, getChapters, BOARD_MARKS_PATTERN } from '../data/boardSyllabus';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// NCERT 2024-25 Rationalized Syllabus - Class wise subjects
-const CLASS_SUBJECTS = {
-  'Class 1': ['Hindi', 'English', 'Mathematics', 'EVS'],
-  'Class 2': ['Hindi', 'English', 'Mathematics', 'EVS'],
-  'Class 3': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
-  'Class 4': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
-  'Class 5': ['Hindi', 'English', 'Mathematics', 'EVS', 'Computer'],
-  'Class 6': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
-  'Class 7': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
-  'Class 8': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer'],
-  'Class 9': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer', 'Information Technology'],
-  'Class 10': ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 'Computer', 'Information Technology'],
-  'Class 11': ['Hindi', 'English', 'Physics', 'Chemistry', 'Biology', 'Mathematics', 'Computer Science', 'Economics', 'Accountancy', 'Business Studies', 'History', 'Geography', 'Political Science', 'Psychology', 'Physical Education'],
-  'Class 12': ['Hindi', 'English', 'Physics', 'Chemistry', 'Biology', 'Mathematics', 'Computer Science', 'Economics', 'Accountancy', 'Business Studies', 'History', 'Geography', 'Political Science', 'Psychology', 'Physical Education']
-};
-
-// NCERT 2024-25 Rationalized Syllabus Chapters (Latest Updated)
-const NCERT_2024_25_CHAPTERS = {
-  // Class 10 Mathematics - NCERT 2024-25
-  '10_Mathematics': [
-    { id: 'ch1', name: 'Real Numbers', deleted: false },
-    { id: 'ch2', name: 'Polynomials', deleted: false },
-    { id: 'ch3', name: 'Pair of Linear Equations in Two Variables', deleted: false },
-    { id: 'ch4', name: 'Quadratic Equations', deleted: false },
-    { id: 'ch5', name: 'Arithmetic Progressions', deleted: false },
-    { id: 'ch6', name: 'Triangles', deleted: false },
-    { id: 'ch7', name: 'Coordinate Geometry', deleted: false },
-    { id: 'ch8', name: 'Introduction to Trigonometry', deleted: false },
-    { id: 'ch9', name: 'Some Applications of Trigonometry', deleted: false },
-    { id: 'ch10', name: 'Circles', deleted: false },
-    { id: 'ch11', name: 'Areas Related to Circles', deleted: false },
-    { id: 'ch12', name: 'Surface Areas and Volumes', deleted: false },
-    { id: 'ch13', name: 'Statistics', deleted: false },
-    { id: 'ch14', name: 'Probability', deleted: false },
-  ],
-  // Class 10 Science - NCERT 2024-25 (Rationalized)
-  '10_Science': [
-    { id: 'ch1', name: 'Chemical Reactions and Equations', deleted: false },
-    { id: 'ch2', name: 'Acids, Bases and Salts', deleted: false },
-    { id: 'ch3', name: 'Metals and Non-metals', deleted: false },
-    { id: 'ch4', name: 'Carbon and its Compounds', deleted: false },
-    { id: 'ch5', name: 'Life Processes', deleted: false },
-    { id: 'ch6', name: 'Control and Coordination', deleted: false },
-    { id: 'ch7', name: 'How do Organisms Reproduce', deleted: false },
-    { id: 'ch8', name: 'Heredity', deleted: false },
-    { id: 'ch9', name: 'Light - Reflection and Refraction', deleted: false },
-    { id: 'ch10', name: 'Human Eye and Colourful World', deleted: false },
-    { id: 'ch11', name: 'Electricity', deleted: false },
-    { id: 'ch12', name: 'Magnetic Effects of Electric Current', deleted: false },
-    { id: 'ch13', name: 'Our Environment', deleted: false },
-  ],
-  // Class 10 English - NCERT 2024-25
-  '10_English': [
-    { id: 'ch1', name: 'A Letter to God (First Flight)', deleted: false },
-    { id: 'ch2', name: 'Nelson Mandela: Long Walk to Freedom', deleted: false },
-    { id: 'ch3', name: 'Two Stories about Flying', deleted: false },
-    { id: 'ch4', name: 'From the Diary of Anne Frank', deleted: false },
-    { id: 'ch5', name: 'Glimpses of India', deleted: false },
-    { id: 'ch6', name: 'Mijbil the Otter', deleted: false },
-    { id: 'ch7', name: 'Madam Rides the Bus', deleted: false },
-    { id: 'ch8', name: 'The Sermon at Benares', deleted: false },
-    { id: 'ch9', name: 'The Proposal (Drama)', deleted: false },
-    { id: 'poetry', name: 'Poetry Section', deleted: false },
-    { id: 'grammar', name: 'Grammar & Writing Skills', deleted: false },
-  ],
-  // Class 10 Hindi - NCERT 2024-25
-  '10_Hindi': [
-    { id: 'ch1', name: 'सूरदास के पद', deleted: false },
-    { id: 'ch2', name: 'राम-लक्ष्मण-परशुराम संवाद', deleted: false },
-    { id: 'ch3', name: 'आत्मत्राण (कविता)', deleted: false },
-    { id: 'ch4', name: 'बालगोबिन भगत', deleted: false },
-    { id: 'ch5', name: 'नेताजी का चश्मा', deleted: false },
-    { id: 'ch6', name: 'मानवीय करुणा की दिव्य चमक', deleted: false },
-    { id: 'ch7', name: 'एक कहानी यह भी', deleted: false },
-    { id: 'ch8', name: 'संस्कृति', deleted: false },
-    { id: 'grammar', name: 'व्याकरण खंड', deleted: false },
-    { id: 'writing', name: 'लेखन कौशल', deleted: false },
-  ],
-  // Class 10 Social Science
-  '10_Social Science': [
-    { id: 'hist1', name: 'The Rise of Nationalism in Europe', deleted: false },
-    { id: 'hist2', name: 'Nationalism in India', deleted: false },
-    { id: 'hist3', name: 'The Making of a Global World', deleted: false },
-    { id: 'hist4', name: 'The Age of Industrialisation', deleted: false },
-    { id: 'hist5', name: 'Print Culture and the Modern World', deleted: false },
-    { id: 'geo1', name: 'Resources and Development', deleted: false },
-    { id: 'geo2', name: 'Forest and Wildlife Resources', deleted: false },
-    { id: 'geo3', name: 'Water Resources', deleted: false },
-    { id: 'geo4', name: 'Agriculture', deleted: false },
-    { id: 'geo5', name: 'Minerals and Energy Resources', deleted: false },
-    { id: 'geo6', name: 'Manufacturing Industries', deleted: false },
-    { id: 'geo7', name: 'Lifelines of National Economy', deleted: false },
-    { id: 'pol1', name: 'Power Sharing', deleted: false },
-    { id: 'pol2', name: 'Federalism', deleted: false },
-    { id: 'pol3', name: 'Democracy and Diversity', deleted: false },
-    { id: 'pol4', name: 'Gender, Religion and Caste', deleted: false },
-    { id: 'pol5', name: 'Political Parties', deleted: false },
-    { id: 'pol6', name: 'Outcomes of Democracy', deleted: false },
-    { id: 'eco1', name: 'Development', deleted: false },
-    { id: 'eco2', name: 'Sectors of Indian Economy', deleted: false },
-    { id: 'eco3', name: 'Money and Credit', deleted: false },
-    { id: 'eco4', name: 'Globalisation and the Indian Economy', deleted: false },
-    { id: 'eco5', name: 'Consumer Rights', deleted: false },
-  ],
-  // Class 9 Mathematics
-  '9_Mathematics': [
-    { id: 'ch1', name: 'Number Systems', deleted: false },
-    { id: 'ch2', name: 'Polynomials', deleted: false },
-    { id: 'ch3', name: 'Coordinate Geometry', deleted: false },
-    { id: 'ch4', name: 'Linear Equations in Two Variables', deleted: false },
-    { id: 'ch5', name: 'Introduction to Euclid\'s Geometry', deleted: false },
-    { id: 'ch6', name: 'Lines and Angles', deleted: false },
-    { id: 'ch7', name: 'Triangles', deleted: false },
-    { id: 'ch8', name: 'Quadrilaterals', deleted: false },
-    { id: 'ch9', name: 'Circles', deleted: false },
-    { id: 'ch10', name: 'Heron\'s Formula', deleted: false },
-    { id: 'ch11', name: 'Surface Areas and Volumes', deleted: false },
-    { id: 'ch12', name: 'Statistics', deleted: false },
-  ],
-  // Class 9 Science
-  '9_Science': [
-    { id: 'ch1', name: 'Matter in Our Surroundings', deleted: false },
-    { id: 'ch2', name: 'Is Matter Around Us Pure', deleted: false },
-    { id: 'ch3', name: 'Atoms and Molecules', deleted: false },
-    { id: 'ch4', name: 'Structure of the Atom', deleted: false },
-    { id: 'ch5', name: 'The Fundamental Unit of Life', deleted: false },
-    { id: 'ch6', name: 'Tissues', deleted: false },
-    { id: 'ch7', name: 'Motion', deleted: false },
-    { id: 'ch8', name: 'Force and Laws of Motion', deleted: false },
-    { id: 'ch9', name: 'Gravitation', deleted: false },
-    { id: 'ch10', name: 'Work and Energy', deleted: false },
-    { id: 'ch11', name: 'Sound', deleted: false },
-    { id: 'ch12', name: 'Improvement in Food Resources', deleted: false },
-  ],
-};
-
-// Board-wise Marks Pattern (CBSE 2024-25)
-const MARKS_PATTERN = {
-  mcq: { marks: 1, label: 'MCQ (1 mark)' },
-  fill_blank: { marks: 1, label: 'Fill in Blanks (1 mark)' },
-  vsaq: { marks: 2, label: 'Very Short Answer (2 marks)' },
-  short: { marks: 3, label: 'Short Answer (3 marks)' },
-  long: { marks: 4, label: 'Long Answer (4 marks)' },  // Changed from 5 to 4 as per latest
-  diagram: { marks: 3, label: 'Diagram Based (3 marks)' },
-  hots: { marks: 4, label: 'HOTS (4 marks)' },
-  case_study: { marks: 4, label: 'Case Study (4 marks)' },
-};
-
 export default function AIPaperPage() {
   const { t } = useTranslation();
+  const { user, schoolId } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [paper, setPaper] = useState(null);
+  const [schoolBoard, setSchoolBoard] = useState('CBSE'); // Default, will be fetched
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [availableChapters, setAvailableChapters] = useState([]);
+  const [marksPattern, setMarksPattern] = useState(BOARD_MARKS_PATTERN.CBSE);
 
   const [formData, setFormData] = useState({
     subject: '',
@@ -175,44 +31,63 @@ export default function AIPaperPage() {
     question_types: ['mcq', 'short'],
     total_marks: 80,
     time_duration: 180,
-    language: 'english',
-    custom_marks: {} // For manual marks override
+    language: 'hindi',
+    custom_marks: {}
   });
 
   const classNames = ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
-  
-  const questionTypes = [
-    { id: 'mcq', label: 'MCQ (1 अंक)', marks: 1, description: 'Multiple Choice Questions' },
-    { id: 'fill_blank', label: 'रिक्त स्थान (1 अंक)', marks: 1, description: 'Fill in the blanks' },
-    { id: 'vsaq', label: 'अति लघु उत्तर (2 अंक)', marks: 2, description: 'Very Short Answer' },
-    { id: 'short', label: 'लघु उत्तर (3 अंक)', marks: 3, description: 'Short Answer - 50-60 words' },
-    { id: 'long', label: 'दीर्घ उत्तर (4 अंक)', marks: 4, description: 'Long Answer - 100-120 words' },
-    { id: 'diagram', label: 'चित्र आधारित (3 अंक)', marks: 3, description: 'Draw and label diagram' },
-    { id: 'hots', label: 'HOTS (4 अंक)', marks: 4, description: 'Higher Order Thinking' },
-    { id: 'case_study', label: 'केस स्टडी (4 अंक)', marks: 4, description: 'Case based questions' },
-  ];
+
+  // Fetch school's board on mount
+  useEffect(() => {
+    const fetchSchoolBoard = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API}/school/settings?school_id=${schoolId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data?.board) {
+          const board = response.data.board.toUpperCase();
+          if (board.includes('MP') || board.includes('MPBSE')) {
+            setSchoolBoard('MPBSE');
+          } else if (board.includes('RBSE') || board.includes('RAJASTHAN')) {
+            setSchoolBoard('RBSE');
+          } else if (board.includes('NCERT')) {
+            setSchoolBoard('NCERT');
+          } else {
+            setSchoolBoard('CBSE');
+          }
+        }
+      } catch (error) {
+        console.log('Using default board: CBSE');
+      }
+    };
+    fetchSchoolBoard();
+  }, [schoolId]);
+
+  // Update marks pattern when board changes
+  useEffect(() => {
+    setMarksPattern(BOARD_MARKS_PATTERN[schoolBoard] || BOARD_MARKS_PATTERN.CBSE);
+  }, [schoolBoard]);
 
   // Update subjects when class changes
   useEffect(() => {
     if (formData.class_name) {
-      const subjects = CLASS_SUBJECTS[formData.class_name] || [];
+      const subjects = BOARD_SUBJECTS[schoolBoard]?.[formData.class_name] || [];
       setAvailableSubjects(subjects);
       if (!subjects.includes(formData.subject)) {
         setFormData(prev => ({ ...prev, subject: '', selectedChapters: [] }));
         setAvailableChapters([]);
       }
     }
-  }, [formData.class_name]);
+  }, [formData.class_name, schoolBoard]);
 
   // Get chapters when subject changes
   useEffect(() => {
     if (formData.class_name && formData.subject) {
-      const classNum = formData.class_name.replace('Class ', '');
-      const key = `${classNum}_${formData.subject}`;
-      const chapters = NCERT_2024_25_CHAPTERS[key] || [];
-      setAvailableChapters(chapters.filter(ch => !ch.deleted));
+      const chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+      setAvailableChapters(chapters);
     }
-  }, [formData.class_name, formData.subject]);
+  }, [formData.class_name, formData.subject, schoolBoard]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -244,8 +119,19 @@ export default function AIPaperPage() {
   const handleCustomMarksChange = (type, value) => {
     setFormData(prev => ({
       ...prev,
-      custom_marks: { ...prev.custom_marks, [type]: parseInt(value) || MARKS_PATTERN[type]?.marks || 1 }
+      custom_marks: { ...prev.custom_marks, [type]: parseInt(value) || marksPattern[type]?.marks || 1 }
     }));
+  };
+
+  const selectAllChapters = () => {
+    setFormData(prev => ({
+      ...prev,
+      selectedChapters: availableChapters.map(ch => ch.name)
+    }));
+  };
+
+  const clearAllChapters = () => {
+    setFormData(prev => ({ ...prev, selectedChapters: [] }));
   };
 
   const handleGenerate = async () => {
@@ -264,10 +150,9 @@ export default function AIPaperPage() {
 
     setLoading(true);
     try {
-      // Build marks config
       const marksConfig = {};
       formData.question_types.forEach(type => {
-        marksConfig[type] = formData.custom_marks[type] || MARKS_PATTERN[type]?.marks || 1;
+        marksConfig[type] = formData.custom_marks[type] || marksPattern[type]?.marks || 1;
       });
 
       const payload = {
@@ -283,7 +168,7 @@ export default function AIPaperPage() {
         language: formData.language,
         marks_config: marksConfig,
         syllabus_year: '2024-25',
-        board: 'NCERT'
+        board: schoolBoard
       };
 
       const token = localStorage.getItem('token');
@@ -306,18 +191,34 @@ export default function AIPaperPage() {
     window.print();
   };
 
-  // Calculate expected marks based on question types
-  const calculateExpectedMarks = () => {
-    let total = 0;
-    formData.question_types.forEach(type => {
-      const marks = formData.custom_marks[type] || MARKS_PATTERN[type]?.marks || 1;
-      total += marks * 5; // Assuming 5 questions per type
-    });
-    return total;
-  };
+  const questionTypes = Object.entries(marksPattern).map(([id, data]) => ({
+    id,
+    label: data.label,
+    marks: data.marks,
+  }));
 
   const renderStep1 = () => (
     <div className="space-y-6">
+      {/* Board Info */}
+      <div className="flex items-center gap-3 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+        <BookOpen className="w-6 h-6 text-indigo-600" />
+        <div>
+          <p className="font-medium text-indigo-900">
+            {BOARDS[schoolBoard]?.name || schoolBoard} - Session 2024-25
+          </p>
+          <p className="text-sm text-indigo-600">{BOARDS[schoolBoard]?.fullName}</p>
+        </div>
+        <select
+          value={schoolBoard}
+          onChange={(e) => setSchoolBoard(e.target.value)}
+          className="ml-auto h-9 rounded-lg border border-indigo-300 px-2 text-sm bg-white"
+        >
+          {Object.entries(BOARDS).map(([key, val]) => (
+            <option key={key} value={key}>{val.name}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -359,7 +260,7 @@ export default function AIPaperPage() {
             name="exam_name"
             value={formData.exam_name}
             onChange={handleChange}
-            placeholder="जैसे: Half Yearly, Unit Test 1, Final Exam"
+            placeholder="जैसे: अर्धवार्षिक परीक्षा, Unit Test 1"
             className="h-11"
             data-testid="paper-exam-name-input"
           />
@@ -374,25 +275,27 @@ export default function AIPaperPage() {
             className="w-full h-11 rounded-lg border border-slate-200 px-3"
             data-testid="paper-language-select"
           >
-            <option value="english">English</option>
             <option value="hindi">हिंदी</option>
+            <option value="english">English</option>
             <option value="bilingual">द्विभाषी (Both)</option>
           </select>
         </div>
       </div>
 
-      {/* Syllabus Info Badge */}
-      <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-        <Check className="w-5 h-5 text-green-600" />
-        <span className="text-sm text-green-700 font-medium">
-          NCERT 2024-25 Rationalized Syllabus के अनुसार अध्याय
-        </span>
-      </div>
-
       {/* Chapter Selection */}
       {formData.subject && (
         <div className="space-y-3">
-          <Label className="text-sm font-medium">अध्याय चुनें (Select Chapters) *</Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">अध्याय चुनें (Select Chapters) *</Label>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={selectAllChapters}>
+                सभी चुनें
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={clearAllChapters}>
+                Clear
+              </Button>
+            </div>
+          </div>
           
           {availableChapters.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-3 border border-slate-200 rounded-lg bg-slate-50">
@@ -408,7 +311,7 @@ export default function AIPaperPage() {
                   }`}
                   data-testid={`chapter-${idx}`}
                 >
-                  <div className={`w-5 h-5 rounded border flex items-center justify-center ${
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 ${
                     formData.selectedChapters.includes(ch.name) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'
                   }`}>
                     {formData.selectedChapters.includes(ch.name) && <Check className="w-3 h-3 text-white" />}
@@ -421,7 +324,7 @@ export default function AIPaperPage() {
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-amber-600" />
               <span className="text-sm text-amber-700">
-                इस विषय के लिए अध्याय उपलब्ध नहीं हैं। कृपया दूसरा विषय चुनें।
+                इस विषय के लिए {schoolBoard} syllabus में अध्याय उपलब्ध नहीं हैं।
               </span>
             </div>
           )}
@@ -449,10 +352,9 @@ export default function AIPaperPage() {
 
   const renderStep2 = () => (
     <div className="space-y-6">
-      {/* Question Types with Marks */}
+      {/* Board-specific Question Types */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium">प्रश्न प्रकार चुनें (Question Types) *</Label>
-        <p className="text-xs text-slate-500">CBSE 2024-25 पैटर्न के अनुसार अंक</p>
+        <Label className="text-sm font-medium">प्रश्न प्रकार चुनें ({schoolBoard} Pattern) *</Label>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {questionTypes.map(type => (
@@ -479,9 +381,7 @@ export default function AIPaperPage() {
                 </button>
                 <div className="flex-1">
                   <p className="font-medium text-sm">{type.label}</p>
-                  <p className="text-xs text-slate-500">{type.description}</p>
                   
-                  {/* Custom Marks Input */}
                   {formData.question_types.includes(type.id) && (
                     <div className="mt-2 flex items-center gap-2">
                       <span className="text-xs text-slate-600">अंक:</span>
@@ -511,7 +411,6 @@ export default function AIPaperPage() {
             value={formData.difficulty}
             onChange={handleChange}
             className="w-full h-11 rounded-lg border border-slate-200 px-3"
-            data-testid="paper-difficulty-select"
           >
             <option value="easy">आसान (Easy)</option>
             <option value="medium">मध्यम (Medium)</option>
@@ -521,7 +420,7 @@ export default function AIPaperPage() {
         </div>
         
         <div className="space-y-2">
-          <Label className="text-sm font-medium">कुल अंक (Total Marks) *</Label>
+          <Label className="text-sm font-medium">कुल अंक *</Label>
           <Input
             name="total_marks"
             type="number"
@@ -540,14 +439,12 @@ export default function AIPaperPage() {
             value={formData.time_duration}
             onChange={handleChange}
             className="h-11"
-            data-testid="paper-duration-input"
           />
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={() => setStep(1)} data-testid="prev-step-btn">
+        <Button variant="outline" onClick={() => setStep(1)}>
           <ChevronLeft className="w-5 h-5 mr-2" /> पीछे जाएं
         </Button>
         <Button
@@ -574,22 +471,19 @@ export default function AIPaperPage() {
 
   const renderStep3 = () => (
     <div className="space-y-6">
-      {/* Paper Preview - Only show Exam Name, not chapters */}
-      <div className="bg-white rounded-xl border border-slate-200 p-8 print:border-0 print:p-0 print:shadow-none" data-testid="paper-preview">
-        {/* Paper Header */}
+      <div className="bg-white rounded-xl border border-slate-200 p-8 print:border-0 print:p-0" data-testid="paper-preview">
         <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
           {paper?.exam_name && (
             <p className="text-lg font-bold text-indigo-700 mb-1">{paper.exam_name}</p>
           )}
           <h2 className="text-2xl font-bold">{paper?.subject} - {paper?.class_name}</h2>
+          <p className="text-sm text-slate-500 mt-1">{BOARDS[schoolBoard]?.name} - Session 2024-25</p>
           <div className="flex justify-center gap-8 mt-3 text-sm">
             <span className="font-medium">कुल अंक: {paper?.total_marks}</span>
             <span className="font-medium">समय: {paper?.time_duration} मिनट</span>
           </div>
-          <p className="text-xs text-slate-500 mt-2">NCERT 2024-25 Syllabus</p>
         </div>
 
-        {/* Instructions */}
         <div className="mb-6 p-3 bg-slate-50 rounded-lg text-sm">
           <p className="font-medium mb-1">सामान्य निर्देश:</p>
           <ul className="list-disc list-inside text-slate-600 space-y-1">
@@ -599,7 +493,6 @@ export default function AIPaperPage() {
           </ul>
         </div>
 
-        {/* Questions */}
         <div className="space-y-6">
           {paper?.questions?.map((q, idx) => (
             <div key={idx} className="space-y-2" data-testid={`question-${idx}`}>
@@ -609,14 +502,12 @@ export default function AIPaperPage() {
                   <p className="font-medium">{q.question}</p>
                   <span className="text-sm text-slate-500 font-medium">[{q.marks} अंक]</span>
                   
-                  {/* Show if diagram required */}
                   {q.type === 'diagram' && (
-                    <p className="text-sm text-indigo-600 mt-1">📐 चित्र बनाकर समझाइए (Draw diagram)</p>
+                    <p className="text-sm text-indigo-600 mt-1">📐 चित्र बनाकर समझाइए</p>
                   )}
                 </div>
               </div>
               
-              {/* MCQ Options */}
               {q.options && q.options.length > 0 && (
                 <div className="ml-12 space-y-1">
                   {q.options.map((opt, i) => (
@@ -630,7 +521,6 @@ export default function AIPaperPage() {
           ))}
         </div>
 
-        {/* Answer Key - Separate Page for Print */}
         <div className="mt-8 pt-8 border-t-2 border-dashed border-slate-300 print:break-before-page">
           <h3 className="text-lg font-bold mb-4">उत्तर कुंजी (Answer Key)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -644,12 +534,11 @@ export default function AIPaperPage() {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex justify-between print:hidden">
-        <Button variant="outline" onClick={() => { setPaper(null); setStep(1); }} data-testid="new-paper-btn">
+        <Button variant="outline" onClick={() => { setPaper(null); setStep(1); }}>
           नया पेपर बनाएं
         </Button>
-        <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700" data-testid="print-paper-btn">
+        <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700">
           <Download className="w-5 h-5 mr-2" />
           प्रिंट / डाउनलोड
         </Button>
@@ -659,13 +548,11 @@ export default function AIPaperPage() {
 
   return (
     <div className="space-y-6" data-testid="ai-paper-page">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">AI प्रश्न पत्र जनरेटर</h1>
-        <p className="text-slate-500 mt-1">NCERT 2024-25 Syllabus के अनुसार प्रश्न पत्र बनाएं</p>
+        <p className="text-slate-500 mt-1">{BOARDS[schoolBoard]?.name} 2024-25 Syllabus के अनुसार</p>
       </div>
 
-      {/* Stepper */}
       <div className="flex items-center justify-center gap-4 print:hidden">
         {[
           { num: 1, label: 'विषय चुनें' },
@@ -688,7 +575,6 @@ export default function AIPaperPage() {
         ))}
       </div>
 
-      {/* Content */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 print:shadow-none print:border-0 print:p-0">
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
