@@ -286,11 +286,11 @@ export default function AIPaperPage() {
           <BookOpen className="w-6 h-6 text-indigo-600" />
           <div className="flex-1">
             <p className="font-medium text-indigo-900">
-              {BOARDS[schoolBoard]?.name || schoolBoard} - Session 2024-25
+              {BOARDS[schoolBoard]?.name || schoolBoard} - {isAppHindi ? 'सत्र' : 'Session'} 2024-25
             </p>
             <p className="text-sm text-indigo-600">
               {useNcertSyllabus && schoolBoard !== 'NCERT' ? 
-                `${schoolBoard} + NCERT Combined Syllabus` : 
+                `${schoolBoard} + NCERT ${isAppHindi ? 'संयुक्त पाठ्यक्रम' : 'Combined Syllabus'}` : 
                 BOARDS[schoolBoard]?.fullName}
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function AIPaperPage() {
         
         {/* Syllabus Source Selection */}
         <div className="flex flex-wrap gap-2 pt-3 border-t border-indigo-200">
-          <span className="text-xs text-indigo-700 font-medium mr-2">Syllabus Source:</span>
+          <span className="text-xs text-indigo-700 font-medium mr-2">{isAppHindi ? 'पाठ्यक्रम स्रोत:' : 'Syllabus Source:'}</span>
           <label className="flex items-center gap-1 text-xs cursor-pointer">
             <input
               type="radio"
@@ -318,7 +318,7 @@ export default function AIPaperPage() {
               className="w-3 h-3"
             />
             <span className={formData.syllabus_source === 'auto' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
-              Auto (Recommended)
+              {isAppHindi ? 'स्वचालित (अनुशंसित)' : 'Auto (Recommended)'}
             </span>
           </label>
           <label className="flex items-center gap-1 text-xs cursor-pointer">
@@ -331,7 +331,7 @@ export default function AIPaperPage() {
               className="w-3 h-3"
             />
             <span className={formData.syllabus_source === 'ncert' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
-              NCERT Only
+              {isAppHindi ? 'केवल NCERT' : 'NCERT Only'}
             </span>
           </label>
           <label className="flex items-center gap-1 text-xs cursor-pointer">
@@ -344,7 +344,7 @@ export default function AIPaperPage() {
               className="w-3 h-3"
             />
             <span className={formData.syllabus_source === 'state_board' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
-              {schoolBoard} Only
+              {isAppHindi ? `केवल ${schoolBoard}` : `${schoolBoard} Only`}
             </span>
           </label>
         </div>
@@ -353,7 +353,7 @@ export default function AIPaperPage() {
       {/* Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">कक्षा (Class) *</Label>
+          <Label className="text-sm font-medium">{isAppHindi ? 'कक्षा (Class)' : 'Class'} *</Label>
           <select
             name="class_name"
             value={formData.class_name}
@@ -361,7 +361,7 @@ export default function AIPaperPage() {
             className="w-full h-11 rounded-lg border border-slate-200 px-3 focus:ring-2 focus:ring-indigo-500"
             data-testid="paper-class-select"
           >
-            <option value="">कक्षा चुनें</option>
+            <option value="">{isAppHindi ? 'कक्षा चुनें' : 'Select Class'}</option>
             {classNames.map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -369,7 +369,7 @@ export default function AIPaperPage() {
         </div>
         
         <div className="space-y-2">
-          <Label className="text-sm font-medium">विषय (Subject) *</Label>
+          <Label className="text-sm font-medium">{isAppHindi ? 'विषय (Subject)' : 'Subject'} *</Label>
           <select
             name="subject"
             value={formData.subject}
