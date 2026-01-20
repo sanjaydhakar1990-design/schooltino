@@ -202,9 +202,17 @@ export default function SchoolCalendarPage() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button onClick={() => setShowPhotoGallery(true)} variant="outline">
+            <Image className="w-4 h-4 mr-2" />
+            {isHindi ? 'फोटो' : 'Photos'}
+          </Button>
+          <Button onClick={() => setShowAddTestimonial(true)} variant="outline">
+            <Quote className="w-4 h-4 mr-2" />
+            {isHindi ? 'प्रशंसापत्र' : 'Testimonials'}
+          </Button>
           <Button onClick={() => setShowAddEvent(true)} variant="outline">
             <Plus className="w-4 h-4 mr-2" />
-            {isHindi ? 'कार्यक्रम जोड़ें' : 'Add Event'}
+            {isHindi ? 'कार्यक्रम' : 'Event'}
           </Button>
           <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700">
             <Printer className="w-4 h-4 mr-2" />
