@@ -68,6 +68,7 @@ import TeacherRoleManager from './pages/TeacherRoleManager';
 import SchoolCalendarPage from './pages/SchoolCalendarPage';
 import ComplaintFeedbackPage from './pages/ComplaintFeedbackPage';
 import PrayerSystemPage from './pages/PrayerSystemPage';
+import EventDesignerPage from './pages/EventDesignerPage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
