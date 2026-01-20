@@ -28,13 +28,15 @@ class TestLoginFlow:
         assert response.status_code == 200, f"Login failed: {response.text}"
         
         data = response.json()
-        assert "token" in data, "No token in response"
+        # API returns access_token, not token
+        assert "access_token" in data or "token" in data, "No token in response"
         assert "user" in data, "No user in response"
         assert data["user"]["email"] == "director@demo.com"
         assert data["user"]["role"] == "director"
         
+        token = data.get("access_token") or data.get("token")
         print(f"✓ Login successful for director@demo.com")
-        return data["token"], data["user"]
+        return token, data["user"]
 
 
 class TestEventDesignerAPI:
