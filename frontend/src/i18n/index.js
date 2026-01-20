@@ -24,6 +24,10 @@ const resources = {
       "view": "View",
       "download": "Download",
       "print": "Print",
+      "this_month": "This Month",
+      "quick_actions": "Quick Actions",
+      "ai_tools": "AI Tools",
+      "infrastructure": "Infrastructure",
       
       // Auth
       "login": "Login",
