@@ -37,6 +37,7 @@ import {
 import { toast } from 'sonner';
 import FaceEnrollmentCapture from '../components/FaceEnrollmentCapture';
 import IDCardViewer from '../components/IDCardViewer';
+import StudentIDCard from '../components/StudentIDCard';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
