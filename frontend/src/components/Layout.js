@@ -65,12 +65,18 @@ export const Layout = () => {
   };
 
   const languages = [
-    { code: 'en', label: 'English', flag: '🇬🇧' },
-    { code: 'hi', label: 'हिंदी', flag: '🇮🇳' },
-    { code: 'hinglish', label: 'Hinglish', flag: '🔄' }
+    { code: 'en', label: 'English', flag: '🇬🇧', shortLabel: 'EN' },
+    { code: 'hi', label: 'हिंदी', flag: '🇮🇳', shortLabel: 'हि' }
   ];
 
   const currentLang = languages.find(l => l.code === language) || languages[0];
+  const otherLang = languages.find(l => l.code !== language) || languages[1];
+
+  // Quick toggle between Hindi and English
+  const handleQuickToggle = () => {
+    const newLang = language === 'en' ? 'hi' : 'en';
+    changeLanguage(newLang);
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
