@@ -43,6 +43,7 @@ import FeePaymentPage from './pages/FeePaymentPage';
 import AccountantDashboard from './pages/AccountantDashboard';
 import SchoolPaymentSettings from './pages/SchoolPaymentSettings';
 import SchoolSettingsPage from './pages/SchoolSettingsPage';
+import BoardNotificationsPage from './pages/BoardNotificationsPage';
 import FeeStructureManagement from './pages/FeeStructureManagement';
 import AIHistoryPage from './pages/AIHistoryPage';
 import FrontOfficePage from './pages/FrontOfficePage';
