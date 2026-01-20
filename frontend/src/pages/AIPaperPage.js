@@ -421,13 +421,13 @@ export default function AIPaperPage() {
       {formData.subject && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">अध्याय चुनें (Select Chapters) *</Label>
+            <Label className="text-sm font-medium">{isAppHindi ? 'अध्याय चुनें (Select Chapters)' : 'Select Chapters'} *</Label>
             <div className="flex gap-2">
               <Button type="button" variant="outline" size="sm" onClick={selectAllChapters}>
-                सभी चुनें
+                {isAppHindi ? 'सभी चुनें' : 'Select All'}
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={clearAllChapters}>
-                Clear
+                {isAppHindi ? 'हटाएं' : 'Clear'}
               </Button>
             </div>
           </div>
@@ -459,14 +459,16 @@ export default function AIPaperPage() {
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-amber-600" />
               <span className="text-sm text-amber-700">
-                इस विषय के लिए {schoolBoard} syllabus में अध्याय उपलब्ध नहीं हैं।
+                {isAppHindi 
+                  ? `इस विषय के लिए ${schoolBoard} syllabus में अध्याय उपलब्ध नहीं हैं।`
+                  : `No chapters available for this subject in ${schoolBoard} syllabus.`}
               </span>
             </div>
           )}
           
           {formData.selectedChapters.length > 0 && (
             <p className="text-sm text-indigo-600 font-medium">
-              ✓ {formData.selectedChapters.length} अध्याय चुने गए
+              ✓ {formData.selectedChapters.length} {isAppHindi ? 'अध्याय चुने गए' : 'chapters selected'}
             </p>
           )}
         </div>
