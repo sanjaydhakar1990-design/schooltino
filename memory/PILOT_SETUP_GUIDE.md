@@ -17,7 +17,7 @@ export const TRIAL_CONFIG = {
 ```
 
 ### Step 2: School Register Karo
-1. Go to: https://schoolerp-7.preview.emergentagent.com/app/school-registration
+1. Go to: https://edutino-1.preview.emergentagent.com/app/school-registration
 2. Fill school details
 3. Note down the School ID
 
@@ -113,9 +113,9 @@ Weekly school se ye poochho:
 
 ## 📱 Quick Links:
 
-- **Admin Panel:** https://schoolerp-7.preview.emergentagent.com/login
-- **TeachTino:** https://schoolerp-7.preview.emergentagent.com/teachtino
-- **StudyTino:** https://schoolerp-7.preview.emergentagent.com/studytino
+- **Admin Panel:** https://edutino-1.preview.emergentagent.com/login
+- **TeachTino:** https://edutino-1.preview.emergentagent.com/teachtino
+- **StudyTino:** https://edutino-1.preview.emergentagent.com/studytino
 - **WhatsApp Support:** wa.me/917879967616
 
 ---

@@ -1,187 +1,194 @@
 <analysis>**original_problem_statement:**
-The user wants to enhance their existing school management application, schooltino.in. The key feature requests are:
-1.  **Advanced Voice AI (Tino):** Upgrade the existing Tino Brain (OpenAI + ElevenLabs) to an Alexa/Siri level assistant. It should provide real-time, voice-activated class intelligence (syllabus progress, attendance, student performance, teacher analysis) based on the admin's location, detected via CCTV (to be simulated).
-2.  **Multilingual & Voice Improvements:**
-    *   Fix poor Hinglish pronunciation.
-    *   Make the app's language selector apply globally (UI and AI).
-    *   The AI should respond in the language it is queried in.
-    *   Use better, multilingual voices from ElevenLabs and fix gendered phrasing (e.g., female voice using masculine verbs).
-3.  **Marketing Materials:**
-    *   Create an impressive, shareable marketing brochure/page for WhatsApp.
-    *   Correct the user's contact number to **7879967616** on all marketing materials.
-    *   Create daily shareable WhatsApp pamphlets.
-    *   Create a marketing page template for individual schools.
-    *   Provide a downloadable PDF of the marketing brochure.
-4.  **Admit Card System:**
-    *   Develop a feature to generate admit cards for exams.
-    *   Students should access their admit cards in the StudyTino app.
-    *   Downloading should be conditional on fee payment. An admin-configurable minimum fee percentage (e.g., 30%) must be paid if fees are due.
-5.  **System Check:** Verify that the existing feature for importing data from other school software/websites is working.
+The user's initial goal was to fix and enhance the SchoolTino ERP for a school demo. The list of requests was extensive and evolved over the session.
 
-**User's preferred language**: Hinglish
+Key requirements included:
+- **AI Paper Generator Fixes**: The user was highly specific, requesting updates to use the latest syllabus (CBSE, MP Board, RBSE, NCERT for 2024-25), correct marking schemes (e.g., 4 marks for long answers), inclusion of diagram-based questions, removal of chapter names from the final paper, and a proper print format without extra headers.
+- **Full-App Language Toggle**: A one-click system to switch the entire application's language between English, Hindi, and Hinglish.
+- **PWA Installation**: A functional Install App button that works reliably.
+- **School & Board Specific Customization**:
+    - A settings page to configure school timings based on state government rules (e.g., Rajasthan, MP).
+    - An attendance system with a configurable grace period (10-15 minutes).
+    - A system to display official notifications from education boards and an option to auto-apply them.
+- **Syllabus & Attendance Management**: Allow manual entry of attendance and syllabus progress for schools that adopt the software mid-year. Teachers should be able to track syllabus completion.
+- **Core Feature Fixes**: Address issues with Timetable creation, Exam creation, and Teacher Role Management (distinguishing between Class and Subject teachers).
+
+**User's preferred language**: Hindi
 
 **what currently exists?**
-A full-stack (React/FastAPI/MongoDB) school management platform named Schooltino. It includes a foundational Tino Brain AI assistant using OpenAI and ElevenLabs, a CCTV-based greeting system, user roles (admin, teacher, student), and various dashboards. Several marketing pages (, ) and a PDF brochure download page () have also been created. A backend structure for an admit card system has been put in place.
+The SchoolTino application is a full-stack ERP with a FastAPI backend, React frontend, and MongoDB. The agent has implemented several major features and fixes:
+- **AI Paper Generator**: Significantly overhauled. It now supports multiple education boards (CBSE, RBSE, NCERT), uses the latest 2024-25 syllabus, adheres to correct marking patterns, and generates papers in a single selected language (Hindi/English). The print view has been cleaned up to remove extra headers.
+- **School Settings Page**: A new page () allows school admins to configure state-specific timings (e.g., Rajasthan winter/summer hours) and set a grace period for student attendance.
+- **Board Notifications System**: A new page () shows the latest official updates from education boards (currently mocked for RBSE) and includes a conceptual AI Auto-Apply feature.
+- **PWA Installation**: The Install button in the header now opens a user-friendly modal that provides browser-specific instructions for adding the app to the home screen.
+- **Full-App Language Toggle**: A one-click toggle button in the header () allows users to instantly switch the entire application's UI language between English and Hindi.
+- **Core Features**: The agent has created pages for Teacher Role Management () and fixed a critical bug in the Timetable page. Links for Exams and Teacher Roles have been added to the sidebar for easy access.
+- **Voice Assistant**: The ElevenLabs-powered Tino AI voice assistant was verified to be functional.
 
 **Last working item**:
-*   **Last item agent was working:** The agent was fixing the Admit Card feature. The user reported that the admin management page for admit cards was stuck in a loading state, and the AI voice command to open the section wasn't working.
-*   **Status:** IN PROGRESS
-*   **Agent Testing Done:** N
-*   **Which testing method agent to use?** both
-    *   **Frontend testing agent:** To perform a full user flow test. Log in as a student, navigate to the student dashboard, and verify that the admit card section loads correctly without getting stuck. Then, create a scenario with pending fees to test if the fee payment dialog appears upon trying to download the card.
-    *   **Backend testing agent:** To test the API logic in . Specifically, test the  and  functions with mock data to ensure the fee calculation and card generation logic is correct.
-*   **User Testing Done:** N
+-   **Last item agent was working**: The agent was implementing a one-click language toggle for the entire application. The goal was to allow users to switch between English and Hindi seamlessly from the main layout. The agent implemented a , used  for translations, and added a toggle button to the main header in .
+-   **Status**: USER VERIFICATION PENDING
+-   **Agent Testing Done**: Y (Agent took screenshots to show the UI switching between English and Hindi in the sidebar and dashboard).
+-   **Which testing method agent to use?**: Manual testing by user. The user should be asked to click the language toggle and verify that all UI elements across different pages are translated correctly.
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1:** The Admit Card feature is not fully functional and tested end-to-end. (Priority: P0)
-*   **Issue 2:** The existing data import system was requested to be checked but was only located, not tested or verified. (Priority: P2)
+-   **Issue 1**: AI Paper Generator returns unselected question types. (P0)
+-   **Issue 2**: Manual syllabus management features are missing. (P1)
+-   **Issue 3**: Live integration for Government Holiday Calendars is needed. (P2)
 
-**Issues Detail:**
-*   **Issue 1: Admit Card feature is incomplete and buggy**
-    *   **Attempted fixes:**
-        1.  In , the agent added checks to ensure API calls are not made with   or , which was likely causing the loading issue.
-        2.  In , the  command was added to the command map so the voice assistant can navigate to the correct page.
-    *   **Next debug checklist:**
-        1.  **Admin Flow:** Log in as admin, navigate to the Admit Card Management page. Use the Create Exam functionality to set up a test examination.
-        2.  **Student Data:** Ensure a test student exists with pending fees associated with their account.
-        3.  **Student Flow:** Log in as the test student and navigate to their dashboard.
-        4.  **Verify Load:** Confirm the Admit Card section now loads correctly without getting stuck.
-        5.  **Test Download (Fees Due):** Click the download button for the admit card. Verify that a dialog appears prompting for fee payment, showing the correct minimum amount.
-        6.  **Test Download (Fees Paid):** Simulate fee payment or use a student with no dues. Verify that clicking download initiates the download directly.
-    *   **Status:** IN PROGRESS
-    *   **Is recurring issue?** N
-    *   **Should Test frontend/backend/both after fix?** both
-    *   **Blocked on other issue:** None
+**Issues Detail**:
+-   **Issue 1**:
+    -   **Description**: During testing (message 265), the agent observed that the AI Paper Generator included an MCQ question in the output even though it was not selected by the user. This points to a bug in the backend logic where the list of selected  is not being respected correctly.
+    -   **Attempted fixes**: None. The agent noted the issue but moved on to test other features.
+    -   **Next debug checklist**:
+        1.  **Backend ():** Inspect the  endpoint.
+        2.  Log the incoming  to ensure the frontend sends the correct data.
+        3.  Review the logic that constructs the  for the LLM. Ensure it only includes the question types present in the request.
+        4.  Run a  test to isolate the backend and reproduce the bug.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical functionality bug. Users need precise control over the paper's structure. Fixing this will ensure the generated paper matches the user's exact specifications.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Blocked on other issue**: None
 
-*   **Issue 2: Data Import System Untested**
-    *   **Attempted fixes:** The agent located the relevant file () but performed no further action.
-    *   **Next debug checklist:**
-        1.  Review the code in  to understand its expected inputs (e.g., a school's website URL).
-        2.  Create a backend test case that calls the  endpoint with a sample school website.
-        3.  Verify that the system correctly extracts information and populates the database.
-        4.  Test edge cases, such as websites with unusual structures or missing information.
-    *   **Status:** NOT STARTED
-    *   **Is recurring issue?** N
-    *   **Should Test frontend/backend/both after fix?** backend
-    *   **Blocked on other issue:** None
+-   **Issue 2**:
+    -   **Description**: The user requested a way for teachers to manually track syllabus completion and for admins to feed initial syllabus/attendance data for schools that join mid-session. The user also mentioned uploading syllabus progress via a photo. These features are crucial for real-world adoption but have not been implemented.
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  **Plan**: Design a new UI/DB schema for tracking progress per chapter/subject.
+        2.  **Backend**: Create new endpoints to get/update syllabus completion status.
+        3.  **Frontend**: Create a new component or page for teachers to view and update their progress.
+    -   **Why fix this issue and what will be achieved with the fix?**: This makes the app practical for schools joining at any point in the academic year and provides teachers with a vital tool for managing their coursework.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on other issue**: None
+
+-   **Issue 3**:
+    -   **Description**: The School Settings page includes a Calendar tab and state selection, implying integration with official government/board holiday calendars. Currently, this is likely using static or mock data. A live integration is needed to make this feature useful.
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  **Research**: Use  to find official APIs or reliable sources for state-wise school holidays in India (e.g., for Rajasthan, Madhya Pradesh).
+        2.  **Backend**: Implement a new function (potentially with a web scraper if no API exists) to fetch and cache holiday data.
+        3.  **Frontend**: Update the calendar component on the  to display the fetched holidays.
+    -   **Why fix this issue and what will be achieved with the fix?**: Automates a key administrative task and ensures the school's schedule is always aligned with official regulations.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on other issue**: None
 
 **In progress Task List**:
-None
+There are no tasks currently in progress.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   **P1: Complete Admit Card UI/UX:** Enhance the student-facing admit card section in  to properly display the generated card, payment status, and download links.
-*   **Future Tasks:**
-    *   **P2: CCTV Integration Simulation:** Implement the logic in  to simulate detecting an admin's location (classroom) from a  and use that context to answer class-specific questions.
-    *   **P3: Populate Demo Data:** Create a script or a backend utility to populate the database with realistic demo data (students, teachers, classes, attendance, marks) to make features like Class Intelligence more demonstrative.
+**Upcoming Tasks:**
+-   **Task 1: Verify AI Paper Diagram Answers (P1)**
+    -   The agent updated the prompt to generate answers for diagram-based questions, but it was not confirmed if the output is a labeled diagram image or just text. The generation flow needs to be tested to confirm the answer format is useful for teachers.
+-   **Task 2: Teacher Role Logic Deep-Dive (P2)**
+    -   A UI () has been created, but the backend logic for permissions and assignments (e.g., what a Class Teacher can do vs. a Subject Teacher) needs to be fully implemented and tested.
+
+**Future Tasks:**
+-   **Parent App Notifications**: A feature mentioned by the agent to send notifications to a parent-facing application.
+-   **WhatsApp Notification Integration**: Integrate the message credit system with a WhatsApp API for school-to-parent communication.
+-   **Refactor **: The main backend file is very large and should be broken down into smaller modules (e.g., , , separate route files for each feature).
 
 **Completed work in this session**
-- **Class Intelligence Feature:** Implemented backend API () and added quick action buttons to the Tino Brain frontend dashboard. (Files: , ).
-- **Language & Voice System Overhaul:** Upgraded to ElevenLabs' multilingual model, added better voices ('Liam' & 'Sarah'), and made the AI language-aware based on user's query language. (Files: , ).
-- **Marketing Assets Creation:** Built new frontend pages for a main marketing brochure (), shareable WhatsApp pamphlets (), and a template for school-specific marketing ().
-- **PDF Brochure Generation:** Created a server-side script to generate a PDF of the marketing page and a static, public-facing HTML page () to ensure it's downloadable without login.
-- **Dependency & Bug Fixes:** Installed the missing  package, fixed multiple  errors, corrected API routing prefixes, and resolved a persistent contact number issue across all marketing materials.
+-   **AI Paper Generator Overhaul**: Rewrote the feature to support board-specific syllabi (CBSE, MP, RBSE, NCERT), 2024-25 marking schemes, chapter selection, custom exam names, and fixed the print format. Implemented at  and .
+-   **Full-App Language Toggle**: Implemented a one-click language switcher in the header that translates the entire application UI between English and Hindi. Implemented in  using .
+-   **School Settings Page**: Created a new page for admins to set state-specific school timings and attendance grace periods. Implemented at .
+-   **Board Notifications System**: Created a new page to display mock notifications from education boards with a concept for an AI Auto-Apply feature. Implemented at .
+-   **PWA Install Workflow**: Improved the PWA installation by adding an instructional modal instead of relying on inconsistent browser prompts. Implemented in .
+-   **Teacher Role Management UI**: Created a new page to manage teacher roles. Implemented at .
+-   **Core Bug Fixes**:
+    -   Fixed a backend crash () in .
+    -   Added sidebar links for Exams, Teacher Roles, and other new pages in .
 
 **Earlier issues found/mentioned but not fixed**
-*   **Issue 1: Data Import System Untested:** The user asked the agent to check the data import feature. The agent found the code in  but did not test or validate its functionality.
-    *   **Debug checklist:** See Issue 2 in the **All Pending/In progress Issue list** section.
-    *   **Why to solve this issue and what will be achieved with this?** This is a key onboarding feature for new schools, allowing them to migrate from existing systems easily.
-    *   **Should Test frontend/backend/both after fix:** backend
-    *   **Is recurring issue?** N
+-   **Issue 1**: AI Paper Generator returns unselected question types. This was discovered in this session (message 265) and is now the highest priority pending issue.
 
 **Known issue recurrence from previous fork**
-None
+-   None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Backend:** FastAPI
-- **Frontend:** React, TailwindCSS
-- **Database:** MongoDB
-- **AI/ML:**
-    - **NLU:** OpenAI (via )
-    - **TTS:** ElevenLabs API
-- **PDF Generation:** Playwright
+-   **Backend**: FastAPI, MongoDB (motor), Pydantic, JWT.
+-   **Frontend**: React, Axios, TailwindCSS,  for internationalization.
+-   **AI**: LLM calls via  library to generate question papers. Prompts are dynamically constructed based on user inputs.
+-   **Architecture**: Full-stack monolithic repository with role-based access control. The application is becoming more modular on the frontend, but the backend remains a single large file.
 
 **key DB schema**
-- **schools:** Stores school registration details.
-- **users:** Manages user accounts (admins, teachers, etc.).
-- **students:** Student profiles.
-- **exams:** (Newly added) Stores details of examinations.
-- **admit_cards:** (Newly added) Manages generation status and settings for admit cards.
+-   : Contains school-specific settings, including the newly added  object which stores , , , etc.
+-   No new collections were added, but the  collection schema was extended.
 
 **changes in tech stack**
-None
+-   None.
 
 **All files of reference**
-*   **Created Files:**
-    *   : Handles all backend logic for admit card generation and settings.
-    *   : The primary marketing brochure page.
-    *   : Page with shareable marketing content for WhatsApp.
-    *   : A template page for schools to use for their own marketing.
-    *   : A static HTML page created as a workaround to provide a public, non-authenticated link to download the PDF brochure.
-    *   : Admin-facing page to manage admit card settings and create exams.
-    *   : React component for the student dashboard to view and download admit cards.
-*   **Updated Files:**
-    *   : Heavily modified to include class intelligence, language awareness, and admit card commands.
-    *   : Updated with new multilingual voices from ElevenLabs and a new command for admit cards.
-    *   : Added the new router for the admit card API.
-    *   : Added new routes for all the marketing and admit card pages.
-    *   : Integrated the  component.
-    *   : Added a link to the Admit Card Management page.
-    *   : Added .
+-   **Created Files**:
+    -   : Stores syllabus data for different education boards.
+    -   : UI for school timing and attendance rules.
+    -   : UI for displaying board notifications.
+    -   : UI for assigning teacher roles.
+-   **Updated Files**:
+    -   : Completely overwritten with new logic for board-specific syllabi, language selection, and a clean print view.
+    -   : Heavily modified to add APIs for school settings, board notifications, and update the AI paper generation logic with new prompts and parameters.
+    -   : Updated to include the one-click language toggle and the PWA installation modal.
+    -   : Updated with new routes for , , and .
+    -   : Updated to include links to the new pages.
 
 **Areas that need refactoring**:
-- The use of a static  page is a workaround. The React routing in  should be refactored to properly handle public routes without triggering the authentication redirect. The  component or the main routing structure is too aggressive.
+-   The  file has grown even larger and is now over 7,300 lines. It is critical to refactor this file by moving Pydantic models, helper functions, and API routers into separate, dedicated files to improve maintainability.
 
 **key api endpoints**
-- : Configure admit card rules (min fee, signature, etc.).
-- : Generate admit cards for a specific exam.
-- : Fetch admit card status and data for a specific student.
-- : The main endpoint for the Tino AI Brain, now enhanced with language and gender parameters.
-- : Gets a detailed report for a specific class.
+-   : The main endpoint for the AI Paper Generator.
+-   : GET/POST endpoints to manage school-specific settings like timing and attendance rules.
+-   : GET endpoint to fetch (mocked) notifications for a specific education board.
 
 **Critical Info for New Agent**
-- **User's Contact Number:** The user's correct contact number is **7879967616**. This has been a recurring point of concern. Double-check this number on any new UI.
-- **Browser Cache Issues:** The user frequently reports seeing outdated information on the frontend (like the wrong phone number). This is almost always a browser cache issue on their end. Before debugging, instruct the user to perform a hard refresh (Ctrl+Shift+R) or test in an Incognito window.
-- **PDF Download Workaround:** The PDF brochure download link () uses a static HTML file in  to bypass the React app's routing and authentication. Do not try to integrate it back into the React router unless you are prepared to fix the root cause of the public route redirection issue.
+-   The user has an urgent demo, so all fixes must be robust and thoroughly tested. The user is very detail-oriented and will check every feature.
+-   The application logic is now highly dependent on the selected  for each school (e.g., syllabus in ). Always test features with this context in mind.
+-   The PWA install button now shows an instructional modal. Be prepared to explain to the user that a universal one-click install is not possible across all browsers and this is the standard, recommended approach.
 
 **documents and test reports created in this job**
--  (updated)
-- 
+-   User uploaded , which was a printout of the generated paper, highlighting issues with extra headers and mixed languages. The agent extracted text from this to debug.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Asks for a PDF of the marketing page with their correct number.
-2.  **Agent:** Creates the PDF but the user reports it's not downloadable.
-3.  **Agent:** Fixes the download by creating a dedicated download page ().
-4.  **User:** Reports the new download link redirects to the login page.
-5.  **User:** Expresses frustration that a simple link fix is taking so long.
-6.  **Agent:** Apologizes and creates a static HTML page () as a workaround, which finally works.
-7.  **User:** Reports a new issue: the WhatsApp share message from the download page still contains an incorrect number (this was a misunderstanding).
-8.  **User:** Expresses frustration again, stating the agent can't get it right and the marketing link is still showing wrong numbers.
-9.  **Agent:** Realizes it's a user-side cache issue, explains how to clear it, and force-restarts the frontend server.
-10. **User:** Pivots to a new bug: the Admit Card section is stuck loading, and the AI command to open it also fails.
+1.  **User (msg 361)**: Asked to fix the language issue for the entire app, requesting a one-click solution. (COMPLETED)
+2.  **User (msg 330)**: Pointed out issues in a printed PDF of the AI-generated paper: extra headers, mixed Hindi/English language, and incorrect diagram answers. Also mentioned the full-app language issue. (COMPLETED)
+3.  **User (msg 275)**: Reported several issues: AI paper should use board-specific syllabus (CBSE, MP, etc.), the PWA install button shows instructions instead of auto-installing, and requested a board notification system. (COMPLETED)
+4.  **User (msg 201)**: Provided a very long and detailed list of requirements and bug reports. This message was the primary driver for most of the work in this session, covering the AI paper generator, school timings, state-specific calendars, attendance grace periods, and syllabus management. (PARTIALLY COMPLETED, some items pending)
+5.  **User (msg 73)**: Re-iterated the need to fix the AI paper generator (add exam name, chapter select), timetable, exam creation, and teacher role management. Also asked about the PWA install button. (COMPLETED)
+6.  **User (msg 5)**: Instructed the agent to fix the AI tool. (COMPLETED)
 
 **Project Health Check:**
-- **Broken:**
-    - The end-to-end admit card generation and download flow for students is not working. The admin page loads, but the student component is buggy.
-- **Mocked:**
-    - The CCTV-based classroom detection for the AI assistant is not implemented; it's a planned simulation.
+-   **Broken**: The AI paper generator has a bug where it doesn't always respect the user's selected question types.
+-   **Mocked**: Board notifications and government holiday calendars are currently using static/mock data and are not integrated with live sources.
 
 **3rd Party Integrations**
-- **OpenAI:** Used for NLU in Tino Brain. It uses the Emergent LLM Key.
-- **ElevenLabs:** Used for Text-to-Speech (TTS). It requires a user-provided API key ( in the environment).
+-   **emergentintegrations**: Used for the Tino Brain AI feature (paper generator), leveraging the Emergent LLM Key.
+-   **ElevenLabs**: Key is present in  and the voice assistant feature () was verified as working.
+-   **i18next**: Integrated into the React frontend for internationalization (EN/HI).
+-   **Razorpay, BotBiz (Planned)**: Placeholders exist but are not implemented.
 
 **Testing status**
-- **Testing agent used after significant changes:** YES (both backend and frontend testing agents were used).
-- **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** None.
-- **Known regressions:** None identified.
+-   **Testing agent used after significant changes**: NO. Agent performed all testing via screenshots and .
+-   **Troubleshoot agent used after agent stuck in loop**: NO.
+-   **Test files created**: None.
+-   **Known regressions**: None.
 
 **Credentials to test flow:**
-School and admin credentials are created during the registration flow. The agent used Test School and admin@test.com / password in the session.
+-   **Super Admin**:
+    -   **URL**: , then click the logo 5 times.
+    -   **Email**: 
+    -   **Password**: 
+-   **School Director**:
+    -   **URL**: 
+    -   **Email**: 
+    -   **Password**: 
 
 **What agent forgot to execute**
-- The agent located the data import system file () as requested by the user but never tested or verified if it actually works.
-- The end-to-end flow for the admit card feature was not fully tested after implementation. The agent only verified that the admin page loaded and the voice command was recognized, but not the core functionality for the student.</analysis>
+-   The agent did not address the user's request for teachers to be able to track syllabus completion or upload syllabus progress via a photo.
+-   The agent created a UI for state-specific calendars but did not implement a live data feed for government holidays.
+-   The agent identified the AI Paper Generator bug (generating unselected question types) but did not fix it.</analysis>

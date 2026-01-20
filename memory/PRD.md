@@ -758,4 +758,4 @@
 
 - **Phone:** +91 7879967616
 - **Website:** schooltino.in
-- **Preview URL:** https://schoolerp-7.preview.emergentagent.com
+- **Preview URL:** https://edutino-1.preview.emergentagent.com
