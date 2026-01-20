@@ -292,7 +292,7 @@ export default function DashboardPage() {
         {/* Attendance Pie Chart */}
         <Card className="lg:col-span-4 border-0 shadow-sm">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">Today's Attendance</h3>
+            <h3 className="font-semibold text-slate-900 mb-4">{t('attendance_today')}</h3>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
               {attendanceData.map((item) => (
                 <div key={item.name} className="flex items-center gap-2 text-sm">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-slate-600">{item.name}: {item.value}</span>
+                  <span className="text-slate-600">{t(item.name.toLowerCase())}: {item.value}</span>
                 </div>
               ))}
             </div>
@@ -328,9 +328,9 @@ export default function DashboardPage() {
         <Card className="lg:col-span-4 border-0 shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-900">Recent Notices</h3>
+              <h3 className="font-semibold text-slate-900">{t('recent_notices')}</h3>
               <Button variant="ghost" size="sm" onClick={() => navigate('/app/notices')} className="text-indigo-600">
-                View All <ChevronRight className="w-4 h-4 ml-1" />
+                {t('view')} <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
             <div className="space-y-3">
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-slate-400 text-sm text-center py-4">No notices</p>
+                <p className="text-slate-400 text-sm text-center py-4">{t('no_data')}</p>
               )}
             </div>
           </CardContent>
@@ -353,7 +353,7 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <Card className="lg:col-span-4 border-0 shadow-sm">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">Quick Actions</h3>
+            <h3 className="font-semibold text-slate-900 mb-4">{t('quick_actions') || 'Quick Actions'}</h3>
             <div className="space-y-2">
               <Button 
                 className="w-full justify-start bg-indigo-50 text-indigo-700 hover:bg-indigo-100" 
@@ -361,7 +361,7 @@ export default function DashboardPage() {
                 onClick={() => navigate('/app/students')}
               >
                 <Users className="w-4 h-4 mr-3" />
-                New Admission
+                {t('add_student')}
               </Button>
               <Button 
                 className="w-full justify-start bg-emerald-50 text-emerald-700 hover:bg-emerald-100" 
@@ -369,7 +369,7 @@ export default function DashboardPage() {
                 onClick={() => navigate('/app/attendance')}
               >
                 <CalendarCheck className="w-4 h-4 mr-3" />
-                Mark Attendance
+                {t('mark_attendance')}
               </Button>
               <Button 
                 className="w-full justify-start bg-amber-50 text-amber-700 hover:bg-amber-100" 
@@ -377,7 +377,7 @@ export default function DashboardPage() {
                 onClick={() => navigate('/app/fees')}
               >
                 <Wallet className="w-4 h-4 mr-3" />
-                Collect Fee
+                {t('record_payment')}
               </Button>
               <Button 
                 className="w-full justify-start bg-purple-50 text-purple-700 hover:bg-purple-100" 
@@ -385,7 +385,7 @@ export default function DashboardPage() {
                 onClick={() => navigate('/app/notices')}
               >
                 <Bell className="w-4 h-4 mr-3" />
-                Send Notice
+                {t('create_notice')}
               </Button>
               <Button 
                 className="w-full justify-start bg-rose-50 text-rose-700 hover:bg-rose-100" 
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                 onClick={() => navigate('/app/ai-paper')}
               >
                 <Sparkles className="w-4 h-4 mr-3" />
-                Generate Paper
+                {t('generate_paper')}
               </Button>
             </div>
           </CardContent>
