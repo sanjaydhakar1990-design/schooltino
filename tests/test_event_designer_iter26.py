@@ -272,7 +272,8 @@ class TestStudentIDCardAPI:
         })
         if response.status_code == 200:
             data = response.json()
-            return data.get("token"), data.get("user", {}).get("school_id")
+            token = data.get("access_token") or data.get("token")
+            return token, data.get("user", {}).get("school_id")
         pytest.skip("Login failed - skipping authenticated tests")
     
     def test_get_students_for_id_card(self, auth_token):
