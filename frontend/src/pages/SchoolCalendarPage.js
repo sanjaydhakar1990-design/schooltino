@@ -77,7 +77,15 @@ export default function SchoolCalendarPage() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showAddEvent, setShowAddEvent] = useState(false);
-  const [newEvent, setNewEvent] = useState({ date: '', name: '', type: 'school_event', description: '' });
+  const [newEvent, setNewEvent] = useState({ date: '', name: '', type: 'school_event', description: '', photo: null });
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
+  const [calendarPhotos, setCalendarPhotos] = useState([]);
+  const [testimonials, setTestimonials] = useState([
+    { id: 1, text: 'इस विद्यालय में पढ़कर मेरा बच्चा बहुत आगे बढ़ा है।', author: 'रमेश कुमार (अभिभावक)', photo: null },
+    { id: 2, text: 'Best school in the city with excellent teachers and facilities.', author: 'Sunita Sharma (Parent)', photo: null }
+  ]);
+  const [showAddTestimonial, setShowAddTestimonial] = useState(false);
+  const [newTestimonial, setNewTestimonial] = useState({ text: '', author: '' });
   
   const months = isHindi 
     ? ['जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर']
