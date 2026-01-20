@@ -327,6 +327,7 @@ function AppRoutes() {
         <Route path="admit-cards" element={<AdmitCardManagement />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="school-settings" element={<SchoolSettingsPage />} />
         <Route path="setup-guide" element={<SetupGuidePage />} />
       </Route>
       
