@@ -714,10 +714,104 @@ export default function SchoolManagementPage() {
               </div>
             </div>
 
-            {/* Preview */}
+            {/* Signature & Seal Section */}
+            <div className="border-t pt-6">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <PenTool className="w-5 h-5 text-indigo-600" />
+                Signature & Seal
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Signature Upload */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <Label className="mb-3 block font-medium">Signature (हस्ताक्षर)</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-32 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white overflow-hidden">
+                      {school.signature_url ? (
+                        <img src={school.signature_url} alt="Signature" className="max-w-full max-h-full object-contain" />
+                      ) : (
+                        <PenTool className="w-8 h-8 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label className="block">
+                        <input type="file" accept="image/*" onChange={handleSignatureUpload} className="hidden" />
+                        <Button variant="outline" size="sm" className="w-full" asChild>
+                          <span><Upload className="w-4 h-4 mr-1" /> Upload Signature</span>
+                        </Button>
+                      </label>
+                      <p className="text-xs text-gray-500 mt-2">PNG with transparent background recommended</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seal Upload/Generate */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <Label className="mb-3 block font-medium">School Seal (मोहर)</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center bg-white overflow-hidden">
+                      {school.seal_url ? (
+                        <img src={school.seal_url} alt="Seal" className="max-w-full max-h-full object-contain" />
+                      ) : (
+                        <Stamp className="w-8 h-8 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="block">
+                        <input type="file" accept="image/*" onChange={handleSealUpload} className="hidden" />
+                        <Button variant="outline" size="sm" className="w-full" asChild>
+                          <span><Upload className="w-4 h-4 mr-1" /> Upload Seal</span>
+                        </Button>
+                      </label>
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600"
+                        onClick={generateAISeal}
+                        disabled={generatingAISeal}
+                      >
+                        {generatingAISeal ? (
+                          <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating...</>
+                        ) : (
+                          <><Sparkles className="w-4 h-4 mr-1" /> AI से Seal बनाएं</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* AI Seal Options */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs font-medium text-gray-600 mb-2">AI Seal Options:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select 
+                        className="text-xs border rounded px-2 py-1"
+                        value={aiSealConfig.seal_shape}
+                        onChange={e => setAiSealConfig(c => ({ ...c, seal_shape: e.target.value }))}
+                      >
+                        <option value="circular">Circular (गोल)</option>
+                        <option value="rectangular">Rectangular (आयत)</option>
+                        <option value="shield">Shield (ढाल)</option>
+                      </select>
+                      <select 
+                        className="text-xs border rounded px-2 py-1"
+                        value={aiSealConfig.color_scheme}
+                        onChange={e => setAiSealConfig(c => ({ ...c, color_scheme: e.target.value }))}
+                      >
+                        <option value="blue">Blue (नीला)</option>
+                        <option value="red">Red (लाल)</option>
+                        <option value="green">Green (हरा)</option>
+                        <option value="gold">Gold (सुनहरा)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Receipt Preview with Signature & Seal */}
             <div className="mt-6 p-4 border rounded-lg bg-gray-50">
               <h4 className="font-medium mb-3">Receipt Preview:</h4>
-              <div className="bg-white p-4 rounded border text-sm">
+              <div className="bg-white p-4 rounded border text-sm max-w-md mx-auto">
                 <div className="text-center border-b pb-3 mb-3">
                   {school.logo_url && <img src={school.logo_url} alt="" className="h-12 mx-auto mb-2" />}
                   <h3 className="font-bold">{school.name || 'School Name'}</h3>
@@ -733,10 +827,30 @@ export default function SchoolManagementPage() {
                 <div className="text-center text-xs text-gray-500 mt-4">
                   {paymentSettings.receipt_footer_note || 'Thank you for your payment'}
                 </div>
-                <div className="text-right mt-4 pt-2 border-t">
-                  <div className="text-xs">____________________</div>
-                  <div className="text-xs">{paymentSettings.authorized_signatory_name || 'Authorized Signatory'}</div>
-                  <div className="text-xs text-gray-500">{paymentSettings.authorized_signatory_designation}</div>
+                
+                {/* Signature & Seal on Receipt */}
+                <div className="flex justify-between items-end mt-6 pt-4 border-t">
+                  {/* Seal */}
+                  <div className="text-center">
+                    {school.seal_url ? (
+                      <img src={school.seal_url} alt="Seal" className="w-16 h-16 object-contain opacity-80" />
+                    ) : (
+                      <div className="w-16 h-16 border border-dashed border-gray-300 rounded-full flex items-center justify-center text-xs text-gray-400">
+                        Seal
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Signature */}
+                  <div className="text-right">
+                    {school.signature_url ? (
+                      <img src={school.signature_url} alt="Signature" className="h-10 ml-auto mb-1" />
+                    ) : (
+                      <div className="text-xs border-b border-gray-400 w-24 mb-1">_____________</div>
+                    )}
+                    <div className="text-xs font-medium">{paymentSettings.authorized_signatory_name || 'Authorized Signatory'}</div>
+                    <div className="text-xs text-gray-500">{paymentSettings.authorized_signatory_designation}</div>
+                  </div>
                 </div>
               </div>
             </div>
