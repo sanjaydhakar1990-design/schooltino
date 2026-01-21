@@ -1981,7 +1981,7 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
     # AUTO-CREATE PARENT ACCOUNT if parent mobile provided
     parent_id = None
     parent_password = None
-    parent_mobile = student.father_mobile or student.mother_mobile
+    parent_mobile = student.mobile  # Use the mobile field from StudentCreate model
     
     if parent_mobile:
         # Check if parent already exists with this mobile
@@ -2005,8 +2005,6 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
                 "parent_id": parent_id,
                 "name": parent_name,
                 "mobile": parent_mobile,
-                "father_mobile": student.father_mobile,
-                "mother_mobile": student.mother_mobile,
                 "password": parent_password,
                 "school_id": student.school_id,
                 "student_ids": [student_data["id"]],
