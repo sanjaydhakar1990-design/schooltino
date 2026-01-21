@@ -2660,7 +2660,7 @@ async def create_unified_employee(
     # Create login account if requested
     if employee.create_login:
         password = employee.password or employee.mobile  # Default password is mobile number
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         
         user_data = {
             "id": str(uuid.uuid4()),
