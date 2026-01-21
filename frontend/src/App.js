@@ -345,6 +345,8 @@ function AppRoutes() {
         <Route path="prayer-system" element={<PrayerSystemPage />} />
         <Route path="event-designer" element={<EventDesignerPage />} />
         <Route path="family-portal" element={<FamilyPortalPage />} />
+        <Route path="payment-settings" element={<PaymentSettingsPage />} />
+        <Route path="parent-pay" element={<ParentPaymentPortal />} />
       </Route>
       
       {/* Old routes redirect to /app */}
