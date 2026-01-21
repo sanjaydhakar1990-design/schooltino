@@ -339,7 +339,7 @@ function AppRoutes() {
         <Route path="admit-cards" element={<AdmitCardManagement />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="school-settings" element={<SchoolSettingsPage />} />
+        <Route path="school-settings" element={<Navigate to="/app/school-management" replace />} />
         <Route path="board-notifications" element={<BoardNotificationsPage />} />
         <Route path="setup-guide" element={<SetupGuidePage />} />
         <Route path="school-calendar" element={<SchoolCalendarPage />} />
@@ -347,7 +347,7 @@ function AppRoutes() {
         <Route path="prayer-system" element={<PrayerSystemPage />} />
         <Route path="event-designer" element={<EventDesignerPage />} />
         <Route path="family-portal" element={<FamilyPortalPage />} />
-        <Route path="payment-settings" element={<PaymentSettingsPage />} />
+        <Route path="payment-settings" element={<Navigate to="/app/school-management" replace />} />
         <Route path="parent-pay" element={<ParentPaymentPortal />} />
         <Route path="school-management" element={<SchoolManagementPage />} />
         <Route path="employee-management" element={<EmployeeManagementPage />} />
