@@ -3392,7 +3392,7 @@ async def generate_answer_image(
         raise HTTPException(status_code=500, detail="Emergent LLM key not configured")
     
     try:
-        from emergentintegrations.llm.gemini import GeminiImageGen, ImagePrompt
+        from emergentintegrations.llm.gemeni.image_generation import GeminiImageGeneration
         
         # Create a descriptive prompt for the image
         image_prompt = f"""Create an educational diagram/illustration for a {subject} question paper answer key.
@@ -3408,19 +3408,21 @@ Requirements:
 - Monochrome or simple colors suitable for printing
 - Include all key parts mentioned in the answer"""
         
-        image_gen = GeminiImageGen(api_key=emergent_key)
+        image_gen = GeminiImageGeneration(api_key=emergent_key)
         
-        prompt = ImagePrompt(
-            text=image_prompt,
-            aspect_ratio="1:1"
-        )
+        result = await image_gen.generate_image(image_prompt)
         
-        result = await image_gen.generate_image(prompt)
-        
-        if result and result.image_url:
+        if result and hasattr(result, 'image_url') and result.image_url:
             return {
                 "success": True,
                 "image_url": result.image_url,
+                "question": question,
+                "answer": answer
+            }
+        elif result and isinstance(result, dict) and result.get('url'):
+            return {
+                "success": True,
+                "image_url": result.get('url'),
                 "question": question,
                 "answer": answer
             }
