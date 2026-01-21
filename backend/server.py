@@ -2899,7 +2899,7 @@ async def toggle_employee_login(
             hashed_password = hashlib.sha256(pwd.encode()).hexdigest()
             
             role = employee.get("role", "teacher")
-            permissions = employee.get("permissions", ROLE_PERMISSIONS.get(role, {}))
+            permissions = employee.get("permissions", DEFAULT_PERMISSIONS.get(role, {}))
             
             user_data = {
                 "id": str(uuid.uuid4()),
