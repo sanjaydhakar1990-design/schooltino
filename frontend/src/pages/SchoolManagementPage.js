@@ -141,6 +141,99 @@ export default function SchoolManagementPage() {
     }
   };
 
+  const handleSignatureUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await axios.post(`${API}/api/school/upload-signature`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data.url) {
+        setSchool(prev => ({ ...prev, signature_url: response.data.url }));
+        toast.success('Signature uploaded!');
+      }
+    } catch (error) {
+      // Fallback to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSchool(prev => ({ ...prev, signature_url: reader.result }));
+        toast.success('Signature uploaded!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSealUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await axios.post(`${API}/api/school/upload-seal`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data.url) {
+        setSchool(prev => ({ ...prev, seal_url: response.data.url }));
+        toast.success('Seal uploaded!');
+      }
+    } catch (error) {
+      // Fallback to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSchool(prev => ({ ...prev, seal_url: reader.result }));
+        toast.success('Seal uploaded!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const generateAISeal = async () => {
+    if (!school.name) {
+      toast.error('पहले School का नाम डालें');
+      return;
+    }
+    
+    setGeneratingAISeal(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API}/api/school/generate-ai-seal`, {
+        school_name: school.name,
+        school_motto: school.motto || '',
+        seal_shape: aiSealConfig.seal_shape,
+        color_scheme: aiSealConfig.color_scheme
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success && response.data.seal_url) {
+        setSchool(prev => ({ ...prev, seal_url: response.data.seal_url }));
+        toast.success('AI Seal generated! 🎉');
+      } else {
+        toast.error(response.data.message || 'Seal generate नहीं हो पाया');
+      }
+    } catch (error) {
+      toast.error('AI Seal generation में समस्या');
+    } finally {
+      setGeneratingAISeal(false);
+    }
+  };
+
   const saveSchoolProfile = async () => {
     setSaving(true);
     try {
