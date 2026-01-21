@@ -1889,45 +1889,21 @@ async def delete_class(class_id: str, current_user: dict = Depends(get_current_u
 
 async def generate_smart_student_id(school_id: str, admission_year: int = None) -> str:
     """
-    Generate unique student ID with school abbreviation
-    Format: STU-<SCHOOL_ABBR>-<YEAR>-<SEQ_NO>
-    Example: STU-SCS-2026-001 (Sainath Convent School, 2026, first student)
+    Generate globally unique student ID
+    Format: STU-<YEAR>-<UNIQUE_SEQ>
+    Example: STU-2026-00001
     """
     year = admission_year or datetime.now().year
     
-    # Get school info to create abbreviation
-    school = await db.schools.find_one({"id": school_id}, {"_id": 0, "name": 1})
-    
-    # Generate school abbreviation from name
-    school_abbr = "SCH"  # Default
-    if school and school.get("name"):
-        school_name = school["name"]
-        # Remove common words and create abbreviation
-        skip_words = ['school', 'academy', 'public', 'private', 'international', 'high', 'higher', 'secondary', 
-                      'primary', 'senior', 'junior', 'the', 'of', 'and', 'vidyalaya', 'vidya', 'mandir', 'kendra',
-                      'convent', 'memorial', 'english', 'medium', 'cbse', 'icse', 'state']
-        words = [w for w in school_name.split() if w.lower() not in skip_words and len(w) > 1]
-        
-        if len(words) >= 3:
-            # Take first letter of first 3 meaningful words
-            school_abbr = ''.join([w[0].upper() for w in words[:3]])
-        elif len(words) == 2:
-            # Take first 2 letters of first word + first letter of second
-            school_abbr = words[0][:2].upper() + words[1][0].upper()
-        elif len(words) == 1:
-            # Take first 3 letters
-            school_abbr = words[0][:3].upper()
-        else:
-            # Fallback - take first 3 letters of original name
-            school_abbr = school_name.replace(' ', '')[:3].upper()
-    
-    # Get count of students admitted in this year for this school
+    # Get global count of all students for this year
     count = await db.students.count_documents({
-        "school_id": school_id,
-        "student_id": {"$regex": f"^STU-{school_abbr}-{year}-"}
+        "student_id": {"$regex": f"^STU-{year}-"}
     })
     
-    # Generate sequence number (001, 002, etc.)
+    # Generate sequence number (00001, 00002, etc.)
+    seq_no = str(count + 1).zfill(5)
+    
+    return f"STU-{year}-{seq_no}"
     seq_no = str(count + 1).zfill(3)
     
     # If sequence > 999, use 4 digits
