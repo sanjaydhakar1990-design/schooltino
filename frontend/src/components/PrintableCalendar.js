@@ -212,21 +212,27 @@ export default function PrintableCalendar({ school, customEvents = [], testimoni
         <div className="w-[210mm] min-h-[297mm] mx-auto bg-white p-4 shadow-lg print:shadow-none print:p-2">
           
           {/* Header - School Branding */}
-          <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white p-3 rounded-t-lg">
-            <div className="flex items-center justify-between">
+          <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white p-3 rounded-t-lg relative overflow-hidden">
+            {/* School Logo Watermark */}
+            {school?.logo_url && (
+              <div className="absolute right-0 top-0 w-40 h-40 opacity-10">
+                <img src={school.logo_url} alt="" className="w-full h-full object-contain" />
+              </div>
+            )}
+            <div className="flex items-center justify-between relative z-10">
               <div className="flex items-center gap-3">
                 {school?.logo_url && (
-                  <img src={school.logo_url} alt="" className="w-16 h-16 rounded-full border-2 border-white" />
+                  <img src={school.logo_url} alt="" className="w-16 h-16 rounded-full border-2 border-white object-cover" />
                 )}
                 <div>
-                  <h1 className="text-2xl font-bold">{school?.name || 'APS Science School'}</h1>
-                  <p className="text-sm opacity-90">{school?.motto || 'Excellence in Education'}</p>
+                  <h1 className="text-2xl font-bold">{school?.name || 'School Name Not Set'}</h1>
+                  <p className="text-sm opacity-90">{school?.motto || school?.tagline || ''}</p>
                 </div>
               </div>
               <div className="text-right text-sm">
-                <p>📞 {school?.phone || '+91 XXXXX XXXXX'}</p>
-                <p>📧 {school?.email || 'info@school.com'}</p>
-                <p>🌐 {school?.website_url || 'www.school.com'}</p>
+                {school?.phone && <p>📞 {school.phone}</p>}
+                {school?.email && <p>📧 {school.email}</p>}
+                {school?.website_url && <p>🌐 {school.website_url}</p>}
               </div>
             </div>
           </div>
