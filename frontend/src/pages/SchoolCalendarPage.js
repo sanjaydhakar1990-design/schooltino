@@ -675,33 +675,33 @@ export default function SchoolCalendarPage() {
           </>
         ) : (
           /* Year View - All 12 Months */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 print:grid-cols-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 print:grid-cols-4 calendar-months-grid">
             {months.map((month, monthIdx) => {
               const year = monthIdx >= 3 ? 2025 : 2026; // April 2025 to March 2026
               const monthEvents = getMonthEvents(monthIdx, year);
               
               return (
-                <Card key={monthIdx} className="print:border print:shadow-none">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-bold">{month} {year}</CardTitle>
+                <Card key={monthIdx} className="print:border print:shadow-none month-card">
+                  <CardHeader className="pb-2 print:pb-1">
+                    <CardTitle className="text-sm font-bold print:text-xs">{month} {year}</CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 print:pt-0">
                     {monthEvents.length > 0 ? (
-                      <ul className="space-y-1">
+                      <ul className="space-y-1 print:space-y-0">
                         {monthEvents.slice(0, 5).map((event, i) => (
-                          <li key={i} className="text-xs flex items-start gap-1">
-                            <span className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${getEventTypeColor(event.type).split(' ')[0]}`}></span>
+                          <li key={i} className="text-xs flex items-start gap-1 print:text-[9px]">
+                            <span className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 print:w-1.5 print:h-1.5 ${getEventTypeColor(event.type).split(' ')[0]}`}></span>
                             <span>
                               <strong>{new Date(event.date).getDate()}</strong> - {event.name}
                             </span>
                           </li>
                         ))}
                         {monthEvents.length > 5 && (
-                          <li className="text-xs text-slate-400">+{monthEvents.length - 5} more</li>
+                          <li className="text-xs text-slate-400 print:text-[8px]">+{monthEvents.length - 5} more</li>
                         )}
                       </ul>
                     ) : (
-                      <p className="text-xs text-slate-400">-</p>
+                      <p className="text-xs text-slate-400 print:text-[9px]">-</p>
                     )}
                   </CardContent>
                 </Card>
@@ -711,25 +711,31 @@ export default function SchoolCalendarPage() {
         )}
 
         {/* Legend */}
-        <div className="mt-6 flex flex-wrap gap-2 justify-center">
+        <div className="mt-6 flex flex-wrap gap-2 justify-center print:mt-4 print:gap-1">
           {['national', 'festival', 'state', 'vacation', 'school_event', 'exam'].map(type => (
-            <span key={type} className={`px-3 py-1 rounded-full text-xs border ${getEventTypeBadge(type)}`}>
+            <span key={type} className={`px-3 py-1 rounded-full text-xs border print:px-2 print:text-[8px] ${getEventTypeBadge(type)}`}>
               {getEventTypeLabel(type)}
             </span>
           ))}
         </div>
 
+        {/* School Footer for Print */}
+        <div className="hidden print:block mt-8 pt-4 border-t text-center text-xs text-gray-500">
+          <p>© {new Date().getFullYear()} {school?.name}. All Rights Reserved.</p>
+          {school?.website_url && <p>{school.website_url}</p>}
+        </div>
+
         {/* Photos Section for Print */}
         {calendarPhotos.length > 0 && (
-          <div className="mt-8 print:mt-6">
-            <h3 className="text-lg font-bold mb-4 text-center">{isHindi ? 'फोटो गैलरी' : 'Photo Gallery'}</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:grid-cols-4">
+          <div className="mt-8 print:mt-6 print:page-break-before">
+            <h3 className="text-lg font-bold mb-4 text-center print:text-base">{isHindi ? 'फोटो गैलरी' : 'Photo Gallery'}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
               {calendarPhotos.slice(0, 8).map((photo, idx) => (
                 <img 
                   key={idx} 
                   src={photo.url} 
                   alt={`Gallery ${idx + 1}`}
-                  className="w-full h-32 object-cover rounded-lg print:h-24"
+                  className="w-full h-32 object-cover rounded-lg print:h-20"
                 />
               ))}
             </div>
