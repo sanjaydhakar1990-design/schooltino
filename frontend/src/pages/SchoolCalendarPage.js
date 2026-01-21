@@ -88,7 +88,7 @@ export default function SchoolCalendarPage() {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [viewMode, setViewMode] = useState('month'); // 'month' or 'year'
+  const [viewMode, setViewMode] = useState('month'); // 'month', 'year', or 'print'
   
   // Event Modal States
   const [showEventModal, setShowEventModal] = useState(false);
@@ -107,6 +107,11 @@ export default function SchoolCalendarPage() {
   const [testimonials, setTestimonials] = useState([]);
   const [editingTestimonial, setEditingTestimonial] = useState(null);
   const [testimonialForm, setTestimonialForm] = useState({ text: '', author: '', designation: '', photo: null });
+  
+  // Student Achievements for Calendar
+  const [achievements, setAchievements] = useState([]);
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [achievementForm, setAchievementForm] = useState({ name: '', achievement: '', photo: null });
   
   // AI Calendar Generation
   const [generatingCalendar, setGeneratingCalendar] = useState(false);
