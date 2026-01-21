@@ -462,7 +462,7 @@ async def check_status():
     return {
         "tts_available": eleven_client is not None,
         "stt_available": stt_client is not None,
-        "ai_available": openai_client is not None,
+        "ai_available": emergent_chat_available,
         "voices": {
             "male": {"id": VOICE_IDS["male"], "name": "Liam (Multilingual)"},
             "female": {"id": VOICE_IDS["female"], "name": "Sarah (Multilingual)"}
