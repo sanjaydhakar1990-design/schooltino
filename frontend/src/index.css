@@ -204,3 +204,93 @@ input:focus, select:focus, textarea:focus {
         display: contents !important;
     }
 }
+
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+  /* Hide non-printable elements */
+  .print\\:hidden,
+  nav,
+  aside,
+  footer,
+  .no-print,
+  button:not(.print-btn),
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  /* Show print elements */
+  .print\\:block {
+    display: block !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 10mm 15mm;
+  }
+
+  body {
+    font-size: 11pt;
+    line-height: 1.4;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Calendar print layout */
+  .calendar-print-container {
+    page-break-inside: avoid;
+  }
+
+  /* Watermark background */
+  .calendar-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.08;
+    z-index: -1;
+    width: 60%;
+    max-width: 400px;
+    pointer-events: none;
+  }
+
+  /* School header for print */
+  .school-print-header {
+    text-align: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+  }
+
+  .school-print-header img {
+    max-height: 60px;
+  }
+
+  /* Grid layout for calendar months */
+  .calendar-months-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Month card styling */
+  .month-card {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure colors print */
+  .bg-red-100, .bg-amber-100, .bg-blue-100, .bg-green-100 {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page breaks */
+  .print-page-break {
+    page-break-after: always;
+  }
+}
+
