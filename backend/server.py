@@ -7507,6 +7507,40 @@ class SchoolSettingsModel(BaseModel):
     custom_holidays: List[Dict[str, Any]] = []
     syllabus_manual_progress: bool = False
     syllabus_photo_upload: bool = True
+    
+    # Payment Settings
+    payment_settings: Optional[Dict[str, Any]] = None  # UPI, bank details
+
+class PaymentSettingsModel(BaseModel):
+    school_id: str
+    # UPI Details
+    gpay_number: Optional[str] = None
+    paytm_number: Optional[str] = None
+    phonepe_number: Optional[str] = None
+    upi_id: Optional[str] = None  # school@upi
+    # Bank Details
+    bank_name: Optional[str] = None
+    account_number: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    account_holder_name: Optional[str] = None
+    # QR Code
+    qr_code_url: Optional[str] = None
+    # Receipt Settings
+    receipt_prefix: str = "RCP"
+    receipt_footer_note: Optional[str] = None
+    show_bank_details_on_receipt: bool = True
+    authorized_signatory_name: Optional[str] = None
+    authorized_signatory_designation: Optional[str] = None
+
+class OnlinePaymentCreate(BaseModel):
+    student_id: str
+    invoice_id: Optional[str] = None
+    amount: float
+    payment_mode: str  # gpay, paytm, phonepe, upi, bank_transfer
+    transaction_id: str  # UPI reference number
+    payer_upi_id: Optional[str] = None
+    payer_name: Optional[str] = None
+    remarks: Optional[str] = None
 
 @api_router.get("/school/settings")
 async def get_school_settings(school_id: str, current_user: dict = Depends(get_current_user)):
