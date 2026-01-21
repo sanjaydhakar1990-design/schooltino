@@ -1741,6 +1741,10 @@ async def get_schools(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/schools/{school_id}", response_model=SchoolResponse)
 async def get_school(school_id: str, current_user: dict = Depends(get_current_user)):
+    # Verify user has access to this school
+    if not current_user.get("is_superadmin") and current_user.get("school_id") != school_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this school")
+    
     school = await db.schools.find_one({"id": school_id}, {"_id": 0})
     if not school:
         raise HTTPException(status_code=404, detail="School not found")
