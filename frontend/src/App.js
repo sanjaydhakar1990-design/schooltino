@@ -348,6 +348,7 @@ function AppRoutes() {
         <Route path="family-portal" element={<FamilyPortalPage />} />
         <Route path="payment-settings" element={<PaymentSettingsPage />} />
         <Route path="parent-pay" element={<ParentPaymentPortal />} />
+        <Route path="school-management" element={<SchoolManagementPage />} />
       </Route>
       
       {/* Old routes redirect to /app */}
