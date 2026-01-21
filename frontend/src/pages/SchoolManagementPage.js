@@ -18,6 +18,7 @@ import {
   Settings, FileText, Camera, AlertCircle, Sparkles, PenTool, Stamp
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { WatermarkSettings } from '../components/SchoolLogoWatermark';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
