@@ -3377,6 +3377,68 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
         logging.error(f"AI Paper generation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate paper: {str(e)}")
 
+@api_router.post("/ai/generate-answer-image")
+async def generate_answer_image(
+    question: str = Body(...),
+    answer: str = Body(...),
+    subject: str = Body(...),
+    question_type: str = Body(default="diagram"),
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate an image/diagram for paper answer key using Nano Banana"""
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="Emergent LLM key not configured")
+    
+    try:
+        from emergentintegrations.llm.gemini import GeminiImageGen, ImagePrompt
+        
+        # Create a descriptive prompt for the image
+        image_prompt = f"""Create an educational diagram/illustration for a {subject} question paper answer key.
+
+Topic: {question}
+
+The diagram should show: {answer}
+
+Requirements:
+- Clean, simple educational diagram suitable for school textbooks
+- Clear labels and annotations in English/Hindi
+- Professional looking like NCERT textbook illustrations
+- Monochrome or simple colors suitable for printing
+- Include all key parts mentioned in the answer"""
+        
+        image_gen = GeminiImageGen(api_key=emergent_key)
+        
+        prompt = ImagePrompt(
+            text=image_prompt,
+            aspect_ratio="1:1"
+        )
+        
+        result = await image_gen.generate_image(prompt)
+        
+        if result and result.image_url:
+            return {
+                "success": True,
+                "image_url": result.image_url,
+                "question": question,
+                "answer": answer
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to generate image",
+                "fallback_text": answer
+            }
+            
+    except Exception as e:
+        logging.error(f"Answer image generation error: {str(e)}")
+        return {
+            "success": False,
+            "message": str(e),
+            "fallback_text": answer
+        }
+
 # ==================== AI PAPER - GET CHAPTERS ====================
 
 @api_router.get("/ai/paper/subjects/{class_name}")
