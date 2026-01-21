@@ -807,14 +807,32 @@ export default function SchoolManagementPage() {
                         <PenTool className="w-8 h-8 text-gray-400" />
                       )}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 space-y-2">
                       <label className="block">
                         <input type="file" accept="image/*" onChange={handleSignatureUpload} className="hidden" />
                         <Button variant="outline" size="sm" className="w-full" asChild>
                           <span><Upload className="w-4 h-4 mr-1" /> Upload Signature</span>
                         </Button>
                       </label>
-                      <p className="text-xs text-gray-500 mt-2">PNG with transparent background recommended</p>
+                      <label className="block">
+                        <input type="file" accept="image/*" onChange={handleAISignatureRemoveBg} className="hidden" />
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="w-full bg-gradient-to-r from-pink-500 to-purple-600"
+                          disabled={removingBgSignature}
+                          asChild
+                        >
+                          <span>
+                            {removingBgSignature ? (
+                              <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processing...</>
+                            ) : (
+                              <><Sparkles className="w-4 h-4 mr-1" /> AI BG Remove</>
+                            )}
+                          </span>
+                        </Button>
+                      </label>
+                      <p className="text-xs text-gray-500">कागज पर signature की photo upload करो, AI background हटा देगा</p>
                     </div>
                   </div>
                 </div>
@@ -837,6 +855,24 @@ export default function SchoolManagementPage() {
                           <span><Upload className="w-4 h-4 mr-1" /> Upload Seal</span>
                         </Button>
                       </label>
+                      <label className="block">
+                        <input type="file" accept="image/*" onChange={handleAISealRemoveBg} className="hidden" />
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="w-full bg-gradient-to-r from-pink-500 to-purple-600"
+                          disabled={removingBgSeal}
+                          asChild
+                        >
+                          <span>
+                            {removingBgSeal ? (
+                              <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processing...</>
+                            ) : (
+                              <><Sparkles className="w-4 h-4 mr-1" /> AI BG Remove</>
+                            )}
+                          </span>
+                        </Button>
+                      </label>
                       <Button 
                         variant="default" 
                         size="sm" 
@@ -847,7 +883,7 @@ export default function SchoolManagementPage() {
                         {generatingAISeal ? (
                           <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating...</>
                         ) : (
-                          <><Sparkles className="w-4 h-4 mr-1" /> AI से Seal बनाएं</>
+                          <><Sparkles className="w-4 h-4 mr-1" /> AI से नई Seal बनाएं</>
                         )}
                       </Button>
                     </div>
