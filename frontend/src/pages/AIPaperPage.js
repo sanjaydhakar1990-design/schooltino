@@ -735,6 +735,40 @@ export default function AIPaperPage() {
                           <p className="text-blue-700 print:text-gray-700">{q.diagram_description}</p>
                         </div>
                       )}
+                      
+                      {/* Generated Image for diagram/visual questions */}
+                      {answerImages[idx] && (
+                        <div className="mt-3">
+                          <img 
+                            src={answerImages[idx]} 
+                            alt={`Answer diagram for Q${idx + 1}`}
+                            className="max-w-full h-auto rounded-lg border shadow-sm max-h-64 object-contain"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Generate Image Button - Only for diagram/long type questions */}
+                      {(q.type === 'diagram' || q.type === 'long') && !answerImages[idx] && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => generateAnswerImage(idx, q)}
+                          disabled={generatingImage === idx}
+                          className="mt-2 print:hidden"
+                        >
+                          {generatingImage === idx ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              चित्र बना रहा है...
+                            </>
+                          ) : (
+                            <>
+                              <Image className="w-4 h-4 mr-2" />
+                              AI से चित्र बनाएं
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
