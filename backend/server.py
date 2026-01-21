@@ -2657,6 +2657,21 @@ async def get_attendance_stats(
         "not_marked": total_students - present - absent - late
     }
 
+@api_router.get("/attendance/check-holiday")
+async def check_holiday_api(
+    school_id: str,
+    date: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Check if a specific date is a holiday for the school"""
+    holiday_name = await check_if_holiday(school_id, date)
+    
+    return {
+        "date": date,
+        "is_holiday": holiday_name is not None,
+        "holiday_name": holiday_name
+    }
+
 # ==================== FEE ROUTES ====================
 
 @api_router.post("/fees/plans", response_model=FeePlanResponse)
