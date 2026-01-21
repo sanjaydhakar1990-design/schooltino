@@ -185,6 +185,54 @@ export default function EventDesignerPage() {
     }
   };
 
+  // WhatsApp Share function
+  const handleWhatsAppShare = () => {
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('hi-IN', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    };
+
+    const formatTime = (timeStr) => {
+      if (!timeStr) return '';
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes} ${ampm}`;
+    };
+
+    // Create invitation message
+    const message = `🎉 *${eventDetails.eventName || 'Event'}*
+
+🏫 *${school.name}*
+
+📅 *दिनांक:* ${formatDate(eventDetails.eventDate)}
+${eventDetails.eventTime ? `🕐 *समय:* ${formatTime(eventDetails.eventTime)}` : ''}
+${eventDetails.venue ? `📍 *स्थान:* ${eventDetails.venue}` : ''}
+${eventDetails.chiefGuest ? `👤 *मुख्य अतिथि:* ${eventDetails.chiefGuest}` : ''}
+
+${eventDetails.description || ''}
+
+${eventDetails.specialNote ? `✨ *${eventDetails.specialNote}*` : 'आपका सहर्ष स्वागत है।'}
+
+${eventDetails.contactNumber ? `📞 संपर्क: ${eventDetails.contactNumber}` : ''}
+
+_Powered by Schooltino_`;
+
+    // Encode for WhatsApp URL
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+    toast.success(isHindi ? 'WhatsApp खुल रहा है...' : 'Opening WhatsApp...');
+  };
+
   return (
     <div className="space-y-6" data-testid="event-designer-page">
       {/* Header */}
