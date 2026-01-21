@@ -8346,9 +8346,11 @@ async def generate_calendar_image(
     events: str = Body(default=""),
     state: str = Body(default="Rajasthan"),
     language: str = Body(default="hi"),
+    include_logo_watermark: bool = Body(default=True),
+    calendar_style: str = Body(default="single_page"),  # single_page, two_page, poster
     current_user: dict = Depends(get_current_user)
 ):
-    """Generate AI calendar image using Nano Banana"""
+    """Generate AI calendar image using Nano Banana with school branding"""
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
         import base64
@@ -8357,33 +8359,67 @@ async def generate_calendar_image(
         if not EMERGENT_LLM_KEY:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
-        # Create prompt for calendar image
-        prompt = f"""Create a beautiful, professional Indian school calendar poster/banner for:
+        # Fetch school details for branding
+        school = await db.schools.find_one({"id": school_id}, {"_id": 0})
+        school_motto = school.get("motto", "") if school else ""
+        school_address = school.get("address", "") if school else ""
+        school_phone = school.get("phone", "") if school else ""
+        established_year = school.get("established_year", "") if school else ""
+        
+        # Style-specific instructions
+        style_instructions = {
+            "single_page": "Design as a single A4/Letter page calendar with all 12 months visible in a grid layout (3x4 or 4x3). Compact but readable.",
+            "two_page": "Design as a two-page spread calendar. First page: School header + Jan-Jun months. Second page: Jul-Dec months + footer.",
+            "poster": "Design as a large poster/banner style calendar suitable for wall display. Bold, colorful, easy to read from distance."
+        }
+        
+        # Create enhanced prompt for calendar image
+        prompt = f"""Create a professional Indian school calendar for printing:
 
-School: {school_name}
-Academic Year: {year}
-State: {state}
-Language: {"Hindi" if language == "hi" else "English"}
+SCHOOL DETAILS:
+- Name: {school_name}
+- Motto: {school_motto if school_motto else "Excellence in Education"}
+- Address: {school_address}
+- Contact: {school_phone}
+- Established: {established_year if established_year else "20XX"}
+- Academic Year: {year}
+- State Board: {state}
 
-Important Events: {events if events else "Republic Day, Holi, Independence Day, Diwali, Annual Function"}
+DESIGN STYLE: {style_instructions.get(calendar_style, style_instructions['single_page'])}
 
-Design Requirements:
-- Traditional Indian school calendar aesthetic with modern touch
-- Include decorative borders with Indian motifs (peacock, lotus, rangoli patterns)
-- School name prominently displayed at top
-- Academic year clearly visible
-- Space for monthly calendar grid
-- Include colorful festival/holiday icons
-- Professional yet festive look suitable for printing
-- Use saffron, green, blue color scheme (Indian flag inspired)
-- Add "Powered by Schooltino" at bottom
+IMPORTANT EVENTS TO HIGHLIGHT:
+{events if events else '''
+- 26 Jan: Republic Day (गणतंत्र दिवस)
+- 14 Feb: Basant Panchami
+- March: Holi Festival 
+- 14 Apr: Ambedkar Jayanti
+- May: Summer Vacation
+- 15 Aug: Independence Day (स्वतंत्रता दिवस)
+- Sept: Teacher's Day
+- Oct: Dussehra, Diwali
+- 14 Nov: Children's Day
+- Dec: Winter Break, Annual Function'''}
 
-Make it visually appealing for parents and students."""
+DESIGN REQUIREMENTS:
+1. School name "{school_name}" prominently at TOP CENTER with decorative border
+2. {"Add faded/watermark school logo/emblem in the center background" if include_logo_watermark else "Clean background without watermark"}
+3. 12-month grid with dates clearly visible
+4. Holidays marked in RED
+5. School events in BLUE
+6. Festivals in ORANGE/YELLOW
+7. Decorative Indian motifs (lotus, peacock, rangoli) on borders
+8. Color scheme: Saffron, White, Green (tricolor inspired) + Deep Blue accents
+9. Professional typography - Hindi and English both if language is Hindi
+10. Footer: "Powered by Schooltino | AI-Generated Calendar"
+11. Print-ready quality (no page cutting issues)
+12. Clear margins on all sides
+
+Make it beautiful, professional, and suitable for school display."""
 
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"calendar-{uuid.uuid4().hex[:8]}",
-            system_message="You are an expert designer creating beautiful school calendars."
+            system_message="You are an expert designer creating beautiful, print-ready school calendars for Indian schools."
         ).with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
         
         msg = UserMessage(text=prompt)
@@ -8406,11 +8442,17 @@ Make it visually appealing for parents and students."""
                 "school_id": school_id,
                 "image_url": image_url,
                 "year": year,
+                "style": calendar_style,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "created_by": current_user["id"]
             })
             
-            return {"success": True, "image_url": image_url, "message": text_response}
+            return {
+                "success": True, 
+                "image_url": image_url, 
+                "message": text_response,
+                "style": calendar_style
+            }
         else:
             raise HTTPException(status_code=500, detail="Image generation failed")
             
