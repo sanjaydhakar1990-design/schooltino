@@ -340,6 +340,7 @@ function AppRoutes() {
         <Route path="complaints" element={<ComplaintFeedbackPage />} />
         <Route path="prayer-system" element={<PrayerSystemPage />} />
         <Route path="event-designer" element={<EventDesignerPage />} />
+        <Route path="family-portal" element={<FamilyPortalPage />} />
       </Route>
       
       {/* Old routes redirect to /app */}
