@@ -1,29 +1,34 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 20, 2026 (Evening Session)
+## Last Updated: January 21, 2026
 
-## ✅ NEW FEATURE: AI Event Designer 🎨 (Jan 20, 2026)
+## ✅ NEW FEATURES (Jan 21, 2026)
 
-### AI-Powered Pamphlet & Invitation Card Designer
+### 1. AI Event Designer with WhatsApp Share 🎨📱
 - **Location:** `/app/event-designer`
 - **Features:**
   - Design Type: Pamphlet (Poster/Flyer) OR Invitation Card (निमंत्रण पत्र)
   - 6 Event Templates: Annual Function, Sports Day, Graduation, Cultural Fest, Parent-Teacher Meet, Custom
   - 5 Design Styles: Modern & Minimal, Traditional Indian, Festive & Colorful, Elegant & Premium, Playful & Fun
   - Event Details Form: Name, Date, Time, Venue, Chief Guest, Description, Contact, Special Note
-  - AI-Generated Preview with school branding
+  - **WhatsApp Share Button** - Direct invitation भेजें parents को WhatsApp पर
   - Print, Download PDF, Share options
 - **Files:**
-  - `/app/frontend/src/pages/EventDesignerPage.js` - New page
+  - `/app/frontend/src/pages/EventDesignerPage.js`
   - `/app/backend/server.py` - API endpoints (Line 7527+)
 - **API Endpoints:**
-  - `POST /api/events/generate-design` - Generate design
-  - `GET /api/events/designs/{school_id}` - Get all designs
-- **Testing:** All 11 tests passed (iteration_26)
+  - `POST /api/events/generate-design`
+  - `GET /api/events/designs/{school_id}`
+
+### 2. Voice Assistant (Tino) Fixed 🎙️
+- **Issue:** OpenAI API key was invalid causing "technical problem" errors
+- **Fix:** Migrated to Emergent LLM Key using `emergentintegrations` library
+- **Now working:** AI chat responses in Hinglish, navigation commands, TTS audio
+- **File:** `/app/backend/routes/voice_assistant.py`
 
 ---
 
-## ✅ Latest Fixes (January 20, 2026)
+## ✅ Previous Fixes (January 20, 2026)
 
 ### 1. Full-App Language Toggle Fixed
 - Previously language toggle was only changing sidebar, not main pages
