@@ -1012,6 +1012,113 @@ export default function SchoolCalendarPage() {
           @page { margin: 10mm; size: A4; }
         }
       `}</style>
+
+      {/* Achievement Modal for Diamonds of School */}
+      {showAchievementModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-600" />
+                {isHindi ? '🏆 हमारे गौरव - Diamonds of School' : '🏆 Our Achievers - Diamonds of School'}
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowAchievementModal(false)}>
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            
+            <p className="text-sm text-slate-500 mb-4">
+              {isHindi 
+                ? 'यहाँ अपने स्कूल के होनहार विद्यार्थियों की उपलब्धियाँ जोड़ें जो कैलेंडर में दिखेंगी (IIT/NIT/NEET/NDA selections etc.)' 
+                : 'Add your school achievers here - these will appear in the printed calendar (IIT/NIT/NEET/NDA selections etc.)'
+              }
+            </p>
+            
+            {/* Existing Achievements */}
+            {achievements.length > 0 && (
+              <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                {achievements.map((ach, idx) => (
+                  <div key={idx} className="relative p-3 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 text-center">
+                    <button 
+                      onClick={() => setAchievements(achievements.filter((_, i) => i !== idx))}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs"
+                    >
+                      ×
+                    </button>
+                    {ach.photo && (
+                      <img src={ach.photo} alt="" className="w-12 h-12 rounded-full mx-auto mb-2 border-2 border-yellow-400 object-cover" />
+                    )}
+                    <p className="text-sm font-bold">{ach.name}</p>
+                    <p className="text-xs text-gray-600">{ach.achievement}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Add New Achievement */}
+            <div className="space-y-4 border-t pt-4">
+              <h4 className="font-semibold">{isHindi ? '➕ नई उपलब्धि जोड़ें' : '➕ Add New Achievement'}</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{isHindi ? 'विद्यार्थी का नाम' : 'Student Name'} *</Label>
+                  <Input
+                    value={achievementForm.name}
+                    onChange={(e) => setAchievementForm({ ...achievementForm, name: e.target.value })}
+                    placeholder={isHindi ? 'जैसे: राहुल शर्मा' : 'e.g., Rahul Sharma'}
+                  />
+                </div>
+                <div>
+                  <Label>{isHindi ? 'उपलब्धि' : 'Achievement'} *</Label>
+                  <Input
+                    value={achievementForm.achievement}
+                    onChange={(e) => setAchievementForm({ ...achievementForm, achievement: e.target.value })}
+                    placeholder={isHindi ? 'जैसे: IIT Delhi - AIR 125' : 'e.g., IIT Delhi - AIR 125'}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>{isHindi ? 'फोटो (Optional)' : 'Photo (Optional)'}</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setAchievementForm({ ...achievementForm, photo: ev.target.result });
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
+              <Button 
+                onClick={() => {
+                  if (achievementForm.name && achievementForm.achievement) {
+                    setAchievements([...achievements, { ...achievementForm, id: Date.now() }]);
+                    setAchievementForm({ name: '', achievement: '', photo: null });
+                    toast.success(isHindi ? 'उपलब्धि जोड़ी गई!' : 'Achievement added!');
+                  }
+                }} 
+                className="w-full bg-yellow-600 hover:bg-yellow-700"
+              >
+                <Award className="w-4 h-4 mr-2" />
+                {isHindi ? 'जोड़ें' : 'Add Achievement'}
+              </Button>
+            </div>
+            
+            {/* Sample Achievements */}
+            <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+              <p className="text-xs font-semibold text-slate-600 mb-2">{isHindi ? '📝 उदाहरण:' : '📝 Examples:'}</p>
+              <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
+                <span>• राहुल शर्मा - IIT Delhi AIR 125</span>
+                <span>• प्रिया गुप्ता - NEET AIR 456</span>
+                <span>• अमित सिंह - NDA Selection</span>
+                <span>• नेहा वर्मा - CUET 98.5%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
