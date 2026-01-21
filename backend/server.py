@@ -4877,6 +4877,82 @@ async def upload_seal(
     
     return {"message": "Seal uploaded", "url": seal_url}
 
+@api_router.post("/school/generate-ai-seal")
+async def generate_ai_seal(
+    school_name: str = Body(...),
+    school_motto: str = Body(default=""),
+    seal_shape: str = Body(default="circular"),  # circular, rectangular, shield
+    color_scheme: str = Body(default="blue"),  # blue, red, green, gold
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate school seal/stamp using AI (Nano Banana)"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can generate seal")
+    
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Create prompt for seal generation
+        seal_prompt = f"""Generate a professional school seal/stamp design for "{school_name}".
+
+Design requirements:
+- Shape: {seal_shape} seal/stamp
+- Color scheme: {color_scheme} tones
+- Style: Official, formal, professional Indian school seal
+- Include: School name "{school_name}" arranged in circular/arc text
+{f'- Include motto: "{school_motto}"' if school_motto else ''}
+- Add decorative elements: laurel wreath, stars, or academic symbols
+- Central element: graduation cap, book, or lamp of knowledge
+- Year established placeholder: "EST. 20XX"
+- Clean, crisp edges suitable for official documents
+- Transparent or white background
+- High contrast for clear printing on receipts and certificates"""
+
+        session_id = f"seal-gen-{uuid.uuid4()}"
+        chat = LlmChat(api_key=emergent_key, session_id=session_id, system_message="You are a professional logo and seal designer")
+        chat.with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
+        
+        msg = UserMessage(text=seal_prompt)
+        text_response, images = await chat.send_message_multimodal_response(msg)
+        
+        if images and len(images) > 0:
+            img = images[0]
+            mime_type = img.get('mime_type', 'image/png')
+            img_data = img.get('data', '')
+            seal_data_url = f"data:{mime_type};base64,{img_data}"
+            
+            # Save to school record
+            await db.schools.update_one(
+                {"id": current_user.get("school_id")},
+                {"$set": {
+                    "ai_seal_url": seal_data_url,
+                    "seal_url": seal_data_url,
+                    "seal_generated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "seal_url": seal_data_url,
+                "message": "Seal generated successfully!"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to generate seal image"
+            }
+            
+    except Exception as e:
+        logging.error(f"AI Seal generation error: {str(e)}")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
 
 @api_router.get("/school/signature-seal")
 async def get_signature_seal(current_user: dict = Depends(get_current_user)):
