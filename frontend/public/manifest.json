@@ -3,51 +3,65 @@
   "short_name": "Schooltino",
   "description": "AI + CCTV + Apps - Complete automation for modern schools",
   "start_url": "/",
+  "scope": "/",
+  "id": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180",
+      "purpose": "any"
     }
   ],
   "categories": ["education", "business", "productivity"],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "Dashboard",
       "short_name": "Dashboard",
       "url": "/dashboard",
-      "description": "View school dashboard"
+      "icons": [{"src": "logo192.png", "sizes": "192x192"}]
     },
     {
       "name": "Students",
       "short_name": "Students",
       "url": "/students",
-      "description": "Manage students"
+      "icons": [{"src": "logo192.png", "sizes": "192x192"}]
     },
     {
       "name": "Attendance",
       "short_name": "Attendance",
       "url": "/attendance",
-      "description": "Mark attendance"
+      "icons": [{"src": "logo192.png", "sizes": "192x192"}]
     }
   ],
-  "related_applications": [],
   "prefer_related_applications": false
 }
