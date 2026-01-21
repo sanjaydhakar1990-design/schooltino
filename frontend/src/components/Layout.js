@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, Mic, Globe, Download, X, Smartphone } from 'lucide-react';
+import { Menu, Globe } from 'lucide-react';
 import Sidebar from './Sidebar';
 import VoiceAssistantFAB from './VoiceAssistantFAB';
+import PWAInstaller from './PWAInstaller';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,21 +12,6 @@ export const Layout = () => {
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const { language, changeLanguage } = useLanguage();
   const { user } = useAuth();
-  
-  // PWA Install State
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [showInstallModal, setShowInstallModal] = useState(false);
-  const [installStatus, setInstallStatus] = useState('checking'); // 'checking', 'ready', 'ios', 'installed', 'unsupported'
-
-  // Detect browser/platform
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  const isAndroid = /Android/.test(navigator.userAgent);
-  const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-  const isEdge = /Edg/.test(navigator.userAgent);
-  const isFirefox = /Firefox/.test(navigator.userAgent);
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
   useEffect(() => {
     // Check if already installed
