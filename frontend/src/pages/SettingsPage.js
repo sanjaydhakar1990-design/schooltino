@@ -79,6 +79,118 @@ export default function SettingsPage() {
     }
   };
 
+  const fetchSchoolLogo = async () => {
+    try {
+      if (!schoolId) return;
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/schools/${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data?.logo_url) {
+        setLogoUrl(response.data.logo_url);
+      }
+    } catch (error) {
+      console.error('Failed to fetch school logo');
+    }
+  };
+
+  // School Logo Upload with AI Background Removal
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should be less than 5MB');
+      return;
+    }
+    
+    setUploadingLogo(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result;
+        
+        // Try AI background removal first
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.post(`${API}/school/ai-remove-background`, {
+            school_id: schoolId,
+            image_data: base64Image,
+            image_type: 'logo'
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (response.data?.processed_image) {
+            setLogoUrl(response.data.processed_image);
+            // Also save to school
+            await saveSchoolLogo(response.data.processed_image);
+            toast.success('✨ Logo uploaded with AI background removal!');
+          } else {
+            setLogoUrl(base64Image);
+            await saveSchoolLogo(base64Image);
+            toast.success('Logo uploaded!');
+          }
+        } catch (aiError) {
+          console.log('AI processing not available:', aiError);
+          setLogoUrl(base64Image);
+          await saveSchoolLogo(base64Image);
+          toast.success('Logo uploaded!');
+        }
+        
+        setUploadingLogo(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error('Failed to upload logo');
+      setUploadingLogo(false);
+    }
+  };
+
+  const saveSchoolLogo = async (logoData) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/schools/${schoolId}/update`, {
+        logo_url: logoData
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Failed to save logo:', error);
+    }
+  };
+
+  const handleAIRemoveLogoBg = async () => {
+    if (!logoUrl) {
+      toast.error('Pehle logo upload karein');
+      return;
+    }
+    
+    setRemovingLogoBg(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API}/school/ai-remove-background`, {
+        school_id: schoolId,
+        image_data: logoUrl,
+        image_type: 'logo'
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data?.processed_image) {
+        setLogoUrl(response.data.processed_image);
+        await saveSchoolLogo(response.data.processed_image);
+        toast.success('✨ Background removed successfully!');
+      } else {
+        toast.error('Background removal failed');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'AI processing failed');
+    } finally {
+      setRemovingLogoBg(false);
+    }
+  };
+
   const handleSignatureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
