@@ -271,6 +271,42 @@ NAVIGATION_COMMANDS = {
         "url": "/app/permission-manager",
         "response_male": "Permission Manager khol raha hoon.",
         "response_female": "Permission Manager khol rahi hoon."
+    },
+    "school_management": {
+        "keywords": ["school settings", "school management", "school setup", "school profile", "school ka setting"],
+        "url": "/app/school-management",
+        "response_male": "School Management khol raha hoon.",
+        "response_female": "School Management khol rahi hoon."
+    },
+    "employees": {
+        "keywords": ["employees", "employee management", "staff management", "karmchari", "कर्मचारी"],
+        "url": "/app/employee-management",
+        "response_male": "Employee Management khol raha hoon.",
+        "response_female": "Employee Management khol rahi hoon."
+    },
+    "calendar": {
+        "keywords": ["calendar", "school calendar", "holidays", "events", "chutti ka calendar", "छुट्टी"],
+        "url": "/app/school-calendar",
+        "response_male": "School Calendar khol raha hoon.",
+        "response_female": "School Calendar khol rahi hoon."
+    },
+    "timetable": {
+        "keywords": ["timetable", "time table", "schedule", "period", "समय सारणी"],
+        "url": "/app/timetable",
+        "response_male": "Timetable khol raha hoon.",
+        "response_female": "Timetable khol rahi hoon."
+    },
+    "exams": {
+        "keywords": ["exam", "exams", "examination", "pariksha", "परीक्षा", "online exam"],
+        "url": "/app/online-exam",
+        "response_male": "Online Exam khol raha hoon.",
+        "response_female": "Online Exam khol rahi hoon."
+    },
+    "results": {
+        "keywords": ["result", "results", "marks", "grade", "नतीजा", "परिणाम"],
+        "url": "/app/results",
+        "response_male": "Results page khol raha hoon.",
+        "response_female": "Results page khol rahi hoon."
     }
 }
 
