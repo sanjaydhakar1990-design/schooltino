@@ -5,8 +5,8 @@
  * - Shows floating button that triggers native install
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Download, X, Check, Smartphone, Monitor } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Download, X, Check, Smartphone } from 'lucide-react';
 import { Button } from './ui/button';
 
 // Global store for install prompt - capture ASAP
@@ -28,28 +28,30 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// Helper functions outside component
+const checkInstalled = () => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         window.navigator.standalone === true;
+};
+
+const checkIOS = () => {
+  if (typeof window === 'undefined') return false;
+  const ua = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(ua) && !window.MSStream;
+};
+
 // Hook to access install prompt
 export function usePWAInstall() {
+  // Initialize state with computed values
+  const initialInstalled = useMemo(() => checkInstalled(), []);
+  const initialIsIOS = useMemo(() => checkIOS(), []);
+  
   const [canInstall, setCanInstall] = useState(!!globalDeferredPrompt);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(initialInstalled);
+  const [isIOS] = useState(initialIsIOS);
 
   useEffect(() => {
-    // Check if running as installed PWA
-    const checkInstalled = () => {
-      return window.matchMedia('(display-mode: standalone)').matches || 
-             window.navigator.standalone === true;
-    };
-
-    // Check for iOS
-    const checkIOS = () => {
-      const ua = window.navigator.userAgent.toLowerCase();
-      return /iphone|ipad|ipod/.test(ua) && !window.MSStream;
-    };
-
-    setIsInstalled(checkInstalled());
-    setIsIOS(checkIOS());
-
     if (globalDeferredPrompt) {
       setCanInstall(true);
     }
@@ -99,13 +101,14 @@ export default function PWAInstallPrompt() {
   const [installing, setInstalling] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    // Check if dismissed in this session
-    const wasDismissed = sessionStorage.getItem('pwa_dismissed');
-    if (wasDismissed) setDismissed(true);
-  }, []);
+  
+  // Initialize dismissed state from sessionStorage
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('pwa_dismissed') === 'true';
+    }
+    return false;
+  });
 
   const handleInstall = async () => {
     if (isIOS) {
@@ -172,14 +175,14 @@ export default function PWAInstallPrompt() {
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold shrink-0">2</div>
               <div>
-                <p className="text-sm font-medium text-gray-800">"Add to Home Screen" select करें</p>
+                <p className="text-sm font-medium text-gray-800">&ldquo;Add to Home Screen&rdquo; select करें</p>
                 <p className="text-xs text-gray-500">Scroll करके find करें</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold shrink-0">3</div>
               <div>
-                <p className="text-sm font-medium text-gray-800">"Add" tap करें</p>
+                <p className="text-sm font-medium text-gray-800">&ldquo;Add&rdquo; tap करें</p>
                 <p className="text-xs text-gray-500">App install हो जाएगी! 🎉</p>
               </div>
             </div>
@@ -278,9 +281,9 @@ export function PWAInstallButton({ className = '', variant = 'default' }) {
               </div>
             </div>
             <div className="p-4 space-y-3 text-sm">
-              <p><strong>1.</strong> Tap Safari's Share button (□↑)</p>
-              <p><strong>2.</strong> Select "Add to Home Screen"</p>
-              <p><strong>3.</strong> Tap "Add" - Done!</p>
+              <p><strong>1.</strong> Tap Safari&apos;s Share button (□↑)</p>
+              <p><strong>2.</strong> Select &ldquo;Add to Home Screen&rdquo;</p>
+              <p><strong>3.</strong> Tap &ldquo;Add&rdquo; - Done!</p>
               <Button onClick={() => setShowIOSModal(false)} className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700" size="sm">
                 Got it!
               </Button>
