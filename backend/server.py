@@ -8185,12 +8185,8 @@ async def create_staff_with_auto_id(
     if existing:
         raise HTTPException(status_code=400, detail="Email already exists")
     
-    # Get school name
-    school = await db.schools.find_one({"id": school_id}, {"_id": 0, "name": 1})
-    school_name = school.get("name") if school else None
-    
     # Generate Employee ID
-    employee_id = await generate_employee_id(school_id, school_name)
+    employee_id = await generate_employee_id()
     
     # Create user
     user_id = str(uuid.uuid4())
