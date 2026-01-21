@@ -3,7 +3,7 @@
  * - School Profile (Logo, Details, Contact)
  * - Payment Settings (UPI, Bank Account)
  * - Academic Settings (Timing, Session)
- * - Receipt & Invoice Settings
+ * - Receipt & Invoice Settings (Signature, Seal, AI Seal)
  */
 
 import { useState, useEffect } from 'react';
@@ -15,7 +15,7 @@ import { Label } from '../components/ui/label';
 import { 
   Building, Save, Loader2, Upload, Phone, Mail, Globe, MapPin,
   CreditCard, Wallet, Clock, Calendar, Receipt, Image, CheckCircle,
-  Settings, FileText, Camera, AlertCircle
+  Settings, FileText, Camera, AlertCircle, Sparkles, PenTool, Stamp
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,6 +28,7 @@ export default function SchoolManagementPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const [generatingAISeal, setGeneratingAISeal] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   
   // School Profile
