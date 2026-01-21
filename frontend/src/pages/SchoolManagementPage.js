@@ -50,7 +50,20 @@ export default function SchoolManagementPage() {
     established_year: '',
     board_type: 'RBSE',
     signature_url: '',
-    seal_url: ''
+    seal_url: '',
+    // Watermark Settings
+    watermark_enabled: true,
+    watermark_opacity: 0.08,
+    watermark_size: 'large',
+    watermark_position: 'center',
+    watermark_apply: {
+      notices: true,
+      admit_cards: true,
+      calendar: true,
+      fee_receipts: true,
+      reports: false,
+      certificates: true
+    }
   });
   
   // AI Seal Settings
