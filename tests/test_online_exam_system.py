@@ -8,7 +8,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://edu-platform-157.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://school-erp-14.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TEACHER_EMAIL = "teacher@schooltino.com"

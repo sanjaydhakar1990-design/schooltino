@@ -263,7 +263,7 @@ const SchoolMarketingPage = () => {
       {/* Footer */}
       <div className="bg-black/20 py-4 text-center">
         <p className="text-blue-200 text-sm">
-          Made with ❤️ using <a href="https://edu-platform-157.preview.emergentagent.com" className="text-amber-400 hover:underline">Schooltino</a>
+          Made with ❤️ using <a href="https://school-erp-14.preview.emergentagent.com" className="text-amber-400 hover:underline">Schooltino</a>
         </p>
       </div>
 

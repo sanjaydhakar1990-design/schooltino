@@ -12,7 +12,7 @@ import requests
 import os
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://edu-platform-157.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://school-erp-14.preview.emergentagent.com')
 
 # Test credentials
 DIRECTOR_EMAIL = "director@schooltino.com"
