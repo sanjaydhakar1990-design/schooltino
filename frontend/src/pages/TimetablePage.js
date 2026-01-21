@@ -78,9 +78,11 @@ export default function TimetablePage() {
     if (!classId) return;
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
       const [ttRes, allocRes] = await Promise.all([
-        fetch(`${API_URL}/api/timetable/${classId}?school_id=${schoolId}`),
-        fetch(`${API_URL}/api/timetable/allocations/${classId}?school_id=${schoolId}`)
+        fetch(`${API_URL}/api/timetable/${classId}?school_id=${schoolId}`, { headers }),
+        fetch(`${API_URL}/api/timetable/allocations/${classId}?school_id=${schoolId}`, { headers })
       ]);
       
       const ttData = await ttRes.json();
@@ -97,9 +99,11 @@ export default function TimetablePage() {
 
   const fetchAnalytics = useCallback(async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
       const [analyticsRes, conflictsRes] = await Promise.all([
-        fetch(`${API_URL}/api/timetable/analytics?school_id=${schoolId}`),
-        fetch(`${API_URL}/api/timetable/conflicts?school_id=${schoolId}`)
+        fetch(`${API_URL}/api/timetable/analytics?school_id=${schoolId}`, { headers }),
+        fetch(`${API_URL}/api/timetable/conflicts?school_id=${schoolId}`, { headers })
       ]);
       
       setAnalytics(await analyticsRes.json());
