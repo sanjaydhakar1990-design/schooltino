@@ -94,11 +94,12 @@ except Exception as e:
     logger.warning(f"STT init failed: {e}")
 
 try:
-    from openai import OpenAI
-    if OPENAI_API_KEY:
-        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    emergent_chat_available = True if EMERGENT_LLM_KEY else False
+    logger.info(f"Emergent LLM Chat available: {emergent_chat_available}")
 except Exception as e:
-    logger.warning(f"OpenAI init failed: {e}")
+    emergent_chat_available = False
+    logger.warning(f"Emergent LLM init failed: {e}")
 
 
 # ============= MODELS =============
