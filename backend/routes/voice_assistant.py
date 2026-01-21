@@ -679,7 +679,8 @@ async def chat_with_tino(request: ChatMessage):
         )
     
     # 3. No specific command - use AI for response
-    ai_response = await get_ai_response(request.message, request.user_role, gender)
+    context = {"school_id": request.school_id, "user_id": request.user_id, "user_role": request.user_role}
+    ai_response = await get_ai_response(request.message, request.user_role, gender, context, request.is_jarvis_mode)
     audio_b64 = generate_audio(ai_response, gender)
     
     # Check if AI suggests navigation
