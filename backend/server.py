@@ -7594,6 +7594,328 @@ async def save_school_settings(settings: SchoolSettingsModel, current_user: dict
     
     return {"message": "Settings saved successfully", "settings": settings_dict}
 
+# ==================== PAYMENT SETTINGS & PARENT PAYMENT PORTAL ====================
+
+@api_router.get("/school/payment-settings")
+async def get_payment_settings(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get school payment settings (UPI, bank details)"""
+    settings = await db.payment_settings.find_one(
+        {"school_id": school_id},
+        {"_id": 0}
+    )
+    
+    if not settings:
+        return {
+            "school_id": school_id,
+            "gpay_number": None,
+            "paytm_number": None,
+            "phonepe_number": None,
+            "upi_id": None,
+            "bank_name": None,
+            "account_number": None,
+            "ifsc_code": None,
+            "receipt_prefix": "RCP"
+        }
+    
+    return settings
+
+@api_router.post("/school/payment-settings")
+async def save_payment_settings(settings: PaymentSettingsModel, current_user: dict = Depends(get_current_user)):
+    """Save school payment settings"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    settings_dict = settings.dict()
+    settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    settings_dict["updated_by"] = current_user["id"]
+    
+    await db.payment_settings.update_one(
+        {"school_id": settings.school_id},
+        {"$set": settings_dict},
+        upsert=True
+    )
+    
+    await log_audit(current_user["id"], "update", "payment_settings", {"school_id": settings.school_id})
+    
+    return {"message": "Payment settings saved", "settings": settings_dict}
+
+@api_router.get("/parent/fee-details/{student_id}")
+async def get_parent_fee_details(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Get complete fee details for parent - fee structure, pending fees, payment links"""
+    # Get student
+    student = await db.students.find_one({"id": student_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    school_id = student.get("school_id")
+    
+    # Get school info
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0})
+    
+    # Get payment settings
+    payment_settings = await db.payment_settings.find_one({"school_id": school_id}, {"_id": 0})
+    
+    # Get fee structure
+    fee_structure = await db.fee_structure.find(
+        {"school_id": school_id, "class_id": student.get("class_id")},
+        {"_id": 0}
+    ).to_list(50)
+    
+    # Get pending invoices
+    pending_invoices = await db.fee_invoices.find(
+        {"student_id": student_id, "status": {"$in": ["pending", "partial"]}},
+        {"_id": 0}
+    ).to_list(50)
+    
+    # Get payment history
+    payments = await db.fee_payments.find(
+        {"student_id": student_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    # Calculate totals
+    total_pending = sum(inv.get("amount", 0) - inv.get("paid_amount", 0) for inv in pending_invoices)
+    total_paid = sum(p.get("amount", 0) for p in payments)
+    
+    return {
+        "student": {
+            "id": student_id,
+            "name": student.get("name"),
+            "class": student.get("class_name"),
+            "admission_number": student.get("admission_number")
+        },
+        "school": {
+            "id": school_id,
+            "name": school.get("name") if school else "Unknown",
+            "logo_url": school.get("logo_url") if school else None
+        },
+        "payment_options": {
+            "gpay_number": payment_settings.get("gpay_number") if payment_settings else None,
+            "paytm_number": payment_settings.get("paytm_number") if payment_settings else None,
+            "phonepe_number": payment_settings.get("phonepe_number") if payment_settings else None,
+            "upi_id": payment_settings.get("upi_id") if payment_settings else None,
+            "qr_code_url": payment_settings.get("qr_code_url") if payment_settings else None,
+            "bank_details": {
+                "bank_name": payment_settings.get("bank_name") if payment_settings else None,
+                "account_number": payment_settings.get("account_number") if payment_settings else None,
+                "ifsc_code": payment_settings.get("ifsc_code") if payment_settings else None,
+                "account_holder_name": payment_settings.get("account_holder_name") if payment_settings else None
+            } if payment_settings and payment_settings.get("bank_name") else None
+        },
+        "fee_structure": fee_structure,
+        "pending_invoices": pending_invoices,
+        "payment_history": payments,
+        "summary": {
+            "total_pending": total_pending,
+            "total_paid": total_paid
+        }
+    }
+
+@api_router.post("/parent/record-payment")
+async def record_parent_payment(payment: OnlinePaymentCreate, current_user: dict = Depends(get_current_user)):
+    """Record payment made by parent via UPI/GPay/Paytm"""
+    # Get student
+    student = await db.students.find_one({"id": payment.student_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    school_id = student.get("school_id")
+    
+    # Get payment settings for receipt prefix
+    payment_settings = await db.payment_settings.find_one({"school_id": school_id}, {"_id": 0})
+    receipt_prefix = payment_settings.get("receipt_prefix", "RCP") if payment_settings else "RCP"
+    
+    # Generate receipt number
+    count = await db.online_payments.count_documents({"school_id": school_id})
+    receipt_no = f"{receipt_prefix}-{datetime.now().year}-{str(count + 1).zfill(6)}"
+    
+    # Create payment record
+    payment_data = {
+        "id": str(uuid.uuid4()),
+        "receipt_no": receipt_no,
+        "school_id": school_id,
+        "student_id": payment.student_id,
+        "student_name": student.get("name"),
+        "class_name": student.get("class_name"),
+        "invoice_id": payment.invoice_id,
+        "amount": payment.amount,
+        "payment_mode": payment.payment_mode,
+        "transaction_id": payment.transaction_id,
+        "payer_upi_id": payment.payer_upi_id,
+        "payer_name": payment.payer_name or current_user.get("name"),
+        "remarks": payment.remarks,
+        "status": "pending_verification",  # Admin needs to verify
+        "paid_by": current_user["id"],
+        "paid_by_name": current_user.get("name"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.online_payments.insert_one(payment_data)
+    
+    # If invoice specified, update it (pending verification)
+    if payment.invoice_id:
+        await db.fee_invoices.update_one(
+            {"id": payment.invoice_id},
+            {"$set": {"payment_status": "verification_pending"}}
+        )
+    
+    await log_audit(current_user["id"], "create", "online_payments", {
+        "payment_id": payment_data["id"],
+        "amount": payment.amount,
+        "transaction_id": payment.transaction_id
+    })
+    
+    return {
+        "message": "Payment recorded successfully. Receipt will be generated after verification.",
+        "receipt_no": receipt_no,
+        "payment": payment_data
+    }
+
+@api_router.get("/admin/pending-payments")
+async def get_pending_online_payments(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get list of online payments pending verification"""
+    if current_user["role"] not in ["director", "principal", "admin", "admin_staff"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    payments = await db.online_payments.find(
+        {"school_id": school_id, "status": "pending_verification"},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    return payments
+
+@api_router.post("/admin/verify-payment/{payment_id}")
+async def verify_online_payment(
+    payment_id: str,
+    action: str = Body(...),  # approve or reject
+    remarks: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    """Verify and approve/reject online payment"""
+    if current_user["role"] not in ["director", "principal", "admin", "admin_staff"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    payment = await db.online_payments.find_one({"id": payment_id}, {"_id": 0})
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    if action == "approve":
+        # Update payment status
+        await db.online_payments.update_one(
+            {"id": payment_id},
+            {"$set": {
+                "status": "verified",
+                "verified_by": current_user["id"],
+                "verified_at": datetime.now(timezone.utc).isoformat(),
+                "verification_remarks": remarks
+            }}
+        )
+        
+        # Update invoice if specified
+        if payment.get("invoice_id"):
+            invoice = await db.fee_invoices.find_one({"id": payment["invoice_id"]})
+            if invoice:
+                new_paid = invoice.get("paid_amount", 0) + payment["amount"]
+                new_status = "paid" if new_paid >= invoice.get("amount", 0) else "partial"
+                await db.fee_invoices.update_one(
+                    {"id": payment["invoice_id"]},
+                    {"$set": {
+                        "paid_amount": new_paid,
+                        "status": new_status,
+                        "payment_date": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+        
+        # Also create entry in main fee_payments for consistency
+        fee_payment_data = {
+            "id": str(uuid.uuid4()),
+            "invoice_id": payment.get("invoice_id"),
+            "student_id": payment["student_id"],
+            "school_id": payment["school_id"],
+            "amount": payment["amount"],
+            "payment_mode": payment["payment_mode"],
+            "transaction_id": payment["transaction_id"],
+            "receipt_no": payment["receipt_no"],
+            "remarks": f"Online payment - {payment['payment_mode'].upper()}",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.fee_payments.insert_one(fee_payment_data)
+        
+        return {"message": "Payment verified and approved", "receipt_no": payment["receipt_no"]}
+    
+    else:  # reject
+        await db.online_payments.update_one(
+            {"id": payment_id},
+            {"$set": {
+                "status": "rejected",
+                "verified_by": current_user["id"],
+                "verified_at": datetime.now(timezone.utc).isoformat(),
+                "rejection_reason": remarks
+            }}
+        )
+        
+        # Reset invoice status
+        if payment.get("invoice_id"):
+            await db.fee_invoices.update_one(
+                {"id": payment["invoice_id"]},
+                {"$set": {"payment_status": "pending"}}
+            )
+        
+        return {"message": "Payment rejected", "reason": remarks}
+
+@api_router.get("/receipt/{receipt_no}")
+async def get_payment_receipt(receipt_no: str, current_user: dict = Depends(get_current_user)):
+    """Generate and get payment receipt"""
+    # Try online payments first
+    payment = await db.online_payments.find_one({"receipt_no": receipt_no}, {"_id": 0})
+    
+    if not payment:
+        # Try regular fee payments
+        payment = await db.fee_payments.find_one({"receipt_no": receipt_no}, {"_id": 0})
+    
+    if not payment:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+    
+    # Get school info
+    school = await db.schools.find_one({"id": payment.get("school_id")}, {"_id": 0})
+    
+    # Get student info
+    student = await db.students.find_one({"id": payment.get("student_id")}, {"_id": 0})
+    
+    # Get payment settings
+    payment_settings = await db.payment_settings.find_one(
+        {"school_id": payment.get("school_id")}, {"_id": 0}
+    )
+    
+    return {
+        "receipt": {
+            "receipt_no": receipt_no,
+            "date": payment.get("created_at", payment.get("verified_at", "")),
+            "amount": payment.get("amount"),
+            "payment_mode": payment.get("payment_mode", "").upper(),
+            "transaction_id": payment.get("transaction_id"),
+            "status": payment.get("status", "verified")
+        },
+        "student": {
+            "name": student.get("name") if student else payment.get("student_name"),
+            "class": student.get("class_name") if student else payment.get("class_name"),
+            "admission_number": student.get("admission_number") if student else None,
+            "father_name": student.get("father_name") if student else None
+        },
+        "school": {
+            "name": school.get("name") if school else "Unknown",
+            "address": school.get("address") if school else None,
+            "phone": school.get("phone") if school else None,
+            "email": school.get("email") if school else None,
+            "logo_url": school.get("logo_url") if school else None
+        },
+        "footer": {
+            "note": payment_settings.get("receipt_footer_note") if payment_settings else None,
+            "authorized_by": payment_settings.get("authorized_signatory_name") if payment_settings else None,
+            "designation": payment_settings.get("authorized_signatory_designation") if payment_settings else None
+        }
+    }
+
 # ==================== BOARD NOTIFICATIONS SYSTEM ====================
 
 @api_router.get("/board/applied-notifications")
