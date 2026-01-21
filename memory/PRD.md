@@ -1,8 +1,39 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 21, 2026 (Late Night)
+## Last Updated: January 21, 2026 (Evening Session 2)
 
-## ✅ LATEST FIXES (Jan 21, 2026 - Evening)
+## ✅ LATEST FIXES (Jan 21, 2026 - Session 2)
+
+### 1. PWA Install Button - Working! 📲
+- **Fix:** Created proper PWA icons (192x192, 512x512, apple-touch-icon)
+- **Fix:** Updated manifest.json with correct icon configuration
+- **Fix:** Refactored PWAInstallPrompt.js for one-click install experience
+- **Result:** Install button shows in header on dashboard; triggers native install on Chrome/Edge
+- **Files:** 
+  - `/app/frontend/public/logo192.png`, `logo512.png`, `apple-touch-icon.png`
+  - `/app/frontend/public/manifest.json`
+  - `/app/frontend/src/components/PWAInstallPrompt.js`
+
+### 2. School Data Scoping - Security Fix ✅🔒
+- **Issue:** Users could see other demo schools' data in /api/schools
+- **Fix:** Added school_id filtering to:
+  - `GET /api/schools` - Returns only user's school (unless superadmin)
+  - `GET /api/schools/{school_id}` - Returns 403 for unauthorized access
+  - `GET /api/school/settings` - Returns 403 for other school's settings
+- **Files:** `/app/backend/server.py` (Lines 1726-1740, 7343-7385)
+
+### 3. Online Exam System - Verified Working ✅
+- **Status:** Page loads correctly at `/app/academic/exams`
+- **API:** `GET /api/exams` returns exams list (empty if no exams created)
+- **Files:** `/app/frontend/src/pages/OnlineExamSystem.js`
+
+---
+
+## 🧪 Testing Status: ✅ 9/9 Tests Passed (iteration_30)
+
+---
+
+## ✅ PREVIOUS FIXES (Jan 21, 2026 - Session 1)
 
 ### 1. AI Paper Generator - MCQ Double Options Fix 📝
 - **Issue:** MCQ options showing "(a) a) option" - double prefix
