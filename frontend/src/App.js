@@ -72,7 +72,6 @@ import FamilyPortalPage from './pages/FamilyPortalPage';
 import ParentPortalPage from './pages/ParentPortalPage';
 import StudyTinoLoginPage from './pages/StudyTinoLoginPage';
 import ParentPaymentPortal from './pages/ParentPaymentPortal';
-import PaymentSettingsPage from './pages/PaymentSettingsPage';
 import SchoolManagementPage from './pages/SchoolManagementPage';
 import EmployeeManagementPage from './pages/EmployeeManagementPage';
 
