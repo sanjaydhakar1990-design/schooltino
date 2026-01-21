@@ -1,101 +1,120 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'schooltino-v1';
-const urlsToCache = [
+const CACHE_NAME = 'schooltino-v2';
+const STATIC_CACHE = 'schooltino-static-v2';
+
+// Assets to cache immediately
+const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/static/js/main.js',
-  '/static/css/main.css',
-  '/manifest.json'
+  '/manifest.json',
+  '/logo192.png',
+  '/logo512.png',
+  '/apple-touch-icon.png',
+  '/favicon.ico'
 ];
 
-// Install event - cache assets
+// Install event - cache critical assets
 self.addEventListener('install', event => {
+  console.log('[SW] Installing service worker...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches.open(STATIC_CACHE)
       .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        console.log('[SW] Caching static assets');
+        return cache.addAll(PRECACHE_ASSETS);
+      })
+      .then(() => {
+        console.log('[SW] Install complete');
+        return self.skipWaiting();
       })
       .catch(err => {
-        console.log('Cache install failed:', err);
+        console.error('[SW] Cache install failed:', err);
       })
   );
-  self.skipWaiting();
 });
 
 // Activate event - clean old caches
 self.addEventListener('activate', event => {
+  console.log('[SW] Activating service worker...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      console.log('[SW] Activation complete');
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network first with cache fallback
 self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
   
+  const url = new URL(event.request.url);
+  
   // Skip API requests - always go to network
-  if (event.request.url.includes('/api/')) {
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Skip external requests
+  if (!url.origin.includes(self.location.origin)) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request)
+    // Try network first
+    fetch(event.request)
       .then(response => {
-        // Return cached version or fetch from network
-        if (response) {
-          return response;
-        }
-        
-        return fetch(event.request).then(response => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response
+        // Cache successful responses
+        if (response && response.status === 200) {
           const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        });
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
       })
       .catch(() => {
-        // Return offline page for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
+        // Fallback to cache
+        return caches.match(event.request)
+          .then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            // For navigation, return index.html
+            if (event.request.mode === 'navigate') {
+              return caches.match('/index.html');
+            }
+            return new Response('Offline', { status: 503 });
+          });
       })
   );
 });
 
-// Handle push notifications (future feature)
+// Handle push notifications
 self.addEventListener('push', event => {
   const options = {
-    body: event.data ? event.data.text() : 'New notification from Schooltino',
+    body: event.data ? event.data.text() : 'Schooltino Notification',
     icon: '/logo192.png',
     badge: '/logo192.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
       primaryKey: 1
-    }
+    },
+    actions: [
+      { action: 'open', title: 'Open App' },
+      { action: 'close', title: 'Close' }
+    ]
   };
   
   event.waitUntil(
@@ -106,7 +125,24 @@ self.addEventListener('push', event => {
 // Handle notification clicks
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  
+  if (event.action === 'close') return;
+  
   event.waitUntil(
-    clients.openWindow('/')
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        // If app is already open, focus it
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Otherwise open new window
+        if (clients.openWindow) {
+          return clients.openWindow('/');
+        }
+      })
   );
 });
+
+console.log('[SW] Service worker loaded');
