@@ -198,7 +198,19 @@ async def generate_admit_card_data(student_id: str, exam_id: str, school_id: str
         },
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "valid_until": exam.get("end_date", ""),
-        "school_id": school_id
+        "school_id": school_id,
+        "qr_data": {
+            "type": "admit_card",
+            "admit_card_no": f"AC-{exam_id[:4].upper()}-{student_id[:6].upper()}",
+            "student_id": student_id,
+            "exam_id": exam_id,
+            "school_id": school_id,
+            "student_name": student.get("name", ""),
+            "roll_no": roll_no,
+            "exam_name": exam.get("exam_name", ""),
+            "valid_until": exam.get("end_date", ""),
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
     }
     
     return admit_card
