@@ -211,6 +211,43 @@ export const PRE_PRIMARY_CHAPTERS = {
     { id: 'ch8', name: 'Safety Rules' },
     { id: 'ch9', name: 'Good Habits' },
   ],
+  // Drawing / चित्रकला
+  'Nursery_Drawing': [
+    { id: 'ch1', name: 'Standing Lines (खड़ी रेखा)', hasDrawing: true },
+    { id: 'ch2', name: 'Sleeping Lines (आड़ी रेखा)', hasDrawing: true },
+    { id: 'ch3', name: 'Slant Lines (तिरछी रेखा)', hasDrawing: true },
+    { id: 'ch4', name: 'Curves (वक्र रेखा)', hasDrawing: true },
+    { id: 'ch5', name: 'Circle (गोला)', hasDrawing: true },
+    { id: 'ch6', name: 'Fruits - Apple, Banana (फल)', hasDrawing: true },
+    { id: 'ch7', name: 'Vegetables - Carrot, Tomato (सब्जी)', hasDrawing: true },
+    { id: 'ch8', name: 'Coloring - Rainbow (इंद्रधनुष)', hasDrawing: true },
+    { id: 'ch9', name: 'My Family (मेरा परिवार)', hasDrawing: true },
+    { id: 'ch10', name: 'Simple Objects (सरल वस्तुएं)', hasDrawing: true },
+  ],
+  'LKG_Drawing': [
+    { id: 'ch1', name: 'Basic Shapes - Square, Rectangle (आकृतियाँ)', hasDrawing: true },
+    { id: 'ch2', name: 'Fruits Basket (फलों की टोकरी)', hasDrawing: true },
+    { id: 'ch3', name: 'Vegetables (सब्जियाँ)', hasDrawing: true },
+    { id: 'ch4', name: 'Animals - Cat, Dog, Rabbit (जानवर)', hasDrawing: true },
+    { id: 'ch5', name: 'Birds - Parrot, Peacock (पक्षी)', hasDrawing: true },
+    { id: 'ch6', name: 'My House (मेरा घर)', hasDrawing: true },
+    { id: 'ch7', name: 'My School (मेरा विद्यालय)', hasDrawing: true },
+    { id: 'ch8', name: 'Nature - Tree, Sun, Moon (प्रकृति)', hasDrawing: true },
+    { id: 'ch9', name: 'Flowers - Rose, Lotus (फूल)', hasDrawing: true },
+    { id: 'ch10', name: 'Vehicles - Car, Bus (वाहन)', hasDrawing: true },
+  ],
+  'UKG_Drawing': [
+    { id: 'ch1', name: 'Scenery - Village (गाँव का दृश्य)', hasDrawing: true },
+    { id: 'ch2', name: 'Scenery - Garden (बगीचे का दृश्य)', hasDrawing: true },
+    { id: 'ch3', name: 'Scenery - Rainy Day (बारिश का दिन)', hasDrawing: true },
+    { id: 'ch4', name: 'Festivals - Diwali (त्योहार)', hasDrawing: true },
+    { id: 'ch5', name: 'Festivals - Holi (होली)', hasDrawing: true },
+    { id: 'ch6', name: 'National Flag (तिरंगा)', hasDrawing: true },
+    { id: 'ch7', name: 'Human Figure (मानव आकृति)', hasDrawing: true },
+    { id: 'ch8', name: 'Sea Animals - Fish (समुद्री जीव)', hasDrawing: true },
+    { id: 'ch9', name: 'Sports Items (खेल सामान)', hasDrawing: true },
+    { id: 'ch10', name: 'Free Hand Drawing (स्वतंत्र चित्र)', hasDrawing: true },
+  ],
 };
 
 // Class 1-5 CBSE/NCERT Chapters
