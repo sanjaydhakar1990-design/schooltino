@@ -1724,7 +1724,19 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
 
 @api_router.get("/schools", response_model=List[SchoolResponse])
 async def get_schools(current_user: dict = Depends(get_current_user)):
-    schools = await db.schools.find({"is_active": True}, {"_id": 0}).to_list(100)
+    # Only return schools that the user has access to
+    user_school_id = current_user.get("school_id")
+    
+    # Admin can see all schools, others only their own
+    if current_user.get("is_superadmin"):
+        schools = await db.schools.find({"is_active": True}, {"_id": 0}).to_list(100)
+    else:
+        # Regular users can only see their own school
+        schools = await db.schools.find(
+            {"id": user_school_id, "is_active": True}, 
+            {"_id": 0}
+        ).to_list(10)
+    
     return [SchoolResponse(**s) for s in schools]
 
 @api_router.get("/schools/{school_id}", response_model=SchoolResponse)
