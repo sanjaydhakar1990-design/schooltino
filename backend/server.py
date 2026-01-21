@@ -2958,6 +2958,117 @@ async def get_designation_list(current_user: dict = Depends(get_current_user)):
     ]
     return designations
 
+
+@api_router.delete("/employees/{employee_id}")
+async def delete_employee(employee_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Delete/Deactivate an employee - Admin only
+    Also deactivates associated user account if exists
+    """
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Only Director/Admin can delete employees")
+    
+    # Find employee
+    employee = await db.staff.find_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"_id": 0}
+    )
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Deactivate employee
+    await db.staff.update_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"$set": {"is_active": False, "deactivated_at": datetime.now(timezone.utc).isoformat(), "deactivated_by": current_user["id"]}}
+    )
+    
+    # Deactivate user account if exists
+    if employee.get("user_id"):
+        await db.users.update_one(
+            {"id": employee["user_id"]},
+            {"$set": {"is_active": False}}
+        )
+    
+    await log_audit(current_user["id"], "delete", "employee", {
+        "employee_id": employee_id,
+        "employee_name": employee.get("name", ""),
+        "had_user_account": bool(employee.get("user_id"))
+    })
+    
+    return {"message": f"Employee '{employee.get('name', '')}' deactivated successfully"}
+
+
+@api_router.delete("/students/{student_id}/permanent")
+async def permanently_delete_student(student_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Permanently delete a student - Director only
+    WARNING: This completely removes student data
+    """
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can permanently delete students")
+    
+    student = await db.students.find_one({"id": student_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Delete all related records
+    await db.attendance.delete_many({"student_id": student_id})
+    await db.fee_payments.delete_many({"student_id": student_id})
+    await db.exam_results.delete_many({"student_id": student_id})
+    await db.generated_admit_cards.delete_many({"student_id": student_id})
+    
+    # Delete student
+    await db.students.delete_one({"id": student_id})
+    
+    # Update class count
+    if student.get("class_id"):
+        await db.classes.update_one(
+            {"id": student["class_id"]},
+            {"$inc": {"student_count": -1}}
+        )
+    
+    await log_audit(current_user["id"], "permanent_delete", "student", {
+        "student_id": student_id,
+        "student_name": student.get("name", ""),
+        "class": student.get("class_id", "")
+    })
+    
+    return {"message": f"Student '{student.get('name', '')}' and all related data permanently deleted"}
+
+
+@api_router.delete("/employees/{employee_id}/permanent")
+async def permanently_delete_employee(employee_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Permanently delete an employee - Director only
+    WARNING: This completely removes employee data
+    """
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can permanently delete employees")
+    
+    employee = await db.staff.find_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"_id": 0}
+    )
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Delete user account if exists
+    if employee.get("user_id"):
+        await db.users.delete_one({"id": employee["user_id"]})
+    
+    # Delete employee salary records
+    await db.salary_payments.delete_many({"employee_id": employee_id})
+    
+    # Delete employee
+    await db.staff.delete_one({"$or": [{"id": employee_id}, {"employee_id": employee_id}]})
+    
+    await log_audit(current_user["id"], "permanent_delete", "employee", {
+        "employee_id": employee_id,
+        "employee_name": employee.get("name", "")
+    })
+    
+    return {"message": f"Employee '{employee.get('name', '')}' permanently deleted"}
+
 @api_router.delete("/staff/{staff_id}")
 async def delete_staff(staff_id: str, current_user: dict = Depends(get_current_user)):
     if current_user["role"] not in ["director", "principal", "admin"]:
