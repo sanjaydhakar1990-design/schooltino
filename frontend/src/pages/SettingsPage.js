@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '../components/ui/dialog';
-import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet } from 'lucide-react';
+import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
