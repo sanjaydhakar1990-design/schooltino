@@ -657,28 +657,89 @@ export default function EmployeeManagementPage() {
                       </Button>
                       
                       {showPermissions && (
-                        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                          <div className="flex gap-2 flex-wrap">
-                            {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
-                              <button
-                                key={key}
-                                onClick={() => {
-                                  setPermissionPreset(key);
-                                  setFormData(f => ({ ...f, custom_permissions: preset.permissions }));
-                                }}
-                                className={`px-3 py-1 rounded-full text-xs border ${
-                                  permissionPreset === key 
-                                    ? 'bg-indigo-600 text-white border-indigo-600' 
-                                    : 'bg-white hover:bg-gray-100'
-                                }`}
-                              >
-                                {preset.label}
-                              </button>
-                            ))}
+                        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                          {/* Permission Presets */}
+                          <div>
+                            <p className="text-sm font-medium text-gray-700 mb-2">🎯 Quick Permission Presets:</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    setPermissionPreset(key);
+                                    setFormData(f => ({ ...f, custom_permissions: { ...preset.permissions } }));
+                                  }}
+                                  className={`px-3 py-2 rounded-lg text-xs border transition-all ${
+                                    permissionPreset === key 
+                                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
+                                      : 'bg-white hover:bg-indigo-50 hover:border-indigo-300'
+                                  }`}
+                                >
+                                  <div className="font-medium">{preset.label}</div>
+                                  {preset.description && (
+                                    <div className={`text-[10px] mt-0.5 ${permissionPreset === key ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                      {preset.description}
+                                    </div>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            Permissions are automatically set based on role. Use presets for quick selection.
+                          
+                          {/* Individual Permissions */}
+                          <div className="border-t pt-4">
+                            <p className="text-sm font-medium text-gray-700 mb-2">🔐 Individual Permissions (Custom):</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {Object.entries(ALL_PERMISSIONS).map(([key, perm]) => (
+                                <label 
+                                  key={key} 
+                                  className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${
+                                    formData.custom_permissions?.[key] 
+                                      ? 'bg-green-50 border border-green-200' 
+                                      : 'bg-white border border-gray-200 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.custom_permissions?.[key] || false}
+                                    onChange={(e) => {
+                                      setPermissionPreset('custom');
+                                      setFormData(f => ({
+                                        ...f,
+                                        custom_permissions: {
+                                          ...f.custom_permissions,
+                                          [key]: e.target.checked
+                                        }
+                                      }));
+                                    }}
+                                    className="w-4 h-4 rounded border-gray-300 text-indigo-600"
+                                  />
+                                  <span className="text-sm">
+                                    {perm.icon} {perm.label}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
+                          
+                          {/* Active Permissions Summary */}
+                          {formData.custom_permissions && (
+                            <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                              <p className="text-xs font-medium text-indigo-700 mb-1">
+                                ✅ Active Permissions ({Object.values(formData.custom_permissions).filter(Boolean).length}):
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(formData.custom_permissions)
+                                  .filter(([_, v]) => v)
+                                  .map(([key]) => (
+                                    <span key={key} className="px-2 py-0.5 bg-white rounded text-xs text-indigo-600 border border-indigo-200">
+                                      {ALL_PERMISSIONS[key]?.icon} {ALL_PERMISSIONS[key]?.label || key}
+                                    </span>
+                                  ))
+                                }
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </>
