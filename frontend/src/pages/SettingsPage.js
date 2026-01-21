@@ -35,6 +35,12 @@ export default function SettingsPage() {
   const [uploadingSeal, setUploadingSeal] = useState(false);
   const signatureInputRef = useRef(null);
   const sealInputRef = useRef(null);
+  
+  // School Logo states
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [removingLogoBg, setRemovingLogoBg] = useState(false);
+  const logoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -49,6 +55,7 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSchools();
     fetchSignatureSeal();
+    fetchSchoolLogo();
   }, []);
 
   const fetchSchools = async () => {
