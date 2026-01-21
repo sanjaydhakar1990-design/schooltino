@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, Globe } from 'lucide-react';
+import { Menu, Globe, Mic } from 'lucide-react';
 import Sidebar from './Sidebar';
 import VoiceAssistantFAB from './VoiceAssistantFAB';
 import PWAInstaller from './PWAInstaller';
