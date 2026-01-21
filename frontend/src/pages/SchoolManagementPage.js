@@ -46,7 +46,15 @@ export default function SchoolManagementPage() {
     principal_name: '',
     registration_number: '',
     established_year: '',
-    board_type: 'RBSE'
+    board_type: 'RBSE',
+    signature_url: '',
+    seal_url: ''
+  });
+  
+  // AI Seal Settings
+  const [aiSealConfig, setAiSealConfig] = useState({
+    seal_shape: 'circular',
+    color_scheme: 'blue'
   });
   
   // Payment Settings
