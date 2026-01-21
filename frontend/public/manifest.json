@@ -2,14 +2,15 @@
   "name": "Schooltino - Smart School Management",
   "short_name": "Schooltino",
   "description": "AI + CCTV + Apps - Complete automation for modern schools",
-  "start_url": "/",
+  "start_url": "/app/dashboard",
   "scope": "/",
-  "id": "/",
+  "id": "schooltino-erp",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#ffffff",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
+  "background_color": "#1e1b4b",
   "theme_color": "#4f46e5",
   "orientation": "any",
+  "lang": "hi-IN",
   "icons": [
     {
       "src": "logo192.png",
@@ -42,26 +43,46 @@
       "purpose": "any"
     }
   ],
+  "screenshots": [
+    {
+      "src": "logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard View"
+    },
+    {
+      "src": "logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile View"
+    }
+  ],
   "categories": ["education", "business", "productivity"],
   "shortcuts": [
     {
       "name": "Dashboard",
       "short_name": "Dashboard",
-      "url": "/dashboard",
+      "url": "/app/dashboard",
       "icons": [{"src": "logo192.png", "sizes": "192x192"}]
     },
     {
       "name": "Students",
       "short_name": "Students",
-      "url": "/students",
+      "url": "/app/students",
       "icons": [{"src": "logo192.png", "sizes": "192x192"}]
     },
     {
       "name": "Attendance",
       "short_name": "Attendance",
-      "url": "/attendance",
+      "url": "/app/attendance",
       "icons": [{"src": "logo192.png", "sizes": "192x192"}]
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  }
 }
