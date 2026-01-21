@@ -46,7 +46,14 @@ export default function PaymentSettingsPage() {
     receipt_footer_note: '',
     show_bank_details_on_receipt: true,
     authorized_signatory_name: '',
-    authorized_signatory_designation: ''
+    authorized_signatory_designation: '',
+    // Razorpay Settings
+    razorpay_enabled: false,
+    razorpay_key_id: '',
+    razorpay_key_secret: '',
+    // Cash Settings
+    cash_collection_enabled: true,
+    cash_collectors: [] // Array of user IDs who can collect cash
   });
 
   useEffect(() => {
