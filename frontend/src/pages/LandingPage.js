@@ -172,13 +172,16 @@ export default function LandingPage() {
               </a>
             </div>
             
-            {/* CTA Button */}
-            <Button 
-              onClick={() => scrollToSection('register')} 
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
-              Get Started
-            </Button>
+            {/* CTA Buttons */}
+            <div className="flex items-center gap-3">
+              <PWAInstallButton className="hidden sm:flex bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white" />
+              <Button 
+                onClick={() => scrollToSection('register')} 
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                Get Started
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
