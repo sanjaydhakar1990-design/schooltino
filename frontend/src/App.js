@@ -70,6 +70,7 @@ import ComplaintFeedbackPage from './pages/ComplaintFeedbackPage';
 import PrayerSystemPage from './pages/PrayerSystemPage';
 import EventDesignerPage from './pages/EventDesignerPage';
 import FamilyPortalPage from './pages/FamilyPortalPage';
+import ParentPortalPage from './pages/ParentPortalPage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
