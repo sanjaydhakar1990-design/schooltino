@@ -288,6 +288,43 @@ export default function AIPaperPage() {
     window.print();
   };
 
+  // Auto-generate images for all diagram/drawing questions
+  const autoGenerateImages = async (diagramQuestions, subject) => {
+    setAutoGeneratingImages(true);
+    setImageProgress({ current: 0, total: diagramQuestions.length });
+    
+    const token = localStorage.getItem('token');
+    
+    for (let i = 0; i < diagramQuestions.length; i++) {
+      const q = diagramQuestions[i];
+      setImageProgress({ current: i + 1, total: diagramQuestions.length });
+      
+      try {
+        const response = await axios.post(`${API}/ai/generate-answer-image`, {
+          question: q.question,
+          answer: q.answer || q.drawing_guide || q.diagram_description || 'Draw as described',
+          subject: subject,
+          question_type: q.type
+        }, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        });
+        
+        if (response.data.success && response.data.image_url) {
+          setAnswerImages(prev => ({
+            ...prev,
+            [q.idx]: response.data.image_url
+          }));
+        }
+      } catch (error) {
+        console.error(`Image generation failed for Q${q.idx + 1}:`, error);
+      }
+    }
+    
+    setAutoGeneratingImages(false);
+    toast.success('सभी चित्र तैयार हैं!');
+  };
+
   const generateAnswerImage = async (questionIdx, question) => {
     if (generatingImage === questionIdx) return;
     
