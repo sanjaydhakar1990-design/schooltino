@@ -8058,12 +8058,8 @@ async def register_parent(
     if existing:
         raise HTTPException(status_code=400, detail="Parent already registered with this mobile")
     
-    # Get school name for ID generation
-    school = await db.schools.find_one({"id": school_id}, {"_id": 0, "name": 1})
-    school_name = school.get("name") if school else None
-    
     # Generate parent ID
-    parent_id = await generate_parent_id(school_id, school_name)
+    parent_id = await generate_parent_id()
     
     parent = {
         "id": str(uuid.uuid4()),
