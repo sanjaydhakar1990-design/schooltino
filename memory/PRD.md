@@ -1,54 +1,60 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 21, 2026 (Session 6)
+## Last Updated: January 21, 2026 (Session 6 - Part 2)
 
 ---
 
 ## ✅ COMPLETED IN THIS SESSION
 
-### 1. Employee Management API Bug Fixed ✅🔧
-- **Critical Bug**: `hashlib` was used instead of `bcrypt` for password hashing
-- **Fix Applied**: Changed to `bcrypt.hashpw()` in 4 locations:
-  - `create_unified_employee()` - line 2663
-  - `update_employee()` - line 2799, 2808
-  - `toggle_employee_login()` - line 2899
-- **Verified**: Employee creation with login now works
-- **Verified**: Created employees can login
+### 1. AI Background Remover for Signature & Seal ✅🖼️
+- **API Added**: `POST /api/school/ai-remove-background`
+- **Features**:
+  - Upload signature photo from plain paper → AI removes background
+  - Upload existing seal photo → AI cleans and enhances it
+  - Uses GPT Image 1 edit mode for background removal
+- **UI**: Two purple "AI BG Remove" buttons added in Receipt Settings tab
+- **Hindi helper text**: "कागज पर signature की photo upload करो, AI background हटा देगा"
 
-### 2. Duplicate Settings Merged ✅🔄
-- **Removed from Sidebar**: 
-  - `/app/school-settings` (Academic Settings)
-  - `/app/payment-settings` (Payment Settings)
-- **Redirects Added**: Both now redirect to `/app/school-management`
-- **Unified Page**: School Management has 4 tabs:
-  - School Profile
-  - Payment Settings
-  - Academic Settings
-  - Receipt Settings
+### 2. Voice Assistant Navigation Fixed ✅🎙️
+- **Problem**: Voice assistant was just talking, not actually navigating
+- **Fix**: Added multiple navigation commands to `NAVIGATION_COMMANDS` dictionary:
+  - `admission` → `/app/students` (admission form open karo)
+  - `calendar` → `/app/school-calendar`
+  - `employees` → `/app/employee-management`
+  - `timetable` → `/app/timetable`
+  - `exams` → `/app/online-exam`
+  - `school_management` → `/app/school-management`
+  - `results` → `/app/results`
+- **Frontend already had**: `window.location.href = result.navigate_to` in VoiceAssistantFAB.js
 
-### 3. PWA Improvements ✅📱
-- **Manifest Updated**: Added screenshots, lang, launch_handler
-- **Service Worker v3**: Better caching, auto-activate
-- **Install Button**: Present in header for logged-in users
+### 3. Push-to-Talk Already Implemented ✅🎤
+- Mic button: `onMouseDown={startRecording}`, `onMouseUp={stopRecording}`
+- Touch support: `onTouchStart={startRecording}`, `onTouchEnd={stopRecording}`
+- Helper text: "Mic button dabake bolo, chhod do - reply aayega"
 
-### 4. Duplicate Route Fixed ✅
-- **Bug**: `/app/payment-settings` had duplicate route (line 319)
-- **Fix**: Removed duplicate, redirect now works
+### 4. Drawing Paper Generator for Nursery/KG ✅🎨
+- **Added Drawing Chapters**: 
+  - `Nursery_Drawing`: 10 chapters (lines, shapes, fruits, vegetables, coloring)
+  - `LKG_Drawing`: 10 chapters (shapes, animals, birds, nature, vehicles)
+  - `UKG_Drawing`: 10 chapters (scenery, festivals, national flag, sea animals)
+- **Backend**: Special prompt for Drawing subject generates age-appropriate activities
+- **Question Types**: draw_color, complete_drawing, pattern, scenery, trace_color
 
 ---
 
-## 🧪 Testing Status: ✅ 14/14 Tests Passed (iteration_33)
+## 🧪 Testing Status: ✅ 15/15 Tests Passed (iteration_34)
 
-| API | Status |
-|-----|--------|
-| POST /api/employees (create with login) | ✅ PASS |
-| Employee Login after creation | ✅ PASS |
-| GET /api/employees | ✅ PASS |
-| POST /api/employees/{id}/toggle-login | ✅ PASS |
-| GET /api/school/settings | ✅ PASS |
-| GET /api/school/payment-settings | ✅ PASS |
-| /app/school-settings redirect | ✅ PASS |
-| /app/payment-settings redirect | ✅ PASS |
+| Feature | Status |
+|---------|--------|
+| Voice Assistant - Admission Navigation | ✅ PASS |
+| Voice Assistant - Calendar Navigation | ✅ PASS |
+| Voice Assistant - Employees Navigation | ✅ PASS |
+| Voice Assistant - Timetable Navigation | ✅ PASS |
+| Voice Assistant - Exams Navigation | ✅ PASS |
+| AI Background Remove Endpoint | ✅ PASS |
+| Drawing Chapters (Nursery/LKG/UKG) | ✅ PASS |
+| Employee Creation + Login | ✅ PASS |
+| School Management Page | ✅ PASS |
 
 ---
 
@@ -56,40 +62,28 @@
 
 | File | Changes |
 |------|---------|
-| `/app/backend/server.py` | Fixed hashlib→bcrypt for password hashing |
-| `/app/frontend/src/App.js` | Removed duplicate route, added redirects |
-| `/app/frontend/src/components/Sidebar.js` | Removed duplicate settings links |
-| `/app/frontend/public/manifest.json` | Enhanced PWA config |
-| `/app/frontend/public/service-worker.js` | Updated to v3 |
+| `/app/backend/server.py` | Added AI background remove API, Drawing paper generator |
+| `/app/backend/routes/voice_assistant.py` | Added navigation commands |
+| `/app/frontend/src/pages/SchoolManagementPage.js` | AI BG Remove buttons |
+| `/app/frontend/src/data/boardSyllabus.js` | Drawing chapters for pre-primary |
 
 ---
 
 ## 🔜 Next Tasks (Pending from User)
 
-### P0 (Immediate - User Requested)
-1. **Admit Card System** 🎫
-   - School creates exam-wise admit cards
-   - Fee criteria for download (85%+ paid = can download)
-   - Show in Parents app with notification
-   - AI tracks downloads
-   - AI exam entry control (announces students, blocks unpaid)
-   - Admin can override for unpaid students
-   - Admin can print all admit cards
+### Still Pending:
+1. **Admit Card System** 🎫 - Exam-wise admit cards, fee criteria, AI tracking, exam entry control
+2. **Event Designer + AI Content Combine** 🎨 - Merge into single tool with preview
+3. **Admin Full Control** 🔐 - Full edit/delete access for students & employees
+4. **Continuous Listening Mode (Jarvis Mode)** 🤖 - AI listens in meetings and gives suggestions
+5. **PWA Icon Update** - If app installed, button updates icon instead of reinstalling
 
-2. **Event Designer + AI Content Combine** 🎨
-   - Merge into single tool with preview
-
-3. **Admin Full Control** 🔐
-   - Full edit/delete access for students & employees
-
-### P1 (High Priority)
-4. **Calendar Unification** - Merge two separate calendars into one
-5. **Family Portal Testing** - End-to-end verification
-
-### P2 (Future)
-- AI Voice Monitoring controls
-- Parent notifications
-- GPS tracking for transport
+### Already Completed in Previous Session:
+- ✅ Unified School Management
+- ✅ Payment System (UPI/Bank)
+- ✅ Receipt Signature/Seal Customization
+- ✅ Employee API Bug Fix (hashlib→bcrypt)
+- ✅ Duplicate Settings Merge
 
 ---
 
@@ -103,15 +97,6 @@
 
 ---
 
-## 🛠️ Tech Stack
-
-- **Backend**: FastAPI, MongoDB, Pydantic, JWT, bcrypt
-- **Frontend**: React, TailwindCSS, Shadcn/UI
-- **AI**: emergentintegrations (Gemini Nano Banana, GPT-5.2)
-- **PWA**: Service Worker v3, Web Manifest
-
----
-
 ## 📱 App URLs
 
 | Feature | URL |
@@ -120,14 +105,18 @@
 | School Management | /app/school-management |
 | Employee Management | /app/employee-management |
 | School Calendar | /app/school-calendar |
+| AI Paper Generator | /app/ai-paper |
+| Voice Assistant | Click FAB button (bottom right) |
 
 ---
 
-## 🐛 Known Issues (Resolved This Session)
+## 🛠️ Tech Stack
 
-1. ~~Employee Creation API fails~~ - FIXED (hashlib→bcrypt)
-2. ~~Duplicate routes for settings~~ - FIXED (redirects added)
-3. ~~PWA Install not working~~ - IMPROVED (manifest/sw updated)
+- **Backend**: FastAPI, MongoDB, Pydantic, JWT, bcrypt
+- **Frontend**: React, TailwindCSS, Shadcn/UI
+- **AI**: emergentintegrations (Gemini Nano Banana, GPT-5.2, GPT Image 1)
+- **Voice**: ElevenLabs TTS, OpenAI Whisper STT
+- **PWA**: Service Worker v3, Web Manifest
 
 ---
 
@@ -136,40 +125,58 @@
 ```
 /app/
 ├── backend/
-│   ├── server.py       # Main API (9000+ lines)
+│   ├── server.py           # Main API (9500+ lines)
 │   ├── routes/
-│   │   └── voice_assistant.py
+│   │   └── voice_assistant.py  # Voice commands + TTS/STT
 │   └── .env
 ├── frontend/
 │   ├── src/
 │   │   ├── pages/
 │   │   │   ├── SchoolManagementPage.js   # Unified settings
-│   │   │   ├── EmployeeManagementPage.js # Unified staff+users
+│   │   │   ├── AIPaperPage.js            # Paper generator
 │   │   │   └── ...
+│   │   ├── data/
+│   │   │   └── boardSyllabus.js          # Drawing chapters added
 │   │   ├── components/
-│   │   │   ├── Sidebar.js                # Navigation
-│   │   │   └── PWAInstallPrompt.js       # Install button
-│   │   └── App.js                        # Routes
+│   │   │   └── VoiceAssistantFAB.js      # Push-to-talk
+│   │   └── App.js
 │   └── public/
-│       ├── manifest.json                 # PWA config
-│       └── service-worker.js             # SW v3
+│       ├── manifest.json
+│       └── service-worker.js
 └── memory/
-    └── PRD.md                            # This file
+    └── PRD.md
 ```
-
----
-
-## 🚨 Technical Debt
-
-1. **server.py is 9000+ lines** - Needs modularization
-2. **Multiple calendar systems** - Should be unified
-3. **Unused imports in App.js** - Cleaned up
 
 ---
 
 ## 💡 Session Notes
 
 - User's preferred language: Hindi
-- All settings consolidated in `/app/school-management`
-- Employee management combines staff + user accounts
-- PWA install requires HTTPS and user engagement
+- Voice Assistant now actually navigates pages (not just talks)
+- Drawing subject now has proper chapters for pre-primary classes
+- AI Background Remover uses GPT Image 1 edit mode
+- Push-to-talk was already implemented, just needed verification
+
+---
+
+## 🚨 Technical Debt
+
+1. **server.py is 9500+ lines** - Needs modularization urgently
+2. **Multiple calendar systems** - Two separate calendars need unification
+3. **Continuous listening mode** - Complex feature requiring real-time STT
+
+---
+
+## 🔮 Future Vision (User's JARVIS Dream)
+
+User wants AI to be like JARVIS:
+- Always listening in meetings
+- Gives polite suggestions
+- Full voice control of the entire system
+- "Sir अगर आप बुरा न मानें तो..." style responses
+
+This requires:
+1. Real-time Whisper streaming
+2. Context-aware suggestions engine
+3. Polite interruption system
+4. Multi-user voice recognition
