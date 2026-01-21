@@ -297,7 +297,7 @@ function AppRoutes() {
         <Route path="users" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="permission-manager" element={<PermissionManager />} />
         <Route path="students" element={<StudentsPage />} />
-        <Route path="staff" element={<StaffPage />} />
+        <Route path="staff" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="classes" element={<ClassesPage />} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="fees" element={<FeesPage />} />
