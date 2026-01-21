@@ -6312,7 +6312,8 @@ async def get_cctv_dashboard(current_user: dict = Depends(get_current_user)):
             "attendance_tracking": {"status": "ready", "description": "Auto-mark attendance via CCTV"},
             "behavior_detection": {"status": "planned", "description": "Detect unusual behavior"},
             "crowd_monitoring": {"status": "ready", "description": "Monitor crowd density"},
-            "gate_access": {"status": "ready", "description": "Control gate based on student status"}
+            "gate_access": {"status": "ready", "description": "Control gate based on student status"},
+            "qr_scanning": {"status": "ready", "description": "Scan admit cards QR at exam hall entrance"}
         },
         "statistics": {
             "total_cameras": 6,
