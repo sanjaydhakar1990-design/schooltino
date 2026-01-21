@@ -488,79 +488,27 @@ export default function SchoolSettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Calendar Tab */}
+        {/* Calendar Tab - Redirect to Full Calendar */}
         <TabsContent value="calendar" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Government Holidays 2024-25</CardTitle>
+              <CardTitle>School Calendar</CardTitle>
               <CardDescription>
-                Central Government approved holidays automatically included
+                सभी holidays, events और AI calendar features यहाँ मिलेंगे
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-                {GOVERNMENT_HOLIDAYS_2024_25.map((holiday, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 rounded-lg flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      holiday.type === 'national' ? 'bg-red-500' :
-                      holiday.type === 'gazetted' ? 'bg-orange-500' : 'bg-blue-500'
-                    }`} />
-                    <div>
-                      <p className="text-sm font-medium">{holiday.name}</p>
-                      <p className="text-xs text-slate-500">{holiday.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Custom Holidays</CardTitle>
-              <CardDescription>
-                Additional school holidays add करें
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <Input
-                  type="date"
-                  value={customHoliday.date}
-                  onChange={(e) => setCustomHoliday(prev => ({ ...prev, date: e.target.value }))}
-                  className="w-40"
-                />
-                <Input
-                  placeholder="Holiday name"
-                  value={customHoliday.name}
-                  onChange={(e) => setCustomHoliday(prev => ({ ...prev, name: e.target.value }))}
-                  className="flex-1"
-                />
-                <Button onClick={addCustomHoliday} variant="outline">
-                  Add
-                </Button>
-              </div>
-
-              {settings.custom_holidays.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {settings.custom_holidays.map((h) => (
-                    <div key={h.id} className="p-3 bg-indigo-50 rounded-lg flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium">{h.name}</p>
-                        <p className="text-xs text-slate-500">{h.date}</p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeCustomHoliday(h.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        ✕
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <CardContent className="text-center py-8">
+              <Calendar className="w-16 h-16 mx-auto text-indigo-600 mb-4" />
+              <p className="text-slate-600 mb-4">
+                Full Calendar में Government Holidays, Custom Holidays, Events और AI Calendar Generation सब एक जगह है।
+              </p>
+              <Button 
+                onClick={() => window.location.href = '/app/school-calendar'}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Open Full Calendar
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
