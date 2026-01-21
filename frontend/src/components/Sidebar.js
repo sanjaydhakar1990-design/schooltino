@@ -167,7 +167,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { path: '/app/family-portal', icon: Users, label: 'Family Portal', permKey: 'settings' },
         { path: '/app/board-notifications', icon: Bell, label: 'Board Updates', permKey: 'settings', directorOnly: true },
         { path: '/app/complaints', icon: MessageSquare, label: 'Complaints', permKey: 'settings' },
-        { path: '/app/users', icon: UserPlus, label: t('users'), permKey: 'user_management' },
         { path: '/app/permission-manager', icon: Shield, label: t('permissions'), permKey: 'user_management', directorOnly: true },
         { path: '/app/website', icon: Globe, label: t('website_integration'), permKey: 'website_integration' },
         { path: '/app/settings', icon: Settings, label: t('settings'), permKey: 'settings' },
