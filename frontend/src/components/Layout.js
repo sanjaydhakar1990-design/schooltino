@@ -83,24 +83,8 @@ export const Layout = () => {
           
           {/* Right side buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* PWA Install Button - Only show if not installed */}
-            {!isInstalled && installStatus !== 'installed' && (
-              <button
-                onClick={handlePWAInstall}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-white rounded-lg text-sm transition-all ${
-                  installStatus === 'ready' 
-                    ? 'bg-green-500 hover:bg-green-600 animate-pulse' 
-                    : installStatus === 'ios'
-                    ? 'bg-blue-500 hover:bg-blue-600'
-                    : 'bg-slate-600 hover:bg-slate-700'
-                }`}
-                data-testid="pwa-install-btn"
-                title={installStatus === 'ready' ? 'Click to Install App' : 'Install Instructions'}
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Install</span>
-              </button>
-            )}
+            {/* PWA Install Button - New Component */}
+            <PWAInstaller />
             
             {/* Language Toggle - One Click Switch */}
             <button
