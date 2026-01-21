@@ -5394,6 +5394,219 @@ async def get_signature_seal(current_user: dict = Depends(get_current_user)):
     }
 
 
+@api_router.post("/school/ai-remove-background")
+async def ai_remove_background(
+    file: UploadFile = File(...),
+    image_type: str = Form(default="signature"),  # signature or seal
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    AI Background Remover - Upload signature/seal photo, get clean transparent PNG
+    Uses GPT Image 1 to intelligently remove background
+    """
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can use AI background remover")
+    
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+    
+    try:
+        from openai import OpenAI
+        
+        # Read uploaded file
+        content = await file.read()
+        
+        # Save temporarily
+        temp_filename = f"temp_{uuid.uuid4().hex}.png"
+        temp_path = UPLOAD_DIR / "temp" / temp_filename
+        temp_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(temp_path, "wb") as f:
+            f.write(content)
+        
+        # Initialize OpenAI with Emergent key
+        client = OpenAI(
+            api_key=emergent_key,
+            base_url="https://api.emergentmethods.ai/v1"
+        )
+        
+        # Create prompt based on image type
+        if image_type == "signature":
+            prompt = """Clean up this signature image:
+            - Remove ALL background completely (make transparent)
+            - Keep ONLY the signature/handwriting marks
+            - Make the signature strokes clean and sharp
+            - Output should be professional looking signature on transparent background
+            - Preserve the original style and flow of the signature"""
+        else:  # seal
+            prompt = """Clean up this school seal/stamp image:
+            - Remove ALL background completely (make transparent)
+            - Keep ONLY the seal/stamp design
+            - Make the seal clear, sharp and professional
+            - Preserve all text and design elements of the seal
+            - Output should be a clean official seal on transparent background"""
+        
+        # Use image edit with transparency
+        with open(temp_path, "rb") as image_file:
+            response = client.images.edit(
+                model="gpt-image-1",
+                image=image_file,
+                prompt=prompt,
+                size="1024x1024"
+            )
+        
+        # Get the generated image
+        if response.data and len(response.data) > 0:
+            import requests as req
+            image_url = response.data[0].url
+            image_response = req.get(image_url)
+            processed_image = image_response.content
+            
+            # Save processed image
+            folder = "signatures" if image_type == "signature" else "seals"
+            final_filename = f"{image_type}_{current_user.get('school_id', 'default')}_{uuid.uuid4().hex[:8]}.png"
+            final_path = UPLOAD_DIR / folder / final_filename
+            final_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(final_path, "wb") as f:
+                f.write(processed_image)
+            
+            # Clean up temp file
+            if temp_path.exists():
+                temp_path.unlink()
+            
+            # Update school record
+            url_field = "signature_url" if image_type == "signature" else "seal_url"
+            final_url = f"/api/uploads/{folder}/{final_filename}"
+            
+            await db.schools.update_one(
+                {"id": current_user.get("school_id")},
+                {"$set": {url_field: final_url, f"{image_type}_updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            return {
+                "success": True,
+                "message": f"AI ने {image_type} का background हटा दिया!",
+                "url": final_url,
+                "image_type": image_type
+            }
+        else:
+            raise HTTPException(status_code=500, detail="AI could not process the image")
+            
+    except Exception as e:
+        logging.error(f"AI Background Removal error: {str(e)}")
+        # Clean up temp file on error
+        if 'temp_path' in locals() and temp_path.exists():
+            temp_path.unlink()
+        return {
+            "success": False,
+            "message": f"Error: {str(e)}"
+        }
+
+
+@api_router.post("/school/ai-enhance-seal")
+async def ai_enhance_seal(
+    file: UploadFile = File(...),
+    enhance_style: str = Form(default="professional"),  # professional, vintage, modern
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    AI Seal Enhancer - Upload existing seal, get enhanced clean version
+    """
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can enhance seal")
+    
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+    
+    try:
+        from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
+        
+        # Read uploaded file for reference
+        content = await file.read()
+        
+        # Save original temporarily
+        temp_filename = f"temp_seal_{uuid.uuid4().hex}.png"
+        temp_path = UPLOAD_DIR / "temp" / temp_filename
+        temp_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(temp_path, "wb") as f:
+            f.write(content)
+        
+        # Get school info for seal text
+        school = await db.schools.find_one(
+            {"id": current_user.get("school_id")},
+            {"_id": 0, "name": 1, "motto": 1, "established_year": 1, "registration_number": 1}
+        )
+        school_name = school.get("name", "School") if school else "School"
+        motto = school.get("motto", "") if school else ""
+        year = school.get("established_year", "2024") if school else "2024"
+        
+        style_prompts = {
+            "professional": "clean, professional, official government-style seal",
+            "vintage": "vintage, classic, traditional school seal with ornate borders",
+            "modern": "modern, minimalist, sleek school emblem"
+        }
+        
+        prompt = f"""Create a {style_prompts.get(enhance_style, 'professional')} for an Indian school:
+        - School Name: {school_name}
+        - Motto: {motto}
+        - Established: {year}
+        - Circular official seal design
+        - Include school name prominently
+        - Add decorative border typical of Indian school seals
+        - Include text "Est. {year}" at bottom
+        - Professional color scheme (dark blue/navy)
+        - Transparent background
+        - High quality, print-ready"""
+        
+        image_gen = OpenAIImageGeneration(api_key=emergent_key)
+        images = await image_gen.generate_images(
+            prompt=prompt,
+            model="gpt-image-1",
+            number_of_images=1,
+            quality="high"
+        )
+        
+        if images and len(images) > 0:
+            # Save enhanced seal
+            final_filename = f"seal_enhanced_{current_user.get('school_id', 'default')}_{uuid.uuid4().hex[:8]}.png"
+            final_path = UPLOAD_DIR / "seals" / final_filename
+            final_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(final_path, "wb") as f:
+                f.write(images[0])
+            
+            # Clean up temp
+            if temp_path.exists():
+                temp_path.unlink()
+            
+            final_url = f"/api/uploads/seals/{final_filename}"
+            
+            await db.schools.update_one(
+                {"id": current_user.get("school_id")},
+                {"$set": {"seal_url": final_url, "seal_updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            return {
+                "success": True,
+                "message": "AI ने आपकी seal को enhance कर दिया!",
+                "url": final_url,
+                "style": enhance_style
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Could not generate enhanced seal")
+            
+    except Exception as e:
+        logging.error(f"AI Seal Enhancement error: {str(e)}")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
 @api_router.get("/public/school/{school_id}/events")
 async def get_public_events(school_id: str, limit: int = 10):
     """Public API - Get upcoming events for external website"""
