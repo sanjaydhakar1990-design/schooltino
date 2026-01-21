@@ -495,18 +495,29 @@ _Powered by Schooltino_`;
 
               {/* Action Buttons */}
               {generatedDesign && (
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  <Button onClick={handlePrint} variant="outline" className="w-full">
-                    <Printer className="w-4 h-4 mr-2" />
-                    Print
-                  </Button>
-                  <Button onClick={handleDownload} variant="outline" className="w-full">
-                    <Download className="w-4 h-4 mr-2" />
-                    PDF
-                  </Button>
-                  <Button onClick={handleShare} variant="outline" className="w-full">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
+                <div className="space-y-3 mt-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button onClick={handlePrint} variant="outline" className="w-full">
+                      <Printer className="w-4 h-4 mr-2" />
+                      Print
+                    </Button>
+                    <Button onClick={handleDownload} variant="outline" className="w-full">
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                    <Button onClick={handleShare} variant="outline" className="w-full">
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+                  {/* WhatsApp Share - Prominent Button */}
+                  <Button 
+                    onClick={handleWhatsAppShare} 
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    data-testid="whatsapp-share-btn"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    {isHindi ? 'WhatsApp पर भेजें' : 'Share on WhatsApp'}
                   </Button>
                 </div>
               )}
