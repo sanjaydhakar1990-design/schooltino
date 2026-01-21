@@ -115,6 +115,8 @@ class ChatMessage(BaseModel):
     user_role: str = "director"
     user_name: str = "User"
     voice_gender: str = "female"
+    is_jarvis_mode: bool = False
+    context: str = ""  # meeting_assistant, general
 
 class CommandRequest(BaseModel):
     command: str
