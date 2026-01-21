@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { 
   Sparkles, Download, Printer, Image, Calendar, 
   PartyPopper, GraduationCap, Trophy, Music, Heart,
-  Loader2, Palette, RefreshCw, Copy, Share2
+  Loader2, Palette, RefreshCw, Copy, Share2, MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
