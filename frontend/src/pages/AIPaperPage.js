@@ -276,6 +276,38 @@ export default function AIPaperPage() {
     window.print();
   };
 
+  const generateAnswerImage = async (questionIdx, question) => {
+    if (generatingImage === questionIdx) return;
+    
+    setGeneratingImage(questionIdx);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API}/ai/generate-answer-image`, {
+        question: question.question,
+        answer: question.answer,
+        subject: formData.subject,
+        question_type: question.type
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success && response.data.image_url) {
+        setAnswerImages(prev => ({
+          ...prev,
+          [questionIdx]: response.data.image_url
+        }));
+        toast.success('चित्र बन गया!');
+      } else {
+        toast.error('चित्र नहीं बन पाया');
+      }
+    } catch (error) {
+      console.error('Image generation error:', error);
+      toast.error('चित्र बनाने में समस्या हुई');
+    } finally {
+      setGeneratingImage(null);
+    }
+  };
+
   const questionTypes = Object.entries(marksPattern).map(([id, data]) => ({
     id,
     label: data.label,
