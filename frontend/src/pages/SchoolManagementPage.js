@@ -127,18 +127,75 @@ export default function SchoolManagementPage() {
     const file = e.target.files[0];
     if (!file) return;
     
-    // For now, convert to base64 data URL (in production, upload to cloud storage)
     setUploadingLogo(true);
     try {
+      const token = localStorage.getItem('token');
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setSchool(prev => ({ ...prev, logo_url: reader.result }));
-        toast.success('Logo uploaded!');
+      
+      reader.onloadend = async () => {
+        const base64Image = reader.result;
+        
+        // First, try AI background removal
+        try {
+          const response = await axios.post(`${API}/api/school/ai-remove-background`, {
+            school_id: schoolId,
+            image_data: base64Image,
+            image_type: 'logo'
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (response.data?.processed_image) {
+            setSchool(prev => ({ ...prev, logo_url: response.data.processed_image }));
+            toast.success('✨ Logo uploaded with AI background removal!');
+          } else {
+            // Fallback to original image
+            setSchool(prev => ({ ...prev, logo_url: base64Image }));
+            toast.success('Logo uploaded!');
+          }
+        } catch (aiError) {
+          console.log('AI processing not available, using original:', aiError);
+          setSchool(prev => ({ ...prev, logo_url: base64Image }));
+          toast.success('Logo uploaded!');
+        }
+        
         setUploadingLogo(false);
       };
+      
       reader.readAsDataURL(file);
     } catch (error) {
       toast.error('Logo upload failed');
+      setUploadingLogo(false);
+    }
+  };
+  
+  // AI Background Removal for Logo
+  const handleAIRemoveLogoBg = async () => {
+    if (!school.logo_url) {
+      toast.error('Pehle logo upload karein');
+      return;
+    }
+    
+    setUploadingLogo(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API}/api/school/ai-remove-background`, {
+        school_id: schoolId,
+        image_data: school.logo_url,
+        image_type: 'logo'
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data?.processed_image) {
+        setSchool(prev => ({ ...prev, logo_url: response.data.processed_image }));
+        toast.success('✨ Background removed successfully!');
+      } else {
+        toast.error('Background removal failed');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'AI processing failed');
+    } finally {
       setUploadingLogo(false);
     }
   };
