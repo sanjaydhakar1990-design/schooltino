@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'schooltino-v2';
-const STATIC_CACHE = 'schooltino-static-v2';
+const CACHE_NAME = 'schooltino-v3';
+const STATIC_CACHE = 'schooltino-static-v3';
 
 // Assets to cache immediately
 const PRECACHE_ASSETS = [
@@ -16,7 +16,7 @@ const PRECACHE_ASSETS = [
 
 // Install event - cache critical assets
 self.addEventListener('install', event => {
-  console.log('[SW] Installing service worker...');
+  console.log('[SW] Installing service worker v3...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
@@ -24,7 +24,7 @@ self.addEventListener('install', event => {
         return cache.addAll(PRECACHE_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Install complete');
+        console.log('[SW] Install complete, activating immediately');
         return self.skipWaiting();
       })
       .catch(err => {
@@ -33,9 +33,9 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activate event - clean old caches
+// Activate event - clean old caches and take control immediately
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating service worker...');
+  console.log('[SW] Activating service worker v3...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -47,7 +47,7 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => {
-      console.log('[SW] Activation complete');
+      console.log('[SW] Activation complete, claiming clients');
       return self.clients.claim();
     })
   );
@@ -100,25 +100,37 @@ self.addEventListener('fetch', event => {
   );
 });
 
+// Handle messages from clients (for manual update triggers)
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] Skipping waiting...');
+    self.skipWaiting();
+  }
+});
+
 // Handle push notifications
 self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {};
   const options = {
-    body: event.data ? event.data.text() : 'Schooltino Notification',
+    body: data.body || 'Schooltino Notification',
     icon: '/logo192.png',
     badge: '/logo192.png',
     vibrate: [100, 50, 100],
+    tag: data.tag || 'schooltino-notification',
+    renotify: true,
     data: {
       dateOfArrival: Date.now(),
-      primaryKey: 1
+      primaryKey: data.key || 1,
+      url: data.url || '/'
     },
     actions: [
       { action: 'open', title: 'Open App' },
-      { action: 'close', title: 'Close' }
+      { action: 'close', title: 'Dismiss' }
     ]
   };
   
   event.waitUntil(
-    self.registration.showNotification('Schooltino', options)
+    self.registration.showNotification(data.title || 'Schooltino', options)
   );
 });
 
@@ -128,21 +140,23 @@ self.addEventListener('notificationclick', event => {
   
   if (event.action === 'close') return;
   
+  const urlToOpen = event.notification.data?.url || '/';
+  
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then(clientList => {
         // If app is already open, focus it
         for (const client of clientList) {
           if (client.url.includes(self.location.origin) && 'focus' in client) {
-            return client.focus();
+            return client.focus().then(c => c.navigate(urlToOpen));
           }
         }
         // Otherwise open new window
         if (clients.openWindow) {
-          return clients.openWindow('/');
+          return clients.openWindow(urlToOpen);
         }
       })
   );
 });
 
-console.log('[SW] Service worker loaded');
+console.log('[SW] Service worker v3 loaded');
