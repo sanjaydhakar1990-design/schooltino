@@ -294,7 +294,7 @@ function AppRoutes() {
         <Route index element={<Navigate to="/app/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="school-analytics" element={<SchoolAnalytics />} />
-        <Route path="users" element={<UserManagementPage />} />
+        <Route path="users" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="permission-manager" element={<PermissionManager />} />
         <Route path="students" element={<StudentsPage />} />
         <Route path="staff" element={<StaffPage />} />
