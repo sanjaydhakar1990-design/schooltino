@@ -1,10 +1,53 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 21, 2026
+## Last Updated: January 21, 2026 (Evening)
 
-## ✅ NEW FEATURES (Jan 21, 2026)
+## ✅ MAJOR NEW FEATURES (Jan 21, 2026)
 
-### 1. AI Event Designer with WhatsApp Share 🎨📱
+### 1. Complete School Calendar with AI Generation 📅🤖
+- **Location:** `/app/school-calendar`
+- **Features:**
+  - **Month View** - Full calendar grid with all dates, Sundays highlighted in red
+  - **Year View** - All 12 months displayed with events
+  - **Add Event** - Modal to add school events (Exam, Holiday, School Event)
+  - **Photo Gallery** - Upload and manage school photos for calendar
+  - **Testimonials** - Add/Edit parent/student testimonials
+  - **AI Calendar** - Generate beautiful calendar graphics using Nano Banana AI
+  - **Print** - Print-ready calendar with school branding
+  - **Government Holidays** - Auto-loaded for Rajasthan & MP (Republic Day, Holi, Diwali, etc.)
+- **Files:**
+  - `/app/frontend/src/pages/SchoolCalendarPage.js` - Complete rewrite
+  - `/app/backend/server.py` - Calendar APIs (Line 7590+)
+- **API Endpoints:**
+  - `GET/POST/PUT/DELETE /api/school/{school_id}/calendar-events`
+  - `GET /api/school/{school_id}/calendar-photos`
+  - `GET/POST/PUT/DELETE /api/school/{school_id}/testimonials`
+  - `POST /api/calendar/generate-image` - AI Calendar generation
+
+### 2. Family Portal for Parents 👨‍👩‍👧‍👦
+- **Location:** `/app/family-portal`
+- **Purpose:** Parents with multiple children can view all in one place
+- **Features:**
+  - **Add Child** - Using Student ID + Date of Birth verification
+  - **Switch Children** - Easy toggle between multiple children
+  - **Combined Dashboard:**
+    - Attendance % for each child
+    - Fee status (Total, Paid, Pending)
+    - Syllabus progress %
+    - Recent exam scores
+  - **All Children Summary Table** - Compare all children at once
+- **Files:**
+  - `/app/frontend/src/pages/FamilyPortalPage.js` - New page
+  - `/app/backend/server.py` - Family APIs (Line 7787+)
+- **API Endpoints:**
+  - `GET /api/family/children`
+  - `POST /api/family/add-child`
+  - `GET /api/family/child/{child_id}/attendance`
+  - `GET /api/family/child/{child_id}/fees`
+  - `GET /api/family/child/{child_id}/syllabus-progress`
+  - `GET /api/family/child/{child_id}/exams`
+
+### 3. AI Event Designer with WhatsApp Share 🎨📱
 - **Location:** `/app/event-designer`
 - **Features:**
   - Design Type: Pamphlet (Poster/Flyer) OR Invitation Card (निमंत्रण पत्र)
@@ -13,18 +56,19 @@
   - Event Details Form: Name, Date, Time, Venue, Chief Guest, Description, Contact, Special Note
   - **WhatsApp Share Button** - Direct invitation भेजें parents को WhatsApp पर
   - Print, Download PDF, Share options
-- **Files:**
-  - `/app/frontend/src/pages/EventDesignerPage.js`
-  - `/app/backend/server.py` - API endpoints (Line 7527+)
-- **API Endpoints:**
-  - `POST /api/events/generate-design`
-  - `GET /api/events/designs/{school_id}`
 
-### 2. Voice Assistant (Tino) Fixed 🎙️
+### 4. Voice Assistant (Tino) Fixed 🎙️
 - **Issue:** OpenAI API key was invalid causing "technical problem" errors
 - **Fix:** Migrated to Emergent LLM Key using `emergentintegrations` library
 - **Now working:** AI chat responses in Hinglish, navigation commands, TTS audio
-- **File:** `/app/backend/routes/voice_assistant.py`
+
+---
+
+## 🧪 Testing Status: ✅ 17/17 Tests Passed (iteration_27)
+- School Calendar APIs ✅
+- Family Portal APIs ✅
+- Voice Assistant APIs ✅
+- Event Designer APIs ✅
 
 ---
 
