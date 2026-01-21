@@ -74,6 +74,7 @@ import ParentPortalPage from './pages/ParentPortalPage';
 import StudyTinoLoginPage from './pages/StudyTinoLoginPage';
 import ParentPaymentPortal from './pages/ParentPaymentPortal';
 import PaymentSettingsPage from './pages/PaymentSettingsPage';
+import SchoolManagementPage from './pages/SchoolManagementPage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
