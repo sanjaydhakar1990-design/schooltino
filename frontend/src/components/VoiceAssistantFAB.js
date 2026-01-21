@@ -45,6 +45,11 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
   const [chatHistory, setChatHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   
+  // JARVIS MODE - Continuous Listening
+  const [jarvisMode, setJarvisMode] = useState(false);
+  const [jarvisSilenceTimer, setJarvisSilenceTimer] = useState(null);
+  const jarvisRecognitionRef = useRef(null);
+  
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const audioRef = useRef(null);
