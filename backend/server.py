@@ -425,6 +425,53 @@ class StaffResponse(BaseModel):
     photo_url: Optional[str] = None
     is_active: bool = True
     created_at: str
+    user_id: Optional[str] = None  # Linked user account
+    has_login: bool = False  # Whether staff has login credentials
+
+# Unified Employee Model (Staff + User combined)
+class UnifiedEmployeeCreate(BaseModel):
+    # Personal Details
+    name: str
+    mobile: str
+    email: EmailStr
+    address: Optional[str] = None
+    photo_url: Optional[str] = None
+    
+    # Employment Details
+    school_id: str
+    designation: str  # teacher, accountant, librarian, peon, principal, admin_staff, clerk
+    department: Optional[str] = None
+    qualification: Optional[str] = None
+    joining_date: Optional[str] = None
+    salary: Optional[float] = None
+    
+    # Login & Permissions
+    create_login: bool = True  # Whether to create login account
+    password: Optional[str] = None  # Default: mobile number
+    role: str = "teacher"  # Role for permissions
+    custom_permissions: Optional[Dict[str, bool]] = None  # Override default permissions
+
+class UnifiedEmployeeResponse(BaseModel):
+    id: str
+    employee_id: str
+    name: str
+    mobile: str
+    email: str
+    address: Optional[str] = None
+    photo_url: Optional[str] = None
+    school_id: str
+    designation: str
+    department: Optional[str] = None
+    qualification: Optional[str] = None
+    joining_date: Optional[str] = None
+    salary: Optional[float] = None
+    is_active: bool = True
+    created_at: str
+    # Login details
+    has_login: bool = False
+    user_id: Optional[str] = None
+    role: Optional[str] = None
+    permissions: Optional[Dict[str, bool]] = None
 
 # Attendance Models
 class AttendanceCreate(BaseModel):
