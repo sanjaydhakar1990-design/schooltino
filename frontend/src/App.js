@@ -412,11 +412,7 @@ function AppRoutes() {
 
 // PWA Install Prompt Wrapper - Only shows when logged in
 function PWAInstallPromptWrapper() {
-  const { isAuthenticated } = useAuth();
-  
-  // Only show PWA prompt when user is logged in
-  if (!isAuthenticated) return null;
-  
+  // Show PWA prompt to all users - no login required
   return <PWAInstallPrompt />;
 }
 
