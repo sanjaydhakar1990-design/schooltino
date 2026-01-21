@@ -1944,7 +1944,7 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
         except:
             admission_year = datetime.now().year
     
-    # Generate Smart Student ID with school abbreviation
+    # Generate Smart Student ID
     student_id = await generate_smart_student_id(student.school_id, admission_year)
     
     # Check if student_id already exists (very rare)
@@ -1978,6 +1978,42 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
     }
     await db.students.insert_one(student_data)
     
+    # AUTO-CREATE PARENT ACCOUNT if parent mobile provided
+    parent_id = None
+    parent_password = None
+    parent_mobile = student.father_mobile or student.mother_mobile
+    
+    if parent_mobile:
+        # Check if parent already exists with this mobile
+        existing_parent = await db.parents.find_one({"mobile": parent_mobile, "school_id": student.school_id})
+        
+        if existing_parent:
+            # Link student to existing parent
+            await db.parents.update_one(
+                {"id": existing_parent["id"]},
+                {"$addToSet": {"student_ids": student_data["id"]}}
+            )
+            parent_id = existing_parent.get("parent_id")
+        else:
+            # Create new parent account
+            parent_id = await generate_parent_id()
+            parent_password = generate_temp_password()
+            
+            parent_name = student.father_name or student.mother_name or "Parent"
+            parent_data = {
+                "id": str(uuid.uuid4()),
+                "parent_id": parent_id,
+                "name": parent_name,
+                "mobile": parent_mobile,
+                "father_mobile": student.father_mobile,
+                "mother_mobile": student.mother_mobile,
+                "password": parent_password,
+                "school_id": student.school_id,
+                "student_ids": [student_data["id"]],
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.parents.insert_one(parent_data)
+    
     # Update class student count
     await db.classes.update_one({"id": student.class_id}, {"$inc": {"student_count": 1}})
     
@@ -1990,24 +2026,29 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
         "class": class_doc["name"] if class_doc else ""
     })
     
-    return StudentAdmissionResponse(
-        id=student_data["id"],
-        student_id=student_id,
-        name=student.name,
-        class_id=student.class_id,
-        class_name=class_doc["name"] if class_doc else None,
-        section=class_doc["section"] if class_doc else None,
-        school_id=student.school_id,
-        father_name=student.father_name,
-        mother_name=student.mother_name,
-        dob=student.dob,
-        gender=student.gender,
-        mobile=student.mobile,
-        login_id=student_id,
-        temporary_password=temp_password,  # Show only once!
-        status=status,
-        created_at=student_data["created_at"]
-    )
+    # Include parent info in response
+    response_data = {
+        "id": student_data["id"],
+        "student_id": student_id,
+        "name": student.name,
+        "class_id": student.class_id,
+        "class_name": class_doc["name"] if class_doc else None,
+        "section": class_doc["section"] if class_doc else None,
+        "school_id": student.school_id,
+        "father_name": student.father_name,
+        "mother_name": student.mother_name,
+        "dob": student.dob,
+        "gender": student.gender,
+        "mobile": student.mobile,
+        "login_id": student_id,
+        "temporary_password": temp_password,
+        "parent_id": parent_id,
+        "parent_password": parent_password,  # Only for new parents
+        "status": status,
+        "created_at": student_data["created_at"]
+    }
+    
+    return response_data
 
 @api_router.post("/students/login")
 async def student_login(student_id: str = None, password: str = None, mobile: str = None, dob: str = None):
