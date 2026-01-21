@@ -143,8 +143,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       icon: Cpu,
       items: [
         { path: '/app/ai-paper', icon: Sparkles, label: t('ai_paper'), permKey: 'ai_paper' },
-        { path: '/app/ai-content', icon: Sparkles, label: t('ai_content'), permKey: 'ai_content' },
-        { path: '/app/event-designer', icon: Image, label: 'Event Designer', permKey: 'ai_content' },
+        { path: '/app/event-designer', icon: Image, label: 'AI Content & Event Designer', permKey: 'ai_content' },
       ]
     },
     {
