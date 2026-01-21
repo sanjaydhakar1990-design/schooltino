@@ -774,6 +774,37 @@ async def log_audit(user_id: str, action: str, module: str, details: dict, ip_ad
     }
     await db.audit_logs.insert_one(audit_log)
 
+async def check_if_holiday(school_id: str, date_str: str) -> str:
+    """Check if given date is a holiday for the school. Returns holiday name if true, None otherwise."""
+    if not school_id or not date_str:
+        return None
+    
+    # 1. Check custom school holidays in calendar_events
+    event = await db.calendar_events.find_one({
+        "school_id": school_id,
+        "date": date_str,
+        "type": {"$in": ["holiday", "vacation", "national"]}
+    })
+    if event:
+        return event.get("name", "Holiday")
+    
+    # 2. Check if Sunday
+    try:
+        date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        if date_obj.weekday() == 6:  # Sunday
+            return "रविवार (Sunday)"
+    except:
+        pass
+    
+    # 3. Check government holidays from school settings
+    settings = await db.school_settings.find_one({"school_id": school_id})
+    if settings and settings.get("custom_holidays"):
+        for holiday in settings["custom_holidays"]:
+            if holiday.get("date") == date_str:
+                return holiday.get("name", "Custom Holiday")
+    
+    return None
+
 def generate_invoice_no():
     return f"INV-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:6].upper()}"
 
