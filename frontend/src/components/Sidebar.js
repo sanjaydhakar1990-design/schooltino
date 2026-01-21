@@ -165,6 +165,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { path: '/app/school-settings', icon: Clock, label: 'School Settings', permKey: 'settings', directorOnly: true },
         { path: '/app/school-calendar', icon: Calendar, label: 'School Calendar', permKey: 'settings' },
         { path: '/app/prayer-system', icon: Music, label: 'Prayer System', permKey: 'settings' },
+        { path: '/app/family-portal', icon: Users, label: 'Family Portal', permKey: 'settings' },
         { path: '/app/board-notifications', icon: Bell, label: 'Board Updates', permKey: 'settings', directorOnly: true },
         { path: '/app/complaints', icon: MessageSquare, label: 'Complaints', permKey: 'settings' },
         { path: '/app/users', icon: UserPlus, label: t('users'), permKey: 'user_management' },
