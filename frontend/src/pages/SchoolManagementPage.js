@@ -236,6 +236,78 @@ export default function SchoolManagementPage() {
     }
   };
 
+  // AI Background Remover for Signature
+  const handleAISignatureRemoveBg = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setRemovingBgSignature(true);
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('image_type', 'signature');
+      
+      toast.info('AI Background Remove कर रहा है... 🪄');
+      
+      const response = await axios.post(`${API}/api/school/ai-remove-background`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 60000 // 60 seconds for AI processing
+      });
+      
+      if (response.data.success && response.data.url) {
+        setSchool(prev => ({ ...prev, signature_url: response.data.url }));
+        toast.success('AI ने Signature का background हटा दिया! ✨');
+      } else {
+        toast.error(response.data.message || 'Background remove नहीं हो पाया');
+      }
+    } catch (error) {
+      console.error('AI Signature BG Remove error:', error);
+      toast.error('AI Background Remove में समस्या');
+    } finally {
+      setRemovingBgSignature(false);
+    }
+  };
+
+  // AI Background Remover for Seal
+  const handleAISealRemoveBg = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setRemovingBgSeal(true);
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('image_type', 'seal');
+      
+      toast.info('AI Background Remove कर रहा है... 🪄');
+      
+      const response = await axios.post(`${API}/api/school/ai-remove-background`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 60000 // 60 seconds for AI processing
+      });
+      
+      if (response.data.success && response.data.url) {
+        setSchool(prev => ({ ...prev, seal_url: response.data.url }));
+        toast.success('AI ने Seal का background हटा दिया! ✨');
+      } else {
+        toast.error(response.data.message || 'Background remove नहीं हो पाया');
+      }
+    } catch (error) {
+      console.error('AI Seal BG Remove error:', error);
+      toast.error('AI Background Remove में समस्या');
+    } finally {
+      setRemovingBgSeal(false);
+    }
+  };
+
   const saveSchoolProfile = async () => {
     setSaving(true);
     try {
