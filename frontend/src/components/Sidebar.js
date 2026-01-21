@@ -163,7 +163,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
       icon: Wrench,
       items: [
         { path: '/app/setup-guide', icon: Wrench, label: 'Setup Guide', permKey: 'settings', directorOnly: true },
-        { path: '/app/school-settings', icon: Clock, label: 'School Settings', permKey: 'settings', directorOnly: true },
+        { path: '/app/school-management', icon: Building, label: 'School Management', permKey: 'settings', directorOnly: true },
+        { path: '/app/school-settings', icon: Clock, label: 'Academic Settings', permKey: 'settings', directorOnly: true },
         { path: '/app/payment-settings', icon: CreditCard, label: 'Payment Settings', permKey: 'settings', directorOnly: true },
         { path: '/app/school-calendar', icon: Calendar, label: 'School Calendar', permKey: 'settings' },
         { path: '/app/prayer-system', icon: Music, label: 'Prayer System', permKey: 'settings' },
