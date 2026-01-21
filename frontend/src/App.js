@@ -388,6 +388,9 @@ function AppRoutes() {
         }
       />
 
+      {/* StudyTino Combined Login - Students & Parents */}
+      <Route path="/studytino" element={<StudyTinoLoginPage />} />
+
       {/* Parent Portal - Standalone (No auth required - has own login) */}
       <Route path="/parent-portal" element={<ParentPortalPage />} />
 
