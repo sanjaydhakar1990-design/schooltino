@@ -1070,6 +1070,23 @@ export default function SchoolManagementPage() {
                 </div>
               </div>
             </div>
+
+            {/* Logo Watermark Settings */}
+            <div className="border-t pt-6">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                🖼️ Logo Watermark Settings
+              </h3>
+              <WatermarkSettings 
+                settings={{
+                  watermark_enabled: school.watermark_enabled,
+                  watermark_opacity: school.watermark_opacity,
+                  watermark_size: school.watermark_size,
+                  watermark_position: school.watermark_position,
+                  watermark_apply: school.watermark_apply
+                }}
+                onChange={(newSettings) => setSchool(s => ({ ...s, ...newSettings }))}
+              />
+            </div>
           </div>
         )}
 
