@@ -560,6 +560,19 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
               <div className="flex items-center gap-2">
                 {!showHistory && (
                   <>
+                    {/* Jarvis Mode Toggle */}
+                    <button
+                      onClick={jarvisMode ? stopJarvisMode : startJarvisMode}
+                      className={`p-2 rounded-lg transition-all flex items-center gap-1 text-xs font-medium ${
+                        jarvisMode 
+                          ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30 animate-pulse' 
+                          : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                      }`}
+                      title={jarvisMode ? 'Stop Jarvis Mode' : 'Start Jarvis Mode (Meeting Assistant)'}
+                    >
+                      <Zap className="w-4 h-4" />
+                      <span className="hidden sm:inline">{jarvisMode ? 'LIVE' : 'Jarvis'}</span>
+                    </button>
                     <button
                       onClick={() => setShowHistory(true)}
                       className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
