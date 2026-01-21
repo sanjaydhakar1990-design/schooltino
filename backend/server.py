@@ -7359,6 +7359,10 @@ class SchoolSettingsModel(BaseModel):
 @api_router.get("/school/settings")
 async def get_school_settings(school_id: str, current_user: dict = Depends(get_current_user)):
     """Get school settings"""
+    # Verify user has access to this school
+    if not current_user.get("is_superadmin") and current_user.get("school_id") != school_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this school's settings")
+    
     settings = await db.school_settings.find_one(
         {"school_id": school_id},
         {"_id": 0}
