@@ -3392,7 +3392,8 @@ async def generate_answer_image(
         raise HTTPException(status_code=500, detail="Emergent LLM key not configured")
     
     try:
-        from emergentintegrations.llm.gemeni.image_generation import GeminiImageGeneration
+        import base64
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
         
         # Create a descriptive prompt for the image
         image_prompt = f"""Create an educational diagram/illustration for a {subject} question paper answer key.
@@ -3403,33 +3404,38 @@ The diagram should show: {answer}
 
 Requirements:
 - Clean, simple educational diagram suitable for school textbooks
-- Clear labels and annotations in English/Hindi
+- Clear labels and annotations
 - Professional looking like NCERT textbook illustrations
-- Monochrome or simple colors suitable for printing
-- Include all key parts mentioned in the answer"""
+- Simple colors suitable for printing
+- Include all key parts mentioned"""
         
-        image_gen = GeminiImageGeneration(api_key=emergent_key)
+        # Initialize chat with Gemini image model
+        session_id = f"answer-image-{uuid.uuid4()}"
+        chat = LlmChat(api_key=emergent_key, session_id=session_id, system_message="You are an educational diagram generator")
+        chat.with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
         
-        result = await image_gen.generate_image(image_prompt)
+        msg = UserMessage(text=image_prompt)
+        text_response, images = await chat.send_message_multimodal_response(msg)
         
-        if result and hasattr(result, 'image_url') and result.image_url:
+        if images and len(images) > 0:
+            # Get the first image and convert to data URL
+            img = images[0]
+            mime_type = img.get('mime_type', 'image/png')
+            img_data = img.get('data', '')
+            
+            # Create a data URL that can be used in img src
+            image_url = f"data:{mime_type};base64,{img_data}"
+            
             return {
                 "success": True,
-                "image_url": result.image_url,
-                "question": question,
-                "answer": answer
-            }
-        elif result and isinstance(result, dict) and result.get('url'):
-            return {
-                "success": True,
-                "image_url": result.get('url'),
+                "image_url": image_url,
                 "question": question,
                 "answer": answer
             }
         else:
             return {
                 "success": False,
-                "message": "Failed to generate image",
+                "message": "No image generated",
                 "fallback_text": answer
             }
             
