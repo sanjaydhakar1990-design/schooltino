@@ -1,0 +1,118 @@
+{
+  "summary": "Iteration 29 - Testing SchoolTino ERP Final Fixes: Unique IDs without school abbreviation, Parent ID auto-generation at admission, Combined StudyTino login, Parent mobile compulsory. All features verified working after bug fixes.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_iter29_features.py",
+    "/app/test_reports/pytest/pytest_results_iter29.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/server.py - Fixed StudentCreate model access (line 1984) - was accessing non-existent father_mobile/mother_mobile fields",
+    "/app/backend/server.py - Added parent_id and parent_password to StudentAdmissionResponse model",
+    "/app/backend/server.py - Fixed student login API to accept JSON body instead of query parameters"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "director": {
+      "email": "director@demo.com",
+      "password": "demo123"
+    }
+  },
+  "seed_data_creation": "Created test students, parents, and employees during testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All requested features verified working: 1) ID formats are globally unique without school abbreviation: STU-2026-XXXXX, PAR-2026-XXXXX, EMP-2026-XXXXX. 2) Parent ID auto-generated at student admission when mobile provided. 3) StudyTino login page at /studytino shows both Student and Parent tabs with ID/Mobile login options. 4) Parent login API works with mobile and password.",
+  "features_tested": {
+    "unique_id_formats": {
+      "status": "PASS",
+      "details": [
+        "Student ID format: STU-2026-XXXXX (5-digit sequence)",
+        "Parent ID format: PAR-2026-XXXXX (5-digit sequence)",
+        "Employee ID format: EMP-2026-XXXXX (5-digit sequence)",
+        "All IDs are globally unique without school abbreviation"
+      ]
+    },
+    "parent_auto_creation_at_admission": {
+      "status": "PASS",
+      "details": [
+        "Student admission returns parent_id when mobile provided",
+        "Parent account auto-created with generated password",
+        "parent_password returned for new parents only"
+      ]
+    },
+    "studytino_login_page": {
+      "status": "PASS",
+      "details": [
+        "Page loads at /studytino",
+        "Student tab shows Student ID and Mobile login options",
+        "Parent tab shows Parent ID and Mobile login options",
+        "Student ID placeholder: STU-2026-00001",
+        "Parent ID placeholder: PAR-2026-00001",
+        "Mobile is default for Parent login (as per requirements)"
+      ]
+    },
+    "parent_login_api": {
+      "status": "PASS",
+      "details": [
+        "POST /api/parent/login works with mobile + password",
+        "POST /api/parent/login works with parent_id + password",
+        "Returns token and parent data on success"
+      ]
+    },
+    "student_login_api": {
+      "status": "PASS",
+      "details": [
+        "POST /api/students/login works with student_id + password",
+        "POST /api/students/login works with mobile + dob",
+        "Returns access_token and student data on success"
+      ]
+    }
+  },
+  "bugs_fixed_during_testing": [
+    {
+      "file": "/app/backend/server.py",
+      "line": 1984,
+      "issue": "AttributeError: 'StudentCreate' object has no attribute 'father_mobile'",
+      "fix": "Changed to use student.mobile instead of student.father_mobile or student.mother_mobile"
+    },
+    {
+      "file": "/app/backend/server.py",
+      "line": 355,
+      "issue": "StudentAdmissionResponse model missing parent_id and parent_password fields",
+      "fix": "Added parent_id: Optional[str] and parent_password: Optional[str] to model"
+    },
+    {
+      "file": "/app/backend/server.py",
+      "line": 2053,
+      "issue": "Student login API used query parameters but frontend sends JSON body",
+      "fix": "Changed to accept StudentLoginRequest Pydantic model for JSON body"
+    }
+  ],
+  "api_tests": {
+    "GET /api/health": "PASS",
+    "POST /api/auth/login (director)": "PASS",
+    "POST /api/staff/create-with-id": "PASS - Returns EMP-2026-XXXXX format",
+    "POST /api/parent/register": "PASS - Returns PAR-2026-XXXXX format",
+    "POST /api/students/admit": "PASS - Returns STU-2026-XXXXX format with parent_id",
+    "POST /api/parent/login (mobile)": "PASS",
+    "POST /api/parent/login (parent_id)": "PASS",
+    "POST /api/students/login (student_id + password)": "PASS",
+    "POST /api/students/login (mobile + dob)": "PASS"
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
