@@ -266,6 +266,16 @@ export default function AIPaperPage() {
       setPaper(response.data);
       setStep(3);
       toast.success('पेपर तैयार है!');
+      
+      // Auto-generate images for diagram/drawing questions
+      const diagramQuestions = response.data.questions
+        .map((q, idx) => ({ ...q, idx }))
+        .filter(q => q.type === 'diagram' || q.type === 'draw_color' || q.type === 'scenery' || q.requires_drawing || q.hasDrawing);
+      
+      if (diagramQuestions.length > 0) {
+        toast.info(`${diagramQuestions.length} चित्र generate हो रहे हैं...`);
+        autoGenerateImages(diagramQuestions, response.data.subject);
+      }
     } catch (error) {
       const msg = error.response?.data?.detail;
       toast.error(typeof msg === 'string' ? msg : 'पेपर बनाने में समस्या हुई');
