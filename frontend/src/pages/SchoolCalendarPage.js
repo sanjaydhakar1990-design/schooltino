@@ -368,7 +368,7 @@ export default function SchoolCalendarPage() {
     setGeneratingCalendar(true);
     try {
       const token = localStorage.getItem('token');
-      const eventsForPrompt = getAllEvents().slice(0, 10).map(e => `${e.date}: ${e.name}`).join(', ');
+      const eventsForPrompt = getAllEvents().slice(0, 15).map(e => `${e.date}: ${e.name}`).join('\n');
       
       const response = await axios.post(`${API}/api/calendar/generate-image`, {
         school_id: schoolId,
@@ -376,14 +376,16 @@ export default function SchoolCalendarPage() {
         year: '2025-26',
         events: eventsForPrompt,
         state: school?.settings?.state || 'Rajasthan',
-        language: i18n.language
+        language: i18n.language,
+        include_logo_watermark: true,
+        calendar_style: 'single_page'  // single_page, two_page, poster
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.data.image_url) {
         setGeneratedCalendarImage(response.data.image_url);
-        toast.success(isHindi ? 'AI कैलेंडर बन गया!' : 'AI Calendar generated!');
+        toast.success(isHindi ? 'AI कैलेंडर बन गया! 🎉' : 'AI Calendar generated! 🎉');
       }
     } catch (error) {
       console.error('AI Calendar generation error:', error);
