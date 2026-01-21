@@ -387,8 +387,8 @@ def detect_action(text: str, role: str) -> Optional[Dict]:
 
 
 async def get_ai_response(message: str, role: str, gender: str, context: dict = None) -> str:
-    """Get AI response with gender-specific language"""
-    if not openai_client:
+    """Get AI response with gender-specific language using Emergent LLM"""
+    if not emergent_chat_available:
         if gender == "male":
             return "AI service available nahi hai. Baad mein try karo."
         else:
@@ -434,17 +434,17 @@ RULES:
 - Hinglish mein bolo
 """
         
-        response = openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": message}
-            ],
-            max_tokens=150,
-            temperature=0.7
-        )
+        # Use emergentintegrations LlmChat
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"tino-{uuid.uuid4().hex[:8]}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
         
-        return response.choices[0].message.content
+        user_message = UserMessage(text=message)
+        response = await chat.send_message(user_message)
+        
+        return response
         
     except Exception as e:
         logger.error(f"AI error: {e}")
