@@ -2578,6 +2578,386 @@ async def update_staff(staff_id: str, staff: StaffCreate, current_user: dict = D
     updated = await db.staff.find_one({"id": staff_id}, {"_id": 0})
     return StaffResponse(**updated)
 
+# ==================== UNIFIED EMPLOYEE MANAGEMENT ====================
+
+# Designation to Role mapping
+DESIGNATION_ROLE_MAP = {
+    "principal": "principal",
+    "vice_principal": "principal",
+    "teacher": "teacher",
+    "senior_teacher": "teacher",
+    "accountant": "admin_staff",
+    "clerk": "clerk",
+    "admin_staff": "admin_staff",
+    "librarian": "teacher",
+    "lab_assistant": "teacher",
+    "peon": "peon",
+    "driver": "peon",
+    "security": "peon",
+    "sweeper": "peon"
+}
+
+@api_router.post("/employees", response_model=UnifiedEmployeeResponse)
+async def create_unified_employee(
+    employee: UnifiedEmployeeCreate, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Create employee with optional login account and permissions"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized to create employees")
+    
+    # Check if email already exists in staff or users
+    existing_staff = await db.staff.find_one({"email": employee.email})
+    if existing_staff:
+        raise HTTPException(status_code=400, detail="Email already registered as staff")
+    
+    existing_user = await db.users.find_one({"email": employee.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered as user")
+    
+    # Generate employee ID
+    year = datetime.now().year
+    count = await db.staff.count_documents({"school_id": employee.school_id}) + 1
+    employee_id = f"EMP-{year}-{str(count).zfill(5)}"
+    
+    # Determine role based on designation
+    role = DESIGNATION_ROLE_MAP.get(employee.designation.lower().replace(" ", "_"), "teacher")
+    if employee.role:
+        role = employee.role
+    
+    # Get default permissions for role
+    permissions = ROLE_PERMISSIONS.get(role, ROLE_PERMISSIONS["teacher"]).copy()
+    
+    # Apply custom permissions if provided
+    if employee.custom_permissions:
+        permissions.update(employee.custom_permissions)
+    
+    # Create staff record
+    staff_data = {
+        "id": str(uuid.uuid4()),
+        "employee_id": employee_id,
+        "name": employee.name,
+        "mobile": employee.mobile,
+        "email": employee.email,
+        "address": employee.address or "",
+        "photo_url": employee.photo_url,
+        "school_id": employee.school_id,
+        "designation": employee.designation,
+        "department": employee.department,
+        "qualification": employee.qualification or "",
+        "joining_date": employee.joining_date or datetime.now(timezone.utc).date().isoformat(),
+        "salary": employee.salary,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "has_login": employee.create_login,
+        "user_id": None,
+        "role": role,
+        "permissions": permissions
+    }
+    
+    user_id = None
+    
+    # Create login account if requested
+    if employee.create_login:
+        password = employee.password or employee.mobile  # Default password is mobile number
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        user_data = {
+            "id": str(uuid.uuid4()),
+            "name": employee.name,
+            "email": employee.email,
+            "mobile": employee.mobile,
+            "password": hashed_password,
+            "role": role,
+            "school_id": employee.school_id,
+            "permissions": permissions,
+            "is_active": True,
+            "employee_id": employee_id,
+            "staff_id": staff_data["id"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(user_data)
+        user_id = user_data["id"]
+        staff_data["user_id"] = user_id
+    
+    await db.staff.insert_one(staff_data)
+    await log_audit(current_user["id"], "create", "employee", {
+        "employee_id": employee_id, 
+        "name": employee.name,
+        "has_login": employee.create_login
+    })
+    
+    return UnifiedEmployeeResponse(**staff_data)
+
+@api_router.get("/employees", response_model=List[UnifiedEmployeeResponse])
+async def get_employees(
+    school_id: Optional[str] = None,
+    designation: Optional[str] = None,
+    has_login: Optional[bool] = None,
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all employees with their login status and permissions"""
+    query = {"is_active": True}
+    
+    if school_id:
+        query["school_id"] = school_id
+    elif current_user.get("school_id"):
+        query["school_id"] = current_user["school_id"]
+    
+    if designation:
+        query["designation"] = designation
+    
+    if has_login is not None:
+        query["has_login"] = has_login
+    
+    if search:
+        query["$or"] = [
+            {"name": {"$regex": search, "$options": "i"}},
+            {"employee_id": {"$regex": search, "$options": "i"}},
+            {"email": {"$regex": search, "$options": "i"}},
+            {"mobile": {"$regex": search, "$options": "i"}}
+        ]
+    
+    employees = await db.staff.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    return [UnifiedEmployeeResponse(**emp) for emp in employees]
+
+@api_router.get("/employees/{employee_id}", response_model=UnifiedEmployeeResponse)
+async def get_employee(employee_id: str, current_user: dict = Depends(get_current_user)):
+    """Get single employee with full details"""
+    employee = await db.staff.find_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]}, 
+        {"_id": 0}
+    )
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    return UnifiedEmployeeResponse(**employee)
+
+@api_router.put("/employees/{employee_id}", response_model=UnifiedEmployeeResponse)
+async def update_employee(
+    employee_id: str,
+    employee: UnifiedEmployeeCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update employee details and optionally create/update login"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    existing = await db.staff.find_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"_id": 0}
+    )
+    if not existing:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Determine role
+    role = DESIGNATION_ROLE_MAP.get(employee.designation.lower().replace(" ", "_"), "teacher")
+    if employee.role:
+        role = employee.role
+    
+    # Get permissions
+    permissions = ROLE_PERMISSIONS.get(role, ROLE_PERMISSIONS["teacher"]).copy()
+    if employee.custom_permissions:
+        permissions.update(employee.custom_permissions)
+    
+    # Update staff record
+    update_data = {
+        "name": employee.name,
+        "mobile": employee.mobile,
+        "email": employee.email,
+        "address": employee.address or "",
+        "photo_url": employee.photo_url,
+        "designation": employee.designation,
+        "department": employee.department,
+        "qualification": employee.qualification,
+        "joining_date": employee.joining_date,
+        "salary": employee.salary,
+        "role": role,
+        "permissions": permissions,
+        "has_login": employee.create_login
+    }
+    
+    await db.staff.update_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"$set": update_data}
+    )
+    
+    # Handle login account
+    if employee.create_login:
+        if existing.get("user_id"):
+            # Update existing user
+            user_update = {
+                "name": employee.name,
+                "email": employee.email,
+                "mobile": employee.mobile,
+                "role": role,
+                "permissions": permissions
+            }
+            if employee.password:
+                user_update["password"] = hashlib.sha256(employee.password.encode()).hexdigest()
+            
+            await db.users.update_one(
+                {"id": existing["user_id"]},
+                {"$set": user_update}
+            )
+        else:
+            # Create new user account
+            password = employee.password or employee.mobile
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            
+            user_data = {
+                "id": str(uuid.uuid4()),
+                "name": employee.name,
+                "email": employee.email,
+                "mobile": employee.mobile,
+                "password": hashed_password,
+                "role": role,
+                "school_id": employee.school_id,
+                "permissions": permissions,
+                "is_active": True,
+                "employee_id": existing.get("employee_id"),
+                "staff_id": existing.get("id"),
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(user_data)
+            
+            await db.staff.update_one(
+                {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+                {"$set": {"user_id": user_data["id"]}}
+            )
+    
+    await log_audit(current_user["id"], "update", "employee", {"employee_id": employee_id})
+    
+    updated = await db.staff.find_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"_id": 0}
+    )
+    return UnifiedEmployeeResponse(**updated)
+
+@api_router.put("/employees/{employee_id}/permissions")
+async def update_employee_permissions(
+    employee_id: str,
+    permissions: Dict[str, bool] = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Update employee permissions only"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can change permissions")
+    
+    employee = await db.staff.find_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"_id": 0}
+    )
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Update staff permissions
+    await db.staff.update_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"$set": {"permissions": permissions}}
+    )
+    
+    # Update user permissions if exists
+    if employee.get("user_id"):
+        await db.users.update_one(
+            {"id": employee["user_id"]},
+            {"$set": {"permissions": permissions}}
+        )
+    
+    return {"message": "Permissions updated", "permissions": permissions}
+
+@api_router.post("/employees/{employee_id}/toggle-login")
+async def toggle_employee_login(
+    employee_id: str,
+    enable: bool = Body(...),
+    password: str = Body(default=None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Enable or disable login for an employee"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    employee = await db.staff.find_one(
+        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"_id": 0}
+    )
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    if enable:
+        if employee.get("user_id"):
+            # Re-enable existing user
+            await db.users.update_one(
+                {"id": employee["user_id"]},
+                {"$set": {"is_active": True}}
+            )
+        else:
+            # Create new user account
+            pwd = password or employee.get("mobile", "123456")
+            hashed_password = hashlib.sha256(pwd.encode()).hexdigest()
+            
+            role = employee.get("role", "teacher")
+            permissions = employee.get("permissions", ROLE_PERMISSIONS.get(role, {}))
+            
+            user_data = {
+                "id": str(uuid.uuid4()),
+                "name": employee["name"],
+                "email": employee["email"],
+                "mobile": employee.get("mobile", ""),
+                "password": hashed_password,
+                "role": role,
+                "school_id": employee["school_id"],
+                "permissions": permissions,
+                "is_active": True,
+                "employee_id": employee.get("employee_id"),
+                "staff_id": employee.get("id"),
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(user_data)
+            
+            await db.staff.update_one(
+                {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+                {"$set": {"user_id": user_data["id"], "has_login": True}}
+            )
+        
+        return {"message": "Login enabled", "default_password": password or employee.get("mobile")}
+    else:
+        # Disable login
+        if employee.get("user_id"):
+            await db.users.update_one(
+                {"id": employee["user_id"]},
+                {"$set": {"is_active": False}}
+            )
+        
+        await db.staff.update_one(
+            {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+            {"$set": {"has_login": False}}
+        )
+        
+        return {"message": "Login disabled"}
+
+@api_router.get("/employees/designations/list")
+async def get_designation_list(current_user: dict = Depends(get_current_user)):
+    """Get list of available designations with their default roles"""
+    designations = [
+        {"id": "principal", "name": "Principal (प्रधानाचार्य)", "default_role": "principal"},
+        {"id": "vice_principal", "name": "Vice Principal (उप-प्रधानाचार्य)", "default_role": "principal"},
+        {"id": "senior_teacher", "name": "Senior Teacher (वरिष्ठ शिक्षक)", "default_role": "teacher"},
+        {"id": "teacher", "name": "Teacher (शिक्षक)", "default_role": "teacher"},
+        {"id": "librarian", "name": "Librarian (पुस्तकालयाध्यक्ष)", "default_role": "teacher"},
+        {"id": "lab_assistant", "name": "Lab Assistant (प्रयोगशाला सहायक)", "default_role": "teacher"},
+        {"id": "accountant", "name": "Accountant (लेखाकार)", "default_role": "admin_staff"},
+        {"id": "admin_staff", "name": "Admin Staff (कार्यालय कर्मचारी)", "default_role": "admin_staff"},
+        {"id": "clerk", "name": "Clerk (लिपिक)", "default_role": "clerk"},
+        {"id": "peon", "name": "Peon (चपरासी)", "default_role": "peon"},
+        {"id": "driver", "name": "Driver (ड्राइवर)", "default_role": "peon"},
+        {"id": "security", "name": "Security Guard (सुरक्षा गार्ड)", "default_role": "peon"},
+        {"id": "sweeper", "name": "Sweeper (सफाईकर्मी)", "default_role": "peon"}
+    ]
+    return designations
+
 @api_router.delete("/staff/{staff_id}")
 async def delete_staff(staff_id: str, current_user: dict = Depends(get_current_user)):
     if current_user["role"] not in ["director", "principal", "admin"]:
