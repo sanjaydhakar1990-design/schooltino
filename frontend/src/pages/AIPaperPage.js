@@ -663,11 +663,16 @@ export default function AIPaperPage() {
                 {/* MCQ Options */}
                 {q.options && q.options.length > 0 && (
                   <div className="ml-12 mt-2 space-y-1">
-                    {q.options.map((opt, i) => (
-                      <p key={i} className="text-gray-800">
-                        ({String.fromCharCode(97 + i)}) {opt}
-                      </p>
-                    ))}
+                    {q.options.map((opt, i) => {
+                      // Remove any existing prefix like "a)", "a.", "(a)" from options
+                      const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
+                      const prefix = String.fromCharCode(97 + i); // a, b, c, d
+                      return (
+                        <p key={i} className="text-gray-800">
+                          ({prefix}) {cleanOption}
+                        </p>
+                      );
+                    })}
                   </div>
                 )}
               </div>
