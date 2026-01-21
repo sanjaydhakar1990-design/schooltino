@@ -2796,7 +2796,7 @@ async def update_employee(
                 "permissions": permissions
             }
             if employee.password:
-                user_update["password"] = hashlib.sha256(employee.password.encode()).hexdigest()
+                user_update["password"] = bcrypt.hashpw(employee.password.encode(), bcrypt.gensalt()).decode()
             
             await db.users.update_one(
                 {"id": existing["user_id"]},
@@ -2805,7 +2805,7 @@ async def update_employee(
         else:
             # Create new user account
             password = employee.password or employee.mobile
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
             
             user_data = {
                 "id": str(uuid.uuid4()),
