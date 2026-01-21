@@ -303,7 +303,7 @@ function AppRoutes() {
         <Route path="fees" element={<FeesPage />} />
         <Route path="notices" element={<NoticesPage />} />
         <Route path="ai-paper" element={<AIPaperPage />} />
-        <Route path="ai-content" element={<AIContentStudio />} />
+        <Route path="ai-content" element={<Navigate to="/app/event-designer" replace />} />
         <Route path="voice-assistant" element={<VoiceAssistant />} />
         <Route path="gallery" element={<ImageGallery />} />
         <Route path="sms" element={<SMSCenter />} />
