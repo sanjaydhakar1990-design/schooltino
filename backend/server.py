@@ -7959,43 +7959,35 @@ async def get_child_exams(child_id: str, current_user: dict = Depends(get_curren
 
 # ==================== PARENT PORTAL SYSTEM ====================
 
-async def generate_parent_id(school_id: str, school_name: str = None) -> str:
-    """Generate unique Parent ID like PAR-SCS-2026-001"""
+async def generate_parent_id() -> str:
+    """Generate globally unique Parent ID
+    Format: PAR-<YEAR>-<UNIQUE_SEQ>
+    Example: PAR-2026-00001
+    """
     year = datetime.now().year
     
-    # Get school abbreviation
-    if school_name:
-        words = school_name.split()
-        abbrev = ''.join([w[0].upper() for w in words if w[0].isalpha()])[:3]
-        if len(abbrev) < 3:
-            abbrev = abbrev + 'SC'[:3-len(abbrev)]
-    else:
-        abbrev = 'SCH'
+    # Get global count of all parents for this year
+    count = await db.parents.count_documents({
+        "parent_id": {"$regex": f"^PAR-{year}-"}
+    })
+    seq = str(count + 1).zfill(5)
     
-    # Get next sequence number
-    count = await db.parents.count_documents({"school_id": school_id})
-    seq = str(count + 1).zfill(3)
-    
-    return f"PAR-{abbrev}-{year}-{seq}"
+    return f"PAR-{year}-{seq}"
 
-async def generate_employee_id(school_id: str, school_name: str = None) -> str:
-    """Generate unique Employee ID like EMP-SCS-2026-001"""
+async def generate_employee_id() -> str:
+    """Generate globally unique Employee ID
+    Format: EMP-<YEAR>-<UNIQUE_SEQ>
+    Example: EMP-2026-00001
+    """
     year = datetime.now().year
     
-    # Get school abbreviation
-    if school_name:
-        words = school_name.split()
-        abbrev = ''.join([w[0].upper() for w in words if w[0].isalpha()])[:3]
-        if len(abbrev) < 3:
-            abbrev = abbrev + 'SC'[:3-len(abbrev)]
-    else:
-        abbrev = 'SCH'
+    # Get global count of all employees for this year
+    count = await db.staff.count_documents({
+        "employee_id": {"$regex": f"^EMP-{year}-"}
+    })
+    seq = str(count + 1).zfill(5)
     
-    # Get next sequence number
-    count = await db.staff.count_documents({"school_id": school_id})
-    seq = str(count + 1).zfill(3)
-    
-    return f"EMP-{abbrev}-{year}-{seq}"
+    return f"EMP-{year}-{seq}"
 
 class ParentLoginRequest(BaseModel):
     mobile: Optional[str] = None
