@@ -109,6 +109,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       label: t('staff'),
       icon: Briefcase,
       items: [
+        { path: '/app/employee-management', icon: Users, label: 'Employee Management', permKey: 'staff' },
         { path: '/app/staff', icon: UserCog, label: t('staff'), permKey: 'staff' },
         { path: '/app/teacher-roles', icon: GraduationCap, label: 'Teacher Roles', permKey: 'staff' },
         { path: '/app/leave', icon: Calendar, label: t('leave_management'), permKey: 'leave_management' },
