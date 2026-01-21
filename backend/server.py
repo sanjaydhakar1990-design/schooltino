@@ -2050,24 +2050,30 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
     
     return response_data
 
+class StudentLoginRequest(BaseModel):
+    student_id: Optional[str] = None
+    password: Optional[str] = None
+    mobile: Optional[str] = None
+    dob: Optional[str] = None
+
 @api_router.post("/students/login")
-async def student_login(student_id: str = None, password: str = None, mobile: str = None, dob: str = None):
+async def student_login(request: StudentLoginRequest):
     """Student login with Student ID + Password OR Mobile + DOB"""
     
     student = None
     
-    if student_id and password:
+    if request.student_id and request.password:
         # Login with Student ID + Password
-        student = await db.students.find_one({"student_id": student_id}, {"_id": 0})
+        student = await db.students.find_one({"student_id": request.student_id}, {"_id": 0})
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Student ID")
         
-        if not bcrypt.checkpw(password.encode(), student["password"].encode()):
+        if not bcrypt.checkpw(request.password.encode(), student["password"].encode()):
             raise HTTPException(status_code=401, detail="Invalid password")
     
-    elif mobile and dob:
+    elif request.mobile and request.dob:
         # Login with Mobile + DOB
-        student = await db.students.find_one({"mobile": mobile, "dob": dob}, {"_id": 0})
+        student = await db.students.find_one({"mobile": request.mobile, "dob": request.dob}, {"_id": 0})
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Mobile or Date of Birth")
     
