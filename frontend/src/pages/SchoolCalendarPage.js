@@ -512,9 +512,38 @@ export default function SchoolCalendarPage() {
         >
           {isHindi ? 'पूरा साल' : 'Year View'}
         </Button>
+        <Button 
+          variant={viewMode === 'print' ? 'default' : 'outline'} 
+          size="sm"
+          onClick={() => setViewMode('print')}
+          className="bg-gradient-to-r from-orange-50 to-green-50 border-orange-200"
+        >
+          <FileText className="w-4 h-4 mr-1" />
+          {isHindi ? '📅 प्रिंट कैलेंडर' : '📅 Print Calendar'}
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => setShowAchievementModal(true)}
+        >
+          <Trophy className="w-4 h-4 mr-1 text-yellow-600" />
+          {isHindi ? '🏆 उपलब्धियाँ' : '🏆 Achievements'}
+        </Button>
       </div>
 
-      {/* Calendar Content */}
+      {/* Printable Calendar Mode */}
+      {viewMode === 'print' && (
+        <PrintableCalendar 
+          school={school}
+          customEvents={events}
+          testimonials={testimonials}
+          photos={calendarPhotos}
+          achievements={achievements}
+        />
+      )}
+
+      {/* Calendar Content - Only show when not in print mode */}
+      {viewMode !== 'print' && (
       <div ref={calendarRef} className="calendar-print-container">
         {/* Watermark for Print - School Logo */}
         {school?.logo_url && (
