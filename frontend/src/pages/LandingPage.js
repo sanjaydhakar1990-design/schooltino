@@ -16,9 +16,10 @@ import {
   ArrowRight, Loader2, GraduationCap, BookOpen, Calendar, Bell,
   BarChart3, Mic, FileText, Camera, Lock, Rocket, Award,
   MessageSquare, Building, Gift, Fingerprint, Bus, Heart,
-  Wallet, UserCog, Clock, Play, Eye, EyeOff
+  Wallet, UserCog, Clock, Play, Eye, EyeOff, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PWAInstallButton } from '../components/PWAInstallPrompt';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
