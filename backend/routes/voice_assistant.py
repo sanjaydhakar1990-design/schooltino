@@ -428,7 +428,7 @@ def detect_action(text: str, role: str) -> Optional[Dict]:
     return None
 
 
-async def get_ai_response(message: str, role: str, gender: str, context: dict = None) -> str:
+async def get_ai_response(message: str, role: str, gender: str, context: dict = None, is_jarvis_mode: bool = False) -> str:
     """Get AI response with gender-specific language using Emergent LLM"""
     if not emergent_chat_available:
         if gender == "male":
@@ -437,6 +437,51 @@ async def get_ai_response(message: str, role: str, gender: str, context: dict = 
             return "AI service available nahi hai. Baad mein try karo."
     
     try:
+        # Get school-specific context for AI Learning
+        school_context = ""
+        if context and context.get("school_id"):
+            try:
+                school = await db.schools.find_one({"id": context["school_id"]}, {"_id": 0, "name": 1, "board": 1, "timing": 1, "address": 1})
+                if school:
+                    school_context = f"""
+SCHOOL CONTEXT (AI Learning - इस school के बारे में):
+- School Name: {school.get('name', 'Unknown')}
+- Board: {school.get('board', 'CBSE')}
+- Timing: {school.get('timing', {})}
+- Address: {school.get('address', '')}
+
+Use this school's name and context when answering questions about the school.
+"""
+                # Get some recent data for context
+                student_count = await db.students.count_documents({"school_id": context["school_id"], "is_active": True})
+                staff_count = await db.staff.count_documents({"school_id": context["school_id"], "is_active": True})
+                class_count = await db.classes.count_documents({"school_id": context["school_id"]})
+                
+                school_context += f"""
+LIVE DATA (AI Learning - Real-time stats):
+- Total Students: {student_count}
+- Total Staff: {staff_count}
+- Total Classes: {class_count}
+
+When user asks about school statistics, use this REAL data.
+"""
+            except Exception as e:
+                logging.error(f"Error getting school context: {e}")
+        
+        # Jarvis mode specific instructions
+        jarvis_instruction = ""
+        if is_jarvis_mode:
+            jarvis_instruction = """
+JARVIS MODE ACTIVE - Meeting Assistant:
+- You are actively listening in a meeting
+- Be polite and respectful: Start with "Sir, " or address the user respectfully
+- Give concise, helpful responses
+- Offer suggestions only when asked or when clearly appropriate
+- If you don't understand, politely ask for clarification
+- You can access school data and provide real-time information
+- Act like a professional assistant, similar to JARVIS from Iron Man
+"""
+        
         # Gender-specific system prompt
         if gender == "male":
             gender_instruction = """
