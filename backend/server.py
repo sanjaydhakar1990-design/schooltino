@@ -2499,6 +2499,16 @@ async def delete_staff(staff_id: str, current_user: dict = Depends(get_current_u
 
 @api_router.post("/attendance", response_model=AttendanceResponse)
 async def mark_attendance(attendance: AttendanceCreate, current_user: dict = Depends(get_current_user)):
+    # Check if it's a holiday
+    school_id = current_user.get("school_id")
+    is_holiday = await check_if_holiday(school_id, attendance.date)
+    
+    if is_holiday:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"आज छुट्टी है! ({is_holiday}). Attendance नहीं मार्क की जा सकती।"
+        )
+    
     # Check if already marked
     existing = await db.attendance.find_one({
         "student_id": attendance.student_id,
