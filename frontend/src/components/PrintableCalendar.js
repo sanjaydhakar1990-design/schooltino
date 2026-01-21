@@ -340,9 +340,9 @@ export default function PrintableCalendar({ school, customEvents = [], testimoni
           {/* Footer */}
           <div className="mt-4 pt-2 border-t-2 border-blue-900 text-center text-xs text-gray-600">
             <div className="flex justify-between items-center">
-              <span>📍 {school?.address || 'School Address'}</span>
+              <span>{school?.address ? `📍 ${school.address}` : ''}</span>
               <span className="font-bold text-blue-900">Powered by Schooltino.in</span>
-              <span>Affiliation: {school?.affiliation || 'RBSE/CBSE'}</span>
+              <span>{school?.affiliation ? `Affiliation: ${school.affiliation}` : ''}</span>
             </div>
           </div>
         </div>
