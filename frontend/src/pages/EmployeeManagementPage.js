@@ -23,21 +23,88 @@ const API = process.env.REACT_APP_BACKEND_URL;
 // Default permissions for quick selection
 const PERMISSION_PRESETS = {
   full_access: {
-    label: "Full Access (Director)",
-    permissions: { dashboard: true, students: true, attendance: true, fees: true, staff: true, reports: true, settings: true, user_management: true }
+    label: "🔓 Full Access (Director)",
+    description: "Sabhi modules ka access",
+    permissions: { 
+      dashboard: true, students: true, attendance: true, fees: true, 
+      staff: true, reports: true, settings: true, user_management: true,
+      tino_brain: true, ai_tools: true, notices: true, transport: true,
+      cash_collection: true, admit_cards: true, calendar: true
+    }
+  },
+  principal: {
+    label: "👨‍💼 Principal",
+    description: "User management chhodke sab",
+    permissions: { 
+      dashboard: true, students: true, attendance: true, fees: true, 
+      staff: true, reports: true, settings: false, user_management: false,
+      tino_brain: true, ai_tools: true, notices: true, transport: true,
+      cash_collection: false, admit_cards: true, calendar: true
+    }
   },
   teacher: {
-    label: "Teacher",
-    permissions: { dashboard: true, students: true, attendance: true, reports: false, settings: false }
+    label: "👨‍🏫 Teacher",
+    description: "Students aur attendance manage",
+    permissions: { 
+      dashboard: true, students: true, attendance: true, reports: false, 
+      settings: false, fees: false, staff: false, user_management: false,
+      tino_brain: true, ai_tools: true, notices: true, transport: false,
+      cash_collection: false, admit_cards: true, calendar: true
+    }
   },
   accountant: {
-    label: "Accountant",
-    permissions: { dashboard: true, fees: true, reports: true, students: false, attendance: false }
+    label: "💰 Accountant",
+    description: "Fees aur cash collection",
+    permissions: { 
+      dashboard: true, fees: true, reports: true, students: true, 
+      attendance: false, settings: false, staff: false, user_management: false,
+      tino_brain: false, ai_tools: false, notices: true, transport: false,
+      cash_collection: true, admit_cards: true, calendar: false
+    }
+  },
+  front_office: {
+    label: "🏢 Front Office",
+    description: "Basic student info aur notices",
+    permissions: { 
+      dashboard: true, students: true, attendance: false, fees: false, 
+      reports: false, settings: false, staff: false, user_management: false,
+      tino_brain: false, ai_tools: false, notices: true, transport: false,
+      cash_collection: false, admit_cards: false, calendar: true
+    }
+  },
+  transport_incharge: {
+    label: "🚌 Transport Incharge",
+    description: "Transport management",
+    permissions: { 
+      dashboard: true, transport: true, students: true, attendance: false,
+      fees: false, reports: false, settings: false, staff: false,
+      tino_brain: false, ai_tools: false, notices: true, cash_collection: false
+    }
   },
   view_only: {
-    label: "View Only",
+    label: "👁️ View Only",
+    description: "Sirf dekhne ka access",
     permissions: { dashboard: true }
   }
+};
+
+// All available permissions with descriptions
+const ALL_PERMISSIONS = {
+  dashboard: { label: "Dashboard", icon: "📊" },
+  students: { label: "Students", icon: "👨‍🎓" },
+  attendance: { label: "Attendance", icon: "✅" },
+  fees: { label: "Fees Management", icon: "💰" },
+  staff: { label: "Staff Management", icon: "👥" },
+  reports: { label: "Reports", icon: "📈" },
+  settings: { label: "School Settings", icon: "⚙️" },
+  user_management: { label: "User/Login Management", icon: "🔐" },
+  tino_brain: { label: "Tino Brain AI", icon: "🧠" },
+  ai_tools: { label: "AI Tools", icon: "🤖" },
+  notices: { label: "Notices", icon: "📢" },
+  transport: { label: "Transport", icon: "🚌" },
+  cash_collection: { label: "Cash Collection", icon: "💵" },
+  admit_cards: { label: "Admit Cards", icon: "🎫" },
+  calendar: { label: "Calendar/Events", icon: "📅" }
 };
 
 export default function EmployeeManagementPage() {
