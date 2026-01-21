@@ -2896,7 +2896,7 @@ async def toggle_employee_login(
         else:
             # Create new user account
             pwd = password or employee.get("mobile", "123456")
-            hashed_password = hashlib.sha256(pwd.encode()).hexdigest()
+            hashed_password = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
             
             role = employee.get("role", "teacher")
             permissions = employee.get("permissions", DEFAULT_PERMISSIONS.get(role, {}))
