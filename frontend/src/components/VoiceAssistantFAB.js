@@ -1,14 +1,15 @@
 /**
- * Tino AI Assistant - Voice + Text
+ * Tino AI Assistant - Voice + Text + JARVIS MODE
  * - Male/Female voice toggle with avatar change
  * - ElevenLabs TTS for high quality voice
  * - Text input + Voice input
  * - Role-based commands
+ * - JARVIS MODE: Continuous listening for meetings
  */
 import { useState, useRef, useEffect } from 'react';
 import { 
   Mic, MicOff, X, Volume2, Loader2, CheckCircle, XCircle,
-  Send, User, Sparkles, Settings, MessageSquare, History, Trash2, ChevronLeft
+  Send, User, Sparkles, Settings, MessageSquare, History, Trash2, ChevronLeft, Zap
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
