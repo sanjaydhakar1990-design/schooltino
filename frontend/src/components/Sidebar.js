@@ -40,7 +40,8 @@ import {
   Megaphone,
   Cpu,
   Building,
-  Award
+  Award,
+  CreditCard
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
