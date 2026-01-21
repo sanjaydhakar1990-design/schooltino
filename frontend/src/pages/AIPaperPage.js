@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Sparkles, FileText, Loader2, Download, ChevronRight, ChevronLeft, Check, AlertCircle, BookOpen, Printer } from 'lucide-react';
+import { Sparkles, FileText, Loader2, Download, ChevronRight, ChevronLeft, Check, AlertCircle, BookOpen, Printer, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { BOARDS, BOARD_SUBJECTS, getChapters, BOARD_MARKS_PATTERN } from '../data/boardSyllabus';
 
