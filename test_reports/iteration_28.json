@@ -1,0 +1,114 @@
+{
+  "summary": "Iteration 28 - Testing SchoolTino ERP fixes: Timetable class dropdown, Parent Portal login, Employee ID auto-generation, MCQ options cleanup. All features verified working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_iter28_features.py",
+    "/app/test_reports/pytest/pytest_results_iter28.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ParentPortalPage.js line 193: React Hook useEffect has missing dependency 'fetchChildren' - minor warning",
+    "AIPaperPage.js line 135: React Hook useEffect has missing dependency 'formData.subject' - minor warning"
+  ],
+  "updated_files": [
+    "/app/tests/test_iter28_features.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "director": {
+      "email": "director@demo.com",
+      "password": "demo123"
+    }
+  },
+  "seed_data_creation": "Created test parent via /api/parent/register and test staff via /api/staff/create-with-id",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All requested features verified working: 1) Timetable page class dropdown shows all classes (7 classes found) with auth header fix working. 2) Parent Portal at /parent-portal has Mobile/Parent ID toggle login working. 3) Employee ID auto-generation API /api/staff/create-with-id generates EMP-XXX-YYYY-NNN format IDs. 4) Parent registration API /api/parent/register generates PAR-XXX-YYYY-NNN format IDs. 5) Academic menu in sidebar groups Timetable, Online Exams, Admit Cards together. 6) MCQ options cleanup code in AIPaperPage.js removes duplicate prefixes.",
+  "features_tested": {
+    "timetable_class_dropdown": {
+      "status": "PASS",
+      "details": [
+        "Page loads at /app/timetable with data-testid='timetable-page'",
+        "Class dropdown shows 7 classes (Class 1-A, 1-B, 5-A, 8-A, etc.)",
+        "Auth header included in /api/classes fetch (line 67-69 in TimetablePage.js)",
+        "Selecting class loads timetable data"
+      ]
+    },
+    "parent_portal_login": {
+      "status": "PASS",
+      "details": [
+        "Page loads at /parent-portal (standalone, not /app/parent-portal)",
+        "Mobile/Parent ID toggle buttons working",
+        "Mobile mode shows phone input with placeholder '9876543210'",
+        "Parent ID mode shows input with placeholder 'PAR-SCS-2026-001'",
+        "Password field with show/hide toggle",
+        "Login button submits to /api/parent/login",
+        "Uses separate localStorage key 'parent_token'"
+      ]
+    },
+    "employee_id_generation": {
+      "status": "PASS",
+      "details": [
+        "API /api/staff/create-with-id creates staff with auto-generated ID",
+        "ID format: EMP-{SCHOOL_ABBREV}-{YEAR}-{SEQ}",
+        "Example: EMP-SCH-2026-001",
+        "Creates entry in both users and staff collections"
+      ]
+    },
+    "parent_registration": {
+      "status": "PASS",
+      "details": [
+        "API /api/parent/register creates parent account",
+        "ID format: PAR-{SCHOOL_ABBREV}-{YEAR}-{SEQ}",
+        "Example: PAR-SCH-2026-001",
+        "Validates mobile uniqueness per school"
+      ]
+    },
+    "academic_menu_grouping": {
+      "status": "PASS",
+      "details": [
+        "Academic menu group in sidebar contains:",
+        "- Students (/app/students)",
+        "- Classes (/app/classes)",
+        "- Attendance (/app/attendance)",
+        "- Timetable (/app/timetable)",
+        "- Online Exams (/app/exams)",
+        "- Admit Cards (/app/admit-cards)"
+      ]
+    },
+    "mcq_options_cleanup": {
+      "status": "PASS",
+      "details": [
+        "AIPaperPage.js line 669 has regex to clean duplicate prefixes",
+        "Removes patterns like 'a)', 'a.', '(a)' before adding standard '(a)' prefix",
+        "Code: opt.replace(/^[a-d][\\)\\.\\s]+\\s*/i, '').replace(/^\\([a-d]\\)\\s*/i, '')"
+      ]
+    }
+  },
+  "api_tests": {
+    "POST /api/auth/login (director@demo.com)": "PASS - Returns access_token and user data",
+    "GET /api/classes?school_id=SCH-DEMO-2026": "PASS - Returns 7 classes with auth header",
+    "GET /api/timetable/{class_id}": "PASS - Returns timetable data",
+    "POST /api/parent/login (validation)": "PASS - Returns 400 when mobile/parent_id missing",
+    "POST /api/parent/login (mobile)": "PASS - Returns 404 for non-existent parent",
+    "POST /api/parent/login (parent_id)": "PASS - Returns 404 for non-existent parent",
+    "POST /api/parent/register": "PASS - Creates parent with auto-generated ID",
+    "POST /api/staff/create-with-id": "PASS - Creates staff with auto-generated employee ID",
+    "GET /api/health": "PASS - Returns healthy status"
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
