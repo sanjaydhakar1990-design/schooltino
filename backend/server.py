@@ -6367,6 +6367,178 @@ async def get_cctv_alerts(current_user: dict = Depends(get_current_user)):
 
 # ==================== ZOOM MEETINGS ====================
 
+# ==================== CCTV QR SCANNING ====================
+
+class CCTVQRScanRequest(BaseModel):
+    camera_id: str
+    qr_data: str  # QR code content scanned by camera
+    school_id: str
+
+@api_router.post("/cctv/scan-qr")
+async def cctv_scan_qr(request: CCTVQRScanRequest, current_user: dict = Depends(get_current_user)):
+    """
+    CCTV AI scans QR code and verifies student entry
+    This is called when camera detects and reads a QR code
+    """
+    if current_user["role"] not in ["director", "principal", "vice_principal", "security", "admin_staff"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    try:
+        import json
+        qr_content = json.loads(request.qr_data)
+        
+        # Verify it's an admit card QR
+        if qr_content.get("type") != "admit_card":
+            return {
+                "verified": False,
+                "message": "यह admit card का QR नहीं है",
+                "ai_announcement": "Invalid QR code detected"
+            }
+        
+        student_id = qr_content.get("student_id")
+        exam_id = qr_content.get("exam_id")
+        
+        if not student_id or not exam_id:
+            return {
+                "verified": False,
+                "message": "Invalid QR data",
+                "ai_announcement": "Invalid admit card"
+            }
+        
+        # Get student info
+        student = await db.students.find_one({"id": student_id}, {"_id": 0})
+        if not student:
+            return {
+                "verified": False,
+                "message": "Student not found",
+                "ai_announcement": "Unknown student. Please contact admin."
+            }
+        
+        # Get exam info
+        exam = await db.exams.find_one({"id": exam_id}, {"_id": 0})
+        if not exam:
+            return {
+                "verified": False,
+                "message": "Exam not found",
+                "ai_announcement": "Invalid exam. Please contact admin."
+            }
+        
+        # Check if admit card was generated (fee paid)
+        admit_card = await db.generated_admit_cards.find_one({
+            "student_id": student_id,
+            "exam_id": exam_id
+        })
+        
+        if not admit_card:
+            # No admit card - fee not paid
+            return {
+                "verified": False,
+                "entry_allowed": False,
+                "student_name": student.get("name", ""),
+                "message": f"Fee pending - {student.get('name')} का admit card generate नहीं हुआ",
+                "ai_announcement": f"Attention! {student.get('name', 'Student')} - Fee pending. Please contact admin for entry.",
+                "requires_admin_approval": True
+            }
+        
+        # Get class info
+        class_info = await db.classes.find_one({"id": student.get("class_id")})
+        class_name = class_info.get("name", "") if class_info else ""
+        
+        # Log entry
+        entry_log = {
+            "id": str(uuid.uuid4()),
+            "student_id": student_id,
+            "student_name": student.get("name", ""),
+            "class": class_name,
+            "exam_id": exam_id,
+            "school_id": request.school_id,
+            "camera_id": request.camera_id,
+            "entry_time": datetime.now(timezone.utc).isoformat(),
+            "entry_method": "cctv_qr_scan",
+            "verified": True
+        }
+        await db.exam_entry_logs.insert_one(entry_log)
+        
+        # Success response
+        return {
+            "verified": True,
+            "entry_allowed": True,
+            "student_name": student.get("name", ""),
+            "father_name": student.get("father_name", ""),
+            "class": class_name,
+            "section": student.get("section", ""),
+            "roll_no": admit_card.get("student", {}).get("roll_no", ""),
+            "exam_name": exam.get("exam_name", ""),
+            "photo_url": student.get("photo_url"),
+            "message": f"✅ Entry Allowed - {student.get('name')} ({class_name})",
+            "ai_announcement": f"Welcome {student.get('name')} from {class_name}. Your seat number is {admit_card.get('student', {}).get('roll_no', 'assigned')}. All the best for your exam!",
+            "seat_info": {
+                "room": admit_card.get("room", "A"),
+                "seat_no": admit_card.get("student", {}).get("roll_no", "")
+            }
+        }
+        
+    except json.JSONDecodeError:
+        return {
+            "verified": False,
+            "message": "Invalid QR format",
+            "ai_announcement": "Cannot read QR code. Please try again."
+        }
+    except Exception as e:
+        logging.error(f"CCTV QR Scan error: {str(e)}")
+        return {
+            "verified": False,
+            "message": f"Error: {str(e)}",
+            "ai_announcement": "System error. Please contact admin."
+        }
+
+
+@api_router.get("/cctv/exam-entry-monitor/{school_id}/{exam_id}")
+async def get_exam_entry_monitor(school_id: str, exam_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Real-time exam entry monitoring dashboard
+    Shows who has entered, who is pending, alerts
+    """
+    # Get all students for this exam
+    exam = await db.exams.find_one({"id": exam_id}, {"_id": 0})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    # Get eligible students (class filter)
+    class_ids = exam.get("classes", [])
+    students = await db.students.find({
+        "school_id": school_id,
+        "class_id": {"$in": class_ids},
+        "is_active": True
+    }, {"_id": 0, "id": 1, "name": 1, "class_id": 1, "photo_url": 1}).to_list(500)
+    
+    # Get entry logs
+    entered = await db.exam_entry_logs.find({
+        "school_id": school_id,
+        "exam_id": exam_id
+    }, {"_id": 0}).to_list(500)
+    
+    entered_ids = {e["student_id"] for e in entered}
+    
+    # Categorize students
+    entered_students = [s for s in students if s["id"] in entered_ids]
+    pending_students = [s for s in students if s["id"] not in entered_ids]
+    
+    return {
+        "exam_name": exam.get("exam_name", ""),
+        "total_students": len(students),
+        "entered_count": len(entered_students),
+        "pending_count": len(pending_students),
+        "entered_students": entered_students,
+        "pending_students": pending_students,
+        "entry_logs": entered,
+        "live_feed_enabled": True,
+        "ai_status": "monitoring"
+    }
+
+
+# ==================== MEETINGS ====================
+
 class MeetingCreate(BaseModel):
     topic: str
     description: Optional[str] = None
