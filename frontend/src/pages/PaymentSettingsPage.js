@@ -329,6 +329,121 @@ export default function PaymentSettingsPage() {
             </div>
           </div>
 
+          {/* Razorpay Online Payment Gateway */}
+          <div className="bg-white rounded-xl border shadow-sm p-5 border-l-4 border-l-blue-500">
+            <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-blue-600" />
+              💳 Razorpay Online Payment
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Parents ko online payment link bhej sakte ho. Credit/Debit Card, Net Banking, UPI sab support karega.
+            </p>
+            
+            <div className="mb-4">
+              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <input
+                  type="checkbox"
+                  checked={settings.razorpay_enabled}
+                  onChange={e => setSettings(s => ({ ...s, razorpay_enabled: e.target.checked }))}
+                  className="w-5 h-5 rounded border-blue-300 text-blue-600"
+                />
+                <div>
+                  <span className="font-medium text-blue-900">Razorpay Online Payment Enable करें</span>
+                  <p className="text-xs text-blue-600">Parents app se online fee pay kar payenge</p>
+                </div>
+              </label>
+            </div>
+
+            {settings.razorpay_enabled && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                <div>
+                  <Label className="flex items-center gap-2">
+                    Razorpay Key ID *
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Test/Live</span>
+                  </Label>
+                  <Input
+                    value={settings.razorpay_key_id}
+                    onChange={e => setSettings(s => ({ ...s, razorpay_key_id: e.target.value }))}
+                    placeholder="rzp_live_xxxxxxxxxxxxx"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Razorpay Dashboard → Settings → API Keys se copy करें
+                  </p>
+                </div>
+                <div>
+                  <Label className="flex items-center gap-2">
+                    Razorpay Key Secret *
+                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">🔒 Secret</span>
+                  </Label>
+                  <Input
+                    type="password"
+                    value={settings.razorpay_key_secret}
+                    onChange={e => setSettings(s => ({ ...s, razorpay_key_secret: e.target.value }))}
+                    placeholder="••••••••••••••••"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Ye secret rahega, kisi ko share mat karna
+                  </p>
+                </div>
+                <div className="md:col-span-2 bg-amber-50 rounded-lg p-3 border border-amber-200">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-amber-800">
+                      <p className="font-medium mb-1">Razorpay Account नहीं है?</p>
+                      <p className="text-xs">
+                        <a 
+                          href="https://razorpay.com/sign-up/" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          razorpay.com/sign-up
+                        </a>
+                        {" "}पर जाकर free account बनाएं। 2% transaction fee lagta hai (GST extra).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cash Collection Settings */}
+          <div className="bg-white rounded-xl border shadow-sm p-5 border-l-4 border-l-green-500">
+            <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+              💵 Cash Collection Settings
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              School me cash lene ke liye settings. Kon cash le sakta hai ye define करें।
+            </p>
+            
+            <div className="mb-4">
+              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-green-50 border border-green-200">
+                <input
+                  type="checkbox"
+                  checked={settings.cash_collection_enabled}
+                  onChange={e => setSettings(s => ({ ...s, cash_collection_enabled: e.target.checked }))}
+                  className="w-5 h-5 rounded border-green-300 text-green-600"
+                />
+                <div>
+                  <span className="font-medium text-green-900">Cash Collection Enable</span>
+                  <p className="text-xs text-green-600">School counter par cash payment allow करें</p>
+                </div>
+              </label>
+            </div>
+            
+            {settings.cash_collection_enabled && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  ℹ️ Cash collectors Team Management से manage होंगे
+                </p>
+                <p className="text-xs text-gray-500">
+                  Team Management → Employee → "Can Collect Cash" permission enable करें
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Save Button */}
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={saving} className="px-8">
