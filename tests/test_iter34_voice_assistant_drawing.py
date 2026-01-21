@@ -224,7 +224,11 @@ class TestEmployeeManagement:
         response = requests.get(f"{BASE_URL}/api/employees?school_id={SCHOOL_ID}", headers=headers)
         assert response.status_code == 200
         data = response.json()
-        print(f"✓ Employees list retrieved: {len(data.get('employees', []))} employees")
+        # API returns list directly
+        if isinstance(data, list):
+            print(f"✓ Employees list retrieved: {len(data)} employees")
+        else:
+            print(f"✓ Employees list retrieved: {len(data.get('employees', []))} employees")
     
     def test_create_employee_with_login(self, auth_token):
         """Test creating employee with login credentials"""
