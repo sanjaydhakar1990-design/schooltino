@@ -72,6 +72,8 @@ import EventDesignerPage from './pages/EventDesignerPage';
 import FamilyPortalPage from './pages/FamilyPortalPage';
 import ParentPortalPage from './pages/ParentPortalPage';
 import StudyTinoLoginPage from './pages/StudyTinoLoginPage';
+import ParentPaymentPortal from './pages/ParentPaymentPortal';
+import PaymentSettingsPage from './pages/PaymentSettingsPage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
