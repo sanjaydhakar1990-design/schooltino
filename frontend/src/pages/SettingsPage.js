@@ -406,6 +406,98 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* School Logo Upload - Director/Principal only */}
+      {(user?.role === 'director' || user?.role === 'principal') && (
+        <div className="stat-card border-2 border-indigo-100 bg-gradient-to-r from-indigo-50 to-white">
+          <div className="flex items-center gap-3 mb-4">
+            <Camera className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-lg font-semibold text-slate-900">🏫 School Logo Upload</h2>
+          </div>
+          <p className="text-sm text-slate-500 mb-4">
+            School ka logo upload karein - AI automatically background remove kar dega. Ye logo Calendar, Notice, Admit Card sab jagah dikhega.
+          </p>
+          
+          <div className="flex items-start gap-6">
+            {/* Logo Preview */}
+            <div className="shrink-0">
+              <div className="w-32 h-32 border-2 border-dashed border-indigo-300 rounded-xl flex items-center justify-center overflow-hidden bg-white relative">
+                {logoUrl ? (
+                  <>
+                    <img src={logoUrl} alt="School Logo" className="w-full h-full object-contain p-2" />
+                    <button 
+                      onClick={() => setLogoUrl(null)}
+                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <Camera className="w-10 h-10 text-slate-300 mx-auto mb-1" />
+                    <span className="text-xs text-slate-400">No Logo</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Upload Controls */}
+            <div className="flex-1 space-y-3">
+              {/* Upload Button */}
+              <div>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+                <Button 
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {uploadingLogo ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Upload className="w-4 h-4 mr-2" />
+                  )}
+                  {logoUrl ? 'Change Logo' : 'Upload Logo'}
+                </Button>
+              </div>
+              
+              {/* AI Background Remove Button */}
+              {logoUrl && (
+                <Button 
+                  onClick={handleAIRemoveLogoBg}
+                  disabled={removingLogoBg || uploadingLogo}
+                  variant="outline"
+                  className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
+                >
+                  {removingLogoBg ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 mr-2" />
+                  )}
+                  ✨ AI Remove Background
+                </Button>
+              )}
+              
+              {/* Tips */}
+              <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
+                <p className="font-medium mb-1">💡 Tips:</p>
+                <ul className="space-y-0.5 text-blue-600">
+                  <li>• PNG/JPG format, Max 5MB</li>
+                  <li>• Square logo best results deta hai</li>
+                  <li>• AI automatically background hata dega</li>
+                  <li>• Logo notices, calendar, admit cards pe dikhega</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Signature & Seal Upload - Director/Principal only */}
       {(user?.role === 'director' || user?.role === 'principal') && (
         <div className="stat-card">
