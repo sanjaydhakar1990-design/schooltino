@@ -3115,8 +3115,8 @@ Return ONLY valid JSON (no extra text):
         {{
             "type": "mcq",
             "question": "Clear question text?",
-            "options": ["a) option1", "b) option2", "c) option3", "d) option4"],
-            "answer": "a) correct option with explanation",
+            "options": ["option1", "option2", "option3", "option4"],
+            "answer": "correct option with explanation",
             "marks": 1,
             "difficulty": "easy"
         }},
