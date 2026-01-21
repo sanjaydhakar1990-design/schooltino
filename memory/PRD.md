@@ -1,8 +1,52 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 21, 2026 (Evening)
+## Last Updated: January 21, 2026 (Late Night)
 
-## ✅ MAJOR NEW FEATURES (Jan 21, 2026)
+## ✅ LATEST FIXES (Jan 21, 2026 - Evening)
+
+### 1. AI Paper Generator - MCQ Double Options Fix 📝
+- **Issue:** MCQ options showing "(a) a) option" - double prefix
+- **Fix:** Added regex cleanup in AIPaperPage.js to remove existing prefixes before adding standard (a), (b), (c), (d)
+- **Files:** `/app/frontend/src/pages/AIPaperPage.js` (Line 669)
+
+### 2. Timetable Class Dropdown Fix ⏰
+- **Issue:** Classes not showing in dropdown (auth header missing)
+- **Fix:** Added `Authorization: Bearer ${token}` header to fetchClasses and fetchTimetable
+- **Files:** `/app/frontend/src/pages/TimetablePage.js` (Lines 65-74)
+
+### 3. Parent Portal (StudyTino Integration) 👨‍👩‍👧
+- **Location:** `/parent-portal` (Standalone - No admin auth required)
+- **Features:**
+  - **Login Options:** Mobile Number OR Parent ID
+  - **Password:** School-provided, changeable later
+  - **Parent Dashboard:** All children's data in one place
+  - **Stats:** Attendance, Fees, Syllabus, Exam scores
+  - **All Children Summary:** Table view for multiple children
+- **Files:**
+  - `/app/frontend/src/pages/ParentPortalPage.js` - New page
+  - `/app/backend/server.py` - Parent APIs (Line 8030+)
+- **API Endpoints:**
+  - `POST /api/parent/login` - Login with mobile or parent_id
+  - `POST /api/parent/register` - Register with auto-generated PAR-XXX-YYYY-NNN ID
+  - `GET /api/parent/children` - Get linked children
+  - `GET /api/parent/child/{id}/details` - Get child's full details
+
+### 4. Employee ID Auto-Generation 🆔
+- **Format:** `EMP-{SCHOOL_ABBREV}-{YEAR}-{SEQ}` (e.g., EMP-SCS-2026-001)
+- **API:** `POST /api/staff/create-with-id`
+- **Features:** Auto-generates ID, creates in both users and staff collections
+
+### 5. Academic Menu Consolidation 📚
+- **Grouped together:** Students, Classes, Attendance, Timetable, Online Exams, Admit Cards
+- **Location:** Sidebar under "Academic" menu
+
+---
+
+## 🧪 Testing Status: ✅ 9/9 Tests Passed (iteration_28)
+
+---
+
+## ✅ MAJOR NEW FEATURES (Jan 21, 2026 - Morning)
 
 ### 1. Complete School Calendar with AI Generation 📅🤖
 - **Location:** `/app/school-calendar`
