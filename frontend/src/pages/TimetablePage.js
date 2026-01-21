@@ -63,7 +63,10 @@ export default function TimetablePage() {
 
   const fetchClasses = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/classes?school_id=${schoolId}`);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/classes?school_id=${schoolId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await res.json();
       setClasses(data.classes || data || []);
     } catch (error) {
