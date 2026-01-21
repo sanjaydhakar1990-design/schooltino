@@ -30,6 +30,8 @@ export default function SchoolManagementPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [generatingAISeal, setGeneratingAISeal] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [removingBgSignature, setRemovingBgSignature] = useState(false);
+  const [removingBgSeal, setRemovingBgSeal] = useState(false);
   
   // School Profile
   const [school, setSchool] = useState({
