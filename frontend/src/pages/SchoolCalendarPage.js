@@ -814,6 +814,7 @@ export default function SchoolCalendarPage() {
           <p>{new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}</p>
         </div>
       </div>
+      )}
 
       {/* Event Modal */}
       {showEventModal && (
