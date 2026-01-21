@@ -259,8 +259,8 @@ function AppRoutes() {
       {/* TeachTino Portal - Teacher Login */}
       <Route path="/teachtino" element={<TeachTinoLogin />} />
       
-      {/* StudyTino Portal - Student Login */}
-      <Route path="/studytino" element={<StudyTinoLogin />} />
+      {/* StudyTino Portal - Combined Student & Parent Login */}
+      {/* Note: StudyTinoLoginPage is the new combined page at line 392 */}
       <Route 
         path="/studytino/receipts" 
         element={
