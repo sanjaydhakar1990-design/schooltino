@@ -2535,6 +2535,15 @@ async def mark_attendance(attendance: AttendanceCreate, current_user: dict = Dep
 
 @api_router.post("/attendance/bulk", response_model=List[AttendanceResponse])
 async def mark_bulk_attendance(data: BulkAttendanceCreate, current_user: dict = Depends(get_current_user)):
+    # Check if it's a holiday
+    is_holiday = await check_if_holiday(data.school_id, data.date)
+    
+    if is_holiday:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"आज छुट्टी है! ({is_holiday}). Attendance नहीं मार्क की जा सकती।"
+        )
+    
     results = []
     for att in data.attendance:
         attendance_data = {
