@@ -7752,6 +7752,9 @@ async def record_parent_payment(payment: OnlinePaymentCreate, current_user: dict
     
     await db.online_payments.insert_one(payment_data)
     
+    # Remove MongoDB _id before returning
+    payment_data.pop("_id", None)
+    
     # If invoice specified, update it (pending verification)
     if payment.invoice_id:
         await db.fee_invoices.update_one(
