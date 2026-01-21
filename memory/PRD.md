@@ -90,7 +90,7 @@
 
 ## 📱 App URLs
 
-- **Main**: https://school-erp-14.preview.emergentagent.com
+- **Main**: https://schooltino-erp.preview.emergentagent.com
 - **School Management**: /app/school-management
 - **Payment Settings**: /app/payment-settings
 - **Calendar**: /app/school-calendar
