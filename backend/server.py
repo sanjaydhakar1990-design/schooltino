@@ -2626,7 +2626,7 @@ async def create_unified_employee(
         role = employee.role
     
     # Get default permissions for role
-    permissions = ROLE_PERMISSIONS.get(role, ROLE_PERMISSIONS["teacher"]).copy()
+    permissions = DEFAULT_PERMISSIONS.get(role, DEFAULT_PERMISSIONS.get("teacher", {})).copy()
     
     # Apply custom permissions if provided
     if employee.custom_permissions:
@@ -2758,7 +2758,7 @@ async def update_employee(
         role = employee.role
     
     # Get permissions
-    permissions = ROLE_PERMISSIONS.get(role, ROLE_PERMISSIONS["teacher"]).copy()
+    permissions = DEFAULT_PERMISSIONS.get(role, DEFAULT_PERMISSIONS.get("teacher", {})).copy()
     if employee.custom_permissions:
         permissions.update(employee.custom_permissions)
     
