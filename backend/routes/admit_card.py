@@ -549,3 +549,217 @@ async def ai_generate_admit_cards(query: str, school_id: str, db) -> Dict:
         "success": False,
         "message": "Class specify करें। Example: 'Class 10 ke admit card banao'"
     }
+
+
+# ============== QR CODE VERIFICATION ==============
+
+class QRVerificationRequest(BaseModel):
+    qr_data: str  # JSON string from QR code
+    
+class StudentVerificationResponse(BaseModel):
+    verified: bool
+    student_name: str = ""
+    roll_no: str = ""
+    class_name: str = ""
+    exam_name: str = ""
+    fee_status: str = ""
+    entry_allowed: bool = False
+    message: str = ""
+    photo_url: str = None
+
+@router.post("/verify-qr")
+async def verify_admit_card_qr(qr_data: dict):
+    """
+    Verify admit card QR code at exam hall entrance
+    AI will use this to verify student entry
+    Returns: Student details, fee status, entry permission
+    """
+    db = get_database()
+    
+    try:
+        student_id = qr_data.get("student_id")
+        exam_id = qr_data.get("exam_id")
+        school_id = qr_data.get("school_id")
+        admit_card_no = qr_data.get("admit_card_no")
+        
+        if not all([student_id, exam_id, school_id]):
+            return {
+                "verified": False,
+                "entry_allowed": False,
+                "message": "Invalid QR code data"
+            }
+        
+        # Get student info
+        student = await db.students.find_one({"id": student_id, "school_id": school_id})
+        if not student:
+            return {
+                "verified": False,
+                "entry_allowed": False,
+                "message": "Student not found"
+            }
+        
+        # Get exam info
+        exam = await db.exams.find_one({"id": exam_id, "school_id": school_id})
+        if not exam:
+            return {
+                "verified": False,
+                "entry_allowed": False,
+                "message": "Exam not found"
+            }
+        
+        # Check if admit card was actually generated
+        generated = await db.generated_admit_cards.find_one({
+            "student_id": student_id,
+            "exam_id": exam_id
+        })
+        
+        if not generated:
+            return {
+                "verified": False,
+                "entry_allowed": False,
+                "message": "Admit card not generated - Student may not have paid fees",
+                "student_name": student.get("name", ""),
+                "roll_no": student.get("roll_no", "")
+            }
+        
+        # Get fee status
+        fee_status = await get_student_fee_status(student_id, school_id, db)
+        
+        # Get class info
+        class_info = await db.classes.find_one({"id": student.get("class_id")})
+        class_name = class_info.get("name", "") if class_info else student.get("class_id", "")
+        
+        # Log entry attempt
+        entry_log = {
+            "id": str(uuid.uuid4()),
+            "student_id": student_id,
+            "exam_id": exam_id,
+            "school_id": school_id,
+            "admit_card_no": admit_card_no,
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "entry_allowed": True,
+            "fee_percentage": fee_status["paid_percentage"]
+        }
+        await db.exam_entry_logs.insert_one(entry_log)
+        
+        return {
+            "verified": True,
+            "entry_allowed": True,
+            "student_name": student.get("name", ""),
+            "father_name": student.get("father_name", ""),
+            "roll_no": student.get("roll_no", generated.get("admit_card_no", "")),
+            "class_name": class_name,
+            "section": student.get("section", ""),
+            "exam_name": exam.get("exam_name", ""),
+            "fee_status": f"{fee_status['paid_percentage']}% paid",
+            "fee_paid": fee_status["paid_fee"],
+            "fee_pending": fee_status["pending_fee"],
+            "photo_url": student.get("photo_url"),
+            "message": f"✅ Entry Allowed - {student.get('name', '')} ({class_name})",
+            "ai_announcement": f"Welcome {student.get('name', '')} from {class_name}. Your seat is ready."
+        }
+        
+    except Exception as e:
+        return {
+            "verified": False,
+            "entry_allowed": False,
+            "message": f"Verification error: {str(e)}"
+        }
+
+
+@router.post("/admin-override-entry")
+async def admin_override_entry(
+    student_id: str,
+    exam_id: str,
+    school_id: str,
+    admin_id: str,
+    reason: str = "Admin approved"
+):
+    """
+    Admin can override fee requirement and allow student entry
+    """
+    db = get_database()
+    
+    # Log override
+    override_log = {
+        "id": str(uuid.uuid4()),
+        "student_id": student_id,
+        "exam_id": exam_id,
+        "school_id": school_id,
+        "admin_id": admin_id,
+        "reason": reason,
+        "action": "entry_override",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.admin_overrides.insert_one(override_log)
+    
+    # Generate admit card forcefully
+    admit_card = await generate_admit_card_data(student_id, exam_id, school_id, db)
+    admit_card["admin_override"] = True
+    admit_card["override_reason"] = reason
+    
+    await db.generated_admit_cards.update_one(
+        {"student_id": student_id, "exam_id": exam_id},
+        {"$set": admit_card},
+        upsert=True
+    )
+    
+    student = await db.students.find_one({"id": student_id})
+    
+    return {
+        "success": True,
+        "message": f"✅ Admin override applied. {student.get('name', '')} can now enter.",
+        "admit_card": admit_card
+    }
+
+
+@router.get("/entry-logs/{school_id}/{exam_id}")
+async def get_exam_entry_logs(school_id: str, exam_id: str):
+    """Get all entry logs for an exam - AI will use this to track who entered"""
+    db = get_database()
+    
+    logs = await db.exam_entry_logs.find({
+        "school_id": school_id,
+        "exam_id": exam_id
+    }).sort("verified_at", -1).to_list(500)
+    
+    for log in logs:
+        log.pop("_id", None)
+        # Get student name
+        student = await db.students.find_one({"id": log["student_id"]})
+        log["student_name"] = student.get("name", "") if student else ""
+    
+    return {
+        "total_entries": len(logs),
+        "logs": logs
+    }
+
+
+@router.get("/download-status/{school_id}/{exam_id}")
+async def get_download_status(school_id: str, exam_id: str):
+    """Track which students have downloaded admit cards"""
+    db = get_database()
+    
+    # Get all generated admit cards for this exam
+    generated = await db.generated_admit_cards.find({
+        "school_id": school_id,
+        "exam_id": exam_id
+    }).to_list(500)
+    
+    downloaded_students = []
+    for ac in generated:
+        student = await db.students.find_one({"id": ac["student_id"]})
+        if student:
+            downloaded_students.append({
+                "student_id": ac["student_id"],
+                "student_name": student.get("name", ""),
+                "class": ac.get("student", {}).get("class", ""),
+                "roll_no": ac.get("student", {}).get("roll_no", ""),
+                "generated_at": ac.get("generated_at", "")
+            })
+    
+    return {
+        "exam_id": exam_id,
+        "total_downloaded": len(downloaded_students),
+        "students": downloaded_students
+    }
