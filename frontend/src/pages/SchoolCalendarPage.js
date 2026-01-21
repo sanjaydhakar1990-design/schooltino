@@ -507,16 +507,28 @@ export default function SchoolCalendarPage() {
       </div>
 
       {/* Calendar Content */}
-      <div ref={calendarRef}>
-        {/* Print Header */}
-        <div className="hidden print:block mb-6 text-center border-b-2 border-black pb-4">
+      <div ref={calendarRef} className="calendar-print-container">
+        {/* Watermark for Print - School Logo */}
+        {school?.logo_url && (
+          <div className="hidden print:block calendar-watermark">
+            <img src={school.logo_url} alt="" className="w-full opacity-10" />
+          </div>
+        )}
+
+        {/* Print Header with School Details */}
+        <div className="hidden print:block mb-6 text-center border-b-2 border-black pb-4 school-print-header">
           {school?.logo_url && <img src={school.logo_url} alt="" className="h-16 mx-auto mb-2" />}
           <h1 className="text-2xl font-bold">{school?.name || 'School Name'}</h1>
+          {school?.motto && <p className="text-sm italic text-gray-600">{school.motto}</p>}
           <div className="flex justify-center gap-6 text-sm mt-2">
             {school?.address && <span><MapPin className="w-3 h-3 inline mr-1" />{school.address}</span>}
             {school?.phone && <span><Phone className="w-3 h-3 inline mr-1" />{school.phone}</span>}
+            {school?.email && <span><Mail className="w-3 h-3 inline mr-1" />{school.email}</span>}
           </div>
-          <p className="text-lg font-semibold mt-2">
+          {school?.website_url && (
+            <p className="text-xs text-gray-500 mt-1"><Globe className="w-3 h-3 inline mr-1" />{school.website_url}</p>
+          )}
+          <p className="text-lg font-semibold mt-3 bg-indigo-600 text-white py-2 rounded">
             {isHindi ? 'शैक्षणिक कैलेंडर' : 'Academic Calendar'} 2025-26
           </p>
         </div>
