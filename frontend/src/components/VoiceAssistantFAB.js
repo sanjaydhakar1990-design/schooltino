@@ -114,6 +114,151 @@ export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
     toast.success('Chat loaded');
   };
 
+  // ============== JARVIS MODE - Continuous Listening ==============
+  // Start Jarvis Mode - Always listening like a meeting assistant
+  const startJarvisMode = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast.error('Jarvis Mode requires Chrome browser');
+      return;
+    }
+    
+    setJarvisMode(true);
+    addMessage('ai', '🤖 Jarvis Mode ON! Main ab hamesha sun raha hoon. Meeting mein help ke liye ready hoon. "Tino" bolke mujhe address karein.', { isJarvisNotification: true });
+    speakText('Jarvis Mode activated. Main ab aapki meeting mein help ke liye ready hoon.');
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'hi-IN';
+    
+    let finalTranscript = '';
+    let silenceTimeout = null;
+    
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+      
+      // Clear previous silence timeout
+      if (silenceTimeout) clearTimeout(silenceTimeout);
+      
+      // Set new silence timeout - process after 2 seconds of silence
+      silenceTimeout = setTimeout(async () => {
+        if (finalTranscript.trim()) {
+          const text = finalTranscript.trim().toLowerCase();
+          
+          // Check if user addressed Tino
+          if (text.includes('tino') || text.includes('टीनो') || text.includes('ai') || text.includes('assistant')) {
+            addMessage('user', finalTranscript.trim());
+            await processJarvisCommand(finalTranscript.trim());
+          } else {
+            // Passively listen - maybe offer suggestion
+            if (text.length > 50 && (text.includes('problem') || text.includes('issue') || text.includes('समस्या') || text.includes('help'))) {
+              const suggestionMsg = 'Sir, agar mujhe address karein "Tino" bol kar, to main help kar sakti hoon.';
+              addMessage('ai', suggestionMsg, { isJarvisSuggestion: true });
+              // Don't speak to avoid interrupting meeting
+            }
+          }
+          finalTranscript = '';
+        }
+      }, 2000);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Jarvis recognition error:', event.error);
+      if (event.error !== 'no-speech') {
+        // Restart on error (except no-speech)
+        setTimeout(() => {
+          if (jarvisMode) recognition.start();
+        }, 1000);
+      }
+    };
+    
+    recognition.onend = () => {
+      // Auto-restart if Jarvis mode is still on
+      if (jarvisMode) {
+        setTimeout(() => recognition.start(), 500);
+      }
+    };
+    
+    recognition.start();
+    jarvisRecognitionRef.current = recognition;
+    
+    toast.success('Jarvis Mode: Meeting Assistant Ready! 🤖');
+  };
+  
+  // Stop Jarvis Mode
+  const stopJarvisMode = () => {
+    setJarvisMode(false);
+    if (jarvisRecognitionRef.current) {
+      jarvisRecognitionRef.current.stop();
+      jarvisRecognitionRef.current = null;
+    }
+    addMessage('ai', '🔴 Jarvis Mode OFF. Push-to-talk mode mein wapas aa gaye.', { isJarvisNotification: true });
+    speakText('Jarvis Mode deactivated.');
+    toast.info('Jarvis Mode OFF');
+  };
+  
+  // Process Jarvis command (when user addresses Tino in continuous mode)
+  const processJarvisCommand = async (text) => {
+    setIsProcessing(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API}/voice-assistant/chat`, {
+        message: text,
+        school_id: user?.school_id || 'default',
+        user_id: user?.id,
+        user_role: user?.role,
+        voice_gender: voiceGender,
+        is_jarvis_mode: true,
+        context: 'meeting_assistant'
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const result = response.data;
+      
+      // Polite response style for Jarvis mode
+      let aiResponse = result.message;
+      if (!aiResponse.includes('Sir') && !aiResponse.includes('sir')) {
+        aiResponse = 'Sir, ' + aiResponse;
+      }
+      
+      addMessage('ai', aiResponse, { 
+        navigate: result.navigate_to,
+        action: result.action,
+        isJarvisResponse: true
+      });
+      
+      // Speak the response
+      speakText(aiResponse);
+      
+      // Handle navigation
+      if (result.navigate_to) {
+        setTimeout(() => {
+          window.location.href = result.navigate_to;
+        }, 2000);
+      }
+      
+    } catch (error) {
+      console.error('Jarvis command error:', error);
+      addMessage('ai', 'Sir, kuch technical issue aa gaya. Kripya dobara try karein.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  // ============== END JARVIS MODE ==============
+
   // Initial greeting
   useEffect(() => {
     if (isOpen && messages.length === 0) {
