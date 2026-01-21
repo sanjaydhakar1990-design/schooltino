@@ -7390,6 +7390,10 @@ async def save_school_settings(settings: SchoolSettingsModel, current_user: dict
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Verify user has access to this school
+    if not current_user.get("is_superadmin") and current_user.get("school_id") != settings.school_id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this school's settings")
+    
     settings_dict = settings.dict()
     settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
     settings_dict["updated_by"] = current_user["id"]
