@@ -387,6 +387,9 @@ function AppRoutes() {
         }
       />
 
+      {/* Parent Portal - Standalone (No auth required - has own login) */}
+      <Route path="/parent-portal" element={<ParentPortalPage />} />
+
       {/* Fee Payment Page - Student Access */}
       <Route
         path="/fee-payment"
