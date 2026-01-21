@@ -120,9 +120,6 @@ export const Layout = () => {
         </main>
       </div>
 
-      {/* Voice Assistant Modal */}
-      <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
-
       {/* Voice Assistant FAB */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
