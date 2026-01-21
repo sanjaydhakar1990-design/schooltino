@@ -3608,9 +3608,9 @@ async def get_dashboard_stats(school_id: str, current_user: dict = Depends(get_c
         {"_id": 0, "id": 1, "title": 1, "priority": 1, "created_at": 1}
     ).sort("created_at", -1).to_list(5)
     
-    # Recent audit logs
+    # Recent audit logs - FILTERED BY SCHOOL
     recent_activities = await db.audit_logs.find(
-        {},
+        {"school_id": school_id},
         {"_id": 0, "action": 1, "module": 1, "user_id": 1, "created_at": 1}
     ).sort("created_at", -1).to_list(10)
     
