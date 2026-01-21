@@ -9,9 +9,10 @@ import { Label } from '../components/ui/label';
 import { 
   Calendar, Printer, Plus, Edit2, Trash2, Bell, ChevronLeft, ChevronRight, 
   MapPin, Phone, Mail, Globe, Image, Upload, Star, Quote, Sparkles, Loader2,
-  X, Save, Camera, Check
+  X, Save, Camera, Check, FileText, Award, Trophy
 } from 'lucide-react';
 import { toast } from 'sonner';
+import PrintableCalendar from '../components/PrintableCalendar';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
