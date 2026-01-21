@@ -691,12 +691,32 @@ export default function AIPaperPage() {
 
   const renderStep3 = () => (
     <div className="space-y-6">
+      {/* Auto Image Generation Progress - hidden in print */}
+      {autoGeneratingImages && (
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 print:hidden">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+            <div className="flex-1">
+              <p className="font-medium text-purple-800">
+                चित्र बन रहे हैं... ({imageProgress.current}/{imageProgress.total})
+              </p>
+              <div className="w-full bg-purple-200 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(imageProgress.current / imageProgress.total) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action buttons - hidden in print */}
       <div className="flex justify-between items-center print:hidden">
-        <Button variant="outline" onClick={() => { setPaper(null); setStep(1); }}>
+        <Button variant="outline" onClick={() => { setPaper(null); setStep(1); setAnswerImages({}); }}>
           {formData.language === 'hindi' ? 'नया पेपर बनाएं' : 'Create New Paper'}
         </Button>
-        <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700">
+        <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700" disabled={autoGeneratingImages}>
           <Printer className="w-5 h-5 mr-2" />
           {formData.language === 'hindi' ? 'प्रिंट करें' : 'Print Paper'}
         </Button>
