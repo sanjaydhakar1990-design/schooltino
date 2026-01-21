@@ -1,89 +1,90 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 21, 2026 (Session 6 - Part 2)
+## Last Updated: January 21, 2026 (Session 6 - Part 3)
 
 ---
 
 ## ✅ COMPLETED IN THIS SESSION
 
-### 1. AI Background Remover for Signature & Seal ✅🖼️
-- **API Added**: `POST /api/school/ai-remove-background`
-- **Features**:
-  - Upload signature photo from plain paper → AI removes background
-  - Upload existing seal photo → AI cleans and enhances it
-  - Uses GPT Image 1 edit mode for background removal
-- **UI**: Two purple "AI BG Remove" buttons added in Receipt Settings tab
-- **Hindi helper text**: "कागज पर signature की photo upload करो, AI background हटा देगा"
+### 1. AI Paper Generator - Auto Drawing Images ✅🎨
+- Paper generate होने के बाद automatically diagram/drawing questions की images generate होती हैं
+- Progress bar दिखता है: "चित्र बन रहे हैं... (2/5)"
+- Drawing questions types: draw_color, complete_drawing, pattern, scenery
+- Nursery/LKG/UKG के लिए age-appropriate drawing activities
 
-### 2. Voice Assistant Navigation Fixed ✅🎙️
-- **Problem**: Voice assistant was just talking, not actually navigating
-- **Fix**: Added multiple navigation commands to `NAVIGATION_COMMANDS` dictionary:
-  - `admission` → `/app/students` (admission form open karo)
-  - `calendar` → `/app/school-calendar`
-  - `employees` → `/app/employee-management`
-  - `timetable` → `/app/timetable`
-  - `exams` → `/app/online-exam`
-  - `school_management` → `/app/school-management`
-  - `results` → `/app/results`
-- **Frontend already had**: `window.location.href = result.navigate_to` in VoiceAssistantFAB.js
+### 2. Admit Card System with QR Code ✅🎫
+- **QR Code Verification**: `/api/admit-card/verify-qr`
+- **Admin Override Entry**: `/api/admit-card/admin-override-entry`
+- **Entry Logs**: `/api/admit-card/entry-logs/{school_id}/{exam_id}`
+- **Download Status Tracking**: `/api/admit-card/download-status/{school_id}/{exam_id}`
+- **AdmitCardPreview Component**: Print-ready card with QR code, student photo, exam schedule, instructions
+- Fee criteria check (85% paid = can download)
 
-### 3. Push-to-Talk Already Implemented ✅🎤
-- Mic button: `onMouseDown={startRecording}`, `onMouseUp={stopRecording}`
-- Touch support: `onTouchStart={startRecording}`, `onTouchEnd={stopRecording}`
-- Helper text: "Mic button dabake bolo, chhod do - reply aayega"
+### 3. Event Designer + AI Content Merged ✅🎭
+- Sidebar: "AI Content & Event Designer" (single link)
+- `/app/ai-content` → redirects to `/app/event-designer`
+- Event templates: Annual Function, Sports Day, Graduation, Cultural Fest, Parent-Teacher Meet
+- Design styles: Modern, Traditional, Festive, Elegant, Playful
+- Preview and Print functionality
 
-### 4. Drawing Paper Generator for Nursery/KG ✅🎨
-- **Added Drawing Chapters**: 
-  - `Nursery_Drawing`: 10 chapters (lines, shapes, fruits, vegetables, coloring)
-  - `LKG_Drawing`: 10 chapters (shapes, animals, birds, nature, vehicles)
-  - `UKG_Drawing`: 10 chapters (scenery, festivals, national flag, sea animals)
-- **Backend**: Special prompt for Drawing subject generates age-appropriate activities
-- **Question Types**: draw_color, complete_drawing, pattern, scenery, trace_color
+### 4. Admin Full Control ✅🔐
+- **DELETE /api/employees/{id}**: Deactivate employee (Director/Admin only)
+- **DELETE /api/employees/{id}/permanent**: Permanently delete (Director only)
+- **DELETE /api/students/{id}/permanent**: Permanently delete student (Director only)
+- All related data (attendance, fees, exam results) deleted with student
+
+### 5. Voice Assistant Enhanced ✅🎙️
+- Added navigation commands: admission, calendar, employees, timetable, exams, results
+- Hindi keywords supported: "दाखिला", "छुट्टी", "परीक्षा", "कर्मचारी"
+
+### 6. AI Background Remover ✅🖼️
+- Signature & Seal background removal
+- GPT Image 1 edit mode
+- Hindi helper text in UI
 
 ---
 
-## 🧪 Testing Status: ✅ 15/15 Tests Passed (iteration_34)
+## 🧪 Testing Status: ✅ All APIs Working
 
 | Feature | Status |
 |---------|--------|
-| Voice Assistant - Admission Navigation | ✅ PASS |
-| Voice Assistant - Calendar Navigation | ✅ PASS |
-| Voice Assistant - Employees Navigation | ✅ PASS |
-| Voice Assistant - Timetable Navigation | ✅ PASS |
-| Voice Assistant - Exams Navigation | ✅ PASS |
-| AI Background Remove Endpoint | ✅ PASS |
+| Employee Delete API | ✅ PASS |
+| Voice Assistant Navigation | ✅ PASS |
 | Drawing Chapters (Nursery/LKG/UKG) | ✅ PASS |
-| Employee Creation + Login | ✅ PASS |
-| School Management Page | ✅ PASS |
+| Admit Card QR Verification | ✅ PASS |
+| AI Background Remove | ✅ PASS |
+| Event Designer Page | ✅ PASS |
 
 ---
 
-## 📁 Key Files Updated
+## 📁 Key Files Updated/Created
 
 | File | Changes |
 |------|---------|
-| `/app/backend/server.py` | Added AI background remove API, Drawing paper generator |
-| `/app/backend/routes/voice_assistant.py` | Added navigation commands |
-| `/app/frontend/src/pages/SchoolManagementPage.js` | AI BG Remove buttons |
-| `/app/frontend/src/data/boardSyllabus.js` | Drawing chapters for pre-primary |
+| `/app/backend/server.py` | Employee delete APIs, Drawing paper generator, AI BG remove |
+| `/app/backend/routes/admit_card.py` | QR verification, Admin override, Entry logs |
+| `/app/frontend/src/pages/AIPaperPage.js` | Auto image generation with progress |
+| `/app/frontend/src/components/AdmitCardPreview.js` | NEW - Print-ready admit card with QR |
+| `/app/frontend/src/components/Sidebar.js` | Merged AI Content + Event Designer |
+| `/app/frontend/src/App.js` | ai-content → event-designer redirect |
 
 ---
 
-## 🔜 Next Tasks (Pending from User)
+## 🔜 Next Tasks (Pending)
 
 ### Still Pending:
-1. **Admit Card System** 🎫 - Exam-wise admit cards, fee criteria, AI tracking, exam entry control
-2. **Event Designer + AI Content Combine** 🎨 - Merge into single tool with preview
-3. **Admin Full Control** 🔐 - Full edit/delete access for students & employees
-4. **Continuous Listening Mode (Jarvis Mode)** 🤖 - AI listens in meetings and gives suggestions
-5. **PWA Icon Update** - If app installed, button updates icon instead of reinstalling
+1. **Continuous Listening Mode (Jarvis Mode)** 🤖 - AI listens in meetings and gives suggestions
+2. **PWA Icon Update** - If app installed, button updates icon instead of reinstalling
+3. **Calendar Unification** - Two separate calendars need to be merged
+4. **Family Portal Testing** - End-to-end verification
 
-### Already Completed in Previous Session:
-- ✅ Unified School Management
-- ✅ Payment System (UPI/Bank)
-- ✅ Receipt Signature/Seal Customization
-- ✅ Employee API Bug Fix (hashlib→bcrypt)
-- ✅ Duplicate Settings Merge
+### ✅ Completed (Was Pending):
+- ✅ AI Background Remover (Signature & Seal)
+- ✅ Voice Assistant Actually Works (not just talks)
+- ✅ Drawing Paper Generator for Nursery/KG
+- ✅ Admit Card System with QR
+- ✅ Event Designer + AI Content Combined
+- ✅ Admin Full Control (delete students/employees)
 
 ---
 
@@ -97,73 +98,44 @@
 
 ---
 
-## 📱 App URLs
+## 📱 Key APIs
 
-| Feature | URL |
-|---------|-----|
-| Main | https://schooltino-erp.preview.emergentagent.com |
-| School Management | /app/school-management |
-| Employee Management | /app/employee-management |
-| School Calendar | /app/school-calendar |
-| AI Paper Generator | /app/ai-paper |
-| Voice Assistant | Click FAB button (bottom right) |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/employees/{id}` | DELETE | Deactivate employee |
+| `/api/employees/{id}/permanent` | DELETE | Permanently delete |
+| `/api/students/{id}/permanent` | DELETE | Permanently delete student |
+| `/api/admit-card/verify-qr` | POST | Verify admit card at exam hall |
+| `/api/admit-card/admin-override-entry` | POST | Admin allows entry |
+| `/api/school/ai-remove-background` | POST | Remove background from signature/seal |
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Backend**: FastAPI, MongoDB, Pydantic, JWT, bcrypt
-- **Frontend**: React, TailwindCSS, Shadcn/UI
+- **Frontend**: React, TailwindCSS, Shadcn/UI, qrcode.react
 - **AI**: emergentintegrations (Gemini Nano Banana, GPT-5.2, GPT Image 1)
 - **Voice**: ElevenLabs TTS, OpenAI Whisper STT
 - **PWA**: Service Worker v3, Web Manifest
 
 ---
 
-## 📊 Code Architecture
-
-```
-/app/
-├── backend/
-│   ├── server.py           # Main API (9500+ lines)
-│   ├── routes/
-│   │   └── voice_assistant.py  # Voice commands + TTS/STT
-│   └── .env
-├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── SchoolManagementPage.js   # Unified settings
-│   │   │   ├── AIPaperPage.js            # Paper generator
-│   │   │   └── ...
-│   │   ├── data/
-│   │   │   └── boardSyllabus.js          # Drawing chapters added
-│   │   ├── components/
-│   │   │   └── VoiceAssistantFAB.js      # Push-to-talk
-│   │   └── App.js
-│   └── public/
-│       ├── manifest.json
-│       └── service-worker.js
-└── memory/
-    └── PRD.md
-```
-
----
-
 ## 💡 Session Notes
 
 - User's preferred language: Hindi
-- Voice Assistant now actually navigates pages (not just talks)
-- Drawing subject now has proper chapters for pre-primary classes
-- AI Background Remover uses GPT Image 1 edit mode
-- Push-to-talk was already implemented, just needed verification
+- User wants Jarvis-like AI (always listening, giving suggestions)
+- Drawing images now auto-generate in papers
+- QR code on admit card for exam hall verification
+- Admin can permanently delete students/employees (with all data)
 
 ---
 
 ## 🚨 Technical Debt
 
-1. **server.py is 9500+ lines** - Needs modularization urgently
+1. **server.py is 10000+ lines** - CRITICAL: Needs modularization
 2. **Multiple calendar systems** - Two separate calendars need unification
-3. **Continuous listening mode** - Complex feature requiring real-time STT
+3. **Continuous listening mode** - Complex feature requiring real-time STT streaming
 
 ---
 
@@ -171,11 +143,11 @@
 
 User wants AI to be like JARVIS:
 - Always listening in meetings
-- Gives polite suggestions
+- Gives polite suggestions: "Sir अगर आप बुरा न मानें तो..."
 - Full voice control of the entire system
-- "Sir अगर आप बुरा न मानें तो..." style responses
+- AI announces student entry at exam hall
 
-This requires:
+Requirements:
 1. Real-time Whisper streaming
 2. Context-aware suggestions engine
 3. Polite interruption system
