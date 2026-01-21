@@ -3616,7 +3616,91 @@ LANGUAGE REQUIREMENT - STRICTLY ENGLISH:
 - Use proper scientific terminology in English
 """
         
-        system_prompt = f"""You are an expert question paper generator for Indian schools following NCERT 2024-25 Rationalized Syllabus.
+        # Special handling for Drawing/Art subject (Pre-Primary and Primary)
+        is_drawing_subject = request.subject.lower() in ['drawing', 'चित्रकला', 'art', 'art & craft']
+        is_pre_primary = request.class_name.lower() in ['nursery', 'lkg', 'ukg']
+        
+        if is_drawing_subject:
+            # Override question types for drawing
+            drawing_system_prompt = f"""You are an expert Drawing/Art question paper generator for Indian schools.
+Generate drawing activities and questions for {request.class_name} students.
+Chapter/Topic: {request.chapter}
+Exam Name: {request.exam_name or 'Drawing Exam'}
+Difficulty: {request.difficulty}
+
+{lang_instruction}
+
+DRAWING EXAM PATTERN (Age-Appropriate for {request.class_name}):
+Total Marks: {request.total_marks}
+Time Duration: {request.time_duration} minutes
+
+FOR {'PRE-PRIMARY (Nursery/LKG/UKG)' if is_pre_primary else 'PRIMARY CLASSES'} DRAWING:
+- Focus on simple shapes, objects, coloring activities
+- Use familiar items: fruits, vegetables, animals, family, nature
+- Instructions should be simple and clear
+- Include visual guidance in questions
+
+QUESTION TYPES FOR DRAWING PAPER:
+1. Draw and Color (5-10 marks): "Draw and color [object]"
+2. Complete the Drawing (2-5 marks): "Complete the missing parts and color"
+3. Trace and Color (2-3 marks): "Trace the dotted lines and color" (for pre-primary)
+4. Pattern Making (2-3 marks): "Complete the pattern"
+5. Free Drawing (5-10 marks): "Draw what you see in your [place/imagination]"
+6. Coloring Activity (2-5 marks): "Color the picture using appropriate colors"
+
+Return ONLY valid JSON:
+{{
+    "questions": [
+        {{
+            "type": "draw_color",
+            "question": "Draw and color a beautiful apple/tree/house",
+            "answer": "Student should draw a [object] with proper shape. Use colors: [list appropriate colors]. Drawing should show [key elements]",
+            "drawing_guide": "Step 1: Draw [basic shape]. Step 2: Add [details]. Step 3: Color with [colors]",
+            "marks": 5,
+            "difficulty": "easy",
+            "requires_drawing": true
+        }},
+        {{
+            "type": "complete_drawing",
+            "question": "Complete the missing parts of the butterfly and color it",
+            "answer": "Student should add missing wing/antenna/patterns. Use bright colors.",
+            "drawing_guide": "Add the missing [parts]. Ensure symmetry. Color wings with patterns.",
+            "marks": 3,
+            "difficulty": "medium",
+            "requires_drawing": true
+        }},
+        {{
+            "type": "pattern",
+            "question": "Complete the pattern: Circle, Square, Triangle, Circle, Square, ____",
+            "answer": "Triangle - the pattern repeats",
+            "marks": 2,
+            "difficulty": "easy",
+            "requires_drawing": true
+        }},
+        {{
+            "type": "scenery",
+            "question": "Draw a beautiful garden with flowers, trees, sun and butterflies",
+            "answer": "Drawing should include: at least 3 flowers of different types, 1-2 trees, sun in corner, 2 butterflies. Use bright and natural colors.",
+            "drawing_guide": "1. Draw ground line. 2. Add trees on sides. 3. Draw flowers in front. 4. Add sun in sky. 5. Draw butterflies flying. 6. Color appropriately.",
+            "marks": 10,
+            "difficulty": "medium",
+            "requires_drawing": true
+        }}
+    ],
+    "total_marks": {request.total_marks},
+    "is_drawing_paper": true
+}}
+
+IMPORTANT:
+1. All questions MUST require actual drawing by student
+2. Include clear drawing_guide for each question
+3. Questions should be age-appropriate for {request.class_name}
+4. Total marks MUST be exactly {request.total_marks}
+5. Include variety of drawing activities
+"""
+            system_prompt = drawing_system_prompt
+        else:
+            system_prompt = f"""You are an expert question paper generator for Indian schools following NCERT 2024-25 Rationalized Syllabus.
 Generate questions for {request.class_name} students in {request.subject} subject.
 Chapter/Topic: {request.chapter}
 Exam Name: {request.exam_name or 'Exam'}
