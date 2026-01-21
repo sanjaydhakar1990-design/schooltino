@@ -147,10 +147,16 @@ NAVIGATION_COMMANDS = {
         "response_female": "Dashboard khol rahi hoon."
     },
     "student_dashboard": {
-        "keywords": ["student dashboard", "student ka dashboard", "studytino", "students page"],
+        "keywords": ["student dashboard", "student ka dashboard", "studytino", "students page", "students", "student list", "vidyarthi", "bacche", "छात्र"],
         "url": "/app/students",
         "response_male": "Students page khol raha hoon.",
         "response_female": "Students page khol rahi hoon."
+    },
+    "admission": {
+        "keywords": ["admission", "admission form", "new admission", "student admission", "dakhila", "दाखिला", "naya student", "add student", "student add karo", "admission karo", "admission kholo"],
+        "url": "/app/students",
+        "response_male": "Students page khol raha hoon. Yahan se naya student add kar sakte ho.",
+        "response_female": "Students page khol rahi hoon. Yahan se naya student add kar sakte ho."
     },
     "teacher_dashboard": {
         "keywords": ["teacher dashboard", "teachtino", "teacher page", "teachers"],
