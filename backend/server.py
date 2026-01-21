@@ -7586,6 +7586,204 @@ async def get_school_event_designs(school_id: str, current_user: dict = Depends(
     
     return designs
 
+# ==================== SCHOOL CALENDAR SYSTEM ====================
+
+@api_router.get("/school/{school_id}/calendar-events")
+async def get_calendar_events(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all calendar events for a school"""
+    events = await db.calendar_events.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).sort("date", 1).to_list(500)
+    return events
+
+@api_router.post("/school/{school_id}/calendar-events")
+async def create_calendar_event(
+    school_id: str,
+    date: str = Body(...),
+    name: str = Body(...),
+    type: str = Body(default="school_event"),
+    description: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new calendar event"""
+    event = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "date": date,
+        "name": name,
+        "type": type,
+        "description": description,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    await db.calendar_events.insert_one(event)
+    return {"message": "Event created", "event": {k: v for k, v in event.items() if k != "_id"}}
+
+@api_router.put("/school/{school_id}/calendar-events/{event_id}")
+async def update_calendar_event(
+    school_id: str,
+    event_id: str,
+    date: str = Body(...),
+    name: str = Body(...),
+    type: str = Body(default="school_event"),
+    description: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a calendar event"""
+    await db.calendar_events.update_one(
+        {"id": event_id, "school_id": school_id},
+        {"$set": {"date": date, "name": name, "type": type, "description": description}}
+    )
+    return {"message": "Event updated"}
+
+@api_router.delete("/school/{school_id}/calendar-events/{event_id}")
+async def delete_calendar_event(school_id: str, event_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a calendar event"""
+    await db.calendar_events.delete_one({"id": event_id, "school_id": school_id})
+    return {"message": "Event deleted"}
+
+@api_router.get("/school/{school_id}/calendar-photos")
+async def get_calendar_photos(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get calendar photos for a school"""
+    photos = await db.calendar_photos.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).sort("uploaded_at", -1).to_list(100)
+    return photos
+
+@api_router.get("/school/{school_id}/testimonials")
+async def get_testimonials(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get testimonials for a school"""
+    testimonials = await db.testimonials.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(50)
+    return testimonials
+
+@api_router.post("/school/{school_id}/testimonials")
+async def create_testimonial(
+    school_id: str,
+    text: str = Body(...),
+    author: str = Body(...),
+    designation: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a testimonial"""
+    testimonial = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "text": text,
+        "author": author,
+        "designation": designation,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.testimonials.insert_one(testimonial)
+    return {"message": "Testimonial created", "testimonial": {k: v for k, v in testimonial.items() if k != "_id"}}
+
+@api_router.put("/school/{school_id}/testimonials/{testimonial_id}")
+async def update_testimonial(
+    school_id: str,
+    testimonial_id: str,
+    text: str = Body(...),
+    author: str = Body(...),
+    designation: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a testimonial"""
+    await db.testimonials.update_one(
+        {"id": testimonial_id, "school_id": school_id},
+        {"$set": {"text": text, "author": author, "designation": designation}}
+    )
+    return {"message": "Testimonial updated"}
+
+@api_router.delete("/school/{school_id}/testimonials/{testimonial_id}")
+async def delete_testimonial(school_id: str, testimonial_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a testimonial"""
+    await db.testimonials.delete_one({"id": testimonial_id, "school_id": school_id})
+    return {"message": "Testimonial deleted"}
+
+# AI Calendar Image Generation with Nano Banana
+@api_router.post("/calendar/generate-image")
+async def generate_calendar_image(
+    school_id: str = Body(...),
+    school_name: str = Body(...),
+    year: str = Body(default="2025-26"),
+    events: str = Body(default=""),
+    state: str = Body(default="Rajasthan"),
+    language: str = Body(default="hi"),
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate AI calendar image using Nano Banana"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        import base64
+        
+        EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Create prompt for calendar image
+        prompt = f"""Create a beautiful, professional Indian school calendar poster/banner for:
+
+School: {school_name}
+Academic Year: {year}
+State: {state}
+Language: {"Hindi" if language == "hi" else "English"}
+
+Important Events: {events if events else "Republic Day, Holi, Independence Day, Diwali, Annual Function"}
+
+Design Requirements:
+- Traditional Indian school calendar aesthetic with modern touch
+- Include decorative borders with Indian motifs (peacock, lotus, rangoli patterns)
+- School name prominently displayed at top
+- Academic year clearly visible
+- Space for monthly calendar grid
+- Include colorful festival/holiday icons
+- Professional yet festive look suitable for printing
+- Use saffron, green, blue color scheme (Indian flag inspired)
+- Add "Powered by Schooltino" at bottom
+
+Make it visually appealing for parents and students."""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"calendar-{uuid.uuid4().hex[:8]}",
+            system_message="You are an expert designer creating beautiful school calendars."
+        ).with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
+        
+        msg = UserMessage(text=prompt)
+        text_response, images = await chat.send_message_multimodal_response(msg)
+        
+        if images and len(images) > 0:
+            # Save image and return URL
+            image_data = base64.b64decode(images[0]['data'])
+            image_id = f"calendar_{school_id}_{uuid.uuid4().hex[:8]}.png"
+            image_path = UPLOAD_DIR / image_id
+            
+            with open(image_path, "wb") as f:
+                f.write(image_data)
+            
+            image_url = f"{os.environ.get('REACT_APP_BACKEND_URL', '')}/api/uploads/{image_id}"
+            
+            # Save to database
+            await db.generated_calendars.insert_one({
+                "id": str(uuid.uuid4()),
+                "school_id": school_id,
+                "image_url": image_url,
+                "year": year,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user["id"]
+            })
+            
+            return {"success": True, "image_url": image_url, "message": text_response}
+        else:
+            raise HTTPException(status_code=500, detail="Image generation failed")
+            
+    except Exception as e:
+        logger.error(f"Calendar image generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== APP CONFIG ====================
 
 # Include modular routers
