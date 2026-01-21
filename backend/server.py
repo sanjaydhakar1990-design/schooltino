@@ -1743,30 +1743,47 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
         raise HTTPException(status_code=403, detail="Not authorized")
     
     school_data = {
-        "id": str(uuid.uuid4()),
+        "id": f"SCH-{school.name[:3].upper()}-{datetime.now().year}",
         **school.model_dump(),
         "is_active": True,
+        "created_by": current_user["id"],
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.schools.insert_one(school_data)
+    
+    # Add this school to user's managed_schools list
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$addToSet": {"managed_schools": school_data["id"]}}
+    )
+    
     await log_audit(current_user["id"], "create", "schools", {"school_id": school_data["id"], "name": school.name})
     
     return SchoolResponse(**school_data)
 
 @api_router.get("/schools", response_model=List[SchoolResponse])
 async def get_schools(current_user: dict = Depends(get_current_user)):
-    # Only return schools that the user has access to
-    user_school_id = current_user.get("school_id")
-    
-    # Admin can see all schools, others only their own
+    # Superadmin can see all schools
     if current_user.get("is_superadmin"):
         schools = await db.schools.find({"is_active": True}, {"_id": 0}).to_list(100)
-    else:
-        # Regular users can only see their own school
+        return [SchoolResponse(**s) for s in schools]
+    
+    # Directors can see their main school + any managed schools
+    user_school_id = current_user.get("school_id")
+    managed_schools = current_user.get("managed_schools", [])
+    
+    # Build query for all accessible schools
+    school_ids = [user_school_id] if user_school_id else []
+    school_ids.extend(managed_schools)
+    school_ids = list(set(filter(None, school_ids)))  # Remove duplicates and None
+    
+    if school_ids:
         schools = await db.schools.find(
-            {"id": user_school_id, "is_active": True}, 
+            {"id": {"$in": school_ids}, "is_active": True}, 
             {"_id": 0}
-        ).to_list(10)
+        ).to_list(100)
+    else:
+        schools = []
     
     return [SchoolResponse(**s) for s in schools]
 
