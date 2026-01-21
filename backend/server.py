@@ -354,7 +354,7 @@ class StudentCreate(BaseModel):
 
 class StudentAdmissionResponse(BaseModel):
     id: str
-    student_id: str  # Auto-generated: STD-2026-000123
+    student_id: str  # Auto-generated: STU-2026-00001
     name: str
     class_id: str
     class_name: Optional[str] = None
@@ -367,6 +367,8 @@ class StudentAdmissionResponse(BaseModel):
     mobile: str
     login_id: str  # Same as student_id
     temporary_password: str  # Auto-generated, show once
+    parent_id: Optional[str] = None  # Auto-generated parent ID if mobile provided
+    parent_password: Optional[str] = None  # Parent password for new parents
     status: str  # pending_approval, active, suspended, left
     created_at: str
 
