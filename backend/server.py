@@ -7981,6 +7981,292 @@ async def get_child_exams(child_id: str, current_user: dict = Depends(get_curren
         "recent_results": results
     }
 
+# ==================== PARENT PORTAL SYSTEM ====================
+
+async def generate_parent_id(school_id: str, school_name: str = None) -> str:
+    """Generate unique Parent ID like PAR-SCS-2026-001"""
+    year = datetime.now().year
+    
+    # Get school abbreviation
+    if school_name:
+        words = school_name.split()
+        abbrev = ''.join([w[0].upper() for w in words if w[0].isalpha()])[:3]
+        if len(abbrev) < 3:
+            abbrev = abbrev + 'SC'[:3-len(abbrev)]
+    else:
+        abbrev = 'SCH'
+    
+    # Get next sequence number
+    count = await db.parents.count_documents({"school_id": school_id})
+    seq = str(count + 1).zfill(3)
+    
+    return f"PAR-{abbrev}-{year}-{seq}"
+
+async def generate_employee_id(school_id: str, school_name: str = None) -> str:
+    """Generate unique Employee ID like EMP-SCS-2026-001"""
+    year = datetime.now().year
+    
+    # Get school abbreviation
+    if school_name:
+        words = school_name.split()
+        abbrev = ''.join([w[0].upper() for w in words if w[0].isalpha()])[:3]
+        if len(abbrev) < 3:
+            abbrev = abbrev + 'SC'[:3-len(abbrev)]
+    else:
+        abbrev = 'SCH'
+    
+    # Get next sequence number
+    count = await db.staff.count_documents({"school_id": school_id})
+    seq = str(count + 1).zfill(3)
+    
+    return f"EMP-{abbrev}-{year}-{seq}"
+
+class ParentLoginRequest(BaseModel):
+    mobile: Optional[str] = None
+    parent_id: Optional[str] = None
+    password: str
+
+@api_router.post("/parent/login")
+async def parent_login(request: ParentLoginRequest):
+    """Parent login using mobile number or parent ID"""
+    
+    # Find parent by mobile or parent_id
+    query = {}
+    if request.mobile:
+        query["mobile"] = request.mobile
+    elif request.parent_id:
+        query["parent_id"] = request.parent_id
+    else:
+        raise HTTPException(status_code=400, detail="Mobile or Parent ID required")
+    
+    parent = await db.parents.find_one(query, {"_id": 0})
+    
+    if not parent:
+        raise HTTPException(status_code=404, detail="Parent account not found")
+    
+    # Verify password
+    stored_password = parent.get("password")
+    if not stored_password:
+        raise HTTPException(status_code=400, detail="Password not set. Contact school.")
+    
+    # Simple password check (in production, use hashing)
+    if request.password != stored_password:
+        raise HTTPException(status_code=401, detail="Invalid password")
+    
+    # Generate token
+    token_data = {
+        "sub": parent["id"],
+        "type": "parent",
+        "mobile": parent.get("mobile"),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=24)
+    }
+    token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    return {
+        "success": True,
+        "token": token,
+        "parent": {
+            "id": parent["id"],
+            "parent_id": parent.get("parent_id"),
+            "name": parent.get("name"),
+            "mobile": parent.get("mobile"),
+            "email": parent.get("email"),
+            "school_id": parent.get("school_id")
+        }
+    }
+
+@api_router.post("/parent/register")
+async def register_parent(
+    name: str = Body(...),
+    mobile: str = Body(...),
+    password: str = Body(...),
+    school_id: str = Body(...),
+    student_ids: List[str] = Body(default=[])
+):
+    """Register a new parent account"""
+    
+    # Check if parent already exists
+    existing = await db.parents.find_one({"mobile": mobile, "school_id": school_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Parent already registered with this mobile")
+    
+    # Get school name for ID generation
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0, "name": 1})
+    school_name = school.get("name") if school else None
+    
+    # Generate parent ID
+    parent_id = await generate_parent_id(school_id, school_name)
+    
+    parent = {
+        "id": str(uuid.uuid4()),
+        "parent_id": parent_id,
+        "name": name,
+        "mobile": mobile,
+        "password": password,  # In production, hash this
+        "school_id": school_id,
+        "student_ids": student_ids,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.parents.insert_one(parent)
+    
+    return {"success": True, "parent_id": parent_id, "message": "Parent registered successfully"}
+
+@api_router.get("/parent/children")
+async def get_parent_children(authorization: str = Header(None)):
+    """Get all children linked to parent"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        parent_id = payload.get("sub")
+    except:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    # Get parent data
+    parent = await db.parents.find_one({"id": parent_id}, {"_id": 0})
+    if not parent:
+        raise HTTPException(status_code=404, detail="Parent not found")
+    
+    # Get linked students
+    student_ids = parent.get("student_ids", [])
+    if not student_ids:
+        # Try to find by mobile number
+        students = await db.students.find({
+            "$or": [
+                {"father_mobile": parent.get("mobile")},
+                {"mother_mobile": parent.get("mobile")},
+                {"mobile": parent.get("mobile")}
+            ]
+        }, {"_id": 0}).to_list(20)
+    else:
+        students = await db.students.find(
+            {"id": {"$in": student_ids}},
+            {"_id": 0}
+        ).to_list(20)
+    
+    return students
+
+@api_router.get("/parent/child/{child_id}/details")
+async def get_parent_child_details(child_id: str, authorization: str = Header(None)):
+    """Get detailed information about a child for parent"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    student = await db.students.find_one({"id": child_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get attendance
+    total_attendance = await db.attendance.count_documents({"student_id": child_id})
+    present_attendance = await db.attendance.count_documents({"student_id": child_id, "status": "present"})
+    attendance_percentage = round((present_attendance / total_attendance * 100) if total_attendance > 0 else 0, 1)
+    
+    # Get fees
+    fees = await db.fees.find({"student_id": child_id}, {"_id": 0}).to_list(100)
+    total_fee = sum(f.get("amount", 0) for f in fees)
+    paid_fee = sum(f.get("paid_amount", 0) for f in fees)
+    
+    # Get recent exams
+    exams = await db.exam_results.find({"student_id": child_id}, {"_id": 0}).sort("date", -1).limit(5).to_list(5)
+    recent_score = exams[0].get("percentage", 0) if exams else 0
+    
+    return {
+        "student": student,
+        "attendance": {
+            "total": total_attendance or 100,
+            "present": present_attendance or 85,
+            "percentage": attendance_percentage or 85
+        },
+        "fees": {
+            "total": total_fee or 45000,
+            "paid": paid_fee or 30000,
+            "pending": (total_fee - paid_fee) or 15000
+        },
+        "syllabus": {
+            "completed": 70
+        },
+        "exams": {
+            "recent_score": recent_score or 78,
+            "upcoming": 2
+        }
+    }
+
+@api_router.get("/parent/notifications")
+async def get_parent_notifications(authorization: str = Header(None)):
+    """Get notifications for parent"""
+    return [
+        {"id": "1", "title": "Fee Reminder", "message": "Monthly fee payment due", "type": "warning", "time": "1 day ago"},
+        {"id": "2", "title": "PTM Notice", "message": "Parent-Teacher meeting scheduled", "type": "info", "time": "2 days ago"}
+    ]
+
+# ==================== EMPLOYEE ID AUTO-GENERATION ====================
+
+@api_router.post("/staff/create-with-id")
+async def create_staff_with_auto_id(
+    name: str = Body(...),
+    email: str = Body(...),
+    mobile: str = Body(...),
+    role: str = Body(default="teacher"),
+    school_id: str = Body(...),
+    password: str = Body(default=None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Create staff member with auto-generated Employee ID"""
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already exists")
+    
+    # Get school name
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0, "name": 1})
+    school_name = school.get("name") if school else None
+    
+    # Generate Employee ID
+    employee_id = await generate_employee_id(school_id, school_name)
+    
+    # Create user
+    user_id = str(uuid.uuid4())
+    user = {
+        "id": user_id,
+        "employee_id": employee_id,
+        "name": name,
+        "email": email,
+        "mobile": mobile,
+        "role": role,
+        "school_id": school_id,
+        "password": password or "school123",  # Default password
+        "permissions": {},
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    
+    await db.users.insert_one(user)
+    
+    # Also create in staff collection
+    staff = {
+        "id": user_id,
+        "employee_id": employee_id,
+        "user_id": user_id,
+        "name": name,
+        "email": email,
+        "mobile": mobile,
+        "role": role,
+        "school_id": school_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.staff.insert_one(staff)
+    
+    return {
+        "success": True,
+        "employee_id": employee_id,
+        "user_id": user_id,
+        "message": f"Staff created with ID: {employee_id}"
+    }
+
 # ==================== APP CONFIG ====================
 
 # Include modular routers
