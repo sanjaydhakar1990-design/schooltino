@@ -6,10 +6,13 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Textarea } from '../components/ui/textarea';
 import { 
   Sparkles, Download, Printer, Image, Calendar, 
   PartyPopper, GraduationCap, Trophy, Music, Heart,
-  Loader2, Palette, RefreshCw, Copy, Share2, MessageCircle
+  Loader2, Palette, RefreshCw, Copy, Share2, MessageCircle,
+  FileImage, Megaphone, Bell, Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 
