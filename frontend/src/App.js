@@ -316,7 +316,6 @@ function AppRoutes() {
         <Route path="storage" element={<StorageBackup />} />
         <Route path="activity" element={<AdminActivityDashboard />} />
         <Route path="accountant" element={<AccountantDashboard />} />
-        <Route path="payment-settings" element={<SchoolPaymentSettings />} />
         <Route path="fee-structure" element={<FeeStructureManagement />} />
         <Route path="staff-directory" element={<StaffDirectory />} />
         <Route path="profile" element={<ProfilePage />} />
