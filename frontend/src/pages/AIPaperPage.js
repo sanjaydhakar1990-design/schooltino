@@ -145,9 +145,21 @@ export default function AIPaperPage() {
       // Determine which board's chapters to use
       let chapters = [];
       
+      // PRE-PRIMARY CLASSES - Direct lookup (Drawing etc.)
+      const prePrimaryClasses = ['Nursery', 'LKG', 'UKG'];
+      if (prePrimaryClasses.includes(formData.class_name)) {
+        // For pre-primary, always use getChapters which handles PRE_PRIMARY_CHAPTERS
+        chapters = getChapters('CBSE', formData.class_name, formData.subject);
+        if (chapters.length === 0) {
+          chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+        }
+        setAvailableChapters(chapters);
+        return;
+      }
+      
       // Check if this is a core subject that typically follows NCERT
       const ncertCoreSubjects = ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'EVS', 
-                                  'हिंदी', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'पर्यावरण'];
+                                  'हिंदी', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'पर्यावरण', 'Drawing', 'चित्रकला', 'Art'];
       const isNcertSubject = ncertCoreSubjects.some(s => 
         formData.subject.toLowerCase().includes(s.toLowerCase()) || 
         s.toLowerCase().includes(formData.subject.toLowerCase())
