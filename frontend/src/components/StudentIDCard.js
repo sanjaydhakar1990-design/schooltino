@@ -234,12 +234,11 @@ export default function StudentIDCard({ student, school, onClose }) {
                   </div>
                   
                   <div style={{ marginBottom: '3px' }}>
-                    <span style={{ opacity: 0.8, width: '65px', display: 'inline-block' }}>ID:</span>
-                    <span style={{ fontWeight: 'bold' }}>{student.student_id}</span>
-                  </div>
-                  <div style={{ marginBottom: '3px' }}>
                     <span style={{ opacity: 0.8, width: '65px', display: 'inline-block' }}>Class:</span>
-                    <span style={{ fontWeight: 'bold' }}>{student.class_name || 'N/A'} {student.section ? `- ${student.section}` : ''}</span>
+                    <span style={{ fontWeight: 'bold' }}>
+                      {student.class_name || student.class_display || student.class || 'N/A'}
+                      {student.section && student.section !== 'A' ? ` - ${student.section}` : ''}
+                    </span>
                   </div>
                   <div style={{ marginBottom: '3px' }}>
                     <span style={{ opacity: 0.8, width: '65px', display: 'inline-block' }}>DOB:</span>
@@ -251,19 +250,21 @@ export default function StudentIDCard({ student, school, onClose }) {
                   </div>
                   <div style={{ marginBottom: '3px' }}>
                     <span style={{ opacity: 0.8, width: '65px', display: 'inline-block' }}>Father:</span>
-                    <span style={{ fontWeight: 'bold' }}>{student.father_name}</span>
+                    <span style={{ fontWeight: 'bold' }}>{student.father_name || 'N/A'}</span>
                   </div>
                   
-                  <div style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    padding: '4px 8px',
+                  {/* Emergency Contact - Parent Mobile */}
+                  <div style={{ 
+                    marginTop: '4px', 
+                    background: 'rgba(255,255,255,0.15)', 
+                    padding: '3px 6px', 
                     borderRadius: '4px',
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    display: 'inline-block',
-                    marginTop: '6px'
+                    fontSize: '8px'
                   }}>
-                    {student.student_id}
+                    <span style={{ opacity: 0.9 }}>📞 Emergency: </span>
+                    <span style={{ fontWeight: 'bold' }}>
+                      {student.parent_phone || student.father_phone || student.mother_phone || student.guardian_phone || 'N/A'}
+                    </span>
                   </div>
                 </div>
               </div>
