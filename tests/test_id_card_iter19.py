@@ -10,7 +10,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://implementation-check-6.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://talk-synopsis.preview.emergentagent.com')
 
 # Test student ID from the review request
 TEST_STUDENT_ID = "STD-2026-285220"
