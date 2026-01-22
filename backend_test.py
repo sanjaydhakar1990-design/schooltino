@@ -1281,6 +1281,109 @@ class SchooltinoAPITester:
         
         return all_success
 
+    # ============== ID CARD SYSTEM TESTS - REVIEW REQUEST ==============
+    
+    def test_get_students_for_id_card(self):
+        """Test GET /api/students to get a student ID first"""
+        success, response = self.run_test("Get Students for ID Card", "GET", "students", 200)
+        
+        if success:
+            students = response.get("students", [])
+            print(f"   📝 Found {len(students)} students")
+            if students:
+                # Store first student ID for ID card testing
+                self.student_id = students[0].get("id") or students[0].get("student_id")
+                print(f"   ✅ Using student ID: {self.student_id}")
+                print(f"   📝 Student name: {students[0].get('name', 'Unknown')}")
+                print(f"   📝 Student class: {students[0].get('class_name', 'Unknown')}")
+            else:
+                print(f"   ⚠️ No students found")
+        
+        return success
+    
+    def test_id_card_generate_post(self):
+        """Test POST /api/id-card/generate - Main test from review request"""
+        if not self.student_id:
+            print(f"   ❌ No student ID available for testing")
+            return False
+            
+        data = {
+            "person_type": "student",
+            "person_id": self.student_id
+        }
+        success, response = self.run_test("ID Card Generate POST", "POST", "id-card/generate", 200, data)
+        
+        if success:
+            # Check critical requirements from review request
+            id_card = response.get("id_card", {})
+            school = response.get("school", {})
+            
+            # 1. Class Display: Should show proper name like "UKG" or "Class 5" NOT a UUID
+            class_name = id_card.get("class")
+            print(f"   📝 Class Display: '{class_name}'")
+            
+            if class_name:
+                # Check if it's a UUID (contains hyphens and is 36 chars)
+                if len(class_name) == 36 and class_name.count('-') == 4:
+                    print(f"   ❌ CRITICAL: Class shows UUID code instead of proper name!")
+                    print(f"   📝 Expected: 'UKG' or 'Class 5', Got: '{class_name}'")
+                elif any(word in class_name.lower() for word in ["class", "ukg", "lkg", "nursery", "kg"]):
+                    print(f"   ✅ Class display shows proper name: '{class_name}'")
+                else:
+                    print(f"   ⚠️ Class display may not be proper: '{class_name}'")
+            else:
+                print(f"   ❌ CRITICAL: No class display found!")
+            
+            # 2. School Logo: Should include logo_url in response
+            logo_url = school.get("logo_url")
+            print(f"   📝 School Logo URL: {logo_url}")
+            
+            if logo_url:
+                print(f"   ✅ School logo_url included in response")
+            else:
+                print(f"   ❌ CRITICAL: School logo_url missing from response!")
+            
+            # 3. Parent Mobile: Should include phone/emergency_contact
+            phone = id_card.get("phone")
+            emergency_contact = id_card.get("emergency_contact")
+            print(f"   📝 Phone: {phone}")
+            print(f"   📝 Emergency Contact: {emergency_contact}")
+            
+            if phone or emergency_contact:
+                print(f"   ✅ Parent mobile/emergency contact included")
+            else:
+                print(f"   ❌ CRITICAL: Parent mobile/emergency contact missing!")
+            
+            # Additional checks
+            print(f"   📝 Student Name: {id_card.get('name', 'N/A')}")
+            print(f"   📝 Student ID: {id_card.get('id_number', 'N/A')}")
+            print(f"   📝 School Name: {school.get('name', 'N/A')}")
+        
+        return success
+    
+    def test_id_card_generate_get(self):
+        """Test GET /api/id-card/generate/{person_type}/{person_id} - Alternative endpoint"""
+        if not self.student_id:
+            print(f"   ❌ No student ID available for testing")
+            return False
+            
+        endpoint = f"id-card/generate/student/{self.student_id}"
+        success, response = self.run_test("ID Card Generate GET", "GET", endpoint, 200)
+        
+        if success:
+            # Same checks as POST endpoint
+            id_card = response.get("id_card", {})
+            school = response.get("school", {})
+            
+            class_name = id_card.get("class")
+            logo_url = school.get("logo_url")
+            phone = id_card.get("phone")
+            emergency_contact = id_card.get("emergency_contact")
+            
+            print(f"   📝 GET endpoint - Class: '{class_name}', Logo: {bool(logo_url)}, Phone: {bool(phone or emergency_contact)}")
+        
+        return success
+
     # ============== NEW FEATURES TESTS - REVIEW REQUEST ==============
     
     def test_gallery_event_types(self):
