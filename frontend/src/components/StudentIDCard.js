@@ -169,42 +169,65 @@ export default function StudentIDCard({ student, school, onClose }) {
             height: '215px',
             background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)',
             borderRadius: '12px',
-            padding: '16px',
+            padding: '12px',
             position: 'relative',
             overflow: 'hidden',
             color: 'white',
             boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
           }}>
-            {/* Watermark */}
+            {/* Background Watermark - School Logo */}
             {school?.logo_url && (
-              <div className="watermark" style={{
+              <div style={{
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                opacity: 0.08,
-                width: '180px',
-                height: '180px',
-                zIndex: 0
+                opacity: 0.1,
+                width: '200px',
+                height: '200px',
+                zIndex: 0,
+                pointerEvents: 'none'
               }}>
                 <img src={school.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
             )}
             
             {/* Card Content */}
-            <div className="card-content" style={{ position: 'relative', zIndex: 1, height: '100%' }}>
-              {/* School Header */}
-              <div style={{ textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.3)', paddingBottom: '8px', marginBottom: '10px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {school?.name || 'School Name'}
-                </div>
-                <div style={{ fontSize: '8px', opacity: 0.9 }}>
-                  {school?.address || 'School Address'}
+            <div style={{ position: 'relative', zIndex: 1, height: '100%' }}>
+              {/* School Header with Logo */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                borderBottom: '1px solid rgba(255,255,255,0.3)', 
+                paddingBottom: '6px', 
+                marginBottom: '8px' 
+              }}>
+                {/* School Logo in Header */}
+                {school?.logo_url && (
+                  <div style={{
+                    width: '35px',
+                    height: '35px',
+                    background: 'white',
+                    borderRadius: '50%',
+                    padding: '2px',
+                    flexShrink: 0
+                  }}>
+                    <img src={school.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }} />
+                  </div>
+                )}
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {school?.name || 'School Name'}
+                  </div>
+                  <div style={{ fontSize: '7px', opacity: 0.9 }}>
+                    {school?.address || ''}
+                  </div>
                 </div>
               </div>
               
               {/* Student Info */}
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 {/* Photo */}
                 <div style={{ width: '80px', flexShrink: 0 }}>
                   <div style={{
