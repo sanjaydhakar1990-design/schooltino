@@ -333,9 +333,11 @@ export default function StudentsPage() {
       gender: student.gender,
       address: student.address,
       mobile: student.mobile,
+      parent_phone: student.parent_phone || student.mobile || '',
       email: student.email || '',
       blood_group: student.blood_group || '',
       aadhar_no: student.aadhar_no || '',
+      samgra_id: student.samgra_id || '',
       previous_school: student.previous_school || '',
       admission_date: student.admission_date || new Date().toISOString().split('T')[0]
     });
@@ -358,9 +360,11 @@ export default function StudentsPage() {
       gender: 'male',
       address: '',
       mobile: '',
+      parent_phone: '',
       email: '',
       blood_group: '',
       aadhar_no: '',
+      samgra_id: '',
       previous_school: '',
       admission_date: new Date().toISOString().split('T')[0] // Default to today
     });
