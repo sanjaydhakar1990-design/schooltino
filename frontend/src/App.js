@@ -9,7 +9,7 @@ import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
-import StaffPage from './pages/StaffPage';
+// StaffPage removed - merged into EmployeeManagementPage
 import ClassesPage from './pages/ClassesPage';
 import AttendancePage from './pages/AttendancePage';
 import FeesPage from './pages/FeesPage';
