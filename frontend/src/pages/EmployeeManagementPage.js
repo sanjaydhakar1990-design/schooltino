@@ -476,6 +476,18 @@ export default function EmployeeManagementPage() {
                       <Button variant="ghost" size="sm" onClick={() => openEditForm(emp)}>
                         <Edit2 className="w-4 h-4" />
                       </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-indigo-600"
+                        onClick={() => {
+                          setSelectedEmployeeForID(emp);
+                          setShowIDCard(true);
+                        }}
+                        title="Print ID Card"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                      </Button>
                       {emp.has_login ? (
                         <Button 
                           variant="ghost" 
