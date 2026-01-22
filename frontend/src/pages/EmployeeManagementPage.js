@@ -474,7 +474,7 @@ export default function EmployeeManagementPage() {
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Users className="w-7 h-7 text-indigo-600" />
@@ -482,9 +482,21 @@ export default function EmployeeManagementPage() {
           </h1>
           <p className="text-gray-500 text-sm">Staff + Users एक जगह manage करें</p>
         </div>
-        <Button onClick={openAddForm} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Employee
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleBulkPrintIDCards}
+            disabled={bulkPrinting || employees.length === 0}
+            className="gap-2"
+            data-testid="bulk-print-employee-btn"
+          >
+            {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
+            Bulk Print ID Cards
+          </Button>
+          <Button onClick={openAddForm} className="gap-2">
+            <Plus className="w-4 h-4" /> Add Employee
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
