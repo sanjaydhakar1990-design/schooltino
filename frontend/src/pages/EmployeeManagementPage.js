@@ -567,6 +567,33 @@ export default function EmployeeManagementPage() {
                     placeholder="Address"
                   />
                 </div>
+                <div>
+                  <Label>Blood Group</Label>
+                  <select
+                    className="w-full border rounded-lg px-3 py-2"
+                    value={formData.blood_group || ''}
+                    onChange={e => setFormData(f => ({ ...f, blood_group: e.target.value }))}
+                  >
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Emergency Contact (Family Phone) 🆘</Label>
+                  <Input
+                    value={formData.emergency_contact || ''}
+                    onChange={e => setFormData(f => ({ ...f, emergency_contact: e.target.value }))}
+                    placeholder="Family member ka number - ID card pe dikhega"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Ye number ID card pe dikhega emergency ke liye</p>
+                </div>
               </div>
 
               {/* Employment Details */}
