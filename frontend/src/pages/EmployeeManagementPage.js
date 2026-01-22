@@ -618,7 +618,7 @@ export default function EmployeeManagementPage() {
               {employees.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                    No employees found. Click "Add Employee" to add one.
+                    No employees found. Click &quot;Add Employee&quot; to add one.
                   </td>
                 </tr>
               )}
