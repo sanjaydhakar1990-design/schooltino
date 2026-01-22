@@ -100,18 +100,33 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
     
     # Build ID card data
     if person_type == "student":
+        # Get class name from class_id
+        class_display = person.get("class_name") or person.get("class_display")
+        if not class_display and person.get("class_id"):
+            # Fetch class name from database
+            class_doc = await db.classes.find_one({"id": person.get("class_id")})
+            if class_doc:
+                class_display = class_doc.get("name", "")
+        
+        # Format class display (hide section A if only one section)
+        section = person.get("section", "")
+        class_with_section = class_display
+        if section and section.upper() != "A":
+            class_with_section = f"{class_display} - {section}"
+        
         id_card = {
             "card_type": "STUDENT ID CARD",
-            "id_number": person.get("student_id") or person.get("admission_no") or person.get("id"),
+            "id_number": person.get("student_id") or person.get("admission_no") or person.get("id")[:8].upper() if person.get("id") else "",
             "name": person.get("name"),
-            "class": person.get("class_id") or person.get("class_name"),
-            "section": person.get("section"),
+            "class": class_with_section,
+            "section": section if section.upper() != "A" else "",
             "roll_no": person.get("roll_no"),
             "dob": person.get("dob"),
             "blood_group": person.get("blood_group"),
             "father_name": person.get("father_name"),
             "mother_name": person.get("mother_name"),
-            "phone": person.get("parent_phone") or person.get("phone"),
+            "phone": person.get("parent_phone") or person.get("father_phone") or person.get("mother_phone") or person.get("phone"),
+            "emergency_contact": person.get("emergency_contact") or person.get("guardian_phone"),
             "address": person.get("address"),
             "admission_date": person.get("admission_date"),
             "valid_until": f"{datetime.now().year + 1}-03-31"
