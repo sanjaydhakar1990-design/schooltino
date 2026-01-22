@@ -84,7 +84,7 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
     school = None
     sid = school_id or person.get("school_id")
     if sid:
-        school = await db.schools.find_one({"id": sid}, {"_id": 0, "name": 1, "address": 1, "phone": 1, "logo": 1})
+        school = await db.schools.find_one({"id": sid}, {"_id": 0, "name": 1, "address": 1, "phone": 1, "logo": 1, "logo_url": 1, "email": 1})
     
     # Get photo if available
     photo = None
