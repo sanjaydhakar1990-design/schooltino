@@ -523,13 +523,23 @@ export default function StudentsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>{t('email')}</Label>
+                  <Label>📞 Parent Phone (for ID Card) *</Label>
                   <Input
-                    name="email"
-                    type="email"
-                    value={formData.email}
+                    name="parent_phone"
+                    value={formData.parent_phone}
                     onChange={handleChange}
-                    data-testid="email-input"
+                    placeholder="Father/Mother का phone number"
+                    data-testid="parent-phone-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Samgra ID (MP Board)</Label>
+                  <Input
+                    name="samgra_id"
+                    value={formData.samgra_id}
+                    onChange={handleChange}
+                    placeholder="Only for MP Board schools"
+                    data-testid="samgra-id-input"
                   />
                 </div>
                 <div className="space-y-2 col-span-2">
