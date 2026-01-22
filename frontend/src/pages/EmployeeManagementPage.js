@@ -276,7 +276,7 @@ export default function EmployeeManagementPage() {
     setFormData(prev => ({
       ...prev,
       designation: designation,
-      role: des?.default_role || 'teacher'
+      role: des?.default_role || prev.role || 'teacher'  // Don't override if already set
     }));
   };
 
