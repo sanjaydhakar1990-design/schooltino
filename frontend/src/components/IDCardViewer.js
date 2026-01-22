@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
-import { 
-  CreditCard, Download, Printer, QrCode, User, Phone, Mail,
-  Calendar, Building, Loader2, Camera, Upload, CheckCircle
-} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Printer, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -16,15 +12,11 @@ export default function IDCardViewer({
   personType = 'student',
   schoolId,
   isOpen,
-  onClose,
-  onPhotoUpload
+  onClose
 }) {
   const [loading, setLoading] = useState(true);
   const [cardData, setCardData] = useState(null);
-  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const printRef = useRef();
-  const fileInputRef = useRef();
 
   useEffect(() => {
     if (personId && isOpen) {
@@ -35,12 +27,15 @@ export default function IDCardViewer({
   const fetchIDCard = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API}/api/id-card/generate/${personType}/${personId}`);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API}/api/id-card/generate/${personType}/${personId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setCardData(data);
       } else {
-        toast.error('Failed to generate ID card');
+        toast.error('ID card generate nahi ho saka');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -50,340 +45,313 @@ export default function IDCardViewer({
     }
   };
 
-  const downloadCard = async () => {
-    try {
-      const res = await fetch(`${API}/api/id-card/text/${personType}/${personId}`);
-      if (res.ok) {
-        const data = await res.json();
-        const blob = new Blob([data.card_text], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = data.filename;
-        a.click();
-        toast.success('ID Card downloaded!');
-      }
-    } catch (error) {
-      toast.error('Download failed');
-    }
-  };
-
   const printCard = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
-    
     const printWindow = window.open('', '_blank');
+    const card = cardData?.id_card;
+    const school = cardData?.school;
+    const photo = cardData?.photo;
+
     printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>ID Card - ${cardData?.id_card?.name}</title>
+          <title>ID Card - ${card?.name || 'Print'}</title>
           <style>
-            body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-            .id-card { width: 340px; border: 2px solid #333; border-radius: 12px; overflow: hidden; }
-            .header { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; padding: 15px; text-align: center; }
-            .school-name { font-size: 14px; font-weight: bold; }
-            .card-type { font-size: 11px; margin-top: 5px; opacity: 0.9; }
-            .body { padding: 15px; background: white; }
-            .photo-section { text-align: center; margin-bottom: 15px; }
-            .photo { width: 100px; height: 120px; border: 2px solid #4f46e5; border-radius: 8px; object-fit: cover; }
-            .no-photo { width: 100px; height: 120px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; color: #999; }
-            .name { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 10px; }
-            .details { font-size: 11px; }
-            .detail-row { display: flex; margin-bottom: 6px; }
-            .detail-label { width: 80px; color: #666; }
-            .detail-value { flex: 1; font-weight: 500; }
-            .qr-section { text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ddd; }
-            .footer { background: #f5f5f5; padding: 8px; text-align: center; font-size: 9px; color: #666; }
+            @page { size: 85.6mm 54mm; margin: 0; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: Arial, sans-serif; 
+              display: flex; 
+              justify-content: center; 
+              align-items: center; 
+              min-height: 100vh;
+              background: #f0f0f0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .id-card {
+              width: 85.6mm;
+              height: 54mm;
+              background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%);
+              border-radius: 8px;
+              overflow: hidden;
+              position: relative;
+              color: white;
+              padding: 3mm;
+            }
+            .watermark {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              opacity: 0.12;
+              width: 35mm;
+              height: 35mm;
+              z-index: 0;
+            }
+            .watermark img { width: 100%; height: 100%; object-fit: contain; }
+            .content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+            .header {
+              display: flex;
+              align-items: center;
+              gap: 2mm;
+              padding-bottom: 2mm;
+              border-bottom: 0.3mm solid rgba(255,255,255,0.3);
+              margin-bottom: 2mm;
+            }
+            .header-logo {
+              width: 8mm;
+              height: 8mm;
+              background: white;
+              border-radius: 50%;
+              padding: 0.5mm;
+              flex-shrink: 0;
+            }
+            .header-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+            .header-text { flex: 1; text-align: center; }
+            .school-name { font-size: 9pt; font-weight: bold; text-transform: uppercase; }
+            .school-address { font-size: 6pt; opacity: 0.9; margin-top: 0.5mm; }
+            .card-type { 
+              font-size: 6pt; 
+              background: rgba(255,255,255,0.2); 
+              padding: 0.5mm 2mm; 
+              border-radius: 2mm;
+              display: inline-block;
+              margin-top: 1mm;
+            }
+            .body { display: flex; gap: 3mm; flex: 1; }
+            .photo-section { width: 18mm; flex-shrink: 0; }
+            .photo {
+              width: 18mm;
+              height: 22mm;
+              background: white;
+              border-radius: 2mm;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+            }
+            .photo img { width: 100%; height: 100%; object-fit: cover; }
+            .photo-placeholder { color: #999; font-size: 7pt; }
+            .details { flex: 1; font-size: 7pt; }
+            .name { font-size: 10pt; font-weight: bold; color: #fef08a; margin-bottom: 1.5mm; }
+            .detail-row { margin-bottom: 1mm; display: flex; }
+            .detail-label { width: 14mm; opacity: 0.8; }
+            .detail-value { flex: 1; font-weight: 600; }
+            .emergency {
+              background: rgba(255,255,255,0.15);
+              padding: 1mm 1.5mm;
+              border-radius: 1.5mm;
+              margin-top: 1.5mm;
+              font-size: 6.5pt;
+            }
+            .emergency-label { color: #fca5a5; }
+            .emergency-value { font-weight: bold; }
+            .footer {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+              font-size: 5pt;
+              opacity: 0.8;
+              margin-top: auto;
+              padding-top: 1mm;
+            }
+            .qr-code { width: 12mm; height: 12mm; background: white; padding: 0.5mm; border-radius: 1mm; }
+            @media print {
+              body { background: white; }
+              .id-card { box-shadow: none; }
+            }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          <div class="id-card">
+            ${school?.logo_url ? `<div class="watermark"><img src="${school.logo_url}" alt=""/></div>` : ''}
+            <div class="content">
+              <div class="header">
+                ${school?.logo_url ? `<div class="header-logo"><img src="${school.logo_url}" alt=""/></div>` : ''}
+                <div class="header-text">
+                  <div class="school-name">${school?.name || 'School Name'}</div>
+                  ${school?.address ? `<div class="school-address">${school.address}</div>` : ''}
+                  <div class="card-type">${card?.card_type || 'ID CARD'}</div>
+                </div>
+              </div>
+              <div class="body">
+                <div class="photo-section">
+                  <div class="photo">
+                    ${photo ? `<img src="${photo}" alt="${card?.name}"/>` : '<span class="photo-placeholder">Photo</span>'}
+                  </div>
+                </div>
+                <div class="details">
+                  <div class="name">${card?.name || ''}</div>
+                  ${personType === 'student' ? `
+                    <div class="detail-row">
+                      <span class="detail-label">Class:</span>
+                      <span class="detail-value">${card?.class || ''}</span>
+                    </div>
+                    ${card?.roll_no ? `<div class="detail-row"><span class="detail-label">Roll No:</span><span class="detail-value">${card.roll_no}</span></div>` : ''}
+                    ${card?.father_name ? `<div class="detail-row"><span class="detail-label">Father:</span><span class="detail-value">${card.father_name}</span></div>` : ''}
+                    ${card?.dob ? `<div class="detail-row"><span class="detail-label">DOB:</span><span class="detail-value">${new Date(card.dob).toLocaleDateString('en-IN')}</span></div>` : ''}
+                    ${card?.blood_group ? `<div class="detail-row"><span class="detail-label">Blood:</span><span class="detail-value">${card.blood_group}</span></div>` : ''}
+                    ${card?.phone ? `<div class="emergency"><span class="emergency-label">📞 Emergency: </span><span class="emergency-value">${card.phone}</span></div>` : ''}
+                  ` : `
+                    <div class="detail-row">
+                      <span class="detail-label">Designation:</span>
+                      <span class="detail-value">${card?.designation || card?.role || ''}</span>
+                    </div>
+                    ${card?.department ? `<div class="detail-row"><span class="detail-label">Dept:</span><span class="detail-value">${card.department}</span></div>` : ''}
+                    ${card?.employee_id ? `<div class="detail-row"><span class="detail-label">Emp ID:</span><span class="detail-value">${card.employee_id}</span></div>` : ''}
+                    ${card?.blood_group ? `<div class="detail-row"><span class="detail-label">Blood:</span><span class="detail-value">${card.blood_group}</span></div>` : ''}
+                    ${card?.phone ? `<div class="emergency"><span class="emergency-label">📞 Contact: </span><span class="emergency-value">${card.phone}</span></div>` : ''}
+                  `}
+                </div>
+              </div>
+              <div class="footer">
+                <div>
+                  ${school?.phone ? `📞 ${school.phone}` : ''}
+                </div>
+                <div>Valid: ${card?.valid_until || new Date().getFullYear() + 1}</div>
+              </div>
+            </div>
+          </div>
+          <script>window.onload = function() { window.print(); }</script>
         </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
   };
 
-  const handlePhotoUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    setUploading(true);
-    
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result.split(',')[1];
-        
-        // Choose endpoint based on person type
-        const endpoint = personType === 'student' 
-          ? `${API}/api/face-recognition/upload-photo`
-          : `${API}/api/id-card/staff-photo`;
-        
-        const body = personType === 'student'
-          ? {
-              student_id: personId,
-              school_id: schoolId,
-              photo_base64: base64,
-              photo_type: 'passport',
-              capture_device: 'upload'
-            }
-          : {
-              staff_id: personId,
-              school_id: schoolId,
-              photo_base64: base64,
-              photo_type: 'passport'
-            };
-        
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          toast.success('Photo uploaded successfully!');
-          setShowPhotoUpload(false);
-          fetchIDCard(); // Refresh card
-          onPhotoUpload?.();
-        } else {
-          toast.error(data.error || 'Upload failed');
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      toast.error('Upload error');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  if (!isOpen) return null;
 
   const card = cardData?.id_card;
   const school = cardData?.school;
+  const photo = cardData?.photo;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-indigo-600" />
-            ID Card - {card?.name}
+          <DialogTitle className="flex items-center justify-between">
+            <span>ID Card Preview</span>
+            <Button variant="ghost" size="sm" onClick={onClose}><X className="w-4 h-4" /></Button>
           </DialogTitle>
-          <DialogDescription>
-            {card?.card_type}
-          </DialogDescription>
         </DialogHeader>
 
-        {/* ID Card Preview */}
-        <div ref={printRef}>
-          <div className="id-card border-2 border-slate-200 rounded-xl overflow-hidden shadow-lg relative" data-testid="id-card-preview">
-            {/* Background Watermark - School Logo */}
-            {school?.logo_url && (
-              <div 
-                className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
-                style={{ opacity: 0.08 }}
-              >
-                <img src={school.logo_url} alt="" className="w-48 h-48 object-contain" />
-              </div>
-            )}
-            
-            {/* Card Header with Logo */}
-            <div className="header bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 relative z-10">
-              <div className="flex items-center justify-center gap-3">
-                {/* School Logo */}
-                {school?.logo_url && (
-                  <div className="w-10 h-10 bg-white rounded-full p-1 flex-shrink-0">
-                    <img src={school.logo_url} alt="" className="w-full h-full object-contain rounded-full" />
-                  </div>
-                )}
-                <div className="text-center">
-                  <p className="school-name font-bold text-sm">{school?.name || 'SCHOOL NAME'}</p>
-                  {school?.address && (
-                    <p className="text-xs opacity-80 mt-0.5">{school.address}</p>
+        {loading ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+          </div>
+        ) : cardData ? (
+          <div ref={printRef}>
+            {/* ID Card Preview */}
+            <div 
+              className="mx-auto rounded-xl overflow-hidden shadow-xl relative"
+              style={{
+                width: '340px',
+                height: '215px',
+                background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)',
+                padding: '12px',
+                color: 'white'
+              }}
+            >
+              {/* Watermark */}
+              {school?.logo_url && (
+                <div 
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  style={{ opacity: 0.12, zIndex: 0 }}
+                >
+                  <img src={school.logo_url} alt="" className="w-40 h-40 object-contain" />
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="relative z-10 h-full flex flex-col">
+                {/* Header with Logo */}
+                <div className="flex items-center gap-2 pb-2 border-b border-white/30 mb-2">
+                  {school?.logo_url && (
+                    <div className="w-9 h-9 bg-white rounded-full p-0.5 flex-shrink-0">
+                      <img src={school.logo_url} alt="" className="w-full h-full object-contain rounded-full" />
+                    </div>
                   )}
+                  <div className="flex-1 text-center">
+                    <div className="text-sm font-bold uppercase tracking-wide">{school?.name || 'School Name'}</div>
+                    {school?.address && <div className="text-[9px] opacity-80">{school.address}</div>}
+                    <div className="text-[8px] bg-white/20 inline-block px-2 py-0.5 rounded-full mt-1">
+                      {card?.card_type || 'ID CARD'}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="card-type text-xs mt-2 bg-white/20 inline-block px-3 py-1 rounded-full text-center w-full">
-                {card?.card_type}
+
+                {/* Body */}
+                <div className="flex gap-3 flex-1">
+                  {/* Photo */}
+                  <div className="w-[70px] flex-shrink-0">
+                    <div className="w-[70px] h-[85px] bg-white rounded-lg overflow-hidden flex items-center justify-center">
+                      {photo ? (
+                        <img src={photo} alt={card?.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-gray-400 text-xs">Photo</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 text-[9px]">
+                    <div className="text-sm font-bold text-yellow-200 mb-1">{card?.name}</div>
+                    
+                    {personType === 'student' ? (
+                      <>
+                        <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Class:</span> <span className="font-semibold">{card?.class}</span></div>
+                        {card?.roll_no && <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Roll No:</span> <span className="font-semibold">{card.roll_no}</span></div>}
+                        {card?.father_name && <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Father:</span> <span className="font-semibold">{card.father_name}</span></div>}
+                        {card?.dob && <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">DOB:</span> <span className="font-semibold">{new Date(card.dob).toLocaleDateString('en-IN')}</span></div>}
+                        {card?.blood_group && <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Blood:</span> <span className="font-semibold">{card.blood_group}</span></div>}
+                        
+                        {/* Emergency Contact - Parent Phone */}
+                        {card?.phone && (
+                          <div className="mt-1.5 bg-white/15 rounded px-1.5 py-1 text-[8px]">
+                            <span className="text-red-200">📞 Emergency: </span>
+                            <span className="font-bold">{card.phone}</span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Designation:</span> <span className="font-semibold">{card?.designation || card?.role}</span></div>
+                        {card?.department && <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Dept:</span> <span className="font-semibold">{card.department}</span></div>}
+                        {card?.employee_id && <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Emp ID:</span> <span className="font-semibold">{card.employee_id}</span></div>}
+                        {card?.blood_group && <div className="mb-0.5"><span className="opacity-70 w-16 inline-block">Blood:</span> <span className="font-semibold">{card.blood_group}</span></div>}
+                        
+                        {/* Contact */}
+                        {card?.phone && (
+                          <div className="mt-1.5 bg-white/15 rounded px-1.5 py-1 text-[8px]">
+                            <span className="text-green-200">📞 Contact: </span>
+                            <span className="font-bold">{card.phone}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-between items-end text-[7px] opacity-70 mt-auto pt-1">
+                  <span>{school?.phone && `📞 ${school.phone}`}</span>
+                  <span>Valid: {card?.valid_until || `${new Date().getFullYear() + 1}`}</span>
+                </div>
               </div>
             </div>
 
-            {/* Card Body */}
-            <div className="body p-4 bg-white">
-              {/* Photo Section */}
-              <div className="photo-section text-center mb-4">
-                {cardData?.photo ? (
-                  <img 
-                    src={`data:image/jpeg;base64,${cardData.photo}`}
-                    alt="Photo"
-                    className="photo w-24 h-28 mx-auto border-2 border-indigo-600 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div 
-                    className="no-photo w-24 h-28 mx-auto border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:border-indigo-400"
-                    onClick={() => setShowPhotoUpload(true)}
-                  >
-                    <Camera className="w-6 h-6 text-slate-400" />
-                    <span className="text-xs text-slate-400 mt-1">Add Photo</span>
-                  </div>
-                )}
-                {cardData?.photo && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="mt-2 text-xs"
-                    onClick={() => setShowPhotoUpload(true)}
-                  >
-                    Change Photo
-                  </Button>
-                )}
-              </div>
-
-              {/* Name */}
-              <p className="name text-lg font-bold text-center text-slate-900 mb-3">
-                {card?.name}
-              </p>
-
-              {/* Details */}
-              <div className="details text-sm space-y-2 relative z-10">
-                <div className="detail-row flex">
-                  <span className="detail-label w-24 text-slate-500">ID:</span>
-                  <span className="detail-value font-semibold">{card?.id_number}</span>
-                </div>
-                
-                {personType === 'student' ? (
-                  <>
-                    <div className="detail-row flex">
-                      <span className="detail-label w-24 text-slate-500">Class:</span>
-                      <span className="detail-value font-semibold">{card?.class}</span>
-                    </div>
-                    {card?.roll_no && (
-                      <div className="detail-row flex">
-                        <span className="detail-label w-24 text-slate-500">Roll No:</span>
-                        <span className="detail-value">{card.roll_no}</span>
-                      </div>
-                    )}
-                    {card?.father_name && (
-                      <div className="detail-row flex">
-                        <span className="detail-label w-24 text-slate-500">Father:</span>
-                        <span className="detail-value">{card.father_name}</span>
-                      </div>
-                    )}
-                    {/* Emergency Contact - Parent Phone */}
-                    {card?.phone && (
-                      <div className="detail-row flex bg-red-50 p-1.5 rounded -mx-1.5">
-                        <span className="detail-label w-24 text-red-600 font-medium">📞 Emergency:</span>
-                        <span className="detail-value font-bold text-red-700">{card.phone}</span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="detail-row flex">
-                      <span className="detail-label w-24 text-slate-500">Designation:</span>
-                      <span className="detail-value">{card?.designation}</span>
-                    </div>
-                    {card?.email && (
-                      <div className="detail-row flex">
-                        <span className="detail-label w-24 text-slate-500">Email:</span>
-                        <span className="detail-value text-xs">{card.email}</span>
-                      </div>
-                    )}
-                  </>
-                )}
-                
-                {card?.phone && (
-                  <div className="detail-row flex">
-                    <span className="detail-label w-24 text-slate-500">Phone:</span>
-                    <span className="detail-value">{card.phone}</span>
-                  </div>
-                )}
-                
-                {card?.blood_group && (
-                  <div className="detail-row flex">
-                    <span className="detail-label w-24 text-slate-500">Blood:</span>
-                    <span className="detail-value text-red-600 font-bold">{card.blood_group}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* QR Code */}
-              <div className="qr-section text-center mt-4 pt-3 border-t border-dashed border-slate-200">
-                <QRCodeSVG 
-                  value={cardData?.qr_data || 'SCHOOLTINO'} 
-                  size={60}
-                  className="mx-auto"
-                />
-                <p className="text-xs text-slate-400 mt-1">Scan to verify</p>
-              </div>
-            </div>
-
-            {/* Card Footer */}
-            <div className="footer bg-slate-100 p-2 text-center text-xs text-slate-500">
-              Valid Until: {card?.valid_until} | If found, return to school
+            {/* Print Button */}
+            <div className="flex justify-center mt-4">
+              <Button onClick={printCard} className="bg-indigo-600 hover:bg-indigo-700">
+                <Printer className="w-4 h-4 mr-2" />
+                Print ID Card
+              </Button>
             </div>
           </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 mt-4">
-          <Button variant="outline" onClick={downloadCard} className="flex-1">
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </Button>
-          <Button onClick={printCard} className="flex-1 bg-indigo-600 hover:bg-indigo-700">
-            <Printer className="w-4 h-4 mr-2" />
-            Print
-          </Button>
-        </div>
-
-        {/* Photo Upload Section */}
-        {showPhotoUpload && (
-          <div className="mt-4 p-4 bg-slate-50 rounded-lg">
-            <p className="text-sm font-medium mb-3">Upload Photo</p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoUpload}
-              className="hidden"
-            />
-            <Button 
-              onClick={() => fileInputRef.current?.click()}
-              variant="outline"
-              className="w-full"
-              disabled={uploading}
-            >
-              {uploading ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Upload className="w-4 h-4 mr-2" />
-              )}
-              {uploading ? 'Uploading...' : 'Select Photo'}
-            </Button>
-            <p className="text-xs text-slate-500 mt-2 text-center">
-              JPG, PNG - Passport size photo recommended
-            </p>
+        ) : (
+          <div className="text-center py-10 text-gray-500">
+            ID Card data load nahi ho saka
           </div>
         )}
       </DialogContent>
