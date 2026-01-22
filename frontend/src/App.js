@@ -85,7 +85,7 @@ import { TrialBanner, SupportFAB } from './components/TrialMode';
 import NoticePopup from './components/NoticePopup';
 
 // New Pages
-import StaffDirectory from './pages/StaffDirectory';
+// StaffDirectory removed - merged into EmployeeManagementPage
 import ProfilePage from './pages/ProfilePage';
 
 // Components
