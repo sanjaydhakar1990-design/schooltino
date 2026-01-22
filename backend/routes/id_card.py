@@ -193,6 +193,15 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
         if section and section.upper() != "A":
             class_with_section = f"{class_display} - {section}"
         
+        # Get parent phone - try multiple fields
+        parent_phone = (
+            person.get("parent_phone") or 
+            person.get("father_phone") or 
+            person.get("mother_phone") or 
+            person.get("guardian_phone") or
+            person.get("phone")
+        )
+        
         id_card = {
             "card_type": "STUDENT ID CARD",
             "id_number": person.get("student_id") or person.get("admission_no") or person.get("id")[:8].upper() if person.get("id") else "",
@@ -204,11 +213,16 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
             "blood_group": person.get("blood_group"),
             "father_name": person.get("father_name"),
             "mother_name": person.get("mother_name"),
-            "phone": person.get("parent_phone") or person.get("father_phone") or person.get("mother_phone") or person.get("phone"),
+            "parent_phone": parent_phone,  # Explicit parent phone field
+            "phone": parent_phone,  # Also keep as phone for backward compatibility
             "emergency_contact": person.get("emergency_contact") or person.get("guardian_phone"),
             "address": person.get("address"),
             "admission_date": person.get("admission_date"),
-            "valid_until": f"{datetime.now().year + 1}-03-31"
+            "valid_until": f"{datetime.now().year + 1}-03-31",
+            # Samgra ID for MP Board schools only
+            "samgra_id": person.get("samgra_id") if requires_samgra_id else None,
+            "show_samgra_id": requires_samgra_id,
+            "board_type": board_type
         }
     else:
         # Determine correct role/designation for ID card display
