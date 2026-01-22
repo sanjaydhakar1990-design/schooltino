@@ -387,8 +387,11 @@ class StudentResponse(BaseModel):
     gender: str
     address: str
     mobile: str
+    parent_phone: Optional[str] = None  # Parent phone for ID card
     email: Optional[str] = None
     blood_group: Optional[str] = None
+    aadhar_no: Optional[str] = None
+    samgra_id: Optional[str] = None  # Samgra ID for MP Board schools
     photo_url: Optional[str] = None
     status: str = "active"
     is_active: bool = True
