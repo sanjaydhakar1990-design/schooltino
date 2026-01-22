@@ -193,12 +193,13 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
         if section and section.upper() != "A":
             class_with_section = f"{class_display} - {section}"
         
-        # Get parent phone - try multiple fields
+        # Get parent phone - try multiple fields including mobile
         parent_phone = (
             person.get("parent_phone") or 
             person.get("father_phone") or 
             person.get("mother_phone") or 
             person.get("guardian_phone") or
+            person.get("mobile") or  # Mobile is commonly used for parent contact
             person.get("phone")
         )
         
