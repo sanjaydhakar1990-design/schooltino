@@ -82,9 +82,11 @@ export default function StudentsPage() {
     gender: 'male',
     address: '',
     mobile: '',
+    parent_phone: '',  // Parent's phone for ID card
     email: '',
     blood_group: '',
     aadhar_no: '',
+    samgra_id: '',  // Samgra ID for MP Board schools
     previous_school: '',
     admission_date: new Date().toISOString().split('T')[0] // Default to today
   });
