@@ -461,9 +461,40 @@ export default function SettingsPage() {
                   <li>• PNG/JPG format, Max 5MB</li>
                   <li>• Square logo best results deta hai</li>
                   <li>• AI automatically background hata dega</li>
-                  <li>• Logo notices, calendar, admit cards pe dikhega</li>
                 </ul>
               </div>
+              
+              {/* Logo Apply Options */}
+              {logoUrl && (
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-3 border border-indigo-200 mt-3">
+                  <p className="font-medium text-indigo-800 text-xs mb-2">📍 Logo Apply करें:</p>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
+                      <span className="text-xs text-indigo-700">🪪 ID Cards (Student & Employee)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
+                      <span className="text-xs text-indigo-700">🖼️ Background Watermark (All Pages)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
+                      <span className="text-xs text-indigo-700">📢 Notices & Receipts</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
+                      <span className="text-xs text-indigo-700">📅 Calendar</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
+                      <span className="text-xs text-indigo-700">🏠 App Header (School Name ke saath)</span>
+                    </label>
+                  </div>
+                  <p className="text-[10px] text-indigo-500 mt-2">
+                    ✅ Logo automatically sab jagah show hoga - ID Cards, Notices, Calendar, App Header
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
