@@ -1896,6 +1896,33 @@ async def upload_school_photo(school_id: str, file: UploadFile = File(...), phot
     
     return {"message": "Photo uploaded", "url": photo_url, "type": photo_type}
 
+
+# ==================== LOGO UPDATE ENDPOINT ====================
+class LogoUpdateRequest(BaseModel):
+    logo_url: str
+
+@api_router.post("/schools/{school_id}/update-logo")
+async def update_school_logo(school_id: str, request: LogoUpdateRequest, current_user: dict = Depends(get_current_user)):
+    """Update school logo URL - saves base64 or URL to database"""
+    if current_user["role"] not in ["director", "admin", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    existing = await db.schools.find_one({"id": school_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    await db.schools.update_one(
+        {"id": school_id}, 
+        {"$set": {
+            "logo_url": request.logo_url,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"success": True, "message": "Logo saved successfully", "logo_url": request.logo_url}
+
+
+
 @api_router.get("/schools/{school_id}/ai-context")
 async def get_school_ai_context(school_id: str, current_user: dict = Depends(get_current_user)):
     """Get school context for AI to use - all school details in one object"""
