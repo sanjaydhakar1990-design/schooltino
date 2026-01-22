@@ -652,6 +652,21 @@ backend:
         agent: "testing"
         comment: "✅ Transport Parent Notifications WORKING! GET /api/transport/parent-track/STD-2026-0001?school_id=SCH-DEMO-2026 returns proper response structure with tracking data ✅. Parent tracking system accepts student_id and school_id parameters correctly. API functional, returns empty tracking data (expected for new setup without GPS devices configured)."
 
+  - task: "Student ID Card API System"
+    implemented: true
+    working: true
+    file: "backend/routes/id_card.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Testing Student ID Card API as per review request"
+      - working: true
+        agent: "testing"
+        comment: "✅ STUDENT ID CARD API FULLY WORKING! All review request requirements met: 1) Class Display: Shows proper name 'Class 5' NOT UUID code ✅ 2) School Logo: logo_url included in response ✅ 3) Parent Mobile: Both phone and emergency_contact included ✅. Both POST /api/id-card/generate and GET /api/id-card/generate/student/{id} endpoints working correctly. Fixed logo_url field mapping issue. Test student created successfully. All ID card data properly formatted with student details, school info, and QR code generation."
+
   - task: "Tino Brain Absence Query"
     implemented: true
     working: true
