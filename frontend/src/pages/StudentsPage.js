@@ -442,7 +442,7 @@ export default function StudentsPage() {
                     <option value="">{t('select_class')}</option>
                     {classes.map(cls => (
                       <option key={cls.id} value={cls.id}>
-                        {cls.name} - {cls.section}
+                        {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
                       </option>
                     ))}
                   </select>
@@ -946,7 +946,7 @@ export default function StudentsPage() {
           <option value="">All Classes</option>
           {classes.map(cls => (
             <option key={cls.id} value={cls.id}>
-              {cls.name} - {cls.section}
+              {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
             </option>
           ))}
         </select>
