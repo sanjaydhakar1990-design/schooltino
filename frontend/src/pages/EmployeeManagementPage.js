@@ -653,10 +653,33 @@ export default function EmployeeManagementPage() {
               {/* Login & Permissions */}
               <div className="border-t pt-4 mt-4">
                 <h4 className="font-medium mb-3 flex items-center gap-2">
-                  <Key className="w-4 h-4" /> Login & Permissions
+                  <Key className="w-4 h-4" /> Role & Login Settings
                 </h4>
                 
                 <div className="space-y-4">
+                  {/* Role Selection - Always visible */}
+                  <div>
+                    <Label>System Role *</Label>
+                    <select
+                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      value={formData.role}
+                      onChange={e => setFormData(f => ({ ...f, role: e.target.value }))}
+                    >
+                      <option value="director">Director (निदेशक)</option>
+                      <option value="principal">Principal (प्रधानाचार्य)</option>
+                      <option value="vice_principal">Vice Principal (उप-प्रधानाचार्य)</option>
+                      <option value="teacher">Teacher (शिक्षक)</option>
+                      <option value="admin_staff">Admin Staff</option>
+                      <option value="accountant">Accountant (लेखाकार)</option>
+                      <option value="clerk">Clerk (लिपिक)</option>
+                      <option value="librarian">Librarian (पुस्तकालयाध्यक्ष)</option>
+                      <option value="peon">Peon (चपरासी)</option>
+                      <option value="driver">Driver (चालक)</option>
+                      <option value="guard">Guard (सुरक्षा)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Role determines ID card color and permissions</p>
+                  </div>
+                  
                   <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer">
                     <input
                       type="checkbox"
@@ -672,27 +695,24 @@ export default function EmployeeManagementPage() {
                   
                   {formData.create_login && (
                     <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Role</Label>
-                          <select
-                            className="w-full border rounded-lg px-3 py-2"
-                            value={formData.role}
-                            onChange={e => setFormData(f => ({ ...f, role: e.target.value }))}
+                      <div>
+                        <Label>Password (Default: Mobile Number)</Label>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            value={formData.password}
+                            onChange={e => setFormData(f => ({ ...f, password: e.target.value }))}
+                            placeholder="Leave empty for mobile as password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
                           >
-                            <option value="principal">Principal</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="admin_staff">Admin Staff</option>
-                            <option value="clerk">Clerk</option>
-                            <option value="peon">Peon</option>
-                          </select>
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
                         </div>
-                        <div>
-                          <Label>Password (Default: Mobile)</Label>
-                          <div className="relative">
-                            <Input
-                              type={showPassword ? "text" : "password"}
-                              value={formData.password}
+                      </div>
                               onChange={e => setFormData(f => ({ ...f, password: e.target.value }))}
                               placeholder="Leave empty for mobile as password"
                             />
