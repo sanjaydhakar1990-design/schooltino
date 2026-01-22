@@ -159,7 +159,8 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
             "name": school.get("name") if school else "School Name",
             "address": school.get("address") if school else "",
             "phone": school.get("phone") if school else "",
-            "logo": school.get("logo") if school else None
+            "logo_url": school.get("logo_url") if school else None,
+            "email": school.get("email") if school else ""
         },
         "qr_data": qr_data,
         "generated_at": datetime.now(timezone.utc).isoformat()
