@@ -5700,6 +5700,130 @@ async def ai_remove_background(
         }
 
 
+# JSON-based endpoint for logo background removal (from base64)
+class LogoBgRemoveRequest(BaseModel):
+    school_id: str
+    image_data: str  # base64 encoded image
+    image_type: str = "logo"  # logo, signature, seal
+
+@api_router.post("/school/ai-remove-background-json")
+async def ai_remove_background_json(
+    request: LogoBgRemoveRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    AI Background Remover - JSON version with base64 image
+    Removes background from logo/signature/seal
+    """
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can use AI background remover")
+    
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        # Return original image if AI not available
+        return {
+            "success": True,
+            "processed_image": request.image_data,
+            "message": "AI service not available, using original image"
+        }
+    
+    try:
+        import base64
+        from openai import OpenAI
+        
+        # Decode base64 image
+        image_data = request.image_data
+        if "base64," in image_data:
+            image_data = image_data.split("base64,")[1]
+        
+        image_bytes = base64.b64decode(image_data)
+        
+        # Save temporarily
+        temp_filename = f"temp_{uuid.uuid4().hex}.png"
+        temp_path = UPLOAD_DIR / "temp" / temp_filename
+        temp_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(temp_path, "wb") as f:
+            f.write(image_bytes)
+        
+        # Initialize OpenAI with Emergent key
+        client = OpenAI(
+            api_key=emergent_key,
+            base_url="https://api.emergentmethods.ai/v1"
+        )
+        
+        # Create prompt based on image type
+        if request.image_type == "logo":
+            prompt = """Clean up this school logo image:
+            - Remove ALL background completely (make transparent/white)
+            - Keep ONLY the logo design, text, and symbols
+            - Make the logo sharp, clear and professional
+            - Preserve all colors and design elements
+            - Output should be a clean logo suitable for official documents"""
+        elif request.image_type == "signature":
+            prompt = """Clean up this signature image:
+            - Remove ALL background completely
+            - Keep ONLY the signature/handwriting marks
+            - Make the signature strokes clean and sharp
+            - Preserve the original style of the signature"""
+        else:  # seal
+            prompt = """Clean up this school seal/stamp image:
+            - Remove ALL background completely
+            - Keep ONLY the seal/stamp design
+            - Make the seal clear and professional
+            - Preserve all text and design elements"""
+        
+        # Use image edit
+        with open(temp_path, "rb") as image_file:
+            response = client.images.edit(
+                model="gpt-image-1",
+                image=image_file,
+                prompt=prompt,
+                size="1024x1024"
+            )
+        
+        # Get the generated image
+        if response.data and len(response.data) > 0:
+            import requests as req
+            
+            # Check if URL or base64
+            if hasattr(response.data[0], 'url') and response.data[0].url:
+                image_response = req.get(response.data[0].url)
+                processed_bytes = image_response.content
+            elif hasattr(response.data[0], 'b64_json') and response.data[0].b64_json:
+                processed_bytes = base64.b64decode(response.data[0].b64_json)
+            else:
+                raise Exception("No image data in response")
+            
+            # Convert to base64 for frontend
+            processed_base64 = base64.b64encode(processed_bytes).decode('utf-8')
+            processed_data_url = f"data:image/png;base64,{processed_base64}"
+            
+            # Clean up temp file
+            if temp_path.exists():
+                temp_path.unlink()
+            
+            return {
+                "success": True,
+                "processed_image": processed_data_url,
+                "message": f"AI ने {request.image_type} का background हटा दिया!"
+            }
+        else:
+            raise Exception("AI could not process the image")
+            
+    except Exception as e:
+        logging.error(f"AI Background Removal error: {str(e)}")
+        # Clean up temp file on error
+        if 'temp_path' in locals() and temp_path.exists():
+            temp_path.unlink()
+        # Return original image on error
+        return {
+            "success": False,
+            "processed_image": request.image_data,
+            "message": f"Error: {str(e)}, using original image"
+        }
+
+
 @api_router.post("/school/ai-enhance-seal")
 async def ai_enhance_seal(
     file: UploadFile = File(...),
