@@ -3,6 +3,7 @@
  * - Staff + User combined in one place
  * - Employee details, designation, permissions all together
  * - Login enable/disable with one click
+ * - Employee ID Card generation
  */
 
 import { useState, useEffect } from 'react';
@@ -14,9 +15,10 @@ import { Label } from '../components/ui/label';
 import { 
   Users, Plus, Search, Edit2, Trash2, UserCheck, UserX, Key,
   Shield, Loader2, Phone, Mail, Building, Award, Calendar,
-  IndianRupee, CheckCircle, XCircle, Settings, Eye, EyeOff
+  IndianRupee, CheckCircle, XCircle, Settings, Eye, EyeOff, CreditCard
 } from 'lucide-react';
 import { toast } from 'sonner';
+import EmployeeIDCard from '../components/EmployeeIDCard';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
