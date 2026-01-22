@@ -713,19 +713,6 @@ export default function EmployeeManagementPage() {
                           </button>
                         </div>
                       </div>
-                              onChange={e => setFormData(f => ({ ...f, password: e.target.value }))}
-                              placeholder="Leave empty for mobile as password"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-                            >
-                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
                       
                       <Button
                         variant="outline"
