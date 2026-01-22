@@ -41,20 +41,34 @@ class IDCardData(BaseModel):
 # ==================== HELPER FUNCTIONS ====================
 
 def get_role_color(role: str) -> str:
-    """Get role-based color for ID card"""
+    """Get role-based color for ID card
+    Higher Authority: Gold/Purple shades
+    Admin Department: Green/Blue shades
+    Support Staff: Gray shades
+    """
     colors = {
-        "director": "#7c3aed",      # Purple for Director
-        "principal": "#dc2626",     # Red for Principal
+        # Higher Authority - Gold/Purple/Red (Premium look)
+        "director": "#b91c1c",       # Dark Red for Director (Top Authority)
+        "co_director": "#9333ea",    # Violet for Co-Director
+        "principal": "#dc2626",      # Red for Principal
         "vice_principal": "#ea580c", # Orange for Vice Principal
-        "co_director": "#9333ea",   # Violet for Co-Director
-        "teacher": "#1e40af",       # Blue for Teacher
-        "accountant": "#059669",    # Green for Accountant
-        "clerk": "#0891b2",         # Cyan for Clerk
-        "peon": "#64748b",          # Slate for Peon
-        "driver": "#ca8a04",        # Yellow for Driver
-        "guard": "#374151",         # Gray for Guard
-        "sweeper": "#64748b",       # Slate for Sweeper
-        "admin": "#7c3aed",         # Purple for Admin
+        
+        # Admin Department - Green/Teal shades
+        "admin": "#047857",          # Dark Green for Admin
+        "accountant": "#059669",     # Green for Accountant
+        "clerk": "#0891b2",          # Cyan for Clerk
+        
+        # Teaching Staff - Blue shades
+        "teacher": "#1e40af",        # Blue for Teacher
+        "librarian": "#4f46e5",      # Indigo for Librarian
+        
+        # Support Staff - Gray/Brown shades
+        "peon": "#64748b",           # Slate for Peon
+        "driver": "#ca8a04",         # Yellow for Driver
+        "guard": "#374151",          # Gray for Guard
+        "sweeper": "#64748b",        # Slate for Sweeper
+        "helper": "#78716c",         # Stone for Helper
+        "cook": "#a16207",           # Amber for Cook
     }
     return colors.get(role.lower() if role else "", "#1e40af")
 
@@ -62,19 +76,28 @@ def get_role_hindi(role: str) -> str:
     """Get Hindi translation of role"""
     hindi = {
         "director": "निदेशक",
+        "co_director": "सह-निदेशक",
         "principal": "प्रधानाचार्य",
         "vice_principal": "उप-प्रधानाचार्य",
-        "co_director": "सह-निदेशक",
+        "admin": "प्रशासक",
         "teacher": "शिक्षक",
         "accountant": "लेखाकार",
         "clerk": "लिपिक",
+        "librarian": "पुस्तकालयाध्यक्ष",
         "peon": "चपरासी",
         "driver": "चालक",
         "guard": "सुरक्षा कर्मी",
         "sweeper": "सफाई कर्मचारी",
-        "admin": "प्रशासक",
+        "helper": "सहायक",
+        "cook": "रसोइया",
     }
     return hindi.get(role.lower() if role else "", "")
+
+def is_higher_authority(role: str) -> bool:
+    """Check if role is higher authority for special styling"""
+    higher_roles = ["director", "co_director", "principal", "vice_principal"]
+    return role.lower() in higher_roles if role else False
+
 
 
 # ==================== GENERATE ID CARD ====================
