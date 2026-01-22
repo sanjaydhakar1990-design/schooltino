@@ -169,7 +169,7 @@ export default function SettingsPage() {
     setRemovingLogoBg(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API}/school/ai-remove-background`, {
+      const response = await axios.post(`${API}/school/ai-remove-background-json`, {
         school_id: schoolId,
         image_data: logoUrl,
         image_type: 'logo'
@@ -185,6 +185,7 @@ export default function SettingsPage() {
         toast.error('Background removal failed');
       }
     } catch (error) {
+      console.error('AI Remove BG Error:', error);
       toast.error(error.response?.data?.detail || 'AI processing failed');
     } finally {
       setRemovingLogoBg(false);
