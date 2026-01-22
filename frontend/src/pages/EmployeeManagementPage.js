@@ -126,6 +126,11 @@ export default function EmployeeManagementPage() {
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  // ID Card state
+  const [showIDCard, setShowIDCard] = useState(false);
+  const [selectedEmployeeForID, setSelectedEmployeeForID] = useState(null);
+  const [school, setSchool] = useState(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -139,7 +144,9 @@ export default function EmployeeManagementPage() {
     create_login: true,
     password: '',
     role: 'teacher',
-    custom_permissions: null
+    custom_permissions: null,
+    blood_group: '',
+    emergency_contact: '' // Family phone for ID card
   });
   
   const [showPermissions, setShowPermissions] = useState(false);
