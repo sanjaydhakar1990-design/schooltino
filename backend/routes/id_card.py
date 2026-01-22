@@ -237,14 +237,20 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
             "teacher": "TEACHER",
             "accountant": "ACCOUNTANT",
             "clerk": "CLERK",
+            "librarian": "LIBRARIAN",
             "peon": "SUPPORT STAFF",
             "driver": "TRANSPORT STAFF",
             "guard": "SECURITY",
             "sweeper": "SUPPORT STAFF",
+            "helper": "SUPPORT STAFF",
+            "cook": "SUPPORT STAFF",
             "admin": "ADMIN"
         }
         
         card_type_label = role_map.get(actual_role.lower(), display_role) if actual_role else display_role
+        
+        # Check if this is a higher authority role
+        higher_authority = is_higher_authority(actual_role) if actual_role else False
         
         id_card = {
             "card_type": f"{card_type_label} ID CARD",
@@ -257,11 +263,11 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
             "blood_group": person.get("blood_group"),
             "phone": person.get("phone"),
             "emergency_contact": person.get("emergency_contact"),
-            "email": person.get("email"),
             "address": person.get("address"),
             "joining_date": person.get("joining_date") or person.get("created_at"),
             "valid_until": f"{datetime.now().year + 1}-03-31",
-            "role_color": get_role_color(actual_role) if actual_role else "#1e40af"
+            "role_color": get_role_color(actual_role) if actual_role else "#1e40af",
+            "is_higher_authority": higher_authority  # For special styling (gold border, etc)
         }
     
     # Generate QR code data (for verification)
