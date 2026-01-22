@@ -265,7 +265,7 @@ export default function IDCardViewer({
               </p>
 
               {/* Details */}
-              <div className="details text-sm space-y-2">
+              <div className="details text-sm space-y-2 relative z-10">
                 <div className="detail-row flex">
                   <span className="detail-label w-24 text-slate-500">ID:</span>
                   <span className="detail-value font-semibold">{card?.id_number}</span>
@@ -275,7 +275,7 @@ export default function IDCardViewer({
                   <>
                     <div className="detail-row flex">
                       <span className="detail-label w-24 text-slate-500">Class:</span>
-                      <span className="detail-value">{card?.class} {card?.section ? `- ${card.section}` : ''}</span>
+                      <span className="detail-value font-semibold">{card?.class}</span>
                     </div>
                     {card?.roll_no && (
                       <div className="detail-row flex">
@@ -287,6 +287,13 @@ export default function IDCardViewer({
                       <div className="detail-row flex">
                         <span className="detail-label w-24 text-slate-500">Father:</span>
                         <span className="detail-value">{card.father_name}</span>
+                      </div>
+                    )}
+                    {/* Emergency Contact - Parent Phone */}
+                    {card?.phone && (
+                      <div className="detail-row flex bg-red-50 p-1.5 rounded -mx-1.5">
+                        <span className="detail-label w-24 text-red-600 font-medium">📞 Emergency:</span>
+                        <span className="detail-value font-bold text-red-700">{card.phone}</span>
                       </div>
                     )}
                   </>
