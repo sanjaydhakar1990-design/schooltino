@@ -80,6 +80,9 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
     if not person:
         raise HTTPException(status_code=404, detail=f"{person_type.title()} not found")
     
+    # Get actual role from database for correct designation
+    actual_role = person.get("designation") or person.get("role") or person_type
+    
     # Get school info
     school = None
     sid = school_id or person.get("school_id")
@@ -140,19 +143,43 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
             "valid_until": f"{datetime.now().year + 1}-03-31"
         }
     else:
+        # Determine correct role/designation for ID card display
+        display_role = actual_role.upper() if actual_role else person_type.upper()
+        
+        # Role-based card type for proper labeling
+        role_map = {
+            "director": "DIRECTOR",
+            "principal": "PRINCIPAL", 
+            "vice_principal": "VICE PRINCIPAL",
+            "co_director": "CO-DIRECTOR",
+            "teacher": "TEACHER",
+            "accountant": "ACCOUNTANT",
+            "clerk": "CLERK",
+            "peon": "SUPPORT STAFF",
+            "driver": "TRANSPORT STAFF",
+            "guard": "SECURITY",
+            "sweeper": "SUPPORT STAFF",
+            "admin": "ADMIN"
+        }
+        
+        card_type_label = role_map.get(actual_role.lower(), display_role) if actual_role else display_role
+        
         id_card = {
-            "card_type": f"{person_type.upper()} ID CARD",
+            "card_type": f"{card_type_label} ID CARD",
             "id_number": person.get("employee_id") or person.get("id"),
             "name": person.get("name"),
-            "designation": person.get("designation") or person.get("role", person_type).title(),
+            "designation": person.get("designation") or actual_role.title() if actual_role else person_type.title(),
+            "designation_hindi": get_role_hindi(actual_role) if actual_role else "",
             "department": person.get("department"),
             "dob": person.get("dob"),
             "blood_group": person.get("blood_group"),
             "phone": person.get("phone"),
+            "emergency_contact": person.get("emergency_contact"),
             "email": person.get("email"),
             "address": person.get("address"),
             "joining_date": person.get("joining_date") or person.get("created_at"),
-            "valid_until": f"{datetime.now().year + 1}-03-31"
+            "valid_until": f"{datetime.now().year + 1}-03-31",
+            "role_color": get_role_color(actual_role) if actual_role else "#1e40af"
         }
     
     # Generate QR code data (for verification)
