@@ -196,14 +196,34 @@ export default function IDCardViewer({
 
         {/* ID Card Preview */}
         <div ref={printRef}>
-          <div className="id-card border-2 border-slate-200 rounded-xl overflow-hidden shadow-lg" data-testid="id-card-preview">
-            {/* Card Header */}
-            <div className="header bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 text-center">
-              <p className="school-name font-bold text-sm">{school?.name || 'SCHOOLTINO'}</p>
-              {school?.address && (
-                <p className="text-xs opacity-80 mt-1">{school.address}</p>
-              )}
-              <div className="card-type text-xs mt-2 bg-white/20 inline-block px-3 py-1 rounded-full">
+          <div className="id-card border-2 border-slate-200 rounded-xl overflow-hidden shadow-lg relative" data-testid="id-card-preview">
+            {/* Background Watermark - School Logo */}
+            {school?.logo_url && (
+              <div 
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+                style={{ opacity: 0.08 }}
+              >
+                <img src={school.logo_url} alt="" className="w-48 h-48 object-contain" />
+              </div>
+            )}
+            
+            {/* Card Header with Logo */}
+            <div className="header bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 relative z-10">
+              <div className="flex items-center justify-center gap-3">
+                {/* School Logo */}
+                {school?.logo_url && (
+                  <div className="w-10 h-10 bg-white rounded-full p-1 flex-shrink-0">
+                    <img src={school.logo_url} alt="" className="w-full h-full object-contain rounded-full" />
+                  </div>
+                )}
+                <div className="text-center">
+                  <p className="school-name font-bold text-sm">{school?.name || 'SCHOOL NAME'}</p>
+                  {school?.address && (
+                    <p className="text-xs opacity-80 mt-0.5">{school.address}</p>
+                  )}
+                </div>
+              </div>
+              <div className="card-type text-xs mt-2 bg-white/20 inline-block px-3 py-1 rounded-full text-center w-full">
                 {card?.card_type}
               </div>
             </div>
