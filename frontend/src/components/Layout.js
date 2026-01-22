@@ -98,11 +98,29 @@ export const Layout = () => {
             <Menu className="w-5 h-5" />
           </button>
           
-          {/* Logo for mobile */}
-          <span className="lg:hidden text-white font-semibold">Schooltino</span>
+          {/* School Logo + Name for mobile (Custom Branding) */}
+          <div className="lg:hidden flex items-center gap-2">
+            {schoolLogo && (
+              <div className="w-8 h-8 bg-white rounded-full p-0.5">
+                <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
+              </div>
+            )}
+            <span className="text-white font-semibold text-sm truncate max-w-[120px]">
+              {user?.school_name || 'Schooltino'}
+            </span>
+          </div>
           
-          {/* Spacer for desktop */}
-          <div className="hidden lg:block" />
+          {/* School Logo + Name for Desktop (Custom Branding) */}
+          <div className="hidden lg:flex items-center gap-2">
+            {schoolLogo && (
+              <div className="w-8 h-8 bg-white rounded-full p-0.5">
+                <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
+              </div>
+            )}
+            <span className="text-white font-semibold">
+              {user?.school_name || 'Schooltino'}
+            </span>
+          </div>
           
           {/* Right side buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
