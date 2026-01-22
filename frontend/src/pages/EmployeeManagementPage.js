@@ -130,6 +130,7 @@ export default function EmployeeManagementPage() {
   const [showIDCard, setShowIDCard] = useState(false);
   const [selectedEmployeeForID, setSelectedEmployeeForID] = useState(null);
   const [school, setSchool] = useState(null);
+  const [bulkPrinting, setBulkPrinting] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
