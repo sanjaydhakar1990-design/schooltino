@@ -146,11 +146,16 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
     # Get actual role from database for correct designation
     actual_role = person.get("designation") or person.get("role") or person_type
     
-    # Get school info
+    # Get school info including board_type for Samgra ID requirement
     school = None
+    board_type = None
     sid = school_id or person.get("school_id")
     if sid:
-        school = await db.schools.find_one({"id": sid}, {"_id": 0, "name": 1, "address": 1, "phone": 1, "logo": 1, "logo_url": 1, "email": 1})
+        school = await db.schools.find_one({"id": sid}, {"_id": 0, "name": 1, "address": 1, "phone": 1, "logo": 1, "logo_url": 1, "email": 1, "board_type": 1})
+        board_type = school.get("board_type") if school else None
+    
+    # Check if Samgra ID is required (MP Board schools)
+    requires_samgra_id = board_type and board_type.upper() in ["MPBSE", "MP BOARD", "MP"]
     
     # Get photo if available
     photo = None
