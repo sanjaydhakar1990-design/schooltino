@@ -108,11 +108,11 @@ export const Layout = () => {
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-white font-bold text-base leading-tight" data-testid="desktop-school-name">
+              <span className="text-white font-bold text-lg leading-tight tracking-wide" data-testid="desktop-school-name">
                 {schoolName || 'School Management'}
               </span>
               {schoolData?.address && (
-                <span className="text-white/60 text-[10px] leading-tight max-w-[200px] truncate">
+                <span className="text-white/70 text-xs leading-tight max-w-[300px] truncate">
                   {schoolData.address}
                 </span>
               )}
