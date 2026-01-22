@@ -997,7 +997,7 @@ export default function StudentsPage() {
                       <TableCell className="font-medium">{student.name}</TableCell>
                       <TableCell>
                         <span className="badge badge-info">
-                          {student.class_name} - {student.section}
+                          {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''}
                         </span>
                       </TableCell>
                       <TableCell>{student.father_name}</TableCell>
