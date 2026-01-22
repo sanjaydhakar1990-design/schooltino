@@ -858,6 +858,7 @@ export default function StudentsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Credentials Dialog - Shows after successful admission */}
