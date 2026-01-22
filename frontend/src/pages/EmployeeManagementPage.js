@@ -156,8 +156,21 @@ export default function EmployeeManagementPage() {
     if (schoolId) {
       fetchEmployees();
       fetchDesignations();
+      fetchSchool();
     }
   }, [schoolId]);
+
+  const fetchSchool = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/api/schools/${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSchool(response.data);
+    } catch (error) {
+      console.error('Error fetching school:', error);
+    }
+  };
 
   const fetchEmployees = async () => {
     try {
