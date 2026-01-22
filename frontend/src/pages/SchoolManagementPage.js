@@ -193,7 +193,7 @@ export default function SchoolManagementPage() {
     setUploadingLogo(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API}/api/school/ai-remove-background`, {
+      const response = await axios.post(`${API}/api/school/ai-remove-background-json`, {
         school_id: schoolId,
         image_data: school.logo_url,
         image_type: 'logo'
@@ -208,6 +208,7 @@ export default function SchoolManagementPage() {
         toast.error('Background removal failed');
       }
     } catch (error) {
+      console.error('AI Remove BG Error:', error);
       toast.error(error.response?.data?.detail || 'AI processing failed');
     } finally {
       setUploadingLogo(false);
