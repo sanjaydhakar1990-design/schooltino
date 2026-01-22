@@ -25,7 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { 
   Plus, Search, Edit, Trash2, Eye, Loader2, User, UserPlus, 
   Copy, Check, Ban, RefreshCw, LogOut, MoreVertical, AlertTriangle, Camera, CreditCard,
-  Upload, X, Fingerprint, Image
+  Upload, X, Fingerprint, Image, Printer
 } from 'lucide-react';
 import {
   DropdownMenu,
