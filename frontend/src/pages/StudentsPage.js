@@ -63,6 +63,7 @@ export default function StudentsPage() {
   const [newStudentCredentials, setNewStudentCredentials] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
+  const [bulkPrinting, setBulkPrinting] = useState(false);
   
   // Photo capture states
   const [capturedPhoto, setCapturedPhoto] = useState(null);
