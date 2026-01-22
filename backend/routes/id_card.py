@@ -37,6 +37,46 @@ class IDCardData(BaseModel):
     include_photo: bool = True
 
 
+
+# ==================== HELPER FUNCTIONS ====================
+
+def get_role_color(role: str) -> str:
+    """Get role-based color for ID card"""
+    colors = {
+        "director": "#7c3aed",      # Purple for Director
+        "principal": "#dc2626",     # Red for Principal
+        "vice_principal": "#ea580c", # Orange for Vice Principal
+        "co_director": "#9333ea",   # Violet for Co-Director
+        "teacher": "#1e40af",       # Blue for Teacher
+        "accountant": "#059669",    # Green for Accountant
+        "clerk": "#0891b2",         # Cyan for Clerk
+        "peon": "#64748b",          # Slate for Peon
+        "driver": "#ca8a04",        # Yellow for Driver
+        "guard": "#374151",         # Gray for Guard
+        "sweeper": "#64748b",       # Slate for Sweeper
+        "admin": "#7c3aed",         # Purple for Admin
+    }
+    return colors.get(role.lower() if role else "", "#1e40af")
+
+def get_role_hindi(role: str) -> str:
+    """Get Hindi translation of role"""
+    hindi = {
+        "director": "निदेशक",
+        "principal": "प्रधानाचार्य",
+        "vice_principal": "उप-प्रधानाचार्य",
+        "co_director": "सह-निदेशक",
+        "teacher": "शिक्षक",
+        "accountant": "लेखाकार",
+        "clerk": "लिपिक",
+        "peon": "चपरासी",
+        "driver": "चालक",
+        "guard": "सुरक्षा कर्मी",
+        "sweeper": "सफाई कर्मचारी",
+        "admin": "प्रशासक",
+    }
+    return hindi.get(role.lower() if role else "", "")
+
+
 # ==================== GENERATE ID CARD ====================
 
 @router.post("/generate")
