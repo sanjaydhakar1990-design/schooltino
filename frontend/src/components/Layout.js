@@ -6,35 +6,16 @@ import VoiceAssistantFAB from './VoiceAssistantFAB';
 import PWAInstaller from './PWAInstaller';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
-
-const API = process.env.REACT_APP_BACKEND_URL;
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const { language, changeLanguage } = useLanguage();
-  const { user, schoolId } = useAuth();
-  const [schoolLogo, setSchoolLogo] = useState(null);
+  const { user, schoolData } = useAuth();
 
-  // Fetch school logo
-  useEffect(() => {
-    const fetchSchoolLogo = async () => {
-      if (!schoolId) return;
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${API}/api/schools/${schoolId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.data?.logo_url) {
-          setSchoolLogo(response.data.logo_url);
-        }
-      } catch (error) {
-        console.log('Could not fetch school logo');
-      }
-    };
-    fetchSchoolLogo();
-  }, [schoolId]);
+  // Get school branding from context (fetched at login)
+  const schoolLogo = schoolData?.logo_url;
+  const schoolName = schoolData?.name || user?.school_name;
 
   const languages = [
     { code: 'en', label: 'English', flag: '🇬🇧', shortLabel: 'EN' },
@@ -52,11 +33,12 @@ export const Layout = () => {
 
   return (
     <div className="min-h-screen bg-background flex relative">
-      {/* School Logo Watermark - Light Background */}
+      {/* School Logo Watermark - Light Background on ALL Pages */}
       {schoolLogo && (
         <div 
           className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center print:hidden"
           style={{ opacity: 0.04 }}
+          data-testid="global-watermark"
         >
           <img 
             src={schoolLogo} 
@@ -87,8 +69,8 @@ export const Layout = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        {/* Top Header Bar */}
-        <header className="sticky top-0 h-14 bg-gradient-to-r from-slate-900 to-indigo-900 z-30 flex items-center justify-between px-4">
+        {/* Top Header Bar - SCHOOL BRANDING */}
+        <header className="sticky top-0 h-14 bg-gradient-to-r from-slate-900 to-indigo-900 z-30 flex items-center justify-between px-4" data-testid="app-header">
           {/* Mobile Menu Button */}
           <button
             onClick={() => setSidebarOpen(true)}
@@ -98,28 +80,43 @@ export const Layout = () => {
             <Menu className="w-5 h-5" />
           </button>
           
-          {/* School Logo + Name for mobile (Custom Branding) */}
-          <div className="lg:hidden flex items-center gap-2">
-            {schoolLogo && (
-              <div className="w-8 h-8 bg-white rounded-full p-0.5">
+          {/* School Logo + Name for mobile (Custom Branding - DEFAULT) */}
+          <div className="lg:hidden flex items-center gap-2" data-testid="mobile-header-branding">
+            {schoolLogo ? (
+              <div className="w-8 h-8 bg-white rounded-full p-0.5 flex-shrink-0">
                 <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
               </div>
+            ) : (
+              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                {(schoolName || 'S').charAt(0)}
+              </div>
             )}
-            <span className="text-white font-semibold text-sm truncate max-w-[120px]">
-              {user?.school_name || 'Schooltino'}
+            <span className="text-white font-semibold text-sm truncate max-w-[120px]" data-testid="mobile-school-name">
+              {schoolName || 'School'}
             </span>
           </div>
           
-          {/* School Logo + Name for Desktop (Custom Branding) */}
-          <div className="hidden lg:flex items-center gap-2">
-            {schoolLogo && (
-              <div className="w-8 h-8 bg-white rounded-full p-0.5">
+          {/* School Logo + Name for Desktop (Custom Branding - DEFAULT) */}
+          <div className="hidden lg:flex items-center gap-3" data-testid="desktop-header-branding">
+            {schoolLogo ? (
+              <div className="w-9 h-9 bg-white rounded-full p-0.5 flex-shrink-0 shadow-md">
                 <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
               </div>
+            ) : (
+              <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                {(schoolName || 'S').charAt(0)}
+              </div>
             )}
-            <span className="text-white font-semibold">
-              {user?.school_name || 'Schooltino'}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-white font-bold text-base leading-tight" data-testid="desktop-school-name">
+                {schoolName || 'School Management'}
+              </span>
+              {schoolData?.address && (
+                <span className="text-white/60 text-[10px] leading-tight max-w-[200px] truncate">
+                  {schoolData.address}
+                </span>
+              )}
+            </div>
           </div>
           
           {/* Right side buttons */}
@@ -154,7 +151,7 @@ export const Layout = () => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto relative z-10">
           <div className="p-4 md:p-6 lg:p-8 animate-fade-in">
             <Outlet />
           </div>
