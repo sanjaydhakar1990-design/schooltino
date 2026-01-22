@@ -39,6 +39,14 @@ class IDCardData(BaseModel):
 
 # ==================== GENERATE ID CARD ====================
 
+@router.post("/generate")
+async def generate_id_card_post(data: IDCardData):
+    """
+    Generate ID card data for student/teacher/staff via POST
+    Returns all data needed to render an ID card
+    """
+    return await generate_id_card(data.person_type, data.person_id, data.school_id)
+
 @router.get("/generate/{person_type}/{person_id}")
 async def generate_id_card(person_type: str, person_id: str, school_id: Optional[str] = None):
     """
