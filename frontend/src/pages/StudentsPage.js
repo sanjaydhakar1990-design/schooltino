@@ -533,12 +533,24 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6" data-testid="students-page">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold font-heading text-slate-900">{t('students')}</h1>
           <p className="text-slate-500 mt-1">Student Admission & Management</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
+        <div className="flex gap-2">
+          {/* Bulk Print Button */}
+          <Button 
+            variant="outline" 
+            onClick={handleBulkPrintIDCards}
+            disabled={bulkPrinting || students.length === 0}
+            className="gap-2"
+            data-testid="bulk-print-btn"
+          >
+            {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
+            Bulk Print ID Cards
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="btn-primary" data-testid="add-student-btn">
               <UserPlus className="w-5 h-5 mr-2" />
