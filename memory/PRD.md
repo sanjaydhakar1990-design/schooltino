@@ -1,64 +1,50 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 22, 2026 (Session 7 - ID Card & Branding Fixes - COMPLETE)
+## Last Updated: January 22, 2026 (Session 7 - Major Fixes Complete)
 
 ---
 
 ## ✅ SESSION 7 COMPLETED TASKS
 
-### 1. Student ID Card Fixes ✅🪪
-- **Parent Phone Number** - Now prominently displayed (📞 Parent: +91...)
-- **Class Name** - Shows readable name (e.g., "Class 5") instead of UUID
-- **Samgra ID** - Added for MP Board (MPBSE) schools only (not for RBSC)
-- **Email Removed** - Student ID cards no longer show email field
-- **School Logo** - Header logo + background watermark
+### 1. Logo Upload System Fixed ✅🖼️
+- New API endpoint: `/api/schools/{school_id}/update-logo`
+- Logo saves to database properly
+- Settings page calls new endpoint
 
-### 2. Employee ID Card - Role-Based Colors ✅🎨
-**Higher Authority (Premium Styling with Gold Border):**
-- Director: #b91c1c (Dark Red)
-- Principal: #dc2626 (Red)
-- Vice Principal: #ea580c (Orange)
-- Co-Director: #9333ea (Violet)
+### 2. Header Branding Improved ✅🏫
+- Header height increased to `h-16`
+- School logo size: `w-12 h-12` (desktop)
+- School name: `text-lg font-bold tracking-wide`
+- Address shown below school name
+- Looks prominent and professional
 
-**Admin Department:**
-- Admin: #047857 (Dark Green)
-- Accountant: #059669 (Green)
-- Clerk: #0891b2 (Cyan)
+### 3. Bulk ID Print Added ✅🖨️
+- **Students Page:** "Bulk Print ID Cards" button
+- **Employee Page:** "Bulk Print ID Cards" button
+- Opens print window with all ID cards formatted for A4 printing
+- Role-based colors preserved in bulk print
 
-**Teaching Staff:**
-- Teacher: #1e40af (Blue)
-- Librarian: #4f46e5 (Indigo)
+### 4. Employee Role Update Fixed ✅👤
+- Role field moved OUTSIDE `create_login` condition
+- Role now visible always (not just when creating login)
+- All roles available: Director, Principal, VP, Teacher, Admin, Accountant, Clerk, Librarian, Peon, Driver, Guard
 
-**Support Staff:**
-- Peon/Sweeper: #64748b (Slate)
-- Driver: #ca8a04 (Yellow)
-- Guard: #374151 (Gray)
-- Helper: #78716c (Stone)
-- Cook: #a16207 (Amber)
+### 5. Student ID Card Fixes ✅🪪
+- Parent phone now checks: `parent_phone`, `father_phone`, `mother_phone`, `guardian_phone`, `mobile`, `phone`
+- Samgra ID field added for MP Board schools
+- Email removed from student ID card
 
-### 3. Global Header Branding Fixed ✅🏫
-- Header shows school logo and name (not "Schooltino")
-- Uses `schoolData` from AuthContext
-- Works on mobile and desktop
-
-### 4. Background Watermark Added ✅🖼️
-- School logo as watermark on all pages
-- Low opacity (4%) for subtle branding
-
-### 5. Logo Settings UI Changed ✅📍
-- Changed from CHECKBOXES to BUTTONS
-- 5 buttons: Set to ID Cards, Set as Watermark, Set on Notices, Set on Calendar, Set on App Header
-
-### 6. Student Form Fields Added ✅📝
-- **Parent Phone** - `📞 Parent Phone (for ID Card) *` field
-- **Samgra ID** - `Samgra ID (MP Board)` field for MP Board schools
+### 6. Fee Structure ✅💰
+- Bus/Transport fee already exists
+- Scholarships (RTE, SC/ST, OBC) working
+- API: POST `/api/fee-management/scheme/assign` tested successfully
 
 ---
 
-## 🧪 Testing Status (Session 7)
-- **Backend Tests:** 13/15 PASSED (2 skipped - minor model issue fixed)
-- **Frontend Tests:** 100% PASSED
-- **No mocked APIs**
+## 🧪 Testing Status
+- **Frontend:** Compiles successfully
+- **Backend:** All routes working
+- **API Tests:** Logo update, Scheme assign - PASSED
 
 ### Test Credentials:
 - Email: director@test.com
@@ -66,24 +52,22 @@
 
 ---
 
-## Tech Stack
-- **Frontend:** React, Tailwind CSS, Shadcn UI
-- **Backend:** FastAPI, Python
-- **Database:** MongoDB
-- **Auth:** JWT
-
-## Key Files Reference
-- `/app/frontend/src/components/IDCardViewer.js` - ID card rendering with role colors
-- `/app/frontend/src/components/Layout.js` - Header and watermark
-- `/app/frontend/src/pages/SettingsPage.js` - Logo settings with buttons
-- `/app/frontend/src/pages/StudentsPage.js` - Student form with parent_phone, samgra_id
-- `/app/backend/routes/id_card.py` - ID card API with role colors and Samgra ID
+## 📂 Key Files Modified
+- `/app/backend/server.py` - New logo update endpoint (line ~1898)
+- `/app/backend/routes/id_card.py` - Mobile field fallback for parent phone
+- `/app/frontend/src/components/Layout.js` - Larger header, school branding
+- `/app/frontend/src/pages/StudentsPage.js` - Bulk print, parent_phone field
+- `/app/frontend/src/pages/EmployeeManagementPage.js` - Bulk print, role field fix
+- `/app/frontend/src/pages/SettingsPage.js` - New logo save API call
 
 ---
 
-## 🔜 Upcoming/Backlog Tasks
-1. AI Background Removal reliability improvement
-2. Print layout optimization for ID cards
-3. NotebookLM integration (mentioned for coachtino.onetino.com)
-4. Bulk ID card PDF export
-5. ID card templates customization
+## 🔜 Remaining Tasks
+1. AI Background Remover - needs debugging
+2. Logo settings buttons functionality (currently show toast only)
+3. NotebookLM integration (for coachtino.onetino.com)
+
+## Future Enhancements
+- Bulk PDF export
+- ID card templates
+- Custom watermark settings
