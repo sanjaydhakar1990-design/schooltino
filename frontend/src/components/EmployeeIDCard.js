@@ -87,11 +87,12 @@ export default function EmployeeIDCard({ employee, school, onClose }) {
       'teacher': 'Teacher / शिक्षक',
       'principal': 'Principal / प्रधानाचार्य',
       'vice_principal': 'Vice Principal',
+      'director': 'Director / निदेशक',
       'admin': 'Admin Staff',
       'accountant': 'Accountant / लेखाकार',
       'clerk': 'Office Clerk',
       'librarian': 'Librarian / पुस्तकालयाध्यक्ष',
-      'peon': 'Office Attendant',
+      'peon': 'Office Attendant / चपरासी',
       'helper': 'Helper / सहायक',
       'sweeper': 'Cleaning Staff / सफाई कर्मी',
       'driver': 'Driver / चालक',
@@ -107,18 +108,52 @@ export default function EmployeeIDCard({ employee, school, onClose }) {
     return roleMap[role] || employee?.designation || role || 'Staff';
   };
 
+  // Role-wise colors for ID cards
+  const getRoleColor = (role) => {
+    const colorMap = {
+      'director': { bg: 'linear-gradient(135deg, #7c2d12 0%, #b45309 100%)', label: 'Director' }, // Brown/Gold
+      'principal': { bg: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)', label: 'Principal' }, // Purple
+      'vice_principal': { bg: 'linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%)', label: 'Vice Principal' }, // Light Purple
+      'teacher': { bg: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)', label: 'Teacher' }, // Blue
+      'admin': { bg: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)', label: 'Admin' }, // Teal
+      'accountant': { bg: 'linear-gradient(135deg, #166534 0%, #22c55e 100%)', label: 'Accounts' }, // Green
+      'clerk': { bg: 'linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%)', label: 'Office' }, // Sky Blue
+      'librarian': { bg: 'linear-gradient(135deg, #7e22ce 0%, #a855f7 100%)', label: 'Library' }, // Violet
+      'driver': { bg: 'linear-gradient(135deg, #c2410c 0%, #f97316 100%)', label: 'Transport' }, // Orange
+      'conductor': { bg: 'linear-gradient(135deg, #c2410c 0%, #fb923c 100%)', label: 'Transport' }, // Light Orange
+      'peon': { bg: 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)', label: 'Support' }, // Slate
+      'helper': { bg: 'linear-gradient(135deg, #525252 0%, #a3a3a3 100%)', label: 'Helper' }, // Gray
+      'sweeper': { bg: 'linear-gradient(135deg, #44403c 0%, #78716c 100%)', label: 'Housekeeping' }, // Stone
+      'guard': { bg: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)', label: 'Security' }, // Dark Blue
+      'cook': { bg: 'linear-gradient(135deg, #9a3412 0%, #ea580c 100%)', label: 'Kitchen' }, // Orange-Red
+      'gardener': { bg: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', label: 'Garden' }, // Dark Green
+      'electrician': { bg: 'linear-gradient(135deg, #ca8a04 0%, #facc15 100%)', label: 'Maintenance' }, // Yellow
+      'lab_assistant': { bg: 'linear-gradient(135deg, #0891b2 0%, #22d3ee 100%)', label: 'Lab' }, // Cyan
+      'sports_coach': { bg: 'linear-gradient(135deg, #dc2626 0%, #f87171 100%)', label: 'Sports' }, // Red
+    };
+    return colorMap[role] || { bg: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', label: 'Staff' }; // Default Green
+  };
+
   // Generate employee ID if not present
   const employeeId = employee.employee_id || employee.id?.slice(-8).toUpperCase() || 'EMP-' + Date.now().toString().slice(-6);
 
   // Academic year
   const currentYear = new Date().getFullYear();
   const academicYear = `${currentYear}-${(currentYear + 1).toString().slice(-2)}`;
+  
+  // Get role color
+  const roleStyle = getRoleColor(employee.role || employee.designation?.toLowerCase());
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl p-6 max-w-lg w-full">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold">Employee ID Card Preview</h3>
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            Employee ID Card Preview
+            <span className="text-xs px-2 py-0.5 rounded-full text-white" style={{ background: roleStyle.bg }}>
+              {roleStyle.label}
+            </span>
+          </h3>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="w-5 h-5" />
           </Button>
