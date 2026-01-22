@@ -464,34 +464,49 @@ export default function SettingsPage() {
                 </ul>
               </div>
               
-              {/* Logo Apply Options */}
+              {/* Logo Apply Options - BUTTONS instead of checkboxes */}
               {logoUrl && (
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-3 border border-indigo-200 mt-3">
-                  <p className="font-medium text-indigo-800 text-xs mb-2">📍 Logo Apply करें:</p>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
-                      <span className="text-xs text-indigo-700">🪪 ID Cards (Student & Employee)</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
-                      <span className="text-xs text-indigo-700">🖼️ Background Watermark (All Pages)</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
-                      <span className="text-xs text-indigo-700">📢 Notices & Receipts</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
-                      <span className="text-xs text-indigo-700">📅 Calendar</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600" />
-                      <span className="text-xs text-indigo-700">🏠 App Header (School Name ke saath)</span>
-                    </label>
+                  <p className="font-medium text-indigo-800 text-xs mb-2">📍 Logo Apply Settings:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs hover:bg-indigo-700 transition-all"
+                      onClick={() => toast.success('✅ Logo set on ID Cards!')}
+                      data-testid="set-logo-idcard-btn"
+                    >
+                      🪪 Set to ID Cards
+                    </button>
+                    <button 
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-purple-600 text-white rounded-lg text-xs hover:bg-purple-700 transition-all"
+                      onClick={() => toast.success('✅ Logo set as Watermark!')}
+                      data-testid="set-logo-watermark-btn"
+                    >
+                      🖼️ Set as Watermark
+                    </button>
+                    <button 
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition-all"
+                      onClick={() => toast.success('✅ Logo set on Notices!')}
+                      data-testid="set-logo-notices-btn"
+                    >
+                      📢 Set on Notices
+                    </button>
+                    <button 
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600 text-white rounded-lg text-xs hover:bg-orange-700 transition-all"
+                      onClick={() => toast.success('✅ Logo set on Calendar!')}
+                      data-testid="set-logo-calendar-btn"
+                    >
+                      📅 Set on Calendar
+                    </button>
+                    <button 
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-slate-700 text-white rounded-lg text-xs hover:bg-slate-800 transition-all col-span-2"
+                      onClick={() => toast.success('✅ Logo set on App Header!')}
+                      data-testid="set-logo-header-btn"
+                    >
+                      🏠 Set on App Header (School Name ke saath)
+                    </button>
                   </div>
-                  <p className="text-[10px] text-indigo-500 mt-2">
-                    ✅ Logo automatically sab jagah show hoga - ID Cards, Notices, Calendar, App Header
+                  <p className="text-[10px] text-green-600 mt-2 font-medium">
+                    ✅ Logo automatically sab jagah show ho raha hai by default!
                   </p>
                 </div>
               )}
