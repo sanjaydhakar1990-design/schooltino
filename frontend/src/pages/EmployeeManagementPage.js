@@ -821,6 +821,18 @@ export default function EmployeeManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Employee ID Card Modal */}
+      {showIDCard && selectedEmployeeForID && (
+        <EmployeeIDCard 
+          employee={selectedEmployeeForID}
+          school={school}
+          onClose={() => {
+            setShowIDCard(false);
+            setSelectedEmployeeForID(null);
+          }}
+        />
+      )}
     </div>
   );
 }
