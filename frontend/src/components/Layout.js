@@ -70,7 +70,7 @@ export const Layout = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
         {/* Top Header Bar - SCHOOL BRANDING */}
-        <header className="sticky top-0 h-14 bg-gradient-to-r from-slate-900 to-indigo-900 z-30 flex items-center justify-between px-4" data-testid="app-header">
+        <header className="sticky top-0 h-16 bg-gradient-to-r from-slate-900 to-indigo-900 z-30 flex items-center justify-between px-4" data-testid="app-header">
           {/* Mobile Menu Button */}
           <button
             onClick={() => setSidebarOpen(true)}
@@ -81,29 +81,29 @@ export const Layout = () => {
           </button>
           
           {/* School Logo + Name for mobile (Custom Branding - DEFAULT) */}
-          <div className="lg:hidden flex items-center gap-2" data-testid="mobile-header-branding">
+          <div className="lg:hidden flex items-center gap-2 flex-1 ml-2" data-testid="mobile-header-branding">
             {schoolLogo ? (
-              <div className="w-8 h-8 bg-white rounded-full p-0.5 flex-shrink-0">
+              <div className="w-10 h-10 bg-white rounded-full p-0.5 flex-shrink-0 shadow-lg">
                 <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
               </div>
             ) : (
-              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
                 {(schoolName || 'S').charAt(0)}
               </div>
             )}
-            <span className="text-white font-semibold text-sm truncate max-w-[120px]" data-testid="mobile-school-name">
+            <span className="text-white font-bold text-base truncate max-w-[150px]" data-testid="mobile-school-name">
               {schoolName || 'School'}
             </span>
           </div>
           
           {/* School Logo + Name for Desktop (Custom Branding - DEFAULT) */}
-          <div className="hidden lg:flex items-center gap-3" data-testid="desktop-header-branding">
+          <div className="hidden lg:flex items-center gap-4" data-testid="desktop-header-branding">
             {schoolLogo ? (
-              <div className="w-9 h-9 bg-white rounded-full p-0.5 flex-shrink-0 shadow-md">
+              <div className="w-12 h-12 bg-white rounded-full p-0.5 flex-shrink-0 shadow-lg border-2 border-white/20">
                 <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
               </div>
             ) : (
-              <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+              <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
                 {(schoolName || 'S').charAt(0)}
               </div>
             )}
