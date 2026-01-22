@@ -164,7 +164,7 @@ export default function EmployeeIDCard({ employee, school, onClose }) {
           <div className="id-card" style={{
             width: '340px',
             height: '215px',
-            background: 'linear-gradient(135deg, #059669 0%, #10b981 50%, #059669 100%)',
+            background: roleStyle.bg,
             borderRadius: '12px',
             padding: '16px',
             position: 'relative',
@@ -179,7 +179,7 @@ export default function EmployeeIDCard({ employee, school, onClose }) {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                opacity: 0.08,
+                opacity: 0.1,
                 width: '180px',
                 height: '180px',
                 zIndex: 0
