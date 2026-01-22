@@ -385,6 +385,134 @@ export default function StudentsPage() {
     toast.success('Copied!');
   };
 
+  // Bulk Print All Student ID Cards
+  const handleBulkPrintIDCards = async () => {
+    if (students.length === 0) {
+      toast.error('No students to print');
+      return;
+    }
+    
+    setBulkPrinting(true);
+    toast.info(`Generating ${students.length} ID cards...`);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const printWindow = window.open('', '_blank');
+      
+      let cardsHtml = '';
+      
+      for (const student of students.filter(s => s.status === 'active')) {
+        try {
+          const res = await axios.get(`${API}/api/id-card/generate/student/${student.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (res.data?.id_card) {
+            const card = res.data.id_card;
+            const schoolData = res.data.school;
+            
+            cardsHtml += `
+              <div class="id-card">
+                ${schoolData?.logo_url ? `<div class="watermark"><img src="${schoolData.logo_url}" alt=""/></div>` : ''}
+                <div class="content">
+                  <div class="header">
+                    ${schoolData?.logo_url ? `<div class="header-logo"><img src="${schoolData.logo_url}" alt=""/></div>` : ''}
+                    <div class="header-text">
+                      <div class="school-name">${schoolData?.name || 'School'}</div>
+                      <div class="card-type">STUDENT ID CARD</div>
+                    </div>
+                  </div>
+                  <div class="body">
+                    <div class="photo"><span>Photo</span></div>
+                    <div class="details">
+                      <div class="name">${card.name}</div>
+                      <div class="detail-row"><span class="label">Class:</span><span class="value">${card.class || ''}</span></div>
+                      <div class="detail-row"><span class="label">Father:</span><span class="value">${card.father_name || ''}</span></div>
+                      ${card.blood_group ? `<div class="detail-row"><span class="label">Blood:</span><span class="value">${card.blood_group}</span></div>` : ''}
+                      ${(card.parent_phone || card.phone) ? `<div class="contact">📞 Parent: ${card.parent_phone || card.phone}</div>` : ''}
+                    </div>
+                  </div>
+                  <div class="footer">Valid: ${card.valid_until || new Date().getFullYear() + 1}</div>
+                </div>
+              </div>
+            `;
+          }
+        } catch (e) {
+          console.error(`Error generating card for ${student.name}:`, e);
+        }
+      }
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Bulk Student ID Cards</title>
+            <style>
+              @page { size: A4; margin: 10mm; }
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { 
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10mm;
+                padding: 10mm;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              .id-card {
+                width: 85.6mm;
+                height: 54mm;
+                background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%);
+                border-radius: 4mm;
+                overflow: hidden;
+                position: relative;
+                color: white;
+                padding: 3mm;
+                page-break-inside: avoid;
+              }
+              .watermark {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                opacity: 0.15;
+                width: 25mm;
+                height: 25mm;
+              }
+              .watermark img { width: 100%; height: 100%; object-fit: contain; }
+              .content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+              .header { display: flex; align-items: center; gap: 2mm; padding-bottom: 2mm; border-bottom: 0.3mm solid rgba(255,255,255,0.3); margin-bottom: 2mm; }
+              .header-logo { width: 7mm; height: 7mm; background: white; border-radius: 50%; padding: 0.5mm; }
+              .header-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+              .header-text { flex: 1; text-align: center; }
+              .school-name { font-size: 8pt; font-weight: bold; text-transform: uppercase; }
+              .card-type { font-size: 5pt; background: rgba(255,255,255,0.25); padding: 0.5mm 2mm; border-radius: 2mm; display: inline-block; margin-top: 1mm; }
+              .body { display: flex; gap: 2mm; flex: 1; }
+              .photo { width: 16mm; height: 20mm; background: white; border-radius: 2mm; display: flex; align-items: center; justify-content: center; color: #999; font-size: 6pt; }
+              .details { flex: 1; font-size: 6pt; }
+              .name { font-size: 9pt; font-weight: bold; color: #fef08a; margin-bottom: 1mm; }
+              .detail-row { margin-bottom: 0.5mm; }
+              .label { opacity: 0.8; width: 12mm; display: inline-block; }
+              .value { font-weight: 600; }
+              .contact { background: rgba(255,255,255,0.2); padding: 1mm; border-radius: 1mm; margin-top: 1mm; font-size: 5.5pt; }
+              .footer { font-size: 4pt; opacity: 0.8; text-align: right; margin-top: auto; }
+            </style>
+          </head>
+          <body>
+            ${cardsHtml}
+            <script>window.onload = function() { setTimeout(function() { window.print(); }, 1000); }</script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      toast.success(`${students.filter(s => s.status === 'active').length} ID cards ready to print!`);
+    } catch (error) {
+      toast.error('Error generating bulk ID cards');
+    } finally {
+      setBulkPrinting(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch(status) {
       case 'active': return 'badge-success';
