@@ -1,147 +1,98 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 21, 2026 (Session 6 - COMPLETE)
+## Last Updated: January 22, 2026 (Session 7 - ID Card & Branding Fixes)
 
 ---
 
-## ✅ ALL TASKS COMPLETED THIS SESSION
+## ✅ SESSION 7 COMPLETED TASKS
 
-### 1. PWA Install Button - REBUILT ✅📱
-- NEW PWAInstaller component with device auto-detection
-- One-click install for Chrome/Edge/Samsung
-- Step-by-step instructions for iOS Safari
-- "Try Direct Install" button
-- Already installed = "Installed ✓" status
+### 1. ID Card Generation Fixed ✅🪪
+- **Student ID Card:**
+  - Parent phone number now displays correctly (from parent_phone/father_phone/mother_phone)
+  - Class name shows readable format (e.g., "Class 5") instead of UUID
+  - School logo in header and as watermark
+  - Print layout improved
+  
+- **Employee ID Card:**
+  - Role-based colors implemented:
+    - Director: Purple (#7c3aed)
+    - Principal: Red (#dc2626)
+    - Teacher: Blue (#1e40af)
+    - Accountant: Green (#059669)
+    - Clerk: Cyan (#0891b2)
+    - Driver: Yellow (#ca8a04)
+    - Guard: Gray (#374151)
+  - Hindi designation translations added (e.g., "Teacher / शिक्षक")
+  - Emergency contact field added
+  - School logo in header and as watermark
 
-### 2. Drawing Syllabus FIXED ✅🎨
-- Pre-primary classes (Nursery/LKG/UKG) Drawing chapters NOW WORKING
-- 30 Drawing chapters added:
-  - Nursery: Lines, Shapes, Fruits, Vegetables, Coloring, Family
-  - LKG: Animals, Birds, Nature, Flowers, Vehicles
-  - UKG: Scenery, Festivals, National Flag, Human Figure
-- Direct PRE_PRIMARY_CHAPTERS lookup for pre-primary classes
+### 2. Global Header Branding Fixed ✅🏫
+- Header now shows school logo and name (not "Schooltino")
+- Uses `schoolData` from AuthContext for consistent branding
+- Works on both mobile and desktop views
 
-### 3. Jarvis Mode (Continuous Listening) ✅🤖
-- "Jarvis" button in Tino AI header
-- Click → AI starts continuous listening
-- Address AI with "Tino" or "टीनो"
-- Meeting assistant capabilities
-- Polite "Sir..." style responses
+### 3. Background Watermark Added ✅🖼️
+- School logo appears as watermark on all pages
+- Low opacity (4%) for subtle branding
+- Uses `schoolData.logo_url` from context
 
-### 4. AI Learning Mode ✅🧠
-- School-specific context added to AI responses
-- AI knows school name, board, timing, address
-- Real-time stats: student count, staff count, class count
-- Uses LIVE DATA when answering questions
-
-### 5. Staff/Employee/User MERGED ✅👥
-- Sidebar: "Team Management" (single section)
-- All redirects: /app/staff, /app/users → /app/employee-management
-
-### 6. Demo Data Isolation ✅🔒
-- Dashboard recent_activities now filtered by school_id
-- Each school sees only their own data
-
-### 7. Calendar Unification ✅📅
-- SchoolSettings calendar tab now links to full SchoolCalendarPage
-- All calendar features in one place
-
-### 8. CCTV QR Scanning ✅📷
-- API: POST /api/cctv/scan-qr
-- AI reads QR from CCTV camera
-- Verifies student, checks fee status
-- Announces: "Welcome [Student] from [Class]. Your seat is ready."
-- Entry logs: /api/cctv/exam-entry-monitor/{school_id}/{exam_id}
-
-### 9. Admit Card with QR ✅🎫
-- QR code on every admit card
-- Fee criteria (85%+ paid = can download)
-- Admin override for unpaid students
-- AdmitCardPreview component with print support
-
-### 10. Admin Full Control ✅🔐
-- DELETE /api/employees/{id} - Deactivate
-- DELETE /api/employees/{id}/permanent - Permanent delete
-- DELETE /api/students/{id}/permanent - Permanent delete
-
-### 11. AI Paper Auto Images ✅🖼️
-- Diagrams auto-generate after paper creation
-- Progress bar: "चित्र बन रहे हैं..."
-
-### 12. AI Background Remover ✅✨
-- Signature: Upload photo → AI removes background
-- Seal: Upload existing → AI cleans it
+### 4. Logo Settings UI Changed ✅📍
+- Changed from CHECKBOXES to BUTTONS as user requested
+- 5 buttons: Set to ID Cards, Set as Watermark, Set on Notices, Set on Calendar, Set on App Header
+- Green confirmation message shows logo is applied by default
 
 ---
 
-## 📱 VERIFIED FEATURES (Screenshots Taken)
+## 🧪 Testing Status (Session 7)
+- **Backend Tests:** 12/12 PASSED
+- **Frontend Tests:** 6/6 PASSED
+- **No mocked APIs**
 
-| Feature | Status | Verified |
-|---------|--------|----------|
-| PWA Install Button | ✅ Working | Yes |
-| Drawing Syllabus (Nursery) | ✅ Working | Yes - 10 chapters showing |
-| Jarvis Mode Button | ✅ Working | Yes |
-| Team Management Merged | ✅ Working | Yes |
-| Admit Cards in Sidebar | ✅ Working | Yes |
-| Install Modal | ✅ Working | Yes |
-| Tino AI Modal | ✅ Working | Yes |
+### Test Credentials:
+- Email: director@test.com
+- Password: test1234
 
 ---
 
-## 🔑 Test Credentials
+## Previous Sessions Summary
 
-| Role | Email | Password |
-|------|-------|----------|
-| Director | director@test.com | test123 |
-| Teacher | teacher@test.com | teacher123 |
-| School ID | SCH-16CCFA4C | - |
+### Session 6 (Jan 21, 2026)
+- PWA Install Button rebuilt
+- Drawing Syllabus fixed for pre-primary classes
+- Jarvis Mode (continuous listening)
+- AI Learning Mode with school context
+- Staff/Employee/User pages merged
+- Demo Data Isolation
+- Calendar Unification
+- CCTV QR Scanning
 
----
-
-## 📁 Files Created/Updated
-
-| File | Description |
-|------|-------------|
-| `/app/frontend/src/components/PWAInstaller.js` | NEW - Complete PWA install system |
-| `/app/frontend/src/components/VoiceAssistantFAB.js` | Jarvis Mode added |
-| `/app/frontend/src/components/AdmitCardPreview.js` | NEW - QR code admit card |
-| `/app/frontend/src/pages/AIPaperPage.js` | Pre-primary Drawing fix |
-| `/app/frontend/src/data/boardSyllabus.js` | 30 Drawing chapters |
-| `/app/backend/routes/voice_assistant.py` | AI Learning Mode, Jarvis support |
-| `/app/backend/routes/admit_card.py` | QR verification APIs |
-| `/app/backend/server.py` | CCTV QR Scan, Delete APIs |
+### Session 5 and Earlier
+- Core ERP functionality
+- Student management
+- Fee management
+- Voice assistant (Tino AI)
+- Notice board
+- Attendance system
+- Timetable management
 
 ---
 
-## 🔮 Future Enhancements (User's Vision)
+## Tech Stack
+- **Frontend:** React, Tailwind CSS, Shadcn UI
+- **Backend:** FastAPI, Python
+- **Database:** MongoDB
+- **Auth:** JWT
 
-### Jarvis Level AI (In Progress):
-- ✅ Continuous Listening - DONE
-- ✅ Meeting Assistant - DONE
-- ✅ School Context Learning - DONE
-- 🔜 Multi-user Voice Recognition
-- 🔜 Proactive Suggestions & Reminders
-- 🔜 Auto Task Execution
-
-### Other Future:
-- Parent Notifications
-- GPS Transport Tracking
-- Biometric Integration
+## Key Files Reference
+- `/app/frontend/src/components/IDCardViewer.js` - ID card rendering
+- `/app/frontend/src/components/Layout.js` - Header and watermark
+- `/app/frontend/src/pages/SettingsPage.js` - Logo settings
+- `/app/backend/routes/id_card.py` - ID card API
 
 ---
 
-## 💡 Session Summary
-
-This session completed ALL pending tasks:
-1. ✅ PWA Install - Rebuilt from scratch
-2. ✅ Drawing Syllabus - Fixed pre-primary lookup
-3. ✅ Jarvis Mode - Continuous listening
-4. ✅ AI Learning - School context
-5. ✅ Team Merge - Staff/Employee/User unified
-6. ✅ Demo Data - Isolated by school
-7. ✅ Calendar Unified - Link to full page
-8. ✅ CCTV QR Scan - Camera reads admit cards
-9. ✅ Admit Card QR - Print-ready with verification
-10. ✅ Admin Control - Full delete permissions
-
-**NO PENDING TASKS - ALL COMPLETE!** 🎉
+## 🔜 Upcoming/Backlog Tasks
+1. NotebookLM integration for syllabus (user mentioned for coachtino.onetino.com)
+2. Additional role-based features
+3. Print optimization for ID cards
+4. AI Background removal reliability improvement
