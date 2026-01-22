@@ -1654,6 +1654,11 @@ class SchooltinoAPITester:
         tests = [
             ("Health Check", self.test_health_check),
             
+            # ============== ID CARD SYSTEM TESTS - REVIEW REQUEST PRIORITY ==============
+            ("🎯 PRIORITY: Get Students for ID Card", self.test_get_students_for_id_card),
+            ("🎯 PRIORITY: ID Card Generate POST", self.test_id_card_generate_post),
+            ("🎯 PRIORITY: ID Card Generate GET", self.test_id_card_generate_get),
+            
             # ============== NEW FEATURES TESTS - REVIEW REQUEST PRIORITY ==============
             ("🎯 NEW: Gallery Event Types", self.test_gallery_event_types),
             ("🎯 NEW: Gallery Create Event", self.test_gallery_create_event),
