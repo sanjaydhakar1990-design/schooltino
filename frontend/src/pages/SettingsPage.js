@@ -150,13 +150,19 @@ export default function SettingsPage() {
   const saveSchoolLogo = async (logoData) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/schools/${schoolId}/update`, {
+      const response = await axios.post(`${API}/schools/${schoolId}/update-logo`, {
         logo_url: logoData
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (response.data?.success) {
+        toast.success('✅ Logo saved successfully!');
+        return true;
+      }
     } catch (error) {
       console.error('Failed to save logo:', error);
+      toast.error('Logo save failed');
+      return false;
     }
   };
 
