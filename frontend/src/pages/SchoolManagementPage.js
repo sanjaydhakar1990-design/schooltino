@@ -487,57 +487,19 @@ export default function SchoolManagementPage() {
         {/* Profile Tab */}
         {activeTab === 'profile' && (
           <div className="space-y-6">
-            {/* Logo Upload */}
+            {/* School Logo Preview - Upload in Settings */}
             <div className="flex items-start gap-6">
               <div className="shrink-0">
                 <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center overflow-hidden bg-gray-50 relative">
                   {school.logo_url ? (
-                    <>
-                      <img src={school.logo_url} alt="School Logo" className="w-full h-full object-contain" />
-                      {/* Clear Logo Button */}
-                      <button 
-                        onClick={() => setSchool(s => ({ ...s, logo_url: '' }))}
-                        className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                    </>
+                    <img src={school.logo_url} alt="School Logo" className="w-full h-full object-contain" />
                   ) : (
                     <Camera className="w-10 h-10 text-gray-400" />
                   )}
                 </div>
-                
-                {/* Upload Button */}
-                <label className="mt-2 block">
-                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                  <Button variant="outline" size="sm" className="w-full" disabled={uploadingLogo}>
-                    {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 mr-1" />}
-                    {school.logo_url ? 'Change Logo' : 'Upload Logo'}
-                  </Button>
-                </label>
-                
-                {/* AI Background Remove Button */}
-                {school.logo_url && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full mt-1 text-purple-600 border-purple-200 hover:bg-purple-50"
-                    onClick={handleAIRemoveLogoBg}
-                    disabled={uploadingLogo}
-                  >
-                    {uploadingLogo ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                    ) : (
-                      <Sparkles className="w-4 h-4 mr-1" />
-                    )}
-                    ✨ AI Remove BG
-                  </Button>
-                )}
-                
-                {/* Logo Tips */}
                 <p className="text-[10px] text-gray-400 mt-1 text-center">
-                  PNG/JPG • Max 2MB<br/>
-                  AI auto-remove background
+                  Logo upload करने के लिए<br/>
+                  <a href="/app/settings" className="text-indigo-600 underline">Settings</a> में जाएं
                 </p>
               </div>
               
