@@ -6,19 +6,34 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Role-based gradient colors
-const getRoleGradient = (roleColor) => {
+// Role-based gradient colors with Higher Authority special styling
+const getRoleGradient = (roleColor, isHigherAuthority = false) => {
+  // Higher Authority gets premium gold-accented gradients
+  if (isHigherAuthority) {
+    const higherAuthorityMap = {
+      '#b91c1c': 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 30%, #dc2626 50%, #b91c1c 70%, #7f1d1d 100%)', // Dark Red - Director
+      '#dc2626': 'linear-gradient(135deg, #991b1b 0%, #dc2626 30%, #ef4444 50%, #dc2626 70%, #991b1b 100%)', // Red - Principal
+      '#ea580c': 'linear-gradient(135deg, #c2410c 0%, #ea580c 30%, #f97316 50%, #ea580c 70%, #c2410c 100%)', // Orange - VP
+      '#9333ea': 'linear-gradient(135deg, #7e22ce 0%, #9333ea 30%, #a855f7 50%, #9333ea 70%, #7e22ce 100%)', // Violet - Co-Director
+    };
+    return higherAuthorityMap[roleColor] || higherAuthorityMap['#b91c1c'];
+  }
+  
   const colorMap = {
-    '#7c3aed': 'linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)', // Purple - Director
+    '#b91c1c': 'linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #b91c1c 100%)', // Dark Red - Director
     '#dc2626': 'linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #dc2626 100%)', // Red - Principal
     '#ea580c': 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #ea580c 100%)', // Orange - VP
     '#9333ea': 'linear-gradient(135deg, #9333ea 0%, #a855f7 50%, #9333ea 100%)', // Violet - Co-Director
+    '#047857': 'linear-gradient(135deg, #047857 0%, #059669 50%, #047857 100%)', // Dark Green - Admin
     '#1e40af': 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)', // Blue - Teacher
     '#059669': 'linear-gradient(135deg, #059669 0%, #10b981 50%, #059669 100%)', // Green - Accountant
     '#0891b2': 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #0891b2 100%)', // Cyan - Clerk
+    '#4f46e5': 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4f46e5 100%)', // Indigo - Librarian
     '#64748b': 'linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #64748b 100%)', // Slate - Support
     '#ca8a04': 'linear-gradient(135deg, #ca8a04 0%, #eab308 50%, #ca8a04 100%)', // Yellow - Driver
     '#374151': 'linear-gradient(135deg, #374151 0%, #6b7280 50%, #374151 100%)', // Gray - Guard
+    '#78716c': 'linear-gradient(135deg, #78716c 0%, #a8a29e 50%, #78716c 100%)', // Stone - Helper
+    '#a16207': 'linear-gradient(135deg, #a16207 0%, #ca8a04 50%, #a16207 100%)', // Amber - Cook
   };
   return colorMap[roleColor] || 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)';
 };
@@ -67,21 +82,27 @@ export default function IDCardViewer({
     const school = cardData?.school;
     const photo = cardData?.photo;
     const roleColor = card?.role_color || '#1e40af';
+    const isHigherAuthority = card?.is_higher_authority || false;
 
-    // Get CSS gradient based on role color
+    // Get gradient based on role
     const gradientMap = {
-      '#7c3aed': 'linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)',
-      '#dc2626': 'linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #dc2626 100%)',
+      '#b91c1c': isHigherAuthority ? 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 30%, #dc2626 50%, #b91c1c 70%, #7f1d1d 100%)' : 'linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #b91c1c 100%)',
+      '#dc2626': isHigherAuthority ? 'linear-gradient(135deg, #991b1b 0%, #dc2626 30%, #ef4444 50%, #dc2626 70%, #991b1b 100%)' : 'linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #dc2626 100%)',
       '#ea580c': 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #ea580c 100%)',
       '#9333ea': 'linear-gradient(135deg, #9333ea 0%, #a855f7 50%, #9333ea 100%)',
+      '#047857': 'linear-gradient(135deg, #047857 0%, #059669 50%, #047857 100%)',
       '#1e40af': 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)',
       '#059669': 'linear-gradient(135deg, #059669 0%, #10b981 50%, #059669 100%)',
       '#0891b2': 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #0891b2 100%)',
+      '#4f46e5': 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4f46e5 100%)',
       '#64748b': 'linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #64748b 100%)',
       '#ca8a04': 'linear-gradient(135deg, #ca8a04 0%, #eab308 50%, #ca8a04 100%)',
       '#374151': 'linear-gradient(135deg, #374151 0%, #6b7280 50%, #374151 100%)',
     };
     const gradient = gradientMap[roleColor] || gradientMap['#1e40af'];
+    
+    // Higher authority gets gold border
+    const borderStyle = isHigherAuthority ? '2px solid #fbbf24' : 'none';
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -110,6 +131,7 @@ export default function IDCardViewer({
               position: relative;
               color: white;
               padding: 3mm;
+              border: ${borderStyle};
             }
             .watermark {
               position: absolute;
@@ -145,12 +167,13 @@ export default function IDCardViewer({
             .school-address { font-size: 6pt; opacity: 0.9; margin-top: 0.5mm; }
             .card-type { 
               font-size: 6pt; 
-              background: rgba(255,255,255,0.25); 
+              background: ${isHigherAuthority ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.25)'}; 
               padding: 0.5mm 2mm; 
               border-radius: 2mm;
               display: inline-block;
               margin-top: 1mm;
               font-weight: bold;
+              ${isHigherAuthority ? 'border: 0.3mm solid rgba(251,191,36,0.5);' : ''}
             }
             .body { display: flex; gap: 3mm; flex: 1; }
             .photo-section { width: 18mm; flex-shrink: 0; }
@@ -171,15 +194,15 @@ export default function IDCardViewer({
             .detail-row { margin-bottom: 1mm; display: flex; }
             .detail-label { width: 14mm; opacity: 0.8; }
             .detail-value { flex: 1; font-weight: 600; }
-            .emergency {
+            .contact-box {
               background: rgba(255,255,255,0.2);
               padding: 1mm 1.5mm;
               border-radius: 1.5mm;
               margin-top: 1.5mm;
               font-size: 6.5pt;
             }
-            .emergency-label { color: #fca5a5; font-weight: bold; }
-            .emergency-value { font-weight: bold; }
+            .contact-label { color: #fca5a5; font-weight: bold; }
+            .contact-value { font-weight: bold; }
             .footer {
               display: flex;
               justify-content: space-between;
@@ -222,9 +245,9 @@ export default function IDCardViewer({
                     </div>
                     ${card?.roll_no ? `<div class="detail-row"><span class="detail-label">Roll No:</span><span class="detail-value">${card.roll_no}</span></div>` : ''}
                     ${card?.father_name ? `<div class="detail-row"><span class="detail-label">Father:</span><span class="detail-value">${card.father_name}</span></div>` : ''}
-                    ${card?.dob ? `<div class="detail-row"><span class="detail-label">DOB:</span><span class="detail-value">${new Date(card.dob).toLocaleDateString('en-IN')}</span></div>` : ''}
+                    ${card?.show_samgra_id && card?.samgra_id ? `<div class="detail-row"><span class="detail-label">Samgra ID:</span><span class="detail-value">${card.samgra_id}</span></div>` : ''}
                     ${card?.blood_group ? `<div class="detail-row"><span class="detail-label">Blood:</span><span class="detail-value">${card.blood_group}</span></div>` : ''}
-                    ${card?.phone ? `<div class="emergency"><span class="emergency-label">📞 Parent: </span><span class="emergency-value">${card.phone}</span></div>` : ''}
+                    ${card?.parent_phone || card?.phone ? `<div class="contact-box"><span class="contact-label">📞 Parent: </span><span class="contact-value">${card.parent_phone || card.phone}</span></div>` : ''}
                   ` : `
                     <div class="detail-row">
                       <span class="detail-label">Designation:</span>
@@ -233,8 +256,8 @@ export default function IDCardViewer({
                     ${card?.department ? `<div class="detail-row"><span class="detail-label">Dept:</span><span class="detail-value">${card.department}</span></div>` : ''}
                     ${card?.id_number ? `<div class="detail-row"><span class="detail-label">Emp ID:</span><span class="detail-value">${card.id_number}</span></div>` : ''}
                     ${card?.blood_group ? `<div class="detail-row"><span class="detail-label">Blood:</span><span class="detail-value">${card.blood_group}</span></div>` : ''}
-                    ${card?.phone ? `<div class="emergency"><span class="emergency-label">📞 Self: </span><span class="emergency-value">${card.phone}</span></div>` : ''}
-                    ${card?.emergency_contact ? `<div class="emergency" style="margin-top:1mm"><span class="emergency-label">🆘 Emergency: </span><span class="emergency-value">${card.emergency_contact}</span></div>` : ''}
+                    ${card?.phone ? `<div class="contact-box"><span class="contact-label">📞 Self: </span><span class="contact-value">${card.phone}</span></div>` : ''}
+                    ${card?.emergency_contact ? `<div class="contact-box" style="margin-top:1mm"><span class="contact-label">🆘 Emergency: </span><span class="contact-value">${card.emergency_contact}</span></div>` : ''}
                   `}
                 </div>
               </div>
@@ -259,7 +282,8 @@ export default function IDCardViewer({
   const school = cardData?.school;
   const photo = cardData?.photo;
   const roleColor = card?.role_color || '#1e40af';
-  const cardGradient = getRoleGradient(roleColor);
+  const isHigherAuthority = card?.is_higher_authority || false;
+  const cardGradient = getRoleGradient(roleColor, isHigherAuthority);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -267,7 +291,14 @@ export default function IDCardViewer({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{personType === 'student' ? 'Student' : 'Employee'} ID Card Preview</span>
-            <span className="text-xs px-2 py-1 rounded-full" style={{background: roleColor, color: 'white'}}>
+            <span 
+              className="text-xs px-2 py-1 rounded-full" 
+              style={{
+                background: roleColor, 
+                color: 'white',
+                border: isHigherAuthority ? '2px solid #fbbf24' : 'none'
+              }}
+            >
               {card?.card_type?.replace(' ID CARD', '') || personType}
             </span>
           </DialogTitle>
@@ -287,7 +318,8 @@ export default function IDCardViewer({
                 height: '215px',
                 background: cardGradient,
                 padding: '12px',
-                color: 'white'
+                color: 'white',
+                border: isHigherAuthority ? '3px solid #fbbf24' : 'none'
               }}
               data-testid="id-card-preview"
             >
@@ -316,7 +348,14 @@ export default function IDCardViewer({
                       {school?.name || 'School Name'}
                     </div>
                     {school?.address && <div className="text-[9px] opacity-80">{school.address}</div>}
-                    <div className="text-[8px] bg-white/25 inline-block px-2 py-0.5 rounded-full mt-1 font-bold" data-testid="id-card-type">
+                    <div 
+                      className="text-[8px] inline-block px-2 py-0.5 rounded-full mt-1 font-bold" 
+                      style={{
+                        background: isHigherAuthority ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.25)',
+                        border: isHigherAuthority ? '1px solid rgba(251,191,36,0.5)' : 'none'
+                      }}
+                      data-testid="id-card-type"
+                    >
                       {card?.card_type || 'ID CARD'}
                     </div>
                   </div>
@@ -357,10 +396,11 @@ export default function IDCardViewer({
                             <span className="font-semibold">{card.father_name}</span>
                           </div>
                         )}
-                        {card?.dob && (
-                          <div className="mb-0.5">
-                            <span className="opacity-70 w-16 inline-block">DOB:</span> 
-                            <span className="font-semibold">{new Date(card.dob).toLocaleDateString('en-IN')}</span>
+                        {/* Samgra ID for MP Board schools */}
+                        {card?.show_samgra_id && card?.samgra_id && (
+                          <div className="mb-0.5" data-testid="id-card-samgra-id">
+                            <span className="opacity-70 w-16 inline-block">Samgra ID:</span> 
+                            <span className="font-semibold">{card.samgra_id}</span>
                           </div>
                         )}
                         {card?.blood_group && (
@@ -370,11 +410,11 @@ export default function IDCardViewer({
                           </div>
                         )}
                         
-                        {/* Parent Phone - Emergency Contact */}
-                        {card?.phone && (
+                        {/* Parent Phone - PROMINENTLY DISPLAYED */}
+                        {(card?.parent_phone || card?.phone) && (
                           <div className="mt-1.5 bg-white/20 rounded px-1.5 py-1 text-[8px]" data-testid="id-card-parent-phone">
                             <span className="text-red-200 font-bold">📞 Parent: </span>
-                            <span className="font-bold">{card.phone}</span>
+                            <span className="font-bold">{card.parent_phone || card.phone}</span>
                           </div>
                         )}
                       </>
