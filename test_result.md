@@ -805,10 +805,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "NEW Features Testing Complete"
+    - "Student ID Card API Testing Complete"
   stuck_tasks: []
   test_all: true
-  test_priority: "new_features_complete"
+  test_priority: "id_card_testing_complete"
 
 agent_communication:
   - agent: "main"
