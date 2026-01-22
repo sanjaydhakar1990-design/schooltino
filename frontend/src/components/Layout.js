@@ -6,12 +6,35 @@ import VoiceAssistantFAB from './VoiceAssistantFAB';
 import PWAInstaller from './PWAInstaller';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const { language, changeLanguage } = useLanguage();
-  const { user } = useAuth();
+  const { user, schoolId } = useAuth();
+  const [schoolLogo, setSchoolLogo] = useState(null);
+
+  // Fetch school logo
+  useEffect(() => {
+    const fetchSchoolLogo = async () => {
+      if (!schoolId) return;
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API}/api/schools/${schoolId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data?.logo_url) {
+          setSchoolLogo(response.data.logo_url);
+        }
+      } catch (error) {
+        console.log('Could not fetch school logo');
+      }
+    };
+    fetchSchoolLogo();
+  }, [schoolId]);
 
   const languages = [
     { code: 'en', label: 'English', flag: '🇬🇧', shortLabel: 'EN' },
@@ -30,15 +53,15 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-background flex relative">
       {/* School Logo Watermark - Light Background */}
-      {user?.school_logo && (
+      {schoolLogo && (
         <div 
           className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center print:hidden"
-          style={{ opacity: 0.03 }}
+          style={{ opacity: 0.04 }}
         >
           <img 
-            src={user.school_logo} 
+            src={schoolLogo} 
             alt="" 
-            className="w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] object-contain"
+            className="w-[50vw] h-[50vw] max-w-[500px] max-h-[500px] object-contain"
           />
         </div>
       )}
