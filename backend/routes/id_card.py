@@ -33,7 +33,7 @@ router = APIRouter(prefix="/id-card", tags=["ID Card"])
 class IDCardData(BaseModel):
     person_id: str
     person_type: str  # student, teacher, staff, director
-    school_id: str
+    school_id: Optional[str] = None
     include_photo: bool = True
 
 
