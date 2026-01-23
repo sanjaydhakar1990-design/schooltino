@@ -325,6 +325,7 @@ function AppRoutes() {
         <Route path="timetable-management" element={<TimetableManagement />} />
         <Route path="certificates" element={<CertificateGenerator />} />
         <Route path="exam-report" element={<ExamReportCard />} />
+        <Route path="tino-ai" element={<TinoAICenter />} />
         <Route path="staff-directory" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="meetings" element={<ZoomMeetings />} />
