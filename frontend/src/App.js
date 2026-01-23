@@ -349,6 +349,7 @@ function AppRoutes() {
         <Route path="parent-pay" element={<ParentPaymentPortal />} />
         <Route path="school-management" element={<SchoolManagementPage />} />
         <Route path="employee-management" element={<EmployeeManagementPage />} />
+        <Route path="logo-settings" element={<LogoWatermarkSettings />} />
       </Route>
       
       {/* Old routes redirect to /app */}
