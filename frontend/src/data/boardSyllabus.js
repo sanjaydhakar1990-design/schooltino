@@ -366,6 +366,16 @@ export const PRIMARY_CHAPTERS = {
     { id: 'ch9', name: 'Water' },
     { id: 'ch10', name: 'Air' },
   ],
+  '2_Drawing': [
+    { id: 'ch1', name: 'Composition - My Home (मेरा घर)', hasDrawing: true },
+    { id: 'ch2', name: 'Animals Drawing (जानवर)', hasDrawing: true },
+    { id: 'ch3', name: 'Birds Drawing (पक्षी)', hasDrawing: true },
+    { id: 'ch4', name: 'Scenery - Village (गांव का दृश्य)', hasDrawing: true },
+    { id: 'ch5', name: 'Scenery - Garden (बगीचा)', hasDrawing: true },
+    { id: 'ch6', name: 'Objects - Pot, Lamp (बर्तन, दीया)', hasDrawing: true },
+    { id: 'ch7', name: 'Patterns and Borders (डिजाइन)', hasDrawing: true },
+    { id: 'ch8', name: 'Origami (कागज कला)', hasDrawing: true },
+  ],
   // Class 3
   '3_Hindi': [
     { id: 'ch1', name: 'कक्कू' },
