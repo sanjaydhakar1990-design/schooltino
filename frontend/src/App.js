@@ -75,6 +75,7 @@ import ParentPaymentPortal from './pages/ParentPaymentPortal';
 import SchoolManagementPage from './pages/SchoolManagementPage';
 import EmployeeManagementPage from './pages/EmployeeManagementPage';
 import LogoWatermarkSettings from './pages/LogoWatermarkSettings';
+import FeeManagementPage from './pages/FeeManagementPage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
