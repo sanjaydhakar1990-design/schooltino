@@ -65,6 +65,21 @@ export default function StudentsPage() {
   const [copiedField, setCopiedField] = useState(null);
   const [bulkPrinting, setBulkPrinting] = useState(false);
   
+  // Promotion states
+  const [showPromotionDialog, setShowPromotionDialog] = useState(false);
+  const [promotingStudents, setPromotingStudents] = useState(false);
+  const [promotionData, setPromotionData] = useState({
+    fromClassId: '',
+    toClassId: '',
+    selectedStudentIds: [],
+    selectAll: false
+  });
+  
+  // Document upload states
+  const [showDocumentDialog, setShowDocumentDialog] = useState(false);
+  const [documentStudent, setDocumentStudent] = useState(null);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  
   // Photo capture states
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
