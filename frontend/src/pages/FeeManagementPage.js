@@ -92,6 +92,29 @@ export default function FeeManagementPage() {
     description: '',
     send_notification: true
   });
+  
+  // Government Schemes & Scholarships
+  const [scholarships, setScholarships] = useState([]);
+  const [studentScholarships, setStudentScholarships] = useState([]);
+  const [showScholarshipDialog, setShowScholarshipDialog] = useState(false);
+  const [showAssignScholarshipDialog, setShowAssignScholarshipDialog] = useState(false);
+  const [scholarshipForm, setScholarshipForm] = useState({
+    name: '',
+    name_hi: '',
+    type: 'central_govt', // central_govt, state_govt, private
+    amount: 0,
+    percentage: 0, // percentage of total fee
+    eligibility: '',
+    documents_required: '',
+    academic_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+  });
+  const [assignForm, setAssignForm] = useState({
+    student_id: '',
+    scholarship_id: '',
+    amount: 0,
+    status: 'pending', // pending, approved, received, rejected
+    remarks: ''
+  });
 
   useEffect(() => {
     if (schoolId) {
