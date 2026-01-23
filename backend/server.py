@@ -10568,17 +10568,28 @@ async def get_exams(school_id: str, class_id: Optional[str] = None, current_user
     exams = await db.exams.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     return exams
 
-@api_router.post("/exams")
-async def create_exam(data: ExamModel, current_user: dict = Depends(get_current_user)):
-    """Create exam"""
+@api_router.post("/exam-schedule")
+async def create_exam_schedule(data: ExamModel, current_user: dict = Depends(get_current_user)):
+    """Create exam schedule for marks entry"""
     exam_id = str(uuid.uuid4())
     exam = {
         "id": exam_id,
         **data.model_dump(),
+        "exam_type": "schedule",  # Differentiate from online exams
         "created_at": datetime.now(timezone.utc).isoformat()
     }
-    await db.exams.insert_one(exam)
+    await db.exam_schedules.insert_one(exam)
     return {"success": True, "id": exam_id}
+
+@api_router.get("/exam-schedules")
+async def get_exam_schedules(school_id: str, class_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all exam schedules"""
+    query = {"school_id": school_id}
+    if class_id:
+        query["class_id"] = class_id
+    
+    exams = await db.exam_schedules.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return exams
 
 @api_router.get("/marks")
 async def get_marks(school_id: str, class_id: str, exam_id: str, current_user: dict = Depends(get_current_user)):
