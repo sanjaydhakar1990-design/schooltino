@@ -1360,6 +1360,207 @@ export default function FeeManagementPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add Scholarship/Scheme Dialog */}
+      <Dialog open={showScholarshipDialog} onOpenChange={setShowScholarshipDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-emerald-600" />
+              Add Government Scheme / Scholarship
+            </DialogTitle>
+            <DialogDescription>Add a new govt scheme or scholarship</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Scheme Name (English) *</Label>
+                <Input
+                  value={scholarshipForm.name}
+                  onChange={(e) => setScholarshipForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., Pre Matric Scholarship"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Scheme Name (Hindi)</Label>
+                <Input
+                  value={scholarshipForm.name_hi}
+                  onChange={(e) => setScholarshipForm(prev => ({ ...prev, name_hi: e.target.value }))}
+                  placeholder="e.g., प्री-मैट्रिक छात्रवृत्ति"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Scheme Type *</Label>
+                <select
+                  value={scholarshipForm.type}
+                  onChange={(e) => setScholarshipForm(prev => ({ ...prev, type: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="central_govt">केंद्र सरकार (Central Govt)</option>
+                  <option value="state_govt">राज्य सरकार (State Govt)</option>
+                  <option value="private">Private / NGO</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Academic Year</Label>
+                <select
+                  value={scholarshipForm.academic_year}
+                  onChange={(e) => setScholarshipForm(prev => ({ ...prev, academic_year: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  {Array.from({ length: 3 }, (_, i) => {
+                    const year = new Date().getFullYear() + i;
+                    return <option key={year} value={`${year}-${year + 1}`}>{year}-{year + 1}</option>;
+                  })}
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Amount (₹) *</Label>
+                <Input
+                  type="number"
+                  value={scholarshipForm.amount}
+                  onChange={(e) => setScholarshipForm(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Or % of Fee</Label>
+                <Input
+                  type="number"
+                  value={scholarshipForm.percentage}
+                  onChange={(e) => setScholarshipForm(prev => ({ ...prev, percentage: parseInt(e.target.value) || 0 }))}
+                  placeholder="0"
+                  max={100}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Eligibility Criteria</Label>
+              <Input
+                value={scholarshipForm.eligibility}
+                onChange={(e) => setScholarshipForm(prev => ({ ...prev, eligibility: e.target.value }))}
+                placeholder="e.g., BPL Family, Income < 2.5 Lakh, SC/ST/OBC"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Documents Required</Label>
+              <Input
+                value={scholarshipForm.documents_required}
+                onChange={(e) => setScholarshipForm(prev => ({ ...prev, documents_required: e.target.value }))}
+                placeholder="e.g., Aadhar, Income Certificate, Caste Certificate"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setShowScholarshipDialog(false)}>Cancel</Button>
+              <Button onClick={handleSaveScholarship} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                Save Scheme
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Scholarship to Student Dialog */}
+      <Dialog open={showAssignScholarshipDialog} onOpenChange={setShowAssignScholarshipDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-emerald-600" />
+              Assign Scholarship to Student
+            </DialogTitle>
+            <DialogDescription>Apply a scheme to a student</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Select Student *</Label>
+              <select
+                value={assignForm.student_id}
+                onChange={(e) => setAssignForm(prev => ({ ...prev, student_id: e.target.value }))}
+                className="w-full px-3 py-2 border rounded-lg"
+              >
+                <option value="">-- Select Student --</option>
+                {students.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.student_id}) - {s.class_name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Select Scheme *</Label>
+              <select
+                value={assignForm.scholarship_id}
+                onChange={(e) => {
+                  const scheme = scholarships.find(s => s.id === e.target.value);
+                  setAssignForm(prev => ({ 
+                    ...prev, 
+                    scholarship_id: e.target.value,
+                    amount: scheme?.amount || 0
+                  }));
+                }}
+                className="w-full px-3 py-2 border rounded-lg"
+              >
+                <option value="">-- Select Scheme --</option>
+                {scholarships.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} - ₹{(s.amount || 0).toLocaleString()}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Amount (₹)</Label>
+                <Input
+                  type="number"
+                  value={assignForm.amount}
+                  onChange={(e) => setAssignForm(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <select
+                  value={assignForm.status}
+                  onChange={(e) => setAssignForm(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="received">Received</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Remarks</Label>
+              <Input
+                value={assignForm.remarks}
+                onChange={(e) => setAssignForm(prev => ({ ...prev, remarks: e.target.value }))}
+                placeholder="Any notes about this application"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setShowAssignScholarshipDialog(false)}>Cancel</Button>
+              <Button onClick={handleAssignScholarship} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
+                Assign Scholarship
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
