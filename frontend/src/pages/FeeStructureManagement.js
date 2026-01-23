@@ -98,17 +98,42 @@ export default function FeeStructureManagement() {
 
   const fetchStudents = async () => {
     try {
+      const authToken = localStorage.getItem('token');
       const res = await fetch(`${API}/api/students?school_id=${schoolId}`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        headers: { 'Authorization': `Bearer ${authToken}` }
       });
       if (res.ok) {
         const data = await res.json();
-        setStudents(data.students || data || []);
+        const studentList = data.students || data || [];
+        setStudents(studentList);
+        console.log('Fetched students:', studentList.length);
       }
     } catch (error) {
       console.error('Error fetching students:', error);
     }
   };
+
+  const fetchOldDueStudents = async () => {
+    try {
+      const authToken = localStorage.getItem('token');
+      const res = await fetch(`${API}/api/fee-management/old-dues/${schoolId}`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOldDueStudents(data.students || []);
+      }
+    } catch (error) {
+      console.log('Old dues endpoint not available yet');
+    }
+  };
+
+  // Filter students based on search
+  const filteredStudents = students.filter(s => 
+    s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.student_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.admission_no?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const saveFeeStructure = async () => {
     if (!selectedClass || !newFee.fee_type || !newFee.amount) {
