@@ -497,6 +497,80 @@ export default function IDCardViewer({
                 </div>
               </div>
             </div>
+            )}
+
+            {/* ID Card Preview - Back Side */}
+            {showBack && (
+              <div 
+                className="mx-auto rounded-xl overflow-hidden shadow-xl relative"
+                style={{
+                  width: '340px',
+                  height: '215px',
+                  background: personType === 'student' 
+                    ? 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)'
+                    : cardGradient,
+                  padding: '12px',
+                  color: 'white',
+                  border: isHigherAuthority ? '3px solid #fbbf24' : 'none'
+                }}
+                data-testid="id-card-back-preview"
+              >
+                {/* Large Watermark - School Logo */}
+                {school?.logo_url && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    style={{ opacity: 0.2, zIndex: 0 }}
+                  >
+                    <img src={school.logo_url} alt="" className="w-44 h-44 object-contain" />
+                  </div>
+                )}
+
+                {/* Back Content */}
+                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center">
+                  {personType === 'student' ? (
+                    <>
+                      <div className="text-3xl font-bold tracking-wider mb-3 drop-shadow-lg">
+                        STUDENT OF
+                      </div>
+                      <div className="text-lg font-semibold uppercase px-4 leading-tight">
+                        {school?.name || 'School Name'}
+                      </div>
+                      {school?.address && (
+                        <div className="text-[10px] mt-3 opacity-80 max-w-[80%]">
+                          {school.address}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold tracking-wider mb-2 drop-shadow-lg uppercase">
+                        {card?.designation || 'Employee'}
+                      </div>
+                      {card?.designation_hindi && (
+                        <div className="text-sm font-medium mb-3 opacity-90">
+                          {card.designation_hindi}
+                        </div>
+                      )}
+                      <div className="text-base font-semibold uppercase px-4 leading-tight">
+                        {school?.name || 'School Name'}
+                      </div>
+                      {school?.phone && (
+                        <div className="text-[10px] mt-3 opacity-80">
+                          📞 {school.phone}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Bottom Info */}
+                  <div className="absolute bottom-3 left-0 right-0 text-center">
+                    <div className="text-[8px] opacity-70">
+                      If found, please return to school
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Print Button */}
             <div className="flex justify-center gap-3 mt-4">
