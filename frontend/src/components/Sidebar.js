@@ -168,6 +168,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       items: [
         { path: '/app/setup-wizard', icon: Wrench, label: 'Setup Wizard (Step-by-Step)', permKey: 'settings', directorOnly: true },
         { path: '/app/school-management', icon: Building, label: 'School Profile & Branding', permKey: 'settings', directorOnly: true },
+        { path: '/app/logo-settings', icon: Image, label: 'Logo & Watermark Settings', permKey: 'settings', directorOnly: true },
         { path: '/app/board-notifications', icon: Bell, label: 'Board Updates (CBSE/UP/ICSE)', permKey: 'settings', directorOnly: true },
         { path: '/app/prayer-system', icon: Music, label: 'Prayer & Bell System', permKey: 'settings' },
         { path: '/app/website', icon: Globe, label: t('website_integration'), permKey: 'website_integration' },
