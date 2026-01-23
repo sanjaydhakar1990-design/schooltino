@@ -4,7 +4,33 @@
 
 ---
 
-## ✅ LATEST CHANGES (Session 10 - Part 3)
+## ✅ LATEST CHANGES (Session 10 - Part 4)
+
+### Fix: Logo Settings in School Setup ✅
+- **Logo & Watermark Settings** page is now accessible from School Setup section
+- Route: `/app/logo-settings`
+- Features: Logo upload, AI Background Remove, Watermark settings (Size, Visibility, Position)
+
+### Fix: Government Schemes & Scholarships in Fee Management ✅
+- Added new **"Govt Schemes"** tab in Fee Management page
+- Features:
+  - Add new schemes (Central Govt, State Govt, Private/NGO)
+  - Assign schemes to individual students
+  - Track scholarship status (Pending, Approved, Received, Rejected)
+  - Hindi/English scheme names supported
+  - Eligibility criteria and required documents tracking
+
+**New Backend APIs:**
+- `GET /api/scholarships` - List all schemes
+- `POST /api/scholarships` - Create new scheme
+- `GET /api/student-scholarships` - Get assigned scholarships
+- `POST /api/student-scholarships` - Assign scheme to student
+- `PUT /api/student-scholarships/{id}` - Update status
+- `DELETE /api/student-scholarships/{id}` - Remove assignment
+
+---
+
+## ✅ EARLIER CHANGES (Session 10 - Part 3)
 
 ### Tino AI Command Center - COMPLETE 🤖
 
