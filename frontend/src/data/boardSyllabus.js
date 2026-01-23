@@ -510,6 +510,16 @@ export const PRIMARY_CHAPTERS = {
     { id: 'ch13', name: 'A River\'s Tale' },
     { id: 'ch14', name: 'Basva\'s Farm' },
   ],
+  '4_Drawing': [
+    { id: 'ch1', name: 'Landscape - Sunset (सूर्यास्त)', hasDrawing: true },
+    { id: 'ch2', name: 'Landscape - Village (ग्रामीण दृश्य)', hasDrawing: true },
+    { id: 'ch3', name: 'Wildlife Drawing (जंगली जानवर)', hasDrawing: true },
+    { id: 'ch4', name: 'Portrait - Self (आत्म चित्र)', hasDrawing: true },
+    { id: 'ch5', name: 'Still Life - Objects (वस्तु चित्रण)', hasDrawing: true },
+    { id: 'ch6', name: 'National Symbols (राष्ट्रीय प्रतीक)', hasDrawing: true },
+    { id: 'ch7', name: 'Poster - Environment (पर्यावरण पोस्टर)', hasDrawing: true },
+    { id: 'ch8', name: 'Craft Work (हस्तकला)', hasDrawing: true },
+  ],
   // Class 5
   '5_Hindi': [
     { id: 'ch1', name: 'राख की रस्सी' },
