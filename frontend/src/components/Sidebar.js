@@ -111,9 +111,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
       label: 'Team Management',
       icon: Briefcase,
       items: [
-        { path: '/app/employee-management', icon: Users, label: 'All Team Members (Staff/Teachers/Users)', permKey: 'staff' },
+        { path: '/app/employee-management', icon: Users, label: 'All Team Members', permKey: 'staff' },
         { path: '/app/leave', icon: Calendar, label: t('leave_management'), permKey: 'leave_management' },
         { path: '/app/salary', icon: DollarSign, label: t('salary'), permKey: 'fees' },
+        { path: '/app/permission-manager', icon: Shield, label: 'Permissions & Roles', permKey: 'user_management', directorOnly: true },
       ]
     },
     {
@@ -134,6 +135,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { path: '/app/sms', icon: MessageSquare, label: t('sms_center'), permKey: 'sms_center' },
         { path: '/app/meetings', icon: Video, label: t('zoom_meetings'), permKey: 'meetings' },
         { path: '/app/gallery', icon: Image, label: t('gallery'), permKey: 'gallery' },
+        { path: '/app/family-portal', icon: Users, label: 'Family Portal (ParentTino)', permKey: 'settings' },
+        { path: '/app/complaints', icon: MessageSquare, label: 'Complaints & Feedback', permKey: 'settings' },
       ]
     },
     {
@@ -143,6 +146,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       items: [
         { path: '/app/ai-paper', icon: Sparkles, label: t('ai_paper'), permKey: 'ai_paper' },
         { path: '/app/event-designer', icon: Image, label: 'AI Content & Event Designer', permKey: 'ai_content' },
+        { path: '/app/school-calendar', icon: Calendar, label: 'School Calendar (Board-wise)', permKey: 'settings' },
       ]
     },
     {
@@ -157,20 +161,15 @@ export const Sidebar = ({ isOpen, onClose }) => {
       ]
     },
     {
-      id: 'settings',
-      label: t('settings'),
-      icon: Wrench,
+      id: 'school_setup',
+      label: 'School Setup',
+      icon: Building,
       items: [
-        { path: '/app/setup-guide', icon: Wrench, label: 'Setup Guide', permKey: 'settings', directorOnly: true },
-        { path: '/app/school-management', icon: Building, label: 'School Management', permKey: 'settings', directorOnly: true },
-        { path: '/app/school-calendar', icon: Calendar, label: 'School Calendar', permKey: 'settings' },
-        { path: '/app/prayer-system', icon: Music, label: 'Prayer System', permKey: 'settings' },
-        { path: '/app/family-portal', icon: Users, label: 'Family Portal', permKey: 'settings' },
-        { path: '/app/board-notifications', icon: Bell, label: 'Board Updates', permKey: 'settings', directorOnly: true },
-        { path: '/app/complaints', icon: MessageSquare, label: 'Complaints', permKey: 'settings' },
-        { path: '/app/permission-manager', icon: Shield, label: t('permissions'), permKey: 'user_management', directorOnly: true },
+        { path: '/app/setup-wizard', icon: Wrench, label: 'Setup Wizard (Step-by-Step)', permKey: 'settings', directorOnly: true },
+        { path: '/app/school-management', icon: Building, label: 'School Profile & Branding', permKey: 'settings', directorOnly: true },
+        { path: '/app/board-notifications', icon: Bell, label: 'Board Updates (CBSE/UP/ICSE)', permKey: 'settings', directorOnly: true },
+        { path: '/app/prayer-system', icon: Music, label: 'Prayer & Bell System', permKey: 'settings' },
         { path: '/app/website', icon: Globe, label: t('website_integration'), permKey: 'website_integration' },
-        { path: '/app/settings', icon: Settings, label: t('settings'), permKey: 'settings' },
       ]
     }
   ];
