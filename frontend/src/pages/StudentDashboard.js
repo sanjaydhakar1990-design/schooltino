@@ -105,6 +105,9 @@ export default function StudyTinoDashboard() {
   });
   
   const [isBlocked, setIsBlocked] = useState(false);
+  
+  // Welcome Dialog for first-time users
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
   // Greeting based on time
   const getGreeting = () => {
@@ -121,6 +124,12 @@ export default function StudyTinoDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    // Check if first-time login for welcome message
+    const hasSeenWelcome = localStorage.getItem('studytino_welcome_seen');
+    if (!hasSeenWelcome) {
+      setShowWelcomeDialog(true);
+      localStorage.setItem('studytino_welcome_seen', 'true');
+    }
   }, []);
 
   const fetchDashboardData = async () => {
