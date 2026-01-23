@@ -119,7 +119,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       label: t('fees') || 'Finance',
       icon: Wallet,
       items: [
-        { path: '/app/fees', icon: Wallet, label: t('fees'), permKey: 'fees' },
+        { path: '/app/fee-management', icon: Wallet, label: 'Fee Management', permKey: 'fees' },
         { path: '/app/fee-structure', icon: FileText, label: t('fee_structure'), permKey: 'fees' },
         { path: '/app/accountant', icon: Calculator, label: t('ai_accountant'), permKey: 'fees' },
       ]
