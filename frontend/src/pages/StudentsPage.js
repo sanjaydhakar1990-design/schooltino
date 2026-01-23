@@ -88,8 +88,20 @@ export default function StudentsPage() {
     blood_group: '',
     aadhar_no: '',
     samgra_id: '',  // Samgra ID for MP Board schools
+    jan_aadhar_no: '',  // Jan Aadhar/Bhamashah for RBSE
     previous_school: '',
     admission_date: new Date().toISOString().split('T')[0] // Default to today
+  });
+  
+  // Document uploads
+  const [documents, setDocuments] = useState({
+    birth_certificate: null,
+    aadhar_card: null,
+    transfer_certificate: null,
+    marksheet: null,
+    caste_certificate: null,
+    income_certificate: null,
+    passport_photo: null
   });
 
   // Parent/Guardian photo states
