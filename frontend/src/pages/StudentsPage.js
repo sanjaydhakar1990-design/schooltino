@@ -86,6 +86,11 @@ export default function StudentsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   
+  // Credentials sharing states
+  const [showCredentialsDialog, setShowCredentialsDialog] = useState(false);
+  const [credentialsStudent, setCredentialsStudent] = useState(null);
+  const [showBulkCredentialsDialog, setShowBulkCredentialsDialog] = useState(false);
+  
   // Photo capture states
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
