@@ -1922,6 +1922,61 @@ async def update_school_logo(school_id: str, request: LogoUpdateRequest, current
     return {"success": True, "message": "Logo saved successfully", "logo_url": request.logo_url}
 
 
+# ==================== WATERMARK SETTINGS ENDPOINT ====================
+class WatermarkSettingsRequest(BaseModel):
+    watermark_settings: Optional[Dict[str, Any]] = None
+    logo_apply_to: Optional[Dict[str, bool]] = None
+
+@api_router.post("/schools/{school_id}/watermark-settings")
+async def update_watermark_settings(school_id: str, request: WatermarkSettingsRequest, current_user: dict = Depends(get_current_user)):
+    """Update school watermark settings for ID cards and documents"""
+    if current_user["role"] not in ["director", "admin", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    existing = await db.schools.find_one({"id": school_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if request.watermark_settings:
+        update_data["watermark_settings"] = request.watermark_settings
+    
+    if request.logo_apply_to:
+        update_data["logo_apply_to"] = request.logo_apply_to
+    
+    await db.schools.update_one({"id": school_id}, {"$set": update_data})
+    
+    return {
+        "success": True, 
+        "message": "Watermark settings saved successfully",
+        "watermark_settings": request.watermark_settings,
+        "logo_apply_to": request.logo_apply_to
+    }
+
+@api_router.get("/schools/{school_id}/watermark-settings")
+async def get_watermark_settings(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get school watermark settings"""
+    school = await db.schools.find_one({"id": school_id}, {"_id": 0, "watermark_settings": 1, "logo_apply_to": 1, "logo_url": 1})
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    return {
+        "watermark_settings": school.get("watermark_settings", {
+            "size": 50,
+            "opacity": 15,
+            "position": "center",
+            "enabled": True
+        }),
+        "logo_apply_to": school.get("logo_apply_to", {
+            "idCards": True,
+            "notices": True,
+            "calendar": True,
+            "appHeader": True
+        }),
+        "logo_url": school.get("logo_url")
+    }
+
 
 @api_router.get("/schools/{school_id}/ai-context")
 async def get_school_ai_context(school_id: str, current_user: dict = Depends(get_current_user)):
