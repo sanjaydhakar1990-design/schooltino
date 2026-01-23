@@ -313,7 +313,8 @@ export default function LogoWatermarkSettings() {
                 { key: 'calendar', label: 'Calendar', icon: Calendar },
                 { key: 'appHeader', label: 'App Header', icon: Settings },
                 { key: 'certificates', label: 'Certificates', icon: FileText },
-                { key: 'feeBills', label: 'Fee Bills', icon: FileText }
+                { key: 'feeBills', label: 'Fee Bills', icon: FileText },
+                { key: 'appIcon', label: 'App Icon (Favicon)', icon: Smartphone }
               ].map(item => {
                 const Icon = item.icon;
                 return (
