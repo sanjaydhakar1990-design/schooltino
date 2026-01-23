@@ -280,10 +280,11 @@ export default function FeeStructureManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 w-full max-w-lg mb-6">
+        <TabsList className="grid grid-cols-4 w-full max-w-2xl mb-6">
           <TabsTrigger value="structure">📋 Fee Structure</TabsTrigger>
           <TabsTrigger value="services">🚌 Student Services</TabsTrigger>
           <TabsTrigger value="schemes">🎓 Govt Schemes</TabsTrigger>
+          <TabsTrigger value="old-dues">⚠️ Old Dues</TabsTrigger>
         </TabsList>
 
         {/* Fee Structure Tab */}
