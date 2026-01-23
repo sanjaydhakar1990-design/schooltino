@@ -514,6 +514,16 @@ export default function SettingsPage() {
                   <p className="text-[10px] text-green-600 mt-2 font-medium">
                     ✅ Logo automatically sab jagah show ho raha hai by default!
                   </p>
+                  
+                  {/* Advanced Watermark Settings Link */}
+                  <a 
+                    href="/app/logo-settings"
+                    className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg"
+                    data-testid="advanced-watermark-settings-link"
+                  >
+                    ⚙️ Advanced Watermark Settings
+                    <span className="text-xs opacity-80">(Size, Position, Visibility)</span>
+                  </a>
                 </div>
               )}
             </div>
