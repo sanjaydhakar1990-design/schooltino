@@ -10734,6 +10734,281 @@ async def get_student_documents(student_id: str, current_user: dict = Depends(ge
     ).to_list(50)
     return docs
 
+# ==================== LIBRARY MANAGEMENT ====================
+
+class BookModel(BaseModel):
+    school_id: str
+    title: str
+    author: Optional[str] = None
+    isbn: Optional[str] = None
+    category: str = "Textbook"
+    publisher: Optional[str] = None
+    year: Optional[int] = None
+    quantity: int = 1
+    available: int = 1
+    location: Optional[str] = None
+    price: Optional[float] = 0
+
+class BookIssueModel(BaseModel):
+    school_id: str
+    book_id: str
+    member_type: str  # student or staff
+    member_id: str
+    issue_date: str
+    due_date: str
+    issued_by: Optional[str] = None
+
+@api_router.get("/library/books")
+async def get_library_books(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all books in library"""
+    books = await db.library_books.find({"school_id": school_id}, {"_id": 0}).to_list(1000)
+    return books
+
+@api_router.post("/library/books")
+async def add_library_book(data: BookModel, current_user: dict = Depends(get_current_user)):
+    """Add new book to library"""
+    book_id = str(uuid.uuid4())
+    book = {
+        "id": book_id,
+        **data.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.library_books.insert_one(book)
+    return {"success": True, "id": book_id}
+
+@api_router.put("/library/books/{book_id}")
+async def update_library_book(book_id: str, data: BookModel, current_user: dict = Depends(get_current_user)):
+    """Update book details"""
+    await db.library_books.update_one(
+        {"id": book_id},
+        {"$set": {**data.model_dump(), "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True}
+
+@api_router.delete("/library/books/{book_id}")
+async def delete_library_book(book_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete book from library"""
+    await db.library_books.delete_one({"id": book_id})
+    return {"success": True}
+
+@api_router.get("/library/issued")
+async def get_issued_books(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all issued books"""
+    issued = await db.library_issues.find({"school_id": school_id}, {"_id": 0}).sort("issue_date", -1).to_list(500)
+    return issued
+
+@api_router.post("/library/issue")
+async def issue_library_book(data: BookIssueModel, current_user: dict = Depends(get_current_user)):
+    """Issue book to member"""
+    # Check book availability
+    book = await db.library_books.find_one({"id": data.book_id})
+    if not book or book.get("available", 0) <= 0:
+        raise HTTPException(status_code=400, detail="Book not available")
+    
+    issue_id = str(uuid.uuid4())
+    issue = {
+        "id": issue_id,
+        **data.model_dump(),
+        "returned": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.library_issues.insert_one(issue)
+    
+    # Decrease available count
+    await db.library_books.update_one(
+        {"id": data.book_id},
+        {"$inc": {"available": -1}}
+    )
+    
+    return {"success": True, "id": issue_id}
+
+@api_router.post("/library/return/{issue_id}")
+async def return_library_book(issue_id: str, return_date: str = None, returned_by: str = None, current_user: dict = Depends(get_current_user)):
+    """Return issued book"""
+    issue = await db.library_issues.find_one({"id": issue_id})
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue record not found")
+    
+    await db.library_issues.update_one(
+        {"id": issue_id},
+        {"$set": {
+            "returned": True,
+            "return_date": return_date or datetime.now(timezone.utc).isoformat(),
+            "returned_by": returned_by or current_user["id"]
+        }}
+    )
+    
+    # Increase available count
+    await db.library_books.update_one(
+        {"id": issue["book_id"]},
+        {"$inc": {"available": 1}}
+    )
+    
+    return {"success": True}
+
+# ==================== VISITOR MANAGEMENT ====================
+
+class VisitorCheckinModel(BaseModel):
+    school_id: str
+    name: str
+    phone: str
+    purpose: str
+    to_meet: Optional[str] = None
+    to_meet_type: str = "staff"
+    id_type: str = "Aadhar"
+    id_number: Optional[str] = None
+    vehicle_number: Optional[str] = None
+    visitors_count: int = 1
+    remarks: Optional[str] = None
+    checkin_by: Optional[str] = None
+    checkin_time: Optional[str] = None
+
+@api_router.get("/visitors")
+async def get_visitors(school_id: str, date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get visitors for a date"""
+    query = {"school_id": school_id}
+    if date:
+        # Filter by date
+        start_date = datetime.fromisoformat(date + "T00:00:00")
+        end_date = datetime.fromisoformat(date + "T23:59:59")
+        query["checkin_time"] = {"$gte": start_date.isoformat(), "$lte": end_date.isoformat()}
+    
+    visitors = await db.visitors.find(query, {"_id": 0}).sort("checkin_time", -1).to_list(500)
+    return visitors
+
+async def generate_pass_number(school_id: str) -> str:
+    """Generate unique pass number"""
+    today = datetime.now().strftime("%Y%m%d")
+    count = await db.visitors.count_documents({
+        "school_id": school_id,
+        "pass_number": {"$regex": f"^VP-{today}"}
+    })
+    return f"VP-{today}-{str(count + 1).zfill(4)}"
+
+@api_router.post("/visitors/checkin")
+async def visitor_checkin(data: VisitorCheckinModel, current_user: dict = Depends(get_current_user)):
+    """Check in visitor"""
+    visitor_id = str(uuid.uuid4())
+    pass_number = await generate_pass_number(data.school_id)
+    
+    # Get to_meet name
+    to_meet_name = None
+    if data.to_meet:
+        if data.to_meet_type == "student":
+            person = await db.students.find_one({"id": data.to_meet})
+        else:
+            person = await db.users.find_one({"id": data.to_meet})
+        to_meet_name = person.get("name") if person else None
+    
+    visitor = {
+        "id": visitor_id,
+        "pass_number": pass_number,
+        **data.model_dump(),
+        "to_meet_name": to_meet_name,
+        "checkin_time": data.checkin_time or datetime.now(timezone.utc).isoformat(),
+        "checkout_time": None
+    }
+    await db.visitors.insert_one(visitor)
+    
+    return {"success": True, "id": visitor_id, "pass_number": pass_number}
+
+@api_router.post("/visitors/checkout/{visitor_id}")
+async def visitor_checkout(visitor_id: str, checkout_by: str = None, checkout_time: str = None, current_user: dict = Depends(get_current_user)):
+    """Check out visitor"""
+    await db.visitors.update_one(
+        {"id": visitor_id},
+        {"$set": {
+            "checkout_time": checkout_time or datetime.now(timezone.utc).isoformat(),
+            "checkout_by": checkout_by or current_user["id"]
+        }}
+    )
+    return {"success": True}
+
+# ==================== AI JARVIS COMMAND CENTER ====================
+
+class JarvisCommandModel(BaseModel):
+    command: str
+    school_id: str
+    user_id: Optional[str] = None
+    context: Optional[Dict[str, Any]] = {}
+
+@api_router.post("/ai/jarvis-command")
+async def process_jarvis_command(data: JarvisCommandModel, current_user: dict = Depends(get_current_user)):
+    """Process AI Jarvis command and return response"""
+    command = data.command.lower()
+    school_id = data.school_id
+    
+    response = {
+        "success": True,
+        "response": "",
+        "data": None,
+        "action": None,
+        "action_completed": False,
+        "action_message": None
+    }
+    
+    # Attendance related commands
+    if any(word in command for word in ['attendance', 'हाजिरी', 'present', 'absent']):
+        total_students = await db.students.count_documents({"school_id": school_id, "status": "active"})
+        today = datetime.now().strftime("%Y-%m-%d")
+        present = await db.attendance.count_documents({"school_id": school_id, "date": today, "status": "present"})
+        absent = total_students - present
+        
+        response["response"] = f"""📊 **Attendance Summary**
+
+आज की Attendance:
+• Total Students: {total_students}
+• Present: {present} ({round(present/total_students*100) if total_students > 0 else 0}%)
+• Absent: {absent}
+
+🔔 Absent students के parents को SMS भेजने के लिए कहें"""
+        response["data"] = {"type": "attendance", "total": total_students, "present": present, "absent": absent}
+    
+    # Fee related commands
+    elif any(word in command for word in ['fee', 'फीस', 'collection', 'pending', 'payment']):
+        today = datetime.now().strftime("%Y-%m-%d")
+        today_collection = await db.fee_collections.find({"school_id": school_id, "payment_date": {"$regex": f"^{today}"}}).to_list(1000)
+        today_amount = sum(c.get("amount", 0) for c in today_collection)
+        
+        total_pending = await db.old_dues.find({"school_id": school_id, "status": {"$ne": "paid"}}).to_list(100)
+        pending_amount = sum(d.get("amount", 0) for d in total_pending)
+        
+        response["response"] = f"""💰 **Fee Collection Summary**
+
+आज की Collection: ₹{today_amount:,}
+Pending Fees: ₹{pending_amount:,}
+आज के Receipts: {len(today_collection)}
+
+🔔 Fee reminder भेजने के लिए कहें"""
+        response["data"] = {"type": "fees", "today_amount": today_amount, "pending": pending_amount}
+    
+    # Student related commands
+    elif any(word in command for word in ['student', 'छात्र', 'admission']):
+        total = await db.students.count_documents({"school_id": school_id, "status": "active"})
+        
+        response["response"] = f"""👨‍🎓 **Students Overview**
+
+Total Active Students: {total}
+
+आप specific class या student के बारे में पूछ सकते हैं।
+Example: "Class 5 के students दिखाओ" """
+        response["data"] = {"type": "students", "total": total}
+    
+    # Default response
+    else:
+        response["response"] = f"""🤖 मैं आपकी मदद के लिए तैयार हूं!
+
+बताएं क्या करना है:
+• 👨‍🎓 Students - "Show students"
+• 💰 Fees - "Today's collection"
+• 📊 Attendance - "आज की attendance"
+• 📝 Results - "Show results"
+• 📱 SMS - "Send notice"
+
+Hindi या English में command दे सकते हैं!"""
+    
+    return response
+
 # ==================== APP CONFIG ====================
 
 # Include modular routers
