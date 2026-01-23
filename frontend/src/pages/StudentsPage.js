@@ -1482,6 +1482,80 @@ export default function StudentsPage() {
           onPhotoUpload={() => fetchStudents()}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-6 h-6" />
+              ⚠️ DANGER: Permanent Delete
+            </DialogTitle>
+          </DialogHeader>
+          
+          {deleteStudent && (
+            <div className="space-y-4">
+              {/* Risk Warning */}
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h4 className="font-bold text-red-800 mb-2">🚨 महत्वपूर्ण चेतावनी:</h4>
+                <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+                  <li>यह action UNDO नहीं किया जा सकता</li>
+                  <li>Student का सारा data हमेशा के लिए delete हो जाएगा</li>
+                  <li>Attendance, Fee records, Results सब delete हो जाएंगे</li>
+                  <li>Face recognition data भी delete हो जाएगा</li>
+                </ul>
+              </div>
+              
+              {/* Student Info */}
+              <div className="bg-slate-50 rounded-lg p-4">
+                <p className="font-medium text-lg">{deleteStudent.name}</p>
+                <p className="text-sm text-slate-500">
+                  {deleteStudent.student_id} • {deleteStudent.class_name || 'Class N/A'}
+                </p>
+                <p className="text-sm text-slate-500">
+                  Father: {deleteStudent.father_name}
+                </p>
+              </div>
+              
+              {/* Confirmation Input */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Confirm करने के लिए <span className="text-red-600 font-bold">DELETE</span> type करें:
+                </label>
+                <Input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                  placeholder="Type DELETE here"
+                  className="border-red-200 focus:border-red-400"
+                />
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowDeleteDialog(false)}
+                  className="flex-1"
+                >
+                  Cancel (रद्द करें)
+                </Button>
+                <Button 
+                  onClick={handleDeleteStudent}
+                  disabled={deleteConfirmText !== 'DELETE' || deleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {deleting ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Trash2 className="w-4 h-4 mr-2" />
+                  )}
+                  Delete Permanently
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
