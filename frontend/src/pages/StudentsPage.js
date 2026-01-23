@@ -372,6 +372,37 @@ export default function StudentsPage() {
     }
   };
 
+  // Delete student permanently (Admin only)
+  const handleDeleteStudent = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      toast.error('Please type DELETE to confirm');
+      return;
+    }
+    
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API}/students/${deleteStudent.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Student data permanently deleted');
+      setShowDeleteDialog(false);
+      setDeleteStudent(null);
+      setDeleteConfirmText('');
+      fetchStudents();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete student');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteDialog = (student) => {
+    setDeleteStudent(student);
+    setDeleteConfirmText('');
+    setShowDeleteDialog(true);
+  };
+
   const handleEdit = (student) => {
     setEditingStudent(student);
     setFormData({
