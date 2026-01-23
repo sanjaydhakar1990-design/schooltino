@@ -1370,6 +1370,18 @@ export default function StudentsPage() {
                                 Mark as Left (TC)
                               </DropdownMenuItem>
                             )}
+                            {(user?.role === 'director' || user?.role === 'admin') && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => openDeleteDialog(student)}
+                                  className="text-red-600 bg-red-50 hover:bg-red-100"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete Permanently
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
