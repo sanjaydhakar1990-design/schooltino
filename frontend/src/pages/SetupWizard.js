@@ -68,7 +68,9 @@ export default function SetupWizard() {
   };
 
   const handleStepClick = (step) => {
-    navigate(step.route);
+    // Add /app prefix if not present
+    const route = step.route.startsWith('/app') ? step.route : `/app${step.route}`;
+    navigate(route);
   };
 
   if (loading) {
