@@ -601,6 +601,18 @@ export const PRIMARY_CHAPTERS = {
     { id: 'ch21', name: 'Like Father, Like Daughter' },
     { id: 'ch22', name: 'On the Move Again' },
   ],
+  '5_Drawing': [
+    { id: 'ch1', name: 'Landscape - Complete Scene (पूर्ण दृश्य)', hasDrawing: true },
+    { id: 'ch2', name: 'Human Activities (मानव गतिविधियां)', hasDrawing: true },
+    { id: 'ch3', name: 'Nature Study - Flowers (फूल अध्ययन)', hasDrawing: true },
+    { id: 'ch4', name: 'Perspective Drawing (परिप्रेक्ष्य)', hasDrawing: true },
+    { id: 'ch5', name: 'Indian Art Forms (भारतीय कला)', hasDrawing: true },
+    { id: 'ch6', name: 'Poster - Health/Cleanliness (स्वास्थ्य पोस्टर)', hasDrawing: true },
+    { id: 'ch7', name: 'Memory Drawing (स्मृति चित्र)', hasDrawing: true },
+    { id: 'ch8', name: 'Design and Patterns (डिजाइन)', hasDrawing: true },
+    { id: 'ch9', name: 'Warli/Madhubani Art (लोक कला)', hasDrawing: true },
+    { id: 'ch10', name: 'Creative Expression (रचनात्मक कला)', hasDrawing: true },
+  ],
 };
 
 // Class 6-8 CBSE/NCERT Chapters
