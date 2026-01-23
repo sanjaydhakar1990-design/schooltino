@@ -10386,6 +10386,116 @@ async def get_student_fee_summary(student_id: str, current_user: dict = Depends(
         }
     }
 
+# ==================== GOVERNMENT SCHEMES & SCHOLARSHIPS ====================
+
+class ScholarshipModel(BaseModel):
+    name: str
+    name_hi: Optional[str] = None
+    type: str = "central_govt"  # central_govt, state_govt, private
+    amount: float = 0
+    percentage: float = 0
+    eligibility: Optional[str] = None
+    documents_required: Optional[str] = None
+    academic_year: Optional[str] = None
+    school_id: str
+
+class StudentScholarshipModel(BaseModel):
+    student_id: str
+    scholarship_id: str
+    amount: float = 0
+    status: str = "pending"  # pending, approved, received, rejected
+    remarks: Optional[str] = None
+    school_id: str
+    assigned_by: Optional[str] = None
+    assigned_date: Optional[str] = None
+
+@api_router.get("/scholarships")
+async def get_scholarships(school_id: str):
+    """Get all scholarships/govt schemes for a school"""
+    scholarships = await db.scholarships.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(100)
+    return scholarships
+
+@api_router.post("/scholarships")
+async def create_scholarship(data: ScholarshipModel):
+    """Create a new scholarship/govt scheme"""
+    scholarship = data.dict()
+    scholarship["id"] = str(uuid.uuid4())
+    scholarship["created_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.scholarships.insert_one(scholarship)
+    scholarship.pop("_id", None)
+    return scholarship
+
+@api_router.delete("/scholarships/{scholarship_id}")
+async def delete_scholarship(scholarship_id: str):
+    """Delete a scholarship"""
+    result = await db.scholarships.delete_one({"id": scholarship_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Scholarship not found")
+    return {"status": "deleted"}
+
+@api_router.get("/student-scholarships")
+async def get_student_scholarships(school_id: str, student_id: Optional[str] = None):
+    """Get scholarships assigned to students"""
+    query = {"school_id": school_id}
+    if student_id:
+        query["student_id"] = student_id
+    
+    scholarships = await db.student_scholarships.find(query, {"_id": 0}).to_list(500)
+    return scholarships
+
+@api_router.post("/student-scholarships")
+async def assign_scholarship_to_student(data: StudentScholarshipModel):
+    """Assign a scholarship to a student"""
+    # Check if already assigned
+    existing = await db.student_scholarships.find_one({
+        "student_id": data.student_id,
+        "scholarship_id": data.scholarship_id,
+        "school_id": data.school_id
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="This scholarship is already assigned to this student")
+    
+    assignment = data.dict()
+    assignment["id"] = str(uuid.uuid4())
+    assignment["created_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.student_scholarships.insert_one(assignment)
+    assignment.pop("_id", None)
+    return assignment
+
+@api_router.put("/student-scholarships/{assignment_id}")
+async def update_student_scholarship(assignment_id: str, status: str = None, amount: float = None, remarks: str = None):
+    """Update scholarship assignment status"""
+    update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    if status:
+        update_data["status"] = status
+    if amount is not None:
+        update_data["amount"] = amount
+    if remarks:
+        update_data["remarks"] = remarks
+    
+    result = await db.student_scholarships.update_one(
+        {"id": assignment_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Assignment not found")
+    
+    return {"status": "updated"}
+
+@api_router.delete("/student-scholarships/{assignment_id}")
+async def remove_student_scholarship(assignment_id: str):
+    """Remove scholarship from student"""
+    result = await db.student_scholarships.delete_one({"id": assignment_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Assignment not found")
+    return {"status": "deleted"}
+
 # ==================== TIMETABLE MANAGEMENT ====================
 
 class TimetableSlotModel(BaseModel):
