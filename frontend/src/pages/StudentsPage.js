@@ -316,7 +316,10 @@ export default function StudentsPage() {
     setSubmitting(true);
 
     try {
-      await axios.post(`${API}/students/${selectedStudent.id}/suspend?reason=${suspendForm.reason}&details=${suspendForm.details}`);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/students/${selectedStudent.id}/suspend?reason=${suspendForm.reason}&details=${suspendForm.details}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Student suspended');
       setIsSuspendDialogOpen(false);
       setSuspendForm({ reason: 'fees_pending', details: '' });
@@ -331,7 +334,10 @@ export default function StudentsPage() {
 
   const handleUnsuspend = async (id) => {
     try {
-      await axios.post(`${API}/students/${id}/unsuspend`);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/students/${id}/unsuspend`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Student unsuspended');
       fetchStudents();
     } catch (error) {
@@ -344,7 +350,10 @@ export default function StudentsPage() {
     if (!reason) return;
     
     try {
-      await axios.post(`${API}/students/${id}/mark-left?reason=${encodeURIComponent(reason)}`);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/students/${id}/mark-left?reason=${encodeURIComponent(reason)}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Student marked as left');
       fetchStudents();
     } catch (error) {
