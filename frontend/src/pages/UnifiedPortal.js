@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import {
   GraduationCap, Users, BookOpen, Calendar, Bell, ClipboardCheck,
   ChevronRight, Clock, FileText, Sparkles, Search, Settings, Mic,
