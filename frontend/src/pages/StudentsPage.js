@@ -277,7 +277,7 @@ export default function StudentsPage() {
             photoFormData.append('photo_type', 'front');
             
             await axios.post(`${API}/face-recognition/upload-photo`, photoFormData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
+              headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
             });
             toast.success('Face photo uploaded for AI attendance! 📸');
           } catch (photoErr) {
