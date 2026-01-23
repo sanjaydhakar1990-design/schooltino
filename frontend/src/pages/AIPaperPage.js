@@ -8,7 +8,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Sparkles, FileText, Loader2, Download, ChevronRight, ChevronLeft, Check, AlertCircle, BookOpen, Printer, Image } from 'lucide-react';
 import { toast } from 'sonner';
-import { BOARDS, BOARD_SUBJECTS, getChapters, BOARD_MARKS_PATTERN } from '../data/boardSyllabus';
+import { BOARDS, BOARD_SUBJECTS, getChapters, BOARD_MARKS_PATTERN, CLASS_PAPER_DEFAULTS, DRAWING_PAPER_TYPES } from '../data/boardSyllabus';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
