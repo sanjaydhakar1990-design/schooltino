@@ -408,6 +408,53 @@ export default function StudentsPage() {
     setShowDeleteDialog(true);
   };
 
+  // View/Share Student Credentials
+  const viewCredentials = async (student) => {
+    setCredentialsStudent({
+      name: student.name,
+      student_id: student.student_id || student.id,
+      class_name: student.class_name,
+      father_name: student.father_name,
+      mobile: student.mobile || student.parent_phone,
+      // Default password is mobile number or student_id
+      default_password: student.mobile || student.parent_phone || student.student_id || student.id
+    });
+    setShowCredentialsDialog(true);
+  };
+
+  // Generate credentials text for sharing
+  const generateCredentialsText = (student) => {
+    return `📚 *StudyTino Login Details*
+
+👤 Student: ${student.name}
+🏫 Class: ${student.class_name || 'N/A'}
+
+🔐 *Login Credentials:*
+Student ID: ${student.student_id}
+Password: ${student.default_password}
+
+📱 App Link: ${window.location.origin}/studytino
+
+Note: First login पर password change करें।`;
+  };
+
+  // Share via WhatsApp
+  const shareViaWhatsApp = (student) => {
+    const text = generateCredentialsText(student);
+    const phone = student.mobile?.replace(/[^0-9]/g, '') || '';
+    const url = phone 
+      ? `https://wa.me/91${phone}?text=${encodeURIComponent(text)}`
+      : `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  // Copy credentials to clipboard
+  const copyCredentials = async (student) => {
+    const text = generateCredentialsText(student);
+    await navigator.clipboard.writeText(text);
+    toast.success('Credentials copied!');
+  };
+
   const handleEdit = (student) => {
     setEditingStudent(student);
     setFormData({
