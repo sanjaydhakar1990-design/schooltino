@@ -152,13 +152,15 @@ export default function StudentsPage() {
 
   const fetchStudents = async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       let url = `${API}/students?school_id=${schoolId}`;
       if (search) url += `&search=${search}`;
       if (selectedClass) url += `&class_id=${selectedClass}`;
       
       const [activeRes, suspendedRes] = await Promise.all([
-        axios.get(`${url}&status=active`),
-        axios.get(`${url}&status=suspended`)
+        axios.get(`${url}&status=active`, { headers }),
+        axios.get(`${url}&status=suspended`, { headers })
       ]);
       
       setStudents(activeRes.data);
@@ -172,7 +174,10 @@ export default function StudentsPage() {
 
   const fetchClasses = async () => {
     try {
-      const response = await axios.get(`${API}/classes?school_id=${schoolId}`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/classes?school_id=${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setClasses(response.data);
     } catch (error) {
       console.error('Failed to fetch classes');
