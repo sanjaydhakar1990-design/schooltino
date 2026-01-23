@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-router = APIRouter(prefix="/api/tino-ai", tags=["Tino AI"])
+router = APIRouter(prefix="/tino-ai", tags=["Tino AI"])
 
 # MongoDB connection
 MONGO_URL = os.environ.get("MONGO_URL")
