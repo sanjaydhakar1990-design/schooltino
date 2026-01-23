@@ -128,17 +128,21 @@ export default function FeeManagementPage() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classRes, feeRes, collectionRes, duesRes] = await Promise.all([
+      const [classRes, feeRes, collectionRes, duesRes, schemeRes, studentSchemeRes] = await Promise.all([
         axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/fee-structures?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/fee-collections?school_id=${schoolId}`, { headers }),
-        axios.get(`${API}/old-dues?school_id=${schoolId}`, { headers })
+        axios.get(`${API}/old-dues?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/scholarships?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
+        axios.get(`${API}/student-scholarships?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] }))
       ]);
       
       setClasses(classRes.data);
       setFeeStructures(feeRes.data);
       setFeeCollections(collectionRes.data);
       setOldDues(duesRes.data || []);
+      setScholarships(schemeRes.data || []);
+      setStudentScholarships(studentSchemeRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
