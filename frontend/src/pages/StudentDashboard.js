@@ -997,6 +997,70 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Welcome Dialog for First-Time Users */}
+      <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <span className="text-2xl">🎉</span>
+              StudyTino में आपका स्वागत है!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-slate-600">
+              नमस्ते {profile?.name || user?.name || 'Student'}! अब आप StudyTino App से अपनी पढ़ाई को और आसान बना सकते हैं।
+            </p>
+            
+            <div className="space-y-3 bg-indigo-50 rounded-xl p-4">
+              <h4 className="font-semibold text-indigo-800">यहाँ आप क्या-क्या कर सकते हैं:</h4>
+              <div className="grid gap-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>अपनी Attendance देखें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Homework और Assignments पाएं</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>School Notices पढ़ें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Exam Results और Report Card देखें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Online Fees भुगतान करें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Leave Application भेजें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>AI से पढ़ाई में Help लें (Voice में भी!)</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+              <p className="text-amber-800">
+                <strong>💡 Tip:</strong> नीचे दाईं ओर Mic button से Voice में भी पूछ सकते हैं!
+              </p>
+            </div>
+            
+            <Button 
+              onClick={() => setShowWelcomeDialog(false)}
+              className="w-full bg-indigo-600 hover:bg-indigo-700"
+            >
+              शुरू करें →
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Voice Assistant */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
