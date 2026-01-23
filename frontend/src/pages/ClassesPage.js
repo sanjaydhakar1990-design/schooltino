@@ -188,16 +188,16 @@ export default function ClassesPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>{t('section')} *</Label>
+                <Label>{t('section')} (Optional)</Label>
                 <select
                   name="section"
                   value={formData.section}
                   onChange={handleChange}
-                  required
                   className="w-full h-10 rounded-lg border border-slate-200 px-3"
                   data-testid="section-select"
                 >
-                  {sections.map(s => (
+                  <option value="">None (Single Section)</option>
+                  {sections.filter(s => s !== '').map(s => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
