@@ -198,10 +198,39 @@ export default function AttendancePage() {
           <input
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => {
+              const selected = new Date(e.target.value);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              
+              // Don't allow future dates
+              if (selected > today) {
+                toast.error('भविष्य की date select नहीं कर सकते');
+                return;
+              }
+              
+              // Don't allow dates more than 7 days in past
+              const sevenDaysAgo = new Date();
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+              sevenDaysAgo.setHours(0, 0, 0, 0);
+              
+              if (selected < sevenDaysAgo) {
+                toast.error('7 दिन से पुरानी attendance नहीं लगा सकते। Admin से संपर्क करें।');
+                return;
+              }
+              
+              setSelectedDate(e.target.value);
+            }}
+            max={new Date().toISOString().split('T')[0]}
+            min={(() => {
+              const d = new Date();
+              d.setDate(d.getDate() - 7);
+              return d.toISOString().split('T')[0];
+            })()}
             className="h-10 rounded-lg border border-slate-200 px-3"
             data-testid="attendance-date-input"
           />
+          <p className="text-xs text-slate-400">पिछले 7 दिनों की attendance ही बदल सकते हैं</p>
         </div>
         {selectedClass && (
           <>
