@@ -41,7 +41,8 @@ import {
   Cpu,
   Building,
   Award,
-  CreditCard
+  CreditCard,
+  ClipboardList
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
