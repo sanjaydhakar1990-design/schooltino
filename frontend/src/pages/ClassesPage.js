@@ -66,10 +66,28 @@ export default function ClassesPage() {
 
   const fetchStaff = async () => {
     try {
-      const response = await axios.get(`${API}/staff?school_id=${schoolId}&designation=Teacher`);
-      setStaff(response.data);
+      const token = localStorage.getItem('token');
+      // Fetch all users who can be teachers (teachers, principals, etc.)
+      const response = await axios.get(`${API}/users?school_id=${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Filter users who are teachers or can teach
+      const teachers = response.data.filter(u => 
+        u.role === 'teacher' || 
+        u.role === 'principal' || 
+        u.role === 'vice_principal' ||
+        u.designation?.toLowerCase().includes('teacher')
+      );
+      setStaff(teachers);
     } catch (error) {
-      console.error('Failed to fetch staff');
+      console.error('Failed to fetch staff:', error);
+      // Fallback to staff API
+      try {
+        const response = await axios.get(`${API}/staff?school_id=${schoolId}`);
+        setStaff(response.data);
+      } catch (e) {
+        console.error('Staff fallback failed');
+      }
     }
   };
 
