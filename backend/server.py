@@ -10144,6 +10144,247 @@ async def create_staff_with_auto_id(
         "message": f"Staff created with ID: {employee_id}"
     }
 
+# ==================== NEW FEE MANAGEMENT SYSTEM ====================
+
+class FeeStructureModel(BaseModel):
+    school_id: str
+    class_id: str
+    academic_year: str
+    fees: Dict[str, float]  # fee_type: amount
+
+class FeeCollectionModel(BaseModel):
+    school_id: str
+    student_id: str
+    amount: float
+    fee_types: Optional[List[str]] = []
+    months: Optional[List[str]] = []
+    payment_mode: str = "cash"
+    payment_date: str
+    receipt_no: Optional[str] = None
+    remarks: Optional[str] = None
+    collected_by: Optional[str] = None
+
+class OldDueModel(BaseModel):
+    school_id: str
+    student_id: str
+    academic_year: str
+    class_name: Optional[str] = None
+    amount: float
+    description: Optional[str] = None
+    send_notification: bool = True
+    added_by: Optional[str] = None
+
+# Generate receipt number
+async def generate_receipt_no(school_id: str) -> str:
+    today = datetime.now()
+    prefix = f"RCP-{today.strftime('%Y%m%d')}"
+    count = await db.fee_collections.count_documents({
+        "school_id": school_id,
+        "receipt_no": {"$regex": f"^{prefix}"}
+    })
+    return f"{prefix}-{str(count + 1).zfill(4)}"
+
+@api_router.get("/fee-structures")
+async def get_fee_structures(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all fee structures for a school"""
+    structures = await db.fee_structures_new.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(100)
+    return structures
+
+@api_router.post("/fee-structures")
+async def create_fee_structure(data: FeeStructureModel, current_user: dict = Depends(get_current_user)):
+    """Create or update fee structure for a class"""
+    if current_user["role"] not in ["director", "principal", "accountant", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Check if structure exists for this class
+    existing = await db.fee_structures_new.find_one({
+        "school_id": data.school_id,
+        "class_id": data.class_id,
+        "academic_year": data.academic_year
+    })
+    
+    if existing:
+        await db.fee_structures_new.update_one(
+            {"id": existing["id"]},
+            {"$set": {
+                "fees": data.fees,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"success": True, "message": "Fee structure updated", "id": existing["id"]}
+    
+    # Create new
+    structure_id = str(uuid.uuid4())
+    structure = {
+        "id": structure_id,
+        **data.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    await db.fee_structures_new.insert_one(structure)
+    return {"success": True, "message": "Fee structure created", "id": structure_id}
+
+@api_router.get("/fee-collections")
+async def get_fee_collections(school_id: str, student_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get fee collections for a school"""
+    query = {"school_id": school_id}
+    if student_id:
+        query["student_id"] = student_id
+    
+    collections = await db.fee_collections.find(query, {"_id": 0}).sort("payment_date", -1).to_list(1000)
+    return collections
+
+@api_router.post("/fee-collections")
+async def collect_fee(data: FeeCollectionModel, current_user: dict = Depends(get_current_user)):
+    """Collect fee from student"""
+    if current_user["role"] not in ["director", "principal", "accountant", "clerk", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Generate receipt number
+    receipt_no = data.receipt_no or await generate_receipt_no(data.school_id)
+    
+    collection_id = str(uuid.uuid4())
+    collection = {
+        "id": collection_id,
+        **data.model_dump(),
+        "receipt_no": receipt_no,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "collected_by": current_user["id"]
+    }
+    await db.fee_collections.insert_one(collection)
+    
+    # Update student's fee status
+    student = await db.students.find_one({"id": data.student_id})
+    if student:
+        current_paid = student.get("total_fee_paid", 0)
+        await db.students.update_one(
+            {"id": data.student_id},
+            {"$set": {
+                "total_fee_paid": current_paid + data.amount,
+                "last_payment_date": data.payment_date,
+                "last_receipt_no": receipt_no
+            }}
+        )
+    
+    return {"success": True, "receipt_no": receipt_no, "id": collection_id}
+
+@api_router.get("/old-dues")
+async def get_old_dues(school_id: str, student_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get old dues for a school"""
+    query = {"school_id": school_id, "status": {"$ne": "paid"}}
+    if student_id:
+        query["student_id"] = student_id
+    
+    dues = await db.old_dues.find(query, {"_id": 0}).to_list(500)
+    return dues
+
+@api_router.post("/old-dues")
+async def add_old_due(data: OldDueModel, current_user: dict = Depends(get_current_user)):
+    """Add old due for a student"""
+    if current_user["role"] not in ["director", "principal", "accountant", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get student info
+    student = await db.students.find_one({"id": data.student_id})
+    
+    due_id = str(uuid.uuid4())
+    due = {
+        "id": due_id,
+        **data.model_dump(),
+        "student_name": student.get("name") if student else None,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "added_by": current_user["id"]
+    }
+    await db.old_dues.insert_one(due)
+    
+    # Update student's old due total
+    if student:
+        current_due = student.get("total_old_due", 0)
+        await db.students.update_one(
+            {"id": data.student_id},
+            {"$set": {
+                "total_old_due": current_due + data.amount,
+                "has_old_dues": True
+            }}
+        )
+    
+    return {"success": True, "id": due_id}
+
+@api_router.post("/old-dues/{due_id}/mark-paid")
+async def mark_old_due_paid(due_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark an old due as paid"""
+    due = await db.old_dues.find_one({"id": due_id})
+    if not due:
+        raise HTTPException(status_code=404, detail="Due not found")
+    
+    await db.old_dues.update_one(
+        {"id": due_id},
+        {"$set": {
+            "status": "paid",
+            "paid_at": datetime.now(timezone.utc).isoformat(),
+            "paid_by": current_user["id"]
+        }}
+    )
+    
+    # Update student's old due total
+    student = await db.students.find_one({"id": due["student_id"]})
+    if student:
+        current_due = student.get("total_old_due", 0)
+        await db.students.update_one(
+            {"id": due["student_id"]},
+            {"$set": {
+                "total_old_due": max(0, current_due - due["amount"])
+            }}
+        )
+    
+    return {"success": True}
+
+@api_router.get("/student-fee-summary/{student_id}")
+async def get_student_fee_summary(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Get complete fee summary for a student"""
+    student = await db.students.find_one({"id": student_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get fee structure for student's class
+    structure = await db.fee_structures_new.find_one({
+        "school_id": student.get("school_id"),
+        "class_id": student.get("class_id")
+    }, {"_id": 0})
+    
+    # Get all collections
+    collections = await db.fee_collections.find(
+        {"student_id": student_id},
+        {"_id": 0}
+    ).sort("payment_date", -1).to_list(100)
+    
+    # Get old dues
+    old_dues = await db.old_dues.find(
+        {"student_id": student_id, "status": {"$ne": "paid"}},
+        {"_id": 0}
+    ).to_list(50)
+    
+    total_paid = sum(c.get("amount", 0) for c in collections)
+    total_old_due = sum(d.get("amount", 0) for d in old_dues)
+    total_fee = sum(structure.get("fees", {}).values()) if structure else 0
+    
+    return {
+        "student": student,
+        "fee_structure": structure,
+        "collections": collections,
+        "old_dues": old_dues,
+        "summary": {
+            "total_fee": total_fee,
+            "total_paid": total_paid,
+            "total_old_due": total_old_due,
+            "pending": total_fee - total_paid + total_old_due
+        }
+    }
+
 # ==================== APP CONFIG ====================
 
 # Include modular routers
