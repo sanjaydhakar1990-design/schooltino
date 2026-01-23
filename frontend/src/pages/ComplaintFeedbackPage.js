@@ -48,27 +48,8 @@ export default function ComplaintFeedbackPage() {
       });
       setComplaints(response.data || []);
     } catch (error) {
-      // Demo data
-      setComplaints([
-        {
-          id: '1',
-          subject: 'Bus Service Issue',
-          message: 'Bus route 3 is always 15 minutes late. Please look into this.',
-          category: 'transport',
-          status: 'pending',
-          submitted_by: { name: 'Ramesh Kumar', type: 'parent', student_name: 'Arjun Kumar' },
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          subject: 'Homework Load',
-          message: 'Class 8 students are getting too much homework. Kids are stressed.',
-          category: 'academic',
-          status: 'in_progress',
-          submitted_by: { name: 'Sunita Sharma', type: 'parent', student_name: 'Riya Sharma' },
-          created_at: new Date(Date.now() - 86400000).toISOString()
-        }
-      ]);
+      // No demo data - show empty state
+      setComplaints([]);
     }
   };
 
