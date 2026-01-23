@@ -166,9 +166,9 @@ export default function DashboardPage() {
       lightColor: 'bg-indigo-50',
       textColor: 'text-indigo-700',
       modules: [
-        { icon: Brain, label: t('tino_brain'), path: '/app/tino-brain', badge: 'NEW' },
+        { icon: Brain, label: 'Tino AI', path: '/app/tino-ai', badge: 'AI' },
         { icon: Sparkles, label: t('ai_paper'), path: '/app/ai-paper', badge: 'AI' },
-        { icon: Sparkles, label: t('ai_content'), path: '/app/ai-content', badge: 'AI' },
+        { icon: Sparkles, label: 'Event Designer', path: '/app/event-designer', badge: 'AI' },
       ]
     },
     {
