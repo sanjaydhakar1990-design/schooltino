@@ -496,12 +496,14 @@ export default function FeeStructureManagement() {
                         key={student.id || idx}
                         variant={selectedStudent?.id === student.id ? "default" : "outline"}
                         size="sm"
-                        className="justify-start"
+                        className="justify-start text-xs truncate"
                         onClick={() => setSelectedStudent(student)}
                       >
                         {student.name}
                       </Button>
-                    ))}
+                    )) : (
+                      <p className="col-span-2 text-center text-slate-400 py-4">No students found</p>
+                    )}
                   </div>
                   
                   {selectedStudent && (
