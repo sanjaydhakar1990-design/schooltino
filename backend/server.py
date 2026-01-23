@@ -10385,6 +10385,344 @@ async def get_student_fee_summary(student_id: str, current_user: dict = Depends(
         }
     }
 
+# ==================== TIMETABLE MANAGEMENT ====================
+
+class TimetableSlotModel(BaseModel):
+    school_id: str
+    class_id: str
+    day: str
+    period_id: int
+    subject_id: str
+    subject_name: Optional[str] = None
+    teacher_id: Optional[str] = None
+    teacher_name: Optional[str] = None
+    room: Optional[str] = None
+
+@api_router.get("/timetables")
+async def get_timetables(school_id: str, class_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all timetables for school"""
+    query = {"school_id": school_id}
+    if class_id:
+        query["class_id"] = class_id
+    
+    timetables = await db.timetables.find(query, {"_id": 0}).to_list(500)
+    
+    # Convert to nested format: { class_id: { day: { period_id: slot } } }
+    result = {}
+    for slot in timetables:
+        cid = slot.get("class_id")
+        day = slot.get("day")
+        pid = slot.get("period_id")
+        if cid not in result:
+            result[cid] = {}
+        if day not in result[cid]:
+            result[cid][day] = {}
+        result[cid][day][pid] = slot
+    
+    return result
+
+@api_router.post("/timetables/slot")
+async def save_timetable_slot(data: TimetableSlotModel, current_user: dict = Depends(get_current_user)):
+    """Save a single timetable slot"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Check if slot exists
+    existing = await db.timetables.find_one({
+        "school_id": data.school_id,
+        "class_id": data.class_id,
+        "day": data.day,
+        "period_id": data.period_id
+    })
+    
+    slot_data = data.model_dump()
+    slot_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    if existing:
+        await db.timetables.update_one({"id": existing["id"]}, {"$set": slot_data})
+        return {"success": True, "message": "Slot updated"}
+    else:
+        slot_data["id"] = str(uuid.uuid4())
+        slot_data["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.timetables.insert_one(slot_data)
+        return {"success": True, "message": "Slot created", "id": slot_data["id"]}
+
+@api_router.delete("/timetables/slot")
+async def delete_timetable_slot(school_id: str, class_id: str, day: str, period_id: int, current_user: dict = Depends(get_current_user)):
+    """Delete a timetable slot"""
+    await db.timetables.delete_one({
+        "school_id": school_id,
+        "class_id": class_id,
+        "day": day,
+        "period_id": period_id
+    })
+    return {"success": True}
+
+@api_router.post("/timetables/copy")
+async def copy_timetable(school_id: str, source_class_id: str, target_class_id: str, current_user: dict = Depends(get_current_user)):
+    """Copy timetable from one class to another"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get source timetable
+    source_slots = await db.timetables.find({
+        "school_id": school_id,
+        "class_id": source_class_id
+    }, {"_id": 0}).to_list(100)
+    
+    # Delete existing target timetable
+    await db.timetables.delete_many({
+        "school_id": school_id,
+        "class_id": target_class_id
+    })
+    
+    # Copy slots
+    for slot in source_slots:
+        new_slot = {**slot}
+        new_slot["id"] = str(uuid.uuid4())
+        new_slot["class_id"] = target_class_id
+        new_slot["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.timetables.insert_one(new_slot)
+    
+    return {"success": True, "copied_slots": len(source_slots)}
+
+# ==================== CERTIFICATE MANAGEMENT ====================
+
+class CertificateModel(BaseModel):
+    school_id: str
+    student_id: str
+    type: str  # tc, character, bonafide, admission
+    data: Optional[Dict[str, Any]] = {}
+    generated_by: Optional[str] = None
+
+@api_router.get("/certificates")
+async def get_certificates(school_id: str, student_id: Optional[str] = None, type: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get certificates"""
+    query = {"school_id": school_id}
+    if student_id:
+        query["student_id"] = student_id
+    if type:
+        query["type"] = type
+    
+    certs = await db.certificates.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return certs
+
+@api_router.get("/certificates/count")
+async def get_certificate_count(school_id: str, type: str, current_user: dict = Depends(get_current_user)):
+    """Get certificate count for numbering"""
+    count = await db.certificates.count_documents({"school_id": school_id, "type": type})
+    return {"count": count}
+
+@api_router.post("/certificates")
+async def create_certificate(data: CertificateModel, current_user: dict = Depends(get_current_user)):
+    """Generate a certificate"""
+    cert_id = str(uuid.uuid4())
+    cert = {
+        "id": cert_id,
+        **data.model_dump(),
+        "status": "generated",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "generated_by": current_user["id"]
+    }
+    await db.certificates.insert_one(cert)
+    
+    # If TC, mark student as left
+    if data.type == "tc":
+        await db.students.update_one(
+            {"id": data.student_id},
+            {"$set": {
+                "status": "left",
+                "tc_issued": True,
+                "tc_date": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    
+    return {"success": True, "id": cert_id}
+
+# ==================== EXAM & MARKS MANAGEMENT ====================
+
+class ExamModel(BaseModel):
+    school_id: str
+    name: str
+    type: str
+    class_id: str
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    max_marks: int = 100
+    created_by: Optional[str] = None
+
+class BulkMarksModel(BaseModel):
+    school_id: str
+    class_id: str
+    exam_id: str
+    marks: List[Dict[str, Any]]  # [{student_id, subject_id, marks}]
+    entered_by: Optional[str] = None
+
+@api_router.get("/exams")
+async def get_exams(school_id: str, class_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all exams"""
+    query = {"school_id": school_id}
+    if class_id:
+        query["class_id"] = class_id
+    
+    exams = await db.exams.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return exams
+
+@api_router.post("/exams")
+async def create_exam(data: ExamModel, current_user: dict = Depends(get_current_user)):
+    """Create exam"""
+    exam_id = str(uuid.uuid4())
+    exam = {
+        "id": exam_id,
+        **data.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.exams.insert_one(exam)
+    return {"success": True, "id": exam_id}
+
+@api_router.get("/marks")
+async def get_marks(school_id: str, class_id: str, exam_id: str, current_user: dict = Depends(get_current_user)):
+    """Get marks for a class and exam"""
+    marks = await db.marks.find({
+        "school_id": school_id,
+        "class_id": class_id,
+        "exam_id": exam_id
+    }, {"_id": 0}).to_list(1000)
+    return marks
+
+@api_router.post("/marks/bulk")
+async def save_bulk_marks(data: BulkMarksModel, current_user: dict = Depends(get_current_user)):
+    """Save marks in bulk"""
+    if current_user["role"] not in ["director", "principal", "teacher", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Delete existing marks for this exam and class
+    await db.marks.delete_many({
+        "school_id": data.school_id,
+        "class_id": data.class_id,
+        "exam_id": data.exam_id
+    })
+    
+    # Insert new marks
+    for mark in data.marks:
+        mark_doc = {
+            "id": str(uuid.uuid4()),
+            "school_id": data.school_id,
+            "class_id": data.class_id,
+            "exam_id": data.exam_id,
+            "student_id": mark.get("student_id"),
+            "subject_id": mark.get("subject_id"),
+            "marks": mark.get("marks", 0),
+            "entered_by": data.entered_by or current_user["id"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.marks.insert_one(mark_doc)
+    
+    return {"success": True, "saved_count": len(data.marks)}
+
+@api_router.get("/subjects")
+async def get_subjects(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get subjects for school"""
+    subjects = await db.subjects.find({"school_id": school_id}, {"_id": 0}).to_list(50)
+    return subjects
+
+# ==================== STUDENT PROMOTION ====================
+
+class BulkPromoteModel(BaseModel):
+    school_id: str
+    student_ids: List[str]
+    from_class_id: str
+    to_class_id: str
+    academic_year: str
+
+@api_router.post("/students/bulk-promote")
+async def bulk_promote_students(data: BulkPromoteModel, current_user: dict = Depends(get_current_user)):
+    """Promote multiple students to next class"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    promoted_count = 0
+    for student_id in data.student_ids:
+        # Get current student data
+        student = await db.students.find_one({"id": student_id})
+        if not student:
+            continue
+        
+        # Save promotion history
+        history = {
+            "id": str(uuid.uuid4()),
+            "student_id": student_id,
+            "from_class_id": data.from_class_id,
+            "to_class_id": data.to_class_id,
+            "academic_year": data.academic_year,
+            "promoted_at": datetime.now(timezone.utc).isoformat(),
+            "promoted_by": current_user["id"]
+        }
+        await db.promotion_history.insert_one(history)
+        
+        # Update student class
+        await db.students.update_one(
+            {"id": student_id},
+            {"$set": {
+                "class_id": data.to_class_id,
+                "previous_class_id": data.from_class_id,
+                "promoted_on": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        promoted_count += 1
+    
+    return {"success": True, "promoted_count": promoted_count}
+
+# ==================== STUDENT DOCUMENTS ====================
+
+@api_router.post("/students/upload-document")
+async def upload_student_document(
+    file: UploadFile = File(...),
+    student_id: str = Form(...),
+    document_type: str = Form(...),
+    school_id: str = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload student document (TC, Marksheet, Birth Certificate, etc.)"""
+    # Read file content
+    content = await file.read()
+    
+    # Convert to base64 for storage (in production, use cloud storage)
+    import base64
+    file_data = base64.b64encode(content).decode('utf-8')
+    
+    # Save document record
+    doc_id = str(uuid.uuid4())
+    document = {
+        "id": doc_id,
+        "student_id": student_id,
+        "school_id": school_id,
+        "document_type": document_type,
+        "file_name": file.filename,
+        "file_type": file.content_type,
+        "file_data": file_data,
+        "uploaded_at": datetime.now(timezone.utc).isoformat(),
+        "uploaded_by": current_user["id"]
+    }
+    await db.student_documents.insert_one(document)
+    
+    # Update student record
+    await db.students.update_one(
+        {"id": student_id},
+        {"$push": {"documents": {"id": doc_id, "type": document_type, "name": file.filename}}}
+    )
+    
+    return {"success": True, "document_id": doc_id}
+
+@api_router.get("/students/{student_id}/documents")
+async def get_student_documents(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all documents for a student"""
+    docs = await db.student_documents.find(
+        {"student_id": student_id},
+        {"_id": 0, "file_data": 0}  # Exclude large file data
+    ).to_list(50)
+    return docs
+
 # ==================== APP CONFIG ====================
 
 # Include modular routers
