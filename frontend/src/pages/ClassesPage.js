@@ -38,7 +38,7 @@ export default function ClassesPage() {
 
   const [formData, setFormData] = useState({
     name: '',
-    section: 'A',
+    section: '',  // Default to empty (no section)
     class_teacher_id: ''
   });
 
