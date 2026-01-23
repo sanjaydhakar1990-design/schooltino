@@ -634,6 +634,16 @@ export default function StudentsPage() {
           <p className="text-slate-500 mt-1">Student Admission & Management</p>
         </div>
         <div className="flex gap-2">
+          {/* Promotion Button */}
+          <Button 
+            variant="outline" 
+            onClick={() => setShowPromotionDialog(true)}
+            className="gap-2 text-green-600 border-green-200 hover:bg-green-50"
+            data-testid="promote-students-btn"
+          >
+            <GraduationCap className="w-4 h-4" />
+            Promote Students
+          </Button>
           {/* Bulk Print Button */}
           <Button 
             variant="outline" 
