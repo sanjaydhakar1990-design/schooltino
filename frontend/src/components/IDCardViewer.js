@@ -47,6 +47,7 @@ export default function IDCardViewer({
 }) {
   const [loading, setLoading] = useState(true);
   const [cardData, setCardData] = useState(null);
+  const [showBack, setShowBack] = useState(false); // Toggle front/back
   const printRef = useRef();
 
   useEffect(() => {
