@@ -14,7 +14,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://talk-synopsis.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://chat-insight-7.preview.emergentagent.com')
 
 # Test credentials
 DIRECTOR_EMAIL = "director@schooltino.com"

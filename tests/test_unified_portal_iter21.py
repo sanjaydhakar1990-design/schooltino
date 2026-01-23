@@ -14,7 +14,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://talk-synopsis.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://chat-insight-7.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 DIRECTOR_CREDS = {"email": "director@schooltino.com", "password": "admin123"}

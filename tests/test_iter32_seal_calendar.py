@@ -13,7 +13,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://talk-synopsis.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://chat-insight-7.preview.emergentagent.com')
 
 # Test credentials
 DIRECTOR_EMAIL = "director@demo.com"
