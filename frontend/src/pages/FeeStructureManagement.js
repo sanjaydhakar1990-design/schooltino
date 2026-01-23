@@ -72,7 +72,6 @@ export default function FeeStructureManagement() {
   const [selectedScheme, setSelectedScheme] = useState(null);
 
   const schoolId = user?.school_id || 'SCH-TEST-2026';
-  const token = localStorage.getItem('token');
   const classes = ['Nursery', 'LKG', 'UKG', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
   useEffect(() => {
