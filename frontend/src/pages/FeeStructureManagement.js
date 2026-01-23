@@ -436,7 +436,13 @@ export default function FeeStructureManagement() {
                         )}
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="col-span-3 text-center py-8 text-slate-400">
+                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No students found</p>
+                      <p className="text-sm">Check if students are added in the school</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -475,13 +481,19 @@ export default function FeeStructureManagement() {
             <Card>
               <CardHeader>
                 <CardTitle>Assign Scheme to Student</CardTitle>
+                <CardDescription>Search and select a student to assign government scheme</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {students.slice(0, 6).map((student, idx) => (
+                  <Input
+                    placeholder="Search student..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
+                    {filteredStudents.length > 0 ? filteredStudents.slice(0, 20).map((student, idx) => (
                       <Button
-                        key={idx}
+                        key={student.id || idx}
                         variant={selectedStudent?.id === student.id ? "default" : "outline"}
                         size="sm"
                         className="justify-start"
