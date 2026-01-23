@@ -302,6 +302,16 @@ export const PRIMARY_CHAPTERS = {
     { id: 'ch7', name: 'Animals Around Us' },
     { id: 'ch8', name: 'Weather and Seasons' },
   ],
+  '1_Drawing': [
+    { id: 'ch1', name: 'Basic Shapes (आधारभूत आकार)', hasDrawing: true },
+    { id: 'ch2', name: 'My Family Drawing (मेरा परिवार)', hasDrawing: true },
+    { id: 'ch3', name: 'Fruits and Vegetables (फल और सब्जियां)', hasDrawing: true },
+    { id: 'ch4', name: 'Animals - Simple (सरल जानवर)', hasDrawing: true },
+    { id: 'ch5', name: 'My House (मेरा घर)', hasDrawing: true },
+    { id: 'ch6', name: 'Nature - Tree, Flowers (प्रकृति)', hasDrawing: true },
+    { id: 'ch7', name: 'Coloring Activities (रंग भरना)', hasDrawing: true },
+    { id: 'ch8', name: 'Clay Modeling (मिट्टी कला)', hasDrawing: true },
+  ],
   // Class 2
   '2_Hindi': [
     { id: 'ch1', name: 'ऊँट चला' },
