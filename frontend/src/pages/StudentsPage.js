@@ -80,6 +80,12 @@ export default function StudentsPage() {
   const [documentStudent, setDocumentStudent] = useState(null);
   const [uploadingDocument, setUploadingDocument] = useState(false);
   
+  // Delete confirmation states
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteStudent, setDeleteStudent] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  
   // Photo capture states
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
