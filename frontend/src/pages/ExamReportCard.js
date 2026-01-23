@@ -168,7 +168,7 @@ export default function ExamReportCard() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/exams`, {
+      await axios.post(`${API}/exam-schedule`, {
         ...examForm,
         school_id: schoolId,
         created_by: user?.id
