@@ -271,9 +271,11 @@ export default function ClassesPage() {
                   </button>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">{cls.name} - {cls.section}</h3>
+              <h3 className="text-xl font-bold text-slate-900">
+                {cls.name}{cls.section ? ` - ${cls.section}` : ''}
+              </h3>
               <p className="text-sm text-slate-500 mt-1">
-                {t('class_teacher')}: {getTeacherName(cls.class_teacher_id)}
+                {t('class_teacher')}: {getTeacherName(cls.class_teacher_id) || <span className="text-orange-500">Not Assigned</span>}
               </p>
               <div className="mt-auto pt-4">
                 <div className="flex items-center justify-between text-sm">
