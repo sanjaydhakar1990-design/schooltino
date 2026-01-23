@@ -10,7 +10,7 @@ import {
   Settings, Plus, Save, Loader2, Trash2, Edit, CheckCircle,
   BookOpen, Bus, Home, Beaker, Library, Trophy, Shirt, 
   GraduationCap, FileText, Users, IndianRupee, AlertCircle,
-  Award, Shield, Heart, UserCheck, Baby
+  Award, Shield, Heart, UserCheck, Baby, AlertTriangle, Phone
 } from 'lucide-react';
 import { toast } from 'sonner';
 
