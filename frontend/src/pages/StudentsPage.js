@@ -1614,6 +1614,102 @@ Note: First login पर password change करें।`;
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Student Credentials Sharing Dialog */}
+      <Dialog open={showCredentialsDialog} onOpenChange={setShowCredentialsDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="w-5 h-5 text-purple-600" />
+              📱 StudyTino Login Details
+            </DialogTitle>
+          </DialogHeader>
+          
+          {credentialsStudent && (
+            <div className="space-y-4">
+              {/* Student Info */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100">
+                <p className="font-bold text-lg">{credentialsStudent.name}</p>
+                <p className="text-sm text-slate-600">
+                  Class: {credentialsStudent.class_name || 'N/A'} | Father: {credentialsStudent.father_name}
+                </p>
+              </div>
+              
+              {/* Credentials Box */}
+              <div className="bg-slate-900 text-white rounded-xl p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 text-sm">Student ID:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-lg text-purple-300">
+                      {credentialsStudent.student_id}
+                    </span>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-white hover:bg-slate-700"
+                      onClick={() => {
+                        navigator.clipboard.writeText(credentialsStudent.student_id);
+                        toast.success('ID copied!');
+                      }}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 text-sm">Password:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-lg text-green-300">
+                      {credentialsStudent.default_password}
+                    </span>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-white hover:bg-slate-700"
+                      onClick={() => {
+                        navigator.clipboard.writeText(credentialsStudent.default_password);
+                        toast.success('Password copied!');
+                      }}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* App Link */}
+              <div className="bg-blue-50 rounded-lg p-3 text-center">
+                <p className="text-xs text-blue-600 mb-1">App Link:</p>
+                <p className="font-mono text-sm text-blue-800">{window.location.origin}/studytino</p>
+              </div>
+              
+              {/* Share Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  onClick={() => shareViaWhatsApp(credentialsStudent)}
+                  className="bg-green-600 hover:bg-green-700 gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp Share
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => copyCredentials(credentialsStudent)}
+                  className="gap-2"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy All
+                </Button>
+              </div>
+              
+              {/* Note */}
+              <div className="text-xs text-slate-500 text-center bg-amber-50 rounded-lg p-2">
+                💡 Parent को ये details share करें। First login पर password change करना होगा।
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
