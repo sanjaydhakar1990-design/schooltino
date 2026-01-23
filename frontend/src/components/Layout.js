@@ -33,23 +33,55 @@ export const Layout = () => {
 
   // Dynamically update favicon and app icon with school logo
   useEffect(() => {
-    if (schoolLogo) {
-      // Update favicon
-      const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-      link.type = 'image/x-icon';
-      link.rel = 'shortcut icon';
-      link.href = schoolLogo;
-      document.getElementsByTagName('head')[0].appendChild(link);
-      
-      // Update apple touch icon
-      const appleLink = document.querySelector("link[rel='apple-touch-icon']") || document.createElement('link');
-      appleLink.rel = 'apple-touch-icon';
-      appleLink.href = schoolLogo;
-      document.getElementsByTagName('head')[0].appendChild(appleLink);
-      
-      // Update document title if school name exists
-      if (schoolName) {
-        document.title = `${schoolName} - Schooltino`;
+    if (schoolLogo && schoolLogo.length > 100) {  // Valid logo (not placeholder)
+      try {
+        // Update favicon
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'shortcut icon';
+          document.head.appendChild(link);
+        }
+        link.type = schoolLogo.startsWith('data:') ? 'image/png' : 'image/x-icon';
+        link.href = schoolLogo;
+        
+        // Update apple touch icon
+        let appleLink = document.querySelector("link[rel='apple-touch-icon']");
+        if (!appleLink) {
+          appleLink = document.createElement('link');
+          appleLink.rel = 'apple-touch-icon';
+          document.head.appendChild(appleLink);
+        }
+        appleLink.href = schoolLogo;
+        
+        // Update PWA manifest icon dynamically
+        const manifestLink = document.querySelector("link[rel='manifest']");
+        if (manifestLink) {
+          // Create dynamic manifest with school logo
+          const dynamicManifest = {
+            name: schoolName || 'Schooltino',
+            short_name: schoolName?.split(' ')[0] || 'School',
+            icons: [
+              { src: schoolLogo, sizes: '192x192', type: 'image/png' },
+              { src: schoolLogo, sizes: '512x512', type: 'image/png' }
+            ],
+            start_url: '/',
+            display: 'standalone',
+            background_color: '#ffffff',
+            theme_color: '#6366f1'
+          };
+          const blob = new Blob([JSON.stringify(dynamicManifest)], { type: 'application/json' });
+          manifestLink.href = URL.createObjectURL(blob);
+        }
+        
+        // Update document title if school name exists
+        if (schoolName) {
+          document.title = `${schoolName} - Schooltino`;
+        }
+        
+        console.log('App icon updated with school logo');
+      } catch (error) {
+        console.error('Failed to update app icon:', error);
       }
     }
   }, [schoolLogo, schoolName]);
