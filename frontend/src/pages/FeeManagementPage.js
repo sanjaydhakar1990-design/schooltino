@@ -140,10 +140,11 @@ export default function FeeManagementPage() {
   };
 
   useEffect(() => {
-    if (schoolId && activeTab === 'collection') {
+    if (schoolId) {
+      // Always fetch students for Collection dialog to work
       fetchStudents(selectedClass);
     }
-  }, [selectedClass, search, activeTab]);
+  }, [schoolId, selectedClass, search, activeTab]);
 
   // Save fee structure
   const handleSaveStructure = async () => {
