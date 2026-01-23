@@ -56,6 +56,8 @@ export default function FeeStructureManagement() {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [oldDueStudents, setOldDueStudents] = useState([]);
   
   const [newFee, setNewFee] = useState({
     fee_type: '',
@@ -69,12 +71,14 @@ export default function FeeStructureManagement() {
   const [studentServices, setStudentServices] = useState([]);
   const [selectedScheme, setSelectedScheme] = useState(null);
 
-  const schoolId = user?.school_id || 'school1';
+  const schoolId = user?.school_id || 'SCH-TEST-2026';
+  const token = localStorage.getItem('token');
   const classes = ['Nursery', 'LKG', 'UKG', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
   useEffect(() => {
     fetchFeeStructures();
     fetchStudents();
+    fetchOldDueStudents();
   }, [schoolId]);
 
   const fetchFeeStructures = async () => {
