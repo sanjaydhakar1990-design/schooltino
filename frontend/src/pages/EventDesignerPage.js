@@ -67,6 +67,30 @@ export default function EventDesignerPage() {
     phone: ''
   });
 
+  // Fetch school details to set default name and logo
+  useEffect(() => {
+    const fetchSchoolDetails = async () => {
+      if (!schoolId) return;
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API}/api/schools/${schoolId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data) {
+          setSchool({
+            name: response.data.name || 'School Name',
+            logo: response.data.logo_url || null,
+            address: response.data.address || 'School Address',
+            phone: response.data.phone || ''
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch school details:', error);
+      }
+    };
+    fetchSchoolDetails();
+  }, [schoolId]);
+
   const handleInputChange = (e) => {
     setEventDetails(prev => ({
       ...prev,
