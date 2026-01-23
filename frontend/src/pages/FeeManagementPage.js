@@ -431,20 +431,28 @@ export default function FeeManagementPage() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-100 p-1 rounded-lg">
-          <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-white">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-100 p-1 rounded-lg">
+          <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <Building2 className="w-4 h-4" />
-            Fee Structure
+            <span className="hidden md:inline">Fee Structure</span>
+            <span className="md:hidden">Structure</span>
           </TabsTrigger>
-          <TabsTrigger value="collection" className="gap-2 data-[state=active]:bg-white">
+          <TabsTrigger value="collection" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <CreditCard className="w-4 h-4" />
-            Student Fees
+            <span className="hidden md:inline">Student Fees</span>
+            <span className="md:hidden">Fees</span>
           </TabsTrigger>
-          <TabsTrigger value="old_dues" className="gap-2 data-[state=active]:bg-white">
+          <TabsTrigger value="scholarships" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
+            <GraduationCap className="w-4 h-4" />
+            <span className="hidden md:inline">Govt Schemes</span>
+            <span className="md:hidden">Schemes</span>
+          </TabsTrigger>
+          <TabsTrigger value="old_dues" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <History className="w-4 h-4" />
-            Old Dues
+            <span className="hidden md:inline">Old Dues</span>
+            <span className="md:hidden">Dues</span>
           </TabsTrigger>
-          <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-white">
+          <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <FileText className="w-4 h-4" />
             Reports
           </TabsTrigger>
