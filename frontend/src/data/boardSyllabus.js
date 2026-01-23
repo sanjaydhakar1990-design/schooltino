@@ -1331,6 +1331,9 @@ export const getChapters = (board, className, subject) => {
     if (subject === 'हिंदी') {
       subjectKey = 'Hindi';
     }
+    if (subject.includes('Drawing') || subject.includes('चित्रकला') || subject.includes('Art')) {
+      subjectKey = 'Drawing';
+    }
     const key = `${classNum}_${subjectKey}`;
     return PRIMARY_CHAPTERS[key] || [];
   }
