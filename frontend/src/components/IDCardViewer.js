@@ -515,13 +515,21 @@ export default function IDCardViewer({
                 }}
                 data-testid="id-card-back-preview"
               >
-                {/* Large Watermark - School Logo */}
+                {/* Large Watermark - School Logo (transparent background) */}
                 {school?.logo_url && (
                   <div 
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    style={{ opacity: 0.2, zIndex: 0 }}
+                    style={{ opacity: 0.15, zIndex: 0 }}
                   >
-                    <img src={school.logo_url} alt="" className="w-44 h-44 object-contain" />
+                    <img 
+                      src={school.logo_url} 
+                      alt="" 
+                      className="w-44 h-44 object-contain"
+                      style={{ 
+                        mixBlendMode: 'luminosity',
+                        filter: 'drop-shadow(0 0 0 transparent)'
+                      }} 
+                    />
                   </div>
                 )}
 
@@ -547,15 +555,21 @@ export default function IDCardViewer({
                         {card?.designation || 'Employee'}
                       </div>
                       {card?.designation_hindi && (
-                        <div className="text-sm font-medium mb-3 opacity-90">
+                        <div className="text-sm font-medium mb-2 opacity-90">
                           {card.designation_hindi}
                         </div>
                       )}
-                      <div className="text-base font-semibold uppercase px-4 leading-tight">
+                      <div className="text-xs tracking-widest opacity-80 mb-2">OF</div>
+                      <div className="text-lg font-bold uppercase px-4 leading-tight">
                         {school?.name || 'School Name'}
                       </div>
+                      {school?.address && (
+                        <div className="text-[9px] mt-2 opacity-70 max-w-[90%]">
+                          {school.address}
+                        </div>
+                      )}
                       {school?.phone && (
-                        <div className="text-[10px] mt-3 opacity-80">
+                        <div className="text-[10px] mt-2 opacity-80">
                           📞 {school.phone}
                         </div>
                       )}
