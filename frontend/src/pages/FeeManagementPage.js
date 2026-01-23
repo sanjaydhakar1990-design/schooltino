@@ -274,6 +274,90 @@ export default function FeeManagementPage() {
     }
   };
 
+  // Save Scholarship/Govt Scheme
+  const handleSaveScholarship = async () => {
+    if (!scholarshipForm.name || scholarshipForm.amount <= 0) {
+      toast.error('कृपया scheme name और amount भरें');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/scholarships`, {
+        ...scholarshipForm,
+        school_id: schoolId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success('Scheme saved successfully!');
+      setShowScholarshipDialog(false);
+      setScholarshipForm({
+        name: '',
+        name_hi: '',
+        type: 'central_govt',
+        amount: 0,
+        percentage: 0,
+        eligibility: '',
+        documents_required: '',
+        academic_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+      });
+      fetchAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save scheme');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Assign Scholarship to Student
+  const handleAssignScholarship = async () => {
+    if (!assignForm.student_id || !assignForm.scholarship_id) {
+      toast.error('कृपया student और scheme select करें');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/student-scholarships`, {
+        ...assignForm,
+        school_id: schoolId,
+        assigned_by: user?.id,
+        assigned_date: new Date().toISOString()
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success('Scholarship assigned to student!');
+      setShowAssignScholarshipDialog(false);
+      setAssignForm({
+        student_id: '',
+        scholarship_id: '',
+        amount: 0,
+        status: 'pending',
+        remarks: ''
+      });
+      fetchAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to assign scholarship');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Get scholarship name by ID
+  const getScholarshipName = (id) => {
+    const scheme = scholarships.find(s => s.id === id);
+    return scheme?.name || 'Unknown';
+  };
+
+  // Get student scholarship summary
+  const getStudentScholarshipSummary = (studentId) => {
+    return studentScholarships.filter(s => s.student_id === studentId);
+  };
+
   // Get fee structure for a class
   const getClassFeeStructure = (classId) => {
     return feeStructures.find(f => f.class_id === classId);
