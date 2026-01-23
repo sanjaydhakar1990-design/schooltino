@@ -31,6 +31,29 @@ export const Layout = () => {
     changeLanguage(newLang);
   };
 
+  // Dynamically update favicon and app icon with school logo
+  useEffect(() => {
+    if (schoolLogo) {
+      // Update favicon
+      const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+      link.type = 'image/x-icon';
+      link.rel = 'shortcut icon';
+      link.href = schoolLogo;
+      document.getElementsByTagName('head')[0].appendChild(link);
+      
+      // Update apple touch icon
+      const appleLink = document.querySelector("link[rel='apple-touch-icon']") || document.createElement('link');
+      appleLink.rel = 'apple-touch-icon';
+      appleLink.href = schoolLogo;
+      document.getElementsByTagName('head')[0].appendChild(appleLink);
+      
+      // Update document title if school name exists
+      if (schoolName) {
+        document.title = `${schoolName} - Schooltino`;
+      }
+    }
+  }, [schoolLogo, schoolName]);
+
   return (
     <div className="min-h-screen bg-background flex relative">
       {/* School Logo Watermark - Light Background on ALL Pages */}
