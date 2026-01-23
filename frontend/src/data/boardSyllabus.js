@@ -1500,3 +1500,41 @@ export const BOARD_MARKS_PATTERN = {
     hots: { marks: 4, label: 'HOTS (4 marks)' },
   },
 };
+
+// Class-wise default paper configuration
+export const CLASS_PAPER_DEFAULTS = {
+  // Pre-Primary (Nursery, LKG, UKG) - Drawing/Activity based, no long answers
+  'Nursery': { totalMarks: 20, time: 30, questionTypes: ['oral', 'activity', 'coloring'], hasLong: false },
+  'LKG': { totalMarks: 25, time: 30, questionTypes: ['oral', 'activity', 'coloring', 'matching'], hasLong: false },
+  'UKG': { totalMarks: 30, time: 45, questionTypes: ['oral', 'activity', 'coloring', 'matching', 'fill_blank'], hasLong: false },
+  
+  // Primary Classes (1-5) - Simple questions, no long answers for Class 1-3
+  'Class 1': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'matching', 'very_short'], hasLong: false },
+  'Class 2': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'matching', 'very_short'], hasLong: false },
+  'Class 3': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'very_short', 'short'], hasLong: false },
+  'Class 4': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'very_short', 'short'], hasLong: true, maxLong: 1 },
+  'Class 5': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'very_short', 'short', 'long'], hasLong: true, maxLong: 2 },
+  
+  // Middle School (6-8)
+  'Class 6': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'vsaq', 'short', 'long', 'diagram'], hasLong: true },
+  'Class 7': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'vsaq', 'short', 'long', 'diagram'], hasLong: true },
+  'Class 8': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'vsaq', 'short', 'long', 'diagram'], hasLong: true },
+  
+  // Secondary (9-10) - Board exam pattern
+  'Class 9': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots'], hasLong: true },
+  'Class 10': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots', 'case_study'], hasLong: true },
+  
+  // Senior Secondary (11-12) - Board exam pattern
+  'Class 11': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots', 'case_study'], hasLong: true },
+  'Class 12': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots', 'case_study'], hasLong: true },
+};
+
+// Drawing subject paper - all image-based questions
+export const DRAWING_PAPER_TYPES = {
+  coloring: { label: 'रंग भरो / Color the image', marks: 5 },
+  name_object: { label: 'चित्र का नाम लिखो / Name the object', marks: 2 },
+  draw_object: { label: 'बनाओ / Draw', marks: 5 },
+  complete_drawing: { label: 'चित्र पूरा करो / Complete the drawing', marks: 5 },
+  match_picture: { label: 'चित्र मिलाओ / Match the pictures', marks: 3 },
+  scenery: { label: 'दृश्य बनाओ / Draw scenery', marks: 10 },
+};
