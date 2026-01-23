@@ -11047,6 +11047,7 @@ api_router.include_router(gallery_router)
 api_router.include_router(govt_exam_router)
 api_router.include_router(super_admin_router)
 api_router.include_router(message_credits_router)
+api_router.include_router(tino_ai_router)
 
 app.include_router(api_router)
 
