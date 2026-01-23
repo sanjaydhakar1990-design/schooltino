@@ -138,8 +138,9 @@ class TestFeeCollections:
             "student_id": "STD-TEST-001",
             "amount": 2000,
             "payment_mode": "cash",
-            "fee_type": "tuition_fee",
-            "month": "January 2026"
+            "fee_types": ["tuition_fee"],
+            "months": ["January 2026"],
+            "payment_date": "2026-01-23"
         }
         response = requests.post(
             f"{BASE_URL}/api/fee-collections",
