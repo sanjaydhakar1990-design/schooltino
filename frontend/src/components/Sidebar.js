@@ -144,6 +144,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       label: 'AI Tools',
       icon: Cpu,
       items: [
+        { path: '/app/tino-ai', icon: Brain, label: 'Tino AI (Command Center)', permKey: 'dashboard' },
         { path: '/app/ai-paper', icon: Sparkles, label: t('ai_paper'), permKey: 'ai_paper' },
         { path: '/app/event-designer', icon: Image, label: 'AI Content & Event Designer', permKey: 'ai_content' },
         { path: '/app/school-calendar', icon: Calendar, label: 'School Calendar (Board-wise)', permKey: 'settings' },
