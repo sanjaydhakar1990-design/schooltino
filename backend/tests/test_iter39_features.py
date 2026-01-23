@@ -12,20 +12,21 @@ import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
+@pytest.fixture(scope="module")
+def auth_token():
+    """Get authentication token"""
+    response = requests.post(f"{BASE_URL}/api/auth/login", json={
+        "email": "director@test.com",
+        "password": "test1234"
+    })
+    assert response.status_code == 200, f"Login failed: {response.text}"
+    data = response.json()
+    assert "access_token" in data, "No access_token in response"
+    return data["access_token"]
+
+
 class TestAuth:
     """Authentication tests"""
-    
-    @pytest.fixture(scope="class")
-    def auth_token(self):
-        """Get authentication token"""
-        response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "director@test.com",
-            "password": "test1234"
-        })
-        assert response.status_code == 200, f"Login failed: {response.text}"
-        data = response.json()
-        assert "access_token" in data, "No access_token in response"
-        return data["access_token"]
     
     def test_login_success(self, auth_token):
         """Test login returns valid token"""
@@ -36,16 +37,6 @@ class TestAuth:
 
 class TestFeeStructureManagement:
     """Fee Structure Management tests"""
-    
-    @pytest.fixture(scope="class")
-    def auth_token(self):
-        """Get authentication token"""
-        response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "director@test.com",
-            "password": "test1234"
-        })
-        assert response.status_code == 200
-        return response.json()["access_token"]
     
     def test_students_list_loads(self, auth_token):
         """Test that student list loads with auth token"""
@@ -100,19 +91,10 @@ class TestFeeStructureManagement:
 class TestClassManagement:
     """Class Management tests - Section optional"""
     
-    @pytest.fixture(scope="class")
-    def auth_token(self):
-        """Get authentication token"""
-        response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "director@test.com",
-            "password": "test1234"
-        })
-        assert response.status_code == 200
-        return response.json()["access_token"]
-    
     def test_classes_list(self, auth_token):
         """Test classes list API"""
-        response = requests.get(f"{BASE_URL}/api/classes?school_id=SCH-TEST-2026")
+        headers = {"Authorization": f"Bearer {auth_token}"}
+        response = requests.get(f"{BASE_URL}/api/classes?school_id=SCH-TEST-2026", headers=headers)
         assert response.status_code == 200, f"Classes API failed: {response.text}"
         data = response.json()
         assert isinstance(data, list), "Classes should be a list"
@@ -125,7 +107,10 @@ class TestClassManagement:
     
     def test_create_class_without_section(self, auth_token):
         """Test creating a class without section (optional)"""
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json"
+        }
         payload = {
             "name": "Class 5",
             "section": "",  # Empty section - should be allowed
@@ -139,7 +124,8 @@ class TestClassManagement:
     
     def test_staff_list_for_teacher_assignment(self, auth_token):
         """Test staff list for class teacher assignment"""
-        response = requests.get(f"{BASE_URL}/api/staff?school_id=SCH-TEST-2026&designation=Teacher")
+        headers = {"Authorization": f"Bearer {auth_token}"}
+        response = requests.get(f"{BASE_URL}/api/staff?school_id=SCH-TEST-2026&designation=Teacher", headers=headers)
         assert response.status_code == 200, f"Staff API failed: {response.text}"
         data = response.json()
         assert isinstance(data, list), "Staff should be a list"
@@ -148,16 +134,6 @@ class TestClassManagement:
 
 class TestAIPaperGeneration:
     """AI Paper Generation tests - Class-wise defaults"""
-    
-    @pytest.fixture(scope="class")
-    def auth_token(self):
-        """Get authentication token"""
-        response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "director@test.com",
-            "password": "test1234"
-        })
-        assert response.status_code == 200
-        return response.json()["access_token"]
     
     def test_ai_paper_generation_class_1(self, auth_token):
         """Test AI paper generation for Class 1 (no long answers)"""
@@ -170,7 +146,8 @@ class TestAIPaperGeneration:
             "class_name": "Class 1",
             "subject": "Hindi",
             "board": "CBSE",
-            "chapters": ["वर्णमाला"],
+            "chapter": "वर्णमाला",  # Single chapter field
+            "difficulty": "easy",
             "question_types": ["mcq", "fill_blank", "matching"],  # No long answers for Class 1
             "total_marks": 40,
             "time_duration": 60,
@@ -194,7 +171,8 @@ class TestAIPaperGeneration:
             "class_name": "Class 3",
             "subject": "Mathematics",
             "board": "CBSE",
-            "chapters": ["Addition"],
+            "chapter": "Addition",
+            "difficulty": "medium",
             "question_types": ["mcq", "fill_blank", "very_short", "short"],  # No long for Class 3
             "total_marks": 50,
             "time_duration": 90,
@@ -218,7 +196,8 @@ class TestAIPaperGeneration:
             "class_name": "Class 2",
             "subject": "Drawing",
             "board": "CBSE",
-            "chapters": ["Basic Shapes"],
+            "chapter": "Basic Shapes",
+            "difficulty": "easy",
             "question_types": ["coloring", "draw_object"],
             "total_marks": 25,
             "time_duration": 45,
