@@ -58,6 +58,9 @@ export default function UnifiedPortal() {
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [todayAttendance, setTodayAttendance] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Welcome Dialog for first-time users
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
   const isDirector = user?.role === 'director';
   const isPrincipal = user?.role === 'principal' || user?.role === 'vice_principal';
@@ -74,6 +77,12 @@ export default function UnifiedPortal() {
   useEffect(() => {
     fetchUserPermissions();
     fetchDashboardData();
+    // Check if first-time login for welcome message
+    const hasSeenWelcome = localStorage.getItem('teachtino_welcome_seen');
+    if (!hasSeenWelcome) {
+      setShowWelcomeDialog(true);
+      localStorage.setItem('teachtino_welcome_seen', 'true');
+    }
   }, []);
 
   const fetchUserPermissions = async () => {
