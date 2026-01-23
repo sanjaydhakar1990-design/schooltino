@@ -894,7 +894,7 @@ export default function FeeManagementPage() {
               )) : (
                 <div className="col-span-3 text-center py-12 text-slate-400">
                   <GraduationCap className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No schemes added yet. Click "Add New Scheme" to create one.</p>
+                  <p>No schemes added yet. Click &quot;Add New Scheme&quot; to create one.</p>
                 </div>
               )}
             </div>
