@@ -396,12 +396,17 @@ export default function FeeStructureManagement() {
                 <Input
                   placeholder="Search student by name or ID..."
                   className="max-w-md"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {students.slice(0, 12).map((student, idx) => (
+                <p className="text-sm text-slate-500">
+                  {filteredStudents.length} students found {searchQuery && `for "${searchQuery}"`}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
+                  {filteredStudents.length > 0 ? filteredStudents.map((student, idx) => (
                     <div 
-                      key={idx} 
-                      className="p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100"
+                      key={student.id || idx} 
+                      className="p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 border border-transparent hover:border-indigo-200"
                       onClick={() => {
                         setSelectedStudent(student);
                         setStudentServices(student.services || []);
@@ -415,7 +420,7 @@ export default function FeeStructureManagement() {
                         <div>
                           <p className="font-medium">{student.name}</p>
                           <p className="text-xs text-slate-500">
-                            {student.student_id || student.id} • Class {student.class_id}
+                            {student.student_id || student.admission_no || student.id?.slice(0,8)} • Class {student.class_name || student.class_id}
                           </p>
                         </div>
                       </div>
