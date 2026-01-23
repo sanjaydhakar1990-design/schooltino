@@ -762,6 +762,70 @@ export default function UnifiedPortal() {
           </button>
         </div>
       </nav>
+
+      {/* Welcome Dialog for First-Time Staff Users */}
+      <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <span className="text-2xl">🎓</span>
+              TeachTino में आपका स्वागत है!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-slate-600">
+              नमस्ते {user?.name || 'Teacher'}! TeachTino आपके teaching को आसान और productive बनाने के लिए है।
+            </p>
+            
+            <div className="space-y-3 bg-emerald-50 rounded-xl p-4">
+              <h4 className="font-semibold text-emerald-800">आप यहाँ क्या-क्या कर सकते हैं:</h4>
+              <div className="grid gap-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>AI से Question Paper बनाएं (2 मिनट में!)</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Attendance mark करें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Students की Performance track करें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Homework और Assignments assign करें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>AI से Lesson Plans generate करें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Events और Pamphlets design करें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Voice में commands दें (Hindi/English)</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+              <p className="text-amber-800">
+                <strong>💡 Tip:</strong> &quot;Ask Tino&quot; button से AI से कुछ भी पूछ सकते हैं!
+              </p>
+            </div>
+            
+            <Button 
+              onClick={() => setShowWelcomeDialog(false)}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+            >
+              शुरू करें →
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
