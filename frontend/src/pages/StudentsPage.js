@@ -244,14 +244,16 @@ export default function StudentsPage() {
 
     try {
       const payload = { ...formData, school_id: schoolId };
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       
       if (editingStudent) {
-        await axios.put(`${API}/students/${editingStudent.id}`, payload);
+        await axios.put(`${API}/students/${editingStudent.id}`, payload, { headers });
         toast.success(t('saved_successfully'));
         setIsDialogOpen(false);
       } else {
         // New admission - use /students/admit endpoint
-        const response = await axios.post(`${API}/students/admit`, payload);
+        const response = await axios.post(`${API}/students/admit`, payload, { headers });
         
         const studentId = response.data.student_id;
         
