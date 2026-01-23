@@ -4,7 +4,32 @@
 
 ---
 
-## ✅ LATEST CHANGES (Session 10 - Part 6)
+## ✅ LATEST CHANGES (Session 10 - Part 7)
+
+### 1. Setup Wizard Functions Fixed ✅
+- Added `/app` prefix to step routes
+- Now clicking on steps navigates to correct pages:
+  - School Details → `/app/school-registration`
+  - Connect Website → `/app/website`
+  - Setup CCTV → `/app/cctv`
+  - etc.
+
+### 2. Attendance Date Restriction ✅
+- Cannot select dates more than 7 days in past
+- Cannot select future dates
+- Hindi message: "पिछले 7 दिनों की attendance ही बदल सकते हैं"
+- `min` and `max` attributes added to date input
+
+### 3. App Icon Dynamic Update Enhanced ✅
+- Now handles base64 logos properly
+- Updates favicon, apple-touch-icon
+- Creates dynamic PWA manifest with school logo
+- Updates document title with school name
+- Only updates if logo is valid (>100 chars, not placeholder)
+
+---
+
+## ✅ EARLIER CHANGES (Session 10 - Part 6)
 
 ### 1. Classes Page - Class Teacher Selection Fixed ✅
 - Teachers now properly load from `/api/users` endpoint
