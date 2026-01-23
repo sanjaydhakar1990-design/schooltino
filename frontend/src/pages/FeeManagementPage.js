@@ -813,6 +813,154 @@ export default function FeeManagementPage() {
           </Card>
         </TabsContent>
 
+        {/* Government Schemes & Scholarships Tab */}
+        <TabsContent value="scholarships" className="mt-4">
+          <div className="grid gap-4">
+            {/* Header with Actions */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-emerald-600" />
+                    Government Schemes & Scholarships
+                  </CardTitle>
+                  <CardDescription>Manage and assign govt schemes to students</CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => setShowAssignScholarshipDialog(true)} 
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Users className="w-4 h-4" />
+                    Assign to Student
+                  </Button>
+                  <Button 
+                    onClick={() => setShowScholarshipDialog(true)} 
+                    className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add New Scheme
+                  </Button>
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Available Schemes */}
+            <div className="grid md:grid-cols-3 gap-4">
+              {scholarships.length > 0 ? scholarships.map((scheme) => (
+                <Card key={scheme.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        scheme.type === 'central_govt' ? 'bg-blue-100 text-blue-700' :
+                        scheme.type === 'state_govt' ? 'bg-purple-100 text-purple-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {scheme.type === 'central_govt' ? 'केंद्र सरकार' : 
+                         scheme.type === 'state_govt' ? 'राज्य सरकार' : 'Private'}
+                      </span>
+                      <span className="text-emerald-600 font-bold">₹{(scheme.amount || 0).toLocaleString()}</span>
+                    </div>
+                    <CardTitle className="text-base mt-2">{scheme.name}</CardTitle>
+                    {scheme.name_hi && <p className="text-sm text-slate-500">{scheme.name_hi}</p>}
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    {scheme.eligibility && (
+                      <p className="text-xs text-slate-600 mb-2">
+                        <strong>Eligibility:</strong> {scheme.eligibility}
+                      </p>
+                    )}
+                    {scheme.documents_required && (
+                      <p className="text-xs text-slate-500">
+                        <strong>Documents:</strong> {scheme.documents_required}
+                      </p>
+                    )}
+                    <div className="mt-3 pt-2 border-t flex justify-between items-center">
+                      <span className="text-xs text-slate-400">{scheme.academic_year}</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setAssignForm({...assignForm, scholarship_id: scheme.id, amount: scheme.amount});
+                          setShowAssignScholarshipDialog(true);
+                        }}
+                      >
+                        Assign
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )) : (
+                <div className="col-span-3 text-center py-12 text-slate-400">
+                  <GraduationCap className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>No schemes added yet. Click "Add New Scheme" to create one.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Students with Scholarships */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Students with Scholarships ({studentScholarships.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {studentScholarships.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Scheme</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Remarks</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {studentScholarships.map((ss, idx) => {
+                        const student = students.find(s => s.id === ss.student_id);
+                        return (
+                          <TableRow key={idx}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{student?.name || ss.student_id}</p>
+                                <p className="text-xs text-slate-500">{student?.class_name}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>{getScholarshipName(ss.scholarship_id)}</TableCell>
+                            <TableCell className="font-medium text-emerald-600">₹{(ss.amount || 0).toLocaleString()}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-0.5 rounded text-xs ${
+                                ss.status === 'received' ? 'bg-green-100 text-green-700' :
+                                ss.status === 'approved' ? 'bg-blue-100 text-blue-700' :
+                                ss.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {ss.status === 'received' ? 'प्राप्त' :
+                                 ss.status === 'approved' ? 'स्वीकृत' :
+                                 ss.status === 'rejected' ? 'अस्वीकृत' : 'Pending'}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-sm text-slate-500">{ss.remarks || '-'}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-slate-400">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>No scholarships assigned yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
         {/* Old Dues Tab */}
         <TabsContent value="old_dues" className="mt-4">
           <Card>
