@@ -99,9 +99,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { path: '/app/students', icon: Users, label: t('students'), permKey: 'students' },
         { path: '/app/classes', icon: GraduationCap, label: t('classes'), permKey: 'classes' },
         { path: '/app/attendance', icon: CalendarCheck, label: t('attendance'), permKey: 'attendance' },
-        { path: '/app/timetable', icon: Clock, label: t('timetable'), permKey: 'attendance' },
-        { path: '/app/exams', icon: FileText, label: 'Online Exams', permKey: 'attendance' },
-        { path: '/app/admit-cards', icon: Award, label: 'Admit Cards', permKey: 'attendance' },
+        { path: '/app/timetable-management', icon: Clock, label: 'Timetable', permKey: 'attendance' },
+        { path: '/app/exam-report', icon: ClipboardList, label: 'Exam & Report Card', permKey: 'attendance' },
+        { path: '/app/certificates', icon: Award, label: 'Certificates (TC/Character)', permKey: 'students' },
+        { path: '/app/admit-cards', icon: FileText, label: 'Admit Cards', permKey: 'attendance' },
       ]
     },
     {
