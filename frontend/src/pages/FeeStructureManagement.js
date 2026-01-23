@@ -535,6 +535,122 @@ export default function FeeStructureManagement() {
             </Card>
           </div>
         </TabsContent>
+
+        {/* Old Fee Dues Tab */}
+        <TabsContent value="old-dues">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-600">
+                <AlertTriangle className="w-5 h-5" />
+                Old Fee Dues Management
+              </CardTitle>
+              <CardDescription>
+                Students with pending fees from previous years. Send reminders and track payments.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Input
+                  placeholder="Search student with old dues..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <h4 className="font-medium text-orange-800 mb-2">⚠️ Students with Pending Dues</h4>
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {filteredStudents.map((student, idx) => (
+                      <div key={student.id || idx} className="bg-white p-4 rounded-lg border border-orange-100 hover:border-orange-300">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">{student.name}</p>
+                            <p className="text-sm text-slate-500">
+                              {student.student_id || student.id?.slice(0,8)} • Class {student.class_name || student.class_id}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-red-600">₹{student.old_dues || 0}</p>
+                            <p className="text-xs text-slate-500">Total Due</p>
+                          </div>
+                        </div>
+                        
+                        {/* Due Details */}
+                        <div className="mt-3 pt-3 border-t grid grid-cols-3 gap-2 text-sm">
+                          <div className="bg-red-50 p-2 rounded">
+                            <p className="text-xs text-slate-500">Previous Year</p>
+                            <p className="font-medium text-red-600">₹{student.prev_year_dues || 0}</p>
+                          </div>
+                          <div className="bg-orange-50 p-2 rounded">
+                            <p className="text-xs text-slate-500">Current Year</p>
+                            <p className="font-medium text-orange-600">₹{student.current_dues || 0}</p>
+                          </div>
+                          <div className="bg-yellow-50 p-2 rounded">
+                            <p className="text-xs text-slate-500">Late Fee</p>
+                            <p className="font-medium text-yellow-600">₹{student.late_fee || 0}</p>
+                          </div>
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="mt-3 flex gap-2">
+                          <Button size="sm" variant="outline" className="flex-1 text-xs">
+                            <Phone className="w-3 h-3 mr-1" /> SMS Reminder
+                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1 text-xs">
+                            <FileText className="w-3 h-3 mr-1" /> View Details
+                          </Button>
+                          <Button size="sm" className="flex-1 text-xs bg-green-600 hover:bg-green-700">
+                            <IndianRupee className="w-3 h-3 mr-1" /> Collect Now
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {filteredStudents.length === 0 && (
+                      <div className="text-center py-8 text-slate-400">
+                        <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-400" />
+                        <p>No old dues found!</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Add Old Due Entry */}
+                <Card className="border-dashed">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-sm">Add Old Due for Student</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-4 gap-2">
+                      <select className="col-span-2 border rounded-lg px-3 py-2 text-sm">
+                        <option>Select Student</option>
+                        {students.map((s, i) => (
+                          <option key={i} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                      <Input placeholder="Amount" type="number" className="text-sm" />
+                      <Button size="sm">Add Due</Button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <select className="border rounded-lg px-3 py-2 text-sm">
+                        <option>Previous Year</option>
+                        <option>2024-25</option>
+                        <option>2023-24</option>
+                        <option>2022-23</option>
+                      </select>
+                      <select className="border rounded-lg px-3 py-2 text-sm">
+                        <option>Fee Type</option>
+                        <option>Tuition Fee</option>
+                        <option>Bus Fee</option>
+                        <option>Exam Fee</option>
+                      </select>
+                      <Input placeholder="Notes" className="text-sm" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Add Fee Dialog */}
