@@ -437,6 +437,16 @@ export const PRIMARY_CHAPTERS = {
     { id: 'ch13', name: 'Sharing Our Feelings' },
     { id: 'ch14', name: 'The Story of Food' },
   ],
+  '3_Drawing': [
+    { id: 'ch1', name: 'Scenery - Riverside (नदी किनारा)', hasDrawing: true },
+    { id: 'ch2', name: 'Scenery - Mountain (पहाड़ी दृश्य)', hasDrawing: true },
+    { id: 'ch3', name: 'Human Figures (मानव चित्र)', hasDrawing: true },
+    { id: 'ch4', name: 'Animals - Domestic (पालतू जानवर)', hasDrawing: true },
+    { id: 'ch5', name: 'Still Life - Fruits (स्थिर जीवन)', hasDrawing: true },
+    { id: 'ch6', name: 'Festivals - Diwali, Holi (त्योहार)', hasDrawing: true },
+    { id: 'ch7', name: 'Memory Drawing (स्मृति चित्र)', hasDrawing: true },
+    { id: 'ch8', name: 'Poster Making (पोस्टर)', hasDrawing: true },
+  ],
   // Class 4
   '4_Hindi': [
     { id: 'ch1', name: 'मन के भोले-भाले बादल' },
