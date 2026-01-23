@@ -194,6 +194,37 @@ export default function AIPaperPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // When class changes, apply class-wise defaults
+    if (name === 'class_name' && value) {
+      const defaults = CLASS_PAPER_DEFAULTS[value];
+      if (defaults) {
+        setFormData(prev => ({
+          ...prev,
+          class_name: value,
+          total_marks: defaults.totalMarks,
+          time_duration: defaults.time,
+          // Restrict question types for small classes
+          question_types: prev.question_types.filter(qt => {
+            // Remove long answer types for classes that don't have them
+            if (!defaults.hasLong && ['long', 'dirgha', 'nibandh', 'case_study'].includes(qt)) {
+              return false;
+            }
+            return true;
+          })
+        }));
+        
+        // Show info toast about class defaults
+        if (!defaults.hasLong) {
+          toast.info(`${value}: Long answer questions not available for this class`);
+        }
+      }
+    }
+    
+    // When Drawing subject is selected, show special options
+    if (name === 'subject' && (value.includes('Drawing') || value.includes('चित्रकला') || value.includes('Art'))) {
+      toast.info('Drawing paper will include image-based questions');
+    }
   };
 
   const handleChapterToggle = (chapterName) => {
