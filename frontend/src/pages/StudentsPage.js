@@ -509,6 +509,114 @@ export default function StudentsPage() {
     }
   };
 
+  // Class name order for promotion
+  const classOrder = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 
+    'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
+
+  const getNextClass = (currentClassName) => {
+    const idx = classOrder.findIndex(c => currentClassName.includes(c));
+    if (idx >= 0 && idx < classOrder.length - 1) {
+      return classOrder[idx + 1];
+    }
+    return null;
+  };
+
+  // Get students for promotion from selected class
+  const getStudentsForPromotion = () => {
+    if (!promotionData.fromClassId) return [];
+    return students.filter(s => s.class_id === promotionData.fromClassId && s.status === 'active');
+  };
+
+  // Handle bulk promotion
+  const handleBulkPromotion = async () => {
+    if (!promotionData.toClassId || promotionData.selectedStudentIds.length === 0) {
+      toast.error('कृपया target class और students select करें');
+      return;
+    }
+
+    setPromotingStudents(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API}/students/bulk-promote`, {
+        student_ids: promotionData.selectedStudentIds,
+        from_class_id: promotionData.fromClassId,
+        to_class_id: promotionData.toClassId,
+        school_id: schoolId,
+        academic_year: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1)
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        toast.success(`${response.data.promoted_count} students promoted successfully!`);
+        setShowPromotionDialog(false);
+        setPromotionData({ fromClassId: '', toClassId: '', selectedStudentIds: [], selectAll: false });
+        fetchStudents();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Promotion failed');
+    } finally {
+      setPromotingStudents(false);
+    }
+  };
+
+  // Handle select all for promotion
+  const handleSelectAllForPromotion = (checked) => {
+    const studentsToPromote = getStudentsForPromotion();
+    setPromotionData(prev => ({
+      ...prev,
+      selectAll: checked,
+      selectedStudentIds: checked ? studentsToPromote.map(s => s.id) : []
+    }));
+  };
+
+  // Toggle individual student selection for promotion
+  const toggleStudentForPromotion = (studentId) => {
+    setPromotionData(prev => ({
+      ...prev,
+      selectedStudentIds: prev.selectedStudentIds.includes(studentId)
+        ? prev.selectedStudentIds.filter(id => id !== studentId)
+        : [...prev.selectedStudentIds, studentId]
+    }));
+  };
+
+  // Document upload handler
+  const handleDocumentUpload = async (e, docType) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size should be less than 10MB');
+      return;
+    }
+
+    setUploadingDocument(true);
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('student_id', documentStudent.id);
+      formData.append('document_type', docType);
+      formData.append('school_id', schoolId);
+
+      const response = await axios.post(`${API}/students/upload-document`, formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}` 
+        }
+      });
+
+      if (response.data.success) {
+        toast.success(`${docType} uploaded successfully!`);
+        fetchStudents();
+      }
+    } catch (error) {
+      toast.error('Document upload failed');
+    } finally {
+      setUploadingDocument(false);
+    }
+  };
+
   if (!schoolId) {
     return (
       <div className="text-center py-20">
