@@ -15,12 +15,11 @@ import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Certificate types
+// Certificate types (Admission slip removed - it auto-generates after admission)
 const CERTIFICATE_TYPES = {
   tc: { name: 'Transfer Certificate', name_hi: 'स्थानान्तरण प्रमाण पत्र', icon: FileText },
   character: { name: 'Character Certificate', name_hi: 'चरित्र प्रमाण पत्र', icon: Award },
-  bonafide: { name: 'Bonafide Certificate', name_hi: 'वास्तविक छात्र प्रमाण पत्र', icon: CheckCircle },
-  admission: { name: 'Admission Slip', name_hi: 'प्रवेश पर्ची', icon: BookOpen }
+  bonafide: { name: 'Bonafide Certificate', name_hi: 'वास्तविक छात्र प्रमाण पत्र', icon: CheckCircle }
 };
 
 // Number to words converter (Indian style)
@@ -344,7 +343,7 @@ export default function CertificateGenerator() {
 
       {/* Certificate Type Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           {Object.entries(CERTIFICATE_TYPES).map(([key, cert]) => {
             const Icon = cert.icon;
             return (
