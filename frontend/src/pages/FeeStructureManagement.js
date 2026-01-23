@@ -185,9 +185,13 @@ export default function FeeStructureManagement() {
     
     setSaving(true);
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`${API}/api/fee-management/scheme/assign`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           student_id: selectedStudent.id || selectedStudent.student_id,
           school_id: schoolId,
@@ -204,6 +208,9 @@ export default function FeeStructureManagement() {
         toast.success(`${selectedScheme.name} assigned! 🎉`);
         setShowSchemeDialog(false);
         setSelectedScheme(null);
+      } else {
+        const errData = await res.json();
+        toast.error(errData.detail || 'Assignment failed');
       }
     } catch (error) {
       toast.error('Scheme assignment failed');
