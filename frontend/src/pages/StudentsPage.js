@@ -1397,6 +1397,12 @@ Note: First login पर password change करें।`;
                               View ID Card
                             </DropdownMenuItem>
                             <DropdownMenuItem 
+                              onClick={() => viewCredentials(student)}
+                            >
+                              <Key className="w-4 h-4 mr-2 text-purple-600" />
+                              Share Login Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
                               onClick={() => {
                                 setNewStudentCredentials({
                                   student_id: student.student_id || student.id,
