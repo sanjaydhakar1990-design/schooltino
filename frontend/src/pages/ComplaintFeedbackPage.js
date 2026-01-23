@@ -61,25 +61,8 @@ export default function ComplaintFeedbackPage() {
       });
       setFeedbacks(response.data || []);
     } catch (error) {
-      // Demo data
-      setFeedbacks([
-        {
-          id: '1',
-          subject: 'Great Teachers',
-          message: 'Very happy with the teaching quality. My child has improved a lot.',
-          rating: 5,
-          submitted_by: { name: 'Anonymous', type: 'parent' },
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          subject: 'Sports Facilities',
-          message: 'Sports facilities are excellent. Thank you for the new football ground.',
-          rating: 4,
-          submitted_by: { name: 'Vikram Singh', type: 'parent', student_name: 'Aditya Singh' },
-          created_at: new Date(Date.now() - 172800000).toISOString()
-        }
-      ]);
+      // No demo data - show empty state
+      setFeedbacks([]);
     }
   };
 
