@@ -106,7 +106,7 @@ export default function ExamReportCard() {
       
       const [classRes, examRes, schoolRes] = await Promise.all([
         axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
-        axios.get(`${API}/exams?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
+        axios.get(`${API}/exam-schedules?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
         axios.get(`${API}/schools/${schoolId}`, { headers })
       ]);
       
