@@ -311,7 +311,30 @@ export default function IDCardViewer({
           </div>
         ) : cardData ? (
           <div ref={printRef}>
-            {/* ID Card Preview */}
+            {/* Front/Back Toggle */}
+            <div className="flex justify-center mb-3">
+              <div className="inline-flex bg-slate-100 rounded-lg p-1">
+                <button
+                  onClick={() => setShowBack(false)}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    !showBack ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Front Side
+                </button>
+                <button
+                  onClick={() => setShowBack(true)}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    showBack ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Back Side
+                </button>
+              </div>
+            </div>
+
+            {/* ID Card Preview - Front */}
+            {!showBack && (
             <div 
               className="mx-auto rounded-xl overflow-hidden shadow-xl relative"
               style={{
