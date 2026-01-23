@@ -339,6 +339,37 @@ export default function EmployeeManagementPage() {
     }
   };
 
+  // Delete Employee Permanently (Admin/Director only)
+  const handleDeleteEmployee = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      toast.error('Please type DELETE to confirm');
+      return;
+    }
+    
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API}/api/users/${deleteEmployee.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Employee data permanently deleted');
+      setShowDeleteDialog(false);
+      setDeleteEmployee(null);
+      setDeleteConfirmText('');
+      fetchEmployees();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete employee');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteDialog = (employee) => {
+    setDeleteEmployee(employee);
+    setDeleteConfirmText('');
+    setShowDeleteDialog(true);
+  };
+
   // Bulk Print Employee ID Cards
   const handleBulkPrintIDCards = async () => {
     if (employees.length === 0) {
