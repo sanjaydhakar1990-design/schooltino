@@ -419,11 +419,11 @@ class StaffResponse(BaseModel):
     school_id: str
     designation: str
     department: Optional[str] = None
-    qualification: str
-    joining_date: str
+    qualification: Optional[str] = None
+    joining_date: Optional[str] = None
     mobile: str
     email: str
-    address: str
+    address: Optional[str] = None
     salary: Optional[float] = None
     photo_url: Optional[str] = None
     is_active: bool = True
