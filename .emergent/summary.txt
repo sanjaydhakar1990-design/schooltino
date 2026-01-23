@@ -1,378 +1,217 @@
 <analysis>**original_problem_statement:**
-The user's initial goal was to build a SchoolTino ERP. The project's focus has been on fixing critical bugs and implementing a large set of new features requested by the user.
+The user's initial request was to address a long list of bugs and feature gaps in their School ERP system. Key issues included broken ID card generation (missing parent's phone number), a non-persistent logo upload system, and failing employee role updates.
 
-The latest user requests from this session included:
-- **PWA Fix:** Make the PWA installable with a single click, not just an Add to home screen popup.
-- **Payment System:** Implement a full payment system where the school can add its UPI/Bank details (GPay, Paytm, etc.). Parents should be able to pay fees through a portal, and receipts should be generated automatically.
-- **Receipt Customization:** Allow uploading a signature and generating an AI-powered school seal to be included on fee receipts.
-- **Unified School Management:** Consolidate all school-related settings (profile, address, payments, academics, receipts) into a single, tabbed management page.
-- **Unified Employee Management:** Combine the separate Staff and User management systems into a single interface to manage employee details, designations, and login permissions.
-- **Calendar AI Fix:** Address a page-cutting issue in the AI-generated calendar's print view and add a watermark of the school's logo/details.
-- **Complete All Pending Tasks:** The user explicitly requested the completion of all previously mentioned pending items.
+The user then provided links to competitor software (, ) and PDF documents, requesting a feature parity analysis. Based on this, the user has mandated a major expansion of the application to include all critical missing features.
 
-**User's preferred language**: Hindi
+**PRODUCT REQUIREMENTS:**
+The agent must implement the following features, integrating them into the existing system without duplication and ensuring they are all connected to and controllable by a central AI interface (referred to as Jarvis):
+1.  **Student Management:**
+    *   **Student Promotion System:** A one-click system to promote all passed students to the next class, including an option to upload their marksheets.
+    *   **Student Document Upload:** A feature within each student's profile to upload and store essential documents (e.g., TC, Marksheet, Birth Certificate).
+    *   **Fix Student Form Submission:** An issue preventing new student forms from being submitted needs to be resolved.
+2.  **Fee System Overhaul:**
+    *   Create a systematic, class-wise fee structure.
+    *   The Old Fee Due feature should be integrated directly into the main fee system, not a separate section.
+    *   Ensure all fee details (plan, dues, payments) are reflected correctly on the student's profile and across the application, including the parent-facing app.
+3.  **Academic & Administrative Features (from competitor analysis):**
+    *   **Timetable Management:** A full scheduling system for subjects, teachers, and classes.
+    *   **Certificate Generator:** System to generate Transfer Certificates (TC), Character Certificates, and Bonafide Certificates.
+    *   **Exam & Report Card System:** Functionality for marks entry, result processing, and report card generation.
+    *   **Payroll/Salary System:** Enhance the existing page to be a full-fledged payroll system.
+    *   **Student Ledger:** A comprehensive financial and attendance history for each student.
+    *   **Library Management System.**
+    *   **Visitor Log / Gate Pass System.**
+4.  **UI/Branding:**
+    *   **Advanced Logo Settings:** Create a dedicated settings area to control the size, visibility, and position of the logo watermark on various documents.
+    *   **ID Card Back Side:** Design and implement a back side for both student and employee ID cards, featuring a large watermark, the school's name, and the student/employee's status (e.g., STUDENT OF, TEACHER).
+5.  **AI Integration:**
+    *   **Diagram-based Questions:** Enhance the AI Paper Generator to include image-based questions.
+    *   **AI Command Center (Jarvis):** Create a central AI interface that has access to and can control all functions of the application.
+
+**User's preferred language**: **Hindi**. The next agent **MUST** continue the conversation in Hindi.
 
 **what currently exists?**
-The application is a comprehensive School ERP with a FastAPI backend and React frontend. A massive number of features were implemented and bugs were fixed in this session.
-
-- **PWA Installation:** The PWA installation experience has been improved. An Install App button is now persistently visible in the header for logged-in users and on the landing page. The underlying service worker, manifest, and icons have been updated to support a more direct installation flow.
-- **Critical Bug Fixes:**
-    - The **school data scoping issue** (where one school could see another's data) has been **fixed**. The API now correctly returns data only for the user's authorized school(s).
-    - The **Online Exam System** was verified to be **functional**. An exam was created via API and successfully displayed on the frontend.
-    - The **Timetable page** was verified to be **functional**.
-- **New Features Implemented:**
-    - **Unified School Management:** A new page at  consolidates School Profile, Address, Contact, Payment Settings (UPI/Bank), Academic Settings, and Receipt Settings into a single, tabbed interface.
-    - **Full Payment System:** Backend APIs and a frontend settings page (, now part of School Management) allow admins to save UPI and bank account details.
-    - **Receipt Customization:** The Receipt Settings tab now includes options to upload a signature and an AI-powered tool to generate a school seal (with shape and color choices). The receipt preview reflects these elements.
-    - **AI Paper Generator with Images:** The AI Paper Generator can now generate images for answers that require diagrams.
-    - **Smart Attendance:** The backend logic for marking attendance now checks if the selected date is a holiday (based on the school calendar) and prevents marking attendance on that day.
-    - **Multi-School Support:** The backend was updated to support directors managing multiple schools.
-    - **Unified Employee Management UI/Backend:** A new page at  was created to manage staff and user accounts in one place. It allows adding/editing employees, their designations, and toggling login access with permissions. The backend models and API endpoints were created to support this unified structure.
+A full-stack School Management ERP (React/FastAPI/MongoDB). The agent has just completed a significant scaffolding effort based on the user's competitor analysis. The following has been done:
+- The student form submission bug was fixed by adding missing authorization headers to API calls.
+- Placeholder pages with UI mockups have been created for: , , , , , , and .
+- Corresponding backend endpoints for these new features have been added to .
+- The application routing () and sidebar navigation () have been updated to include these new pages.
+- The ID card component () has been updated to include a newly designed back side.
+- A new  page has been created and linked from the main .
+- Demo data from the  has been removed.
 
 **Last working item**:
--   **Last item agent was working**: Fixing a critical bug in the newly created **Unified Employee Management** system. The agent was attempting to debug why creating a new employee with login credentials enabled was failing.
--   **Status**: BLOCKED
--   **Agent Testing Done**: N (Testing failed with an Internal Server Error.)
--   **Which testing method agent to use?**: backend testing agent. The agent should use  with the  flag to get detailed error responses and check the backend supervisor logs to trace the exception.
--   **User Testing Done**: N
+-   **Last item agent was working:** Responding to the user's request to remove demo data and implement all missing features from the competitor analysis, all connected via an AI (Jarvis) interface. The agent successfully removed demo data from  and then created placeholder pages and backend endpoints for the , , and  systems.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** Y (for features implemented *before* the latest batch of scaffolding, see )
+-   **Which testing method agent to use?** Both frontend and backend testing agent.
+-   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Employee Creation API fails with Internal Server Error. (P0)
+-   **Issue 1: Verify Core Recurring Bugs (P0)**
+    -   **Description:** The previous fork highlighted recurring issues with the Parent's Phone Number not showing on ID cards, logo settings not persisting, and employee role updates not saving. While the agent has implemented a new logo settings page and redesigned the ID card, these core functionalities have not been explicitly verified as fixed from the user's perspective.
+    -   **Next debug checklist:**
+        1.  Attempt to generate a student ID card and visually confirm the parent's phone number is present.
+        2.  Upload a new logo, change watermark settings, save, reload the page, and confirm all changes have persisted.
+        3.  Update an employee's role, save, navigate away, and return to confirm the new role is saved.
+    -   **Why fix this issue and what will be achieved with the fix?** These are long-standing sources of user frustration. Verifying them is critical for rebuilding trust.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Both.
 
-**Issues Detail**:
--   **Issue 1: Employee Creation API Failure**
-    -   **Description**: When attempting to create a new employee with login access enabled via the API, the server returns an  and the  command fails with a , indicating an empty or invalid JSON response.
-    -   **Attempted fixes**: The agent identified a  for a non-existent  variable in the backend logs and replaced its usages with the correct  variable. However, this did not resolve the issue, and the error persists.
-    -   **Next debug checklist**:
-        1.  Examine the backend logs (==> /var/log/supervisor/backend.err.log <==
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 2663, in create_unified_employee
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-                      ^^^^^^^
-NameError: name 'hashlib' is not defined
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 2663, in create_unified_employee
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-                      ^^^^^^^
-NameError: name 'hashlib' is not defined
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [48] using WatchFiles
-
-==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.129.126:44734 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.129.126:44736 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.136.226:34588 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:45044 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.129.7:36622 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.129.13:58336 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.136.226:34588 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.129.7:36622 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.136.245:45044 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48668 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48668 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.129.94:51364 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.129.10:59572 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.13:58336 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.129.126:44736 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.7:36622 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:39852 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.94:38962 - "GET /api/school/payment-settings?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.13:53294 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.10:38600 - "GET /api/school/settings?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.126:47710 - "GET /api/school/payment-settings?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.136.226:53148 - "GET /api/school/settings?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33894 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40168 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.202:56194 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33894 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40168 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.206:45624 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.206:45624 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40168 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33894 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:56194 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:56206 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33894 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.206:45624 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.206:45624 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40168 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33894 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:56206 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:56206 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40168 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40168 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33894 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.204:48726 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/employees/designations/list HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40168 - "GET /api/employees?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44612 - "GET /api/employees/designations/list HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44622 - "GET /api/employees?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.206:47186 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.202:40388 - "GET /api/auth/check-setup HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59762 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:60556 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.203:60540 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.206:47186 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:40388 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:40388 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:60540 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.206:47186 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:60540 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:40388 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59772 - "GET /api/staff?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59762 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.206:47186 - "GET /api/dashboard/stats?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:60540 - "GET /api/students?school_id=SCH-DEMO-2026&limit=8 HTTP/1.1" 200 OK
-INFO:     10.64.131.206:47186 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59762 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.202:40388 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:40392 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.206:47186 - "GET /api/notices/unread?school_id=SCH-DEMO-2026&user_id=schooltino-erp&user_role=director HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59762 - "GET /api/schools/SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:60540 - "GET /api/employees/designations/list HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "GET /api/employees?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:54042 - "GET /api/employees/designations/list HTTP/1.1" 200 OK
-INFO:     10.64.131.203:60540 - "GET /api/employees?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.130.78:51298 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.7:49762 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.138.62:50136 - "GET /api/employees/designations/list HTTP/1.1" 200 OK
-INFO:     10.64.131.206:49250 - "POST /api/employees HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.136.245:55724 - "GET /api/employees?school_id=SCH-DEMO-2026 HTTP/1.1" 200 OK
-INFO:     10.64.129.126:41006 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.136.245:45736 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.206:51084 - "POST /api/employees HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.129.94:46900 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.126:59108 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.136.226:52086 - "POST /api/employees HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.131.203:43160 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.94:46882 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45376 - "POST /api/employees HTTP/1.1" 500 Internal Server Error) for the full Python traceback immediately after triggering the error.
-        2.  Re-run the failing  test with the  flag to inspect the server's raw response.
-        3.  Review the  and  functions in . Pay close attention to the user creation logic within  and the data being returned. The error likely stems from an unhandled exception during user creation.
-    -   **Status**: BLOCKED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: backend
-    -   **Blocked on other issue**: This is the primary blocker for all other tasks.
+-   **Issue 2: Student Form Submission Fix Needs Verification (P1)**
+    -   **Description:** The agent fixed the student form submission by adding auth headers. This needs to be confirmed by the user or through an end-to-end test.
+    -   **Next debug checklist:**
+        1.  Log in, navigate to the students page, fill out the new student form, and submit it.
+        2.  Verify the new student appears in the student list.
+    -   **Why fix this issue and what will be achieved with the fix?** Ensures a core functionality of the application is working correctly.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Frontend.
 
 **In progress Task List**:
--   **Task 1: Complete and Stabilize Unified Employee Management (P0)**
-    -   **Where to resume**: Debug and fix the employee creation API bug detailed in Issue 1.
-    -   **What will be achieved with this?**: A core user management feature requested by the user will become functional, unifying staff and user accounts.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: both
-    -   **Blocked on something**: The API bug.
+-   **Task 1: Implement All Scaffolded Features (P0)**
+    -   **Description:** The agent created multiple new pages with UI mockups but no working logic. These pages must be fully implemented.
+    -   **Where to resume:** Flesh out the frontend logic and connect it to the backend APIs for the following pages:
+        -   : Implement class-wise fee structures, old due tracking, and payment recording.
+        -   : Implement logic to create, view, and assign timetable slots.
+        -   : Implement logic to fetch student data and generate different types of certificates.
+        -   : Implement marks entry, result calculation, and report card generation.
+        -   : Implement book cataloging, issuance, and return logic.
+        -   : Implement visitor logging and gate pass generation.
+    -   **What will be achieved with this?** This will deliver the bulk of the user's requested features from the competitor analysis.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Both.
+
+-   **Task 2: Implement AI Jarvis Command Center (P0)**
+    -   **Description:** The user wants a central AI interface to control all application functions. The placeholder page  exists.
+    -   **Where to resume:** Design and implement the UI and backend logic for the Jarvis center. This will involve creating a command parser and connecting it to the various backend APIs for student management, fees, timetabling, etc.
+    -   **What will be achieved with this?** Fulfills a critical user requirement for a unified, AI-driven control system.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Both.
+
+-   **Task 3: Implement Student Promotion & Document Upload (P0)**
+    -   **Description:** The UI for student promotion was added, but the backend logic and document upload functionality are still missing.
+    -   **Where to resume:**
+        1.  In , implement the document upload UI within the student profile/edit modal.
+        2.  Implement the backend endpoint for uploading documents.
+        3.  Implement the backend logic for the  endpoint.
+    -   **What will be achieved with this?** Completes the student lifecycle management features requested by the user.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Both.
 
 **Upcoming and Future Tasks**
+-   **Upcoming Tasks:**
+    -   **P1: AI Paper Generator - Diagram Questions:** Integrate an image generation service (e.g., DALL-E, Gemini) to allow for questions with diagrams.
+    -   **P1: Payroll/Salary Enhancement:** Improve the existing  to include automatic calculations for PF/tax and salary slip generation.
+    -   **P1: Student Ledger:** Create a comprehensive view for each student showing their complete fee, payment, and attendance history.
+    -   **P1: Branded Login & URL:** Implement a school-specific branded login page and explore custom subdomains ().
+    -   **P1: Report Card SMS/WhatsApp Notification:** Add functionality to automatically send results to parents via messaging.
 
-**Upcoming Tasks:**
--   **P1: Unify Calendars:** The user has pointed out that there are two separate calendars (one in settings, one main). These need to be merged into a single, cohesive school calendar system.
--   **P1: Test and Verify Full Family Portal Data Flow:** The UI and APIs for the Family Portal exist, but the end-to-end flow for a parent logging in and seeing a combined dashboard of all their children's data (academics, fees, attendance) needs to be thoroughly tested and verified.
--   **P2: Calendar AI Print Layout Verification:** The agent added print styles to fix the page-cutting issue in the AI-generated calendar. This needs to be tested by printing or using a print-preview to confirm the fix.
-
-**Future Tasks:**
--   AI-powered attendance logic (main gate entry, AI confirmation).
--   AI Learning Mode for attendance.
--   AI Voice Monitoring controls in classrooms.
--   Parent-facing app notifications and GPS tracking.
+-   **Future Tasks:**
+    -   Vehicle Tracking (GPS Integration)
+    -   Hostel Management Module
+    -   Inventory/Stock Management Module
+    -   Comprehensive Health Module
+    -   Deeper Accounting Features (Day Book, Cash Book, P&L)
 
 **Completed work in this session**
-- **Unified School Management System Created**: New page at  consolidates Profile, Payments, Academics, and Receipt settings.
-- **Payment System with UPI/Bank Integration Implemented**: Admins can now add school payment details.
-- **Receipt Signature/Seal Customization Added**: Implemented signature upload and an AI Seal Generator.
-- **Unified Employee Management System Created**: New page at  to manage staff and users. (Note: API is currently bugged).
-- **AI Paper Generator Image Support Added**: The generator can now create images for diagrams in answers.
-- **Critical Data Scoping Bug Fixed**: Ensured schools can only see their own data.
-- **Online Exam & Timetable Functionality Verified**: Confirmed that these core academic features are working.
-- **PWA One-Click Install Improved**: Added a persistent install button and updated PWA assets.
-- **Smart Attendance Logic Implemented**: Attendance marking is now blocked on declared holidays.
+-   **Fixed Core Bug:** Resolved the student form submission issue by adding missing authorization headers ().
+-   **Scaffolded Major Features:** Created UI pages, backend endpoints, and navigation links for:
+    -   Fee Management System ()
+    -   Timetable Management ()
+    -   Certificate Generator ()
+    -   Exam & Report Card System ()
+    -   Library Management ()
+    -   Visitor Log / Gate Pass ()
+    -   AI Jarvis Command Center ()
+-   **Enhanced UI/UX:**
+    -   Created an advanced **Logo & Watermark Settings** page ().
+    -   Implemented a new back-side design for **Student and Employee ID Cards** ().
+    -   Added **Student Promotion** UI elements to .
+    -   Removed hardcoded demo data from the .
+-   **Testing:** Successfully ran testing agent (), which passed after fixing a duplicate API endpoint.
+-   **Documentation:** Updated  with all newly added features and competitor analysis.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Unifying Calendars**: This was mentioned in the previous handoff and again by the user, but the agent has not yet merged the two separate calendar systems.
+-   **Move Scholarship UI to Government Schemes:** This was requested multiple times. The agent created a new . The next agent must ensure the scholarship functionality is correctly integrated into this new, unified fee system and the old UI is deprecated.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: School data is not properly scoped in settings, showing other demo schools.
--   **Recurrence count**: 1
--   **Status**: RESOLVED (This was fixed in the current session).
+-   **Issue recurrence in previous fork:** Parent's phone number on ID card, logo persistence, employee role saving.
+-   **Recurrence count:** 3+
+-   **Status:** IN PROGRESS (Changes were made, but final verification is pending).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, MongoDB (motor), Pydantic, JWT.
--   **Frontend**: React, Axios, TailwindCSS, , .
--   **AI**:  for LLM calls (Paper Generator, Seal Generator, Calendar Graphics) via Emergent LLM Key.
--   **PWA**: , , and a custom React prompt component.
+-   **Frontend:** React, Tailwind CSS, Shadcn UI, , 
+-   **Backend:** FastAPI, Pydantic, Motor (async MongoDB driver)
+-   **Database:** MongoDB
+-   **Authentication:** JWT
 
 **key DB schema**
--   **schools**: Updated to include  (with , ),  (prefix, footer, signatory), , and . Also updated to support a list of .
--   **employees**: New unified model/collection combining  and . Includes fields for , , , , , and  (which stores  and ).
--   **users**: The  field is now a list to support multi-school management.
+-   **schools:** 
+-   **users:** 
+-   **students:** 
+-   **Implied new collections/schemas:** , , , , , , , .
 
 **All files of reference**
--   **Created Files**:
+-   **Newly Created Files (require implementation):**
     -   
     -   
     -   
     -   
--   **Updated Files**:
-    -   : **Critically overgrown.** Contains all new backend logic for Payments, School Management, Employee Management, AI Seal Generation, Smart Attendance, and bug fixes.
-    -   : Added routes for all new pages.
-    -   : Heavily updated to reflect the new unified management pages.
-    -   : Updated with print styles and logic for AI generation.
-    -   : Updated to support AI image generation for answers.
-    -   : Refactored to provide a persistent install button.
-    -   , , : Updated for better PWA support.
-    -   : Added new print-specific styles.
-
-**Areas that need refactoring**:
--   ** is a severe liability.** It is now extremely large and complex, making it difficult to debug and maintain. Breaking it down into a modular structure (e.g., , , ) is the highest priority technical debt. The current bug in the employee API highlights the risk of this monolithic design.
-
-**key api endpoints**
--   : Creates a new unified employee. **(CURRENTLY BROKEN)**
--   : Creates/deletes a user account for an employee. **(CURRENTLY BROKEN)**
--   : Saves the unified school settings (profile, payments, receipts).
--   : Generates an AI school seal.
--   : Generates an AI calendar image, now with more school details.
--   : Gets a list of schools managed by the current user. (Fixed security issue).
+    -   
+    -   
+    -   
+    -   
+-   **Heavily Modified Files:**
+    -    (contains all new backend endpoints)
+    -    (auth fixes, promotion UI)
+    -    (ID card back side)
+    -    (routing)
+    -    (navigation)
 
 **Critical Info for New Agent**
--   You must first fix the **blocked employee creation API**. This is the highest priority task (P0). Refer to the debug checklist.
--   The user is very proactive and will provide large lists of features. Always break them down, form a plan, and get confirmation with .
--   The  file is dangerously large. Be extremely cautious when editing it. Any new backend logic should ideally be placed in new files if possible, and a long-term plan to refactor it must be considered.
--   Always respond to the user in **Hindi**.
+-   **MUST COMMUNICATE IN HINDI.**
+-   The user's direction has shifted from small fixes to a massive feature expansion based on competitor software. The primary goal is to achieve feature parity.
+-   **A large number of new pages are just UI scaffolds.** Your main task is to implement the functionality for each of them (Timetable, Certificates, Exams, Library, etc.).
+-   **AI Integration is CRITICAL:** The user wants all functionality to be controllable through a central AI Jarvis interface. This must be a core part of the implementation strategy.
+-   Prioritize implementing the scaffolded features first, then move to the Upcoming list.
+-   Verify the fix for the long-standing recurring bugs (logo, ID card phone number, employee role) to build user trust.
 
 **documents and test reports created in this job**
+-    (updated)
 -   
 -   
--   
--    (heavily updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asked to combine staff and users so employee details, designation, and permissions can be managed in one place. (IN PROGRESS, BLOCKED)
-2.  **User**: Asked to add signature upload and AI seal generation to the fee receipt, then complete other pending tasks. (COMPLETED)
-3.  **User**: Confirmed credits were added and reiterated the request for a consolidated school management section, including bank account details. (COMPLETED)
-4.  **User**: Requested a full payment system (UPI/GPay/Paytm), parent payment portal, and fixes for the AI calendar's print layout (page cutting, watermark). (COMPLETED)
-5.  **User**: After the agent finished the previous set of tasks, asked to test the Timetable and create/test an Online Exam, and to complete all other pending work. (COMPLETED)
-6.  **User**: After the agent fixed the data scoping issue, clarified that a director should see only their own school but have the option to add more. (COMPLETED)
-7.  **User**: The app should install properly on desktop/mobile from the install button, not just show a popup. Also asked to look at other pending work. (COMPLETED)
+-   **#283:** Remove demo data from the complaints page. Implement all remaining competitor features and ensure everything is connected to the AI (Jarvis).
+-   **#207:** Acknowledged the competitor analysis. Instructed the agent to implement all missing features by integrating them into the existing system (no duplicates) and connecting them to the AI.
+-   **#202:** Asked for a feature comparison between Schooltino and the provided competitor links/PDFs to identify gaps.
+-   **#71:** Reported that the student form submission is failing. Criticized the fee structure layout (Old Fee Due in wrong place) and demanded a complete, systematic overhaul based on the provided competitor software examples (, ) and uploaded PDFs. Stated he will not repeat his requests and expects a perfect, systematic implementation.
+-   **#5:** Clarified and reiterated his high-priority requirements: Student Promotion, Document Upload, Timetable, AI Paper Diagrams, moving the Scholarship UI, advanced Logo/Watermark settings, and adding a back side to all ID cards with specific designs.
 
 **Project Health Check:**
--   **Broken**:
-    -   **Unified Employee Creation API**: The endpoint  returns an Internal Server Error when creating an employee with a login. This is the top priority blocker.
--   **Mocked**:
-    -   **Family Portal Data View**: The UI/APIs are in place, but the end-to-end functionality of a parent viewing a consolidated dashboard of their children has not been tested and verified.
-    -   **Calendar Unification**: Two separate calendar systems still exist and need to be merged.
+-   **Broken:** All newly created feature pages (, , , etc.) are non-functional.
+-   **Mocked:** The UI for the aforementioned pages serves as a visual placeholder for the required features.
 
 **3rd Party Integrations**
--   **emergentintegrations**: Used for Tino Brain (Paper Generator), AI Calendar Graphics, and AI Seal Generation using the Emergent LLM Key.
--   **ElevenLabs**: Used for Text-to-Speech in the voice assistant.
--   **i18next**: Used for internationalization (EN/HI).
+-   **Razorpay:** For payment processing. Requires User API Key.
+-   **Emergent LLM Service:** Used for AI Paper Generation. Uses Emergent LLM Key.
+-   **Image Generation Service (Needed):** An integration (e.g., OpenAI DALL-E) is required for the diagram-based questions feature. Will use .
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (multiple times, with all tests passing in the last run before the employee API was built)
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**:  was extended by the testing agent.
--   **Known regressions**: The new employee creation API is broken.
+-   **Testing agent used after significant changes:** YES (last report )
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None saved permanently.
+-   **Known regressions:** Persistence of logo settings, parent's phone number on ID cards, and employee role updates are historical regressions that need re-verification.
+
+**Credentials to test flow:**
+-   **Username:** 
+-   **Password:** 
 
 **What agent forgot to execute**
--   The agent did not address the long-standing request to **unify the two separate calendar systems** (one in settings, one main). All other pending tasks from the original handoff and user messages were addressed or attempted.</analysis>
+-   The task to move the Scholarships functionality into the Government Schemes tab was superseded by the creation of the new . The agent must ensure this requirement is fulfilled within the new fee system's architecture.
+-   The implementation of diagram-based questions for the AI Paper generator is still pending.</analysis>

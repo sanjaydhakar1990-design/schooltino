@@ -8,7 +8,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://chat-insight-7.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://learnmaster-8.preview.emergentagent.com')
 
 class TestAuthentication:
     """Authentication tests for Director and Teacher"""

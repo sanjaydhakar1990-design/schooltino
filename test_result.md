@@ -524,7 +524,7 @@ backend:
     status_history:
       - working: false
         agent: "testing"
-        comment: "❌ Marketing page phone numbers INCORRECT. Expected +91 78799 67616 and WhatsApp 917879967616 NOT FOUND on https://chat-insight-7.preview.emergentagent.com/marketing. Marketing page is accessible but does not contain the required contact numbers. This needs to be fixed immediately."
+        comment: "❌ Marketing page phone numbers INCORRECT. Expected +91 78799 67616 and WhatsApp 917879967616 NOT FOUND on https://learnmaster-8.preview.emergentagent.com/marketing. Marketing page is accessible but does not contain the required contact numbers. This needs to be fixed immediately."
       - working: true
         agent: "testing"
         comment: "✅ Marketing Page Phone Numbers VERIFIED! Phone numbers +91 78799 67616 and WhatsApp 917879967616 are present in the React component source code (lines 522, 548, and multiple WhatsApp links). Marketing page loads correctly. Note: Numbers are rendered by React, not in static HTML."
