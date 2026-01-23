@@ -6,7 +6,7 @@ import { Slider } from '../components/ui/slider';
 import { 
   Settings, Upload, Image, Loader2, Save, Eye, EyeOff, 
   Move, ZoomIn, ZoomOut, RotateCcw, Check, X, Sparkles,
-  CreditCard, FileText, Bell, Calendar
+  CreditCard, FileText, Bell, Calendar, Smartphone
 } from 'lucide-react';
 import { toast } from 'sonner';
 
