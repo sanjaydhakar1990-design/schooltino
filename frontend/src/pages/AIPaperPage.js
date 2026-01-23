@@ -727,10 +727,25 @@ export default function AIPaperPage() {
       )}
 
       {/* Action buttons - hidden in print */}
-      <div className="flex justify-between items-center print:hidden">
+      <div className="flex justify-between items-center flex-wrap gap-3 print:hidden">
         <Button variant="outline" onClick={() => { setPaper(null); setStep(1); setAnswerImages({}); }}>
           {formData.language === 'hindi' ? 'नया पेपर बनाएं' : 'Create New Paper'}
         </Button>
+        
+        {/* Print Layout Options */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">{formData.language === 'hindi' ? 'प्रिंट लेआउट:' : 'Print Layout:'}</span>
+          <select 
+            className="border rounded px-2 py-1 text-sm"
+            value={printLayout}
+            onChange={(e) => setPrintLayout(e.target.value)}
+          >
+            <option value="normal">{formData.language === 'hindi' ? 'सामान्य (1 पेपर)' : 'Normal (1 paper)'}</option>
+            <option value="2-up">{formData.language === 'hindi' ? '2 पेपर प्रति पेज' : '2 papers per page'}</option>
+            <option value="4-up">{formData.language === 'hindi' ? '4 पेपर प्रति पेज' : '4 papers per page'}</option>
+          </select>
+        </div>
+        
         <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700" disabled={autoGeneratingImages}>
           <Printer className="w-5 h-5 mr-2" />
           {formData.language === 'hindi' ? 'प्रिंट करें' : 'Print Paper'}
