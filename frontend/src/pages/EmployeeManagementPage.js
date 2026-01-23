@@ -648,6 +648,18 @@ export default function EmployeeManagementPage() {
                           <Key className="w-4 h-4" />
                         </Button>
                       )}
+                      {/* Delete Button - Admin/Director only */}
+                      {(user?.role === 'director' || user?.role === 'admin') && emp.role !== 'director' && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => openDeleteDialog(emp)}
+                          title="Delete Permanently"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
