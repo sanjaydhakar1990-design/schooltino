@@ -132,6 +132,12 @@ export default function EmployeeManagementPage() {
   const [school, setSchool] = useState(null);
   const [bulkPrinting, setBulkPrinting] = useState(false);
   
+  // Delete confirmation state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteEmployee, setDeleteEmployee] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
