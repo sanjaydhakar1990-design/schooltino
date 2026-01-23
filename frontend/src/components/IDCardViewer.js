@@ -572,11 +572,19 @@ export default function IDCardViewer({
               </div>
             )}
 
-            {/* Print Button */}
+            {/* Print Buttons */}
             <div className="flex justify-center gap-3 mt-4">
               <Button onClick={printCard} className="bg-indigo-600 hover:bg-indigo-700" data-testid="print-id-card-btn">
                 <Printer className="w-4 h-4 mr-2" />
-                Print ID Card
+                Print {showBack ? 'Back' : 'Front'}
+              </Button>
+              <Button 
+                onClick={() => setShowBack(!showBack)} 
+                variant="outline"
+                data-testid="flip-card-btn"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Flip Card
               </Button>
               <Button onClick={onClose} variant="outline">
                 Close
@@ -585,7 +593,7 @@ export default function IDCardViewer({
             
             {/* Print Tips */}
             <p className="text-center text-xs text-slate-500 mt-2">
-              💡 Print on PVC card (85.6mm x 54mm) for best results
+              💡 Print Front first, then flip card and print Back. PVC card (85.6mm x 54mm)
             </p>
           </div>
         ) : (
