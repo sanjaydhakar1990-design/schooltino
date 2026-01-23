@@ -199,11 +199,11 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-3">
             <Button 
-              onClick={() => navigate('/app/tino-brain')}
-              className="bg-white/20 hover:bg-white/30 text-white border-0"
+              onClick={() => navigate('/app/tino-ai')}
+              className="bg-white/20 hover:bg-white/30 text-white border-0 gap-2"
             >
-              <Brain className="w-4 h-4 mr-2" />
-              Ask Tino AI
+              <Brain className="w-4 h-4" />
+              Tino AI
             </Button>
             <Button 
               onClick={() => setShowProfileDialog(true)}
