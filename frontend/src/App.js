@@ -321,6 +321,9 @@ function AppRoutes() {
         <Route path="accountant" element={<AccountantDashboard />} />
         <Route path="fee-structure" element={<FeeStructureManagement />} />
         <Route path="fee-management" element={<FeeManagementPage />} />
+        <Route path="timetable-management" element={<TimetableManagement />} />
+        <Route path="certificates" element={<CertificateGenerator />} />
+        <Route path="exam-report" element={<ExamReportCard />} />
         <Route path="staff-directory" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="meetings" element={<ZoomMeetings />} />
