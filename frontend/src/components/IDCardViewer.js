@@ -347,14 +347,22 @@ export default function IDCardViewer({
               }}
               data-testid="id-card-preview"
             >
-              {/* Watermark - School Logo */}
+              {/* Watermark - School Logo (transparent) */}
               {school?.logo_url && (
                 <div 
                   className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  style={{ opacity: 0.15, zIndex: 0 }}
+                  style={{ opacity: 0.12, zIndex: 0 }}
                   data-testid="id-card-watermark"
                 >
-                  <img src={school.logo_url} alt="" className="w-36 h-36 object-contain" />
+                  <img 
+                    src={school.logo_url} 
+                    alt="" 
+                    className="w-36 h-36 object-contain"
+                    style={{ 
+                      mixBlendMode: 'luminosity',
+                      filter: 'drop-shadow(0 0 0 transparent)'
+                    }}
+                  />
                 </div>
               )}
 
