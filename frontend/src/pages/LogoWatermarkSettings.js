@@ -39,7 +39,8 @@ export default function LogoWatermarkSettings() {
     calendar: true,
     appHeader: true,
     certificates: true,
-    feeBills: true
+    feeBills: true,
+    appIcon: true // Use logo as app icon (favicon)
   });
 
   // School info
