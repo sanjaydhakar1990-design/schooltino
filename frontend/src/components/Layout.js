@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { Menu, Globe, Mic } from 'lucide-react';
 import Sidebar from './Sidebar';
-import VoiceAssistantFAB from './VoiceAssistantFAB';
 import PWAInstaller from './PWAInstaller';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const { language, changeLanguage } = useLanguage();
   const { user, schoolData } = useAuth();
+  const navigate = useNavigate();
 
   // Get school branding from context (fetched at login)
   const schoolLogo = schoolData?.logo_url;
