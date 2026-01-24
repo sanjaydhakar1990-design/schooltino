@@ -354,6 +354,55 @@ class StudentCreate(BaseModel):
     aadhar_no: Optional[str] = None
     previous_school: Optional[str] = None
     admission_date: Optional[str] = None  # Date of admission (for mid-year joining schools)
+    # NEW FIELDS - Extended Student Information
+    scholar_no: Optional[str] = None  # Scholar Number / Enrollment Number
+    pen_number: Optional[str] = None  # PEN (Permanent Education Number) for CBSE
+    sssmid: Optional[str] = None  # SSSMID / Samagra ID (MP Board)
+    samagra_family_id: Optional[str] = None  # Samagra Family ID (MP)
+    jan_aadhar_no: Optional[str] = None  # Jan Aadhar / Bhamashah ID (Rajasthan)
+    caste: Optional[str] = None  # SC/ST/OBC/General
+    sub_caste: Optional[str] = None  # Sub-caste
+    religion: Optional[str] = None  # Hindu/Muslim/Christian/Sikh/etc
+    category: Optional[str] = None  # BPL/APL/EWS
+    nationality: Optional[str] = "Indian"
+    mother_tongue: Optional[str] = None  # Mother tongue
+    # Guardian Information
+    guardian_name: Optional[str] = None
+    guardian_relation: Optional[str] = None  # Grandfather/Uncle/etc
+    guardian_mobile: Optional[str] = None
+    guardian_occupation: Optional[str] = None
+    father_occupation: Optional[str] = None
+    mother_occupation: Optional[str] = None
+    father_qualification: Optional[str] = None
+    mother_qualification: Optional[str] = None
+    annual_income: Optional[str] = None  # Family annual income
+    # Bank Details (for Scholarship)
+    bank_name: Optional[str] = None
+    bank_account_no: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    bank_branch: Optional[str] = None
+    # Transport Details
+    transport_mode: Optional[str] = None  # School Bus/Private/Walking
+    bus_route: Optional[str] = None
+    bus_stop: Optional[str] = None
+    pickup_point: Optional[str] = None
+    # Hostel Details
+    is_hosteler: Optional[bool] = False
+    hostel_room_no: Optional[str] = None
+    # Medical Information
+    medical_conditions: Optional[str] = None
+    allergies: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    # Academic Information
+    previous_class: Optional[str] = None
+    previous_percentage: Optional[str] = None
+    tc_number: Optional[str] = None  # Transfer Certificate number
+    # Additional
+    parent_phone: Optional[str] = None  # Secondary parent phone
+    birth_place: Optional[str] = None
+    identification_mark: Optional[str] = None
+    rte_status: Optional[bool] = False  # RTE (Right to Education) admission
 
 class StudentAdmissionResponse(BaseModel):
     id: str
