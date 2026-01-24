@@ -728,126 +728,520 @@ export default function EmployeeManagementPage() {
       {/* Add/Edit Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 my-8">
-            <h3 className="text-lg font-bold mb-4">
-              {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 my-8">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <User className="w-6 h-6 text-indigo-600" />
+              {editingEmployee ? '✏️ Edit Employee' : '👤 Add New Employee'}
             </h3>
             
+            {/* Form Tabs Navigation */}
+            <div className="flex gap-1 p-1 bg-slate-100 rounded-lg mb-4 overflow-x-auto">
+              {[
+                { id: 'basic', label: '📋 Basic Info' },
+                { id: 'personal', label: '👤 Personal' },
+                { id: 'identity', label: '🆔 ID & Docs' },
+                { id: 'qualification', label: '🎓 Qualification' },
+                { id: 'bank', label: '🏦 Bank & Salary' },
+                { id: 'contact', label: '📞 Contact' },
+                { id: 'login', label: '🔐 Login Access' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveFormTab(tab.id)}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
+                    activeFormTab === tab.id 
+                      ? 'bg-white text-indigo-700 shadow-sm' 
+                      : 'text-slate-600 hover:bg-white/50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-              {/* Personal Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Name *</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
-                    placeholder="Employee name"
-                  />
+              {/* Tab 1: Basic Info */}
+              {activeFormTab === 'basic' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">📋 Basic Information (मूल जानकारी)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Name * (नाम)</Label>
+                      <Input
+                        value={formData.name}
+                        onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
+                        placeholder="Full Name"
+                        data-testid="employee-name-input"
+                      />
+                    </div>
+                    <div>
+                      <Label>Designation * (पदनाम)</Label>
+                      <select
+                        className="w-full border rounded-lg px-3 py-2 h-10"
+                        value={formData.designation}
+                        onChange={e => handleDesignationChange(e.target.value)}
+                        data-testid="designation-select"
+                      >
+                        {designations.map(d => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Department (विभाग)</Label>
+                      <select
+                        className="w-full border rounded-lg px-3 py-2 h-10"
+                        value={formData.department}
+                        onChange={e => setFormData(f => ({ ...f, department: e.target.value }))}
+                      >
+                        <option value="">Select Department</option>
+                        <option value="Administration">Administration (प्रशासन)</option>
+                        <option value="Academic">Academic (शैक्षणिक)</option>
+                        <option value="Science">Science (विज्ञान)</option>
+                        <option value="Arts">Arts (कला)</option>
+                        <option value="Commerce">Commerce (वाणिज्य)</option>
+                        <option value="Sports">Sports (खेलकूद)</option>
+                        <option value="IT">IT (आईटी)</option>
+                        <option value="Accounts">Accounts (लेखा)</option>
+                        <option value="Transport">Transport (परिवहन)</option>
+                        <option value="Hostel">Hostel (छात्रावास)</option>
+                        <option value="Library">Library (पुस्तकालय)</option>
+                        <option value="Lab">Lab (प्रयोगशाला)</option>
+                        <option value="Other">Other (अन्य)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Mobile * (मोबाइल)</Label>
+                      <Input
+                        value={formData.mobile}
+                        onChange={e => setFormData(f => ({ ...f, mobile: e.target.value }))}
+                        placeholder="9876543210"
+                        data-testid="employee-mobile-input"
+                      />
+                    </div>
+                    <div>
+                      <Label>Email * (ईमेल)</Label>
+                      <Input
+                        type="email"
+                        value={formData.email}
+                        onChange={e => setFormData(f => ({ ...f, email: e.target.value }))}
+                        placeholder="email@school.com"
+                        data-testid="employee-email-input"
+                      />
+                    </div>
+                    <div>
+                      <Label>Joining Date (नियुक्ति तिथि)</Label>
+                      <Input
+                        type="date"
+                        value={formData.joining_date}
+                        onChange={e => setFormData(f => ({ ...f, joining_date: e.target.value }))}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <Label>Mobile *</Label>
-                  <Input
-                    value={formData.mobile}
-                    onChange={e => setFormData(f => ({ ...f, mobile: e.target.value }))}
-                    placeholder="9876543210"
-                  />
-                </div>
-                <div>
-                  <Label>Email *</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={e => setFormData(f => ({ ...f, email: e.target.value }))}
-                    placeholder="email@school.com"
-                  />
-                </div>
-                <div>
-                  <Label>Address</Label>
-                  <Input
-                    value={formData.address}
-                    onChange={e => setFormData(f => ({ ...f, address: e.target.value }))}
-                    placeholder="Address"
-                  />
-                </div>
-                <div>
-                  <Label>Blood Group</Label>
-                  <select
-                    className="w-full border rounded-lg px-3 py-2"
-                    value={formData.blood_group || ''}
-                    onChange={e => setFormData(f => ({ ...f, blood_group: e.target.value }))}
-                  >
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                  </select>
-                </div>
-                <div>
-                  <Label>Emergency Contact (Family Phone) 🆘</Label>
-                  <Input
-                    value={formData.emergency_contact || ''}
-                    onChange={e => setFormData(f => ({ ...f, emergency_contact: e.target.value }))}
-                    placeholder="Family member ka number - ID card pe dikhega"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Ye number ID card pe dikhega emergency ke liye</p>
-                </div>
-              </div>
+              )}
 
-              {/* Employment Details */}
-              <div className="border-t pt-4 mt-4">
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                  <Building className="w-4 h-4" /> Employment Details
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Designation *</Label>
-                    <select
-                      className="w-full border rounded-lg px-3 py-2"
-                      value={formData.designation}
-                      onChange={e => handleDesignationChange(e.target.value)}
-                    >
-                      {designations.map(d => (
-                        <option key={d.id} value={d.id}>{d.name}</option>
-                      ))}
-                    </select>
+              {/* Tab 2: Personal Details */}
+              {activeFormTab === 'personal' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">👤 Personal Details (व्यक्तिगत जानकारी)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Gender (लिंग)</Label>
+                      <select
+                        className="w-full border rounded-lg px-3 py-2 h-10"
+                        value={formData.gender}
+                        onChange={e => setFormData(f => ({ ...f, gender: e.target.value }))}
+                      >
+                        <option value="male">Male (पुरुष)</option>
+                        <option value="female">Female (महिला)</option>
+                        <option value="other">Other (अन्य)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Date of Birth (जन्म तिथि)</Label>
+                      <Input
+                        type="date"
+                        value={formData.dob}
+                        onChange={e => setFormData(f => ({ ...f, dob: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Blood Group (रक्त समूह)</Label>
+                      <select
+                        className="w-full border rounded-lg px-3 py-2 h-10"
+                        value={formData.blood_group || ''}
+                        onChange={e => setFormData(f => ({ ...f, blood_group: e.target.value }))}
+                      >
+                        <option value="">Select</option>
+                        {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => 
+                          <option key={bg} value={bg}>{bg}</option>
+                        )}
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Marital Status (वैवाहिक स्थिति)</Label>
+                      <select
+                        className="w-full border rounded-lg px-3 py-2 h-10"
+                        value={formData.marital_status}
+                        onChange={e => setFormData(f => ({ ...f, marital_status: e.target.value }))}
+                      >
+                        <option value="">Select</option>
+                        <option value="Single">Single (अविवाहित)</option>
+                        <option value="Married">Married (विवाहित)</option>
+                        <option value="Divorced">Divorced (तलाकशुदा)</option>
+                        <option value="Widowed">Widowed (विधवा/विधुर)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Father Name (पिता का नाम)</Label>
+                      <Input
+                        value={formData.father_name}
+                        onChange={e => setFormData(f => ({ ...f, father_name: e.target.value }))}
+                        placeholder="Father's name"
+                      />
+                    </div>
+                    <div>
+                      <Label>Spouse Name (पति/पत्नी का नाम)</Label>
+                      <Input
+                        value={formData.spouse_name}
+                        onChange={e => setFormData(f => ({ ...f, spouse_name: e.target.value }))}
+                        placeholder="If married"
+                      />
+                    </div>
+                    <div>
+                      <Label>Nationality (राष्ट्रीयता)</Label>
+                      <Input
+                        value={formData.nationality}
+                        onChange={e => setFormData(f => ({ ...f, nationality: e.target.value }))}
+                        placeholder="Indian"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Department</Label>
-                    <Input
-                      value={formData.department}
-                      onChange={e => setFormData(f => ({ ...f, department: e.target.value }))}
-                      placeholder="e.g., Science, Arts, Admin"
-                    />
+                  
+                  {/* Address Section */}
+                  <div className="border-t pt-4 mt-4">
+                    <h5 className="font-medium text-slate-700 mb-3">🏠 Address (पता)</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <Label>Current Address (वर्तमान पता)</Label>
+                        <Input
+                          value={formData.address}
+                          onChange={e => setFormData(f => ({ ...f, address: e.target.value }))}
+                          placeholder="Full current address"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label>Permanent Address (स्थायी पता)</Label>
+                        <Input
+                          value={formData.permanent_address}
+                          onChange={e => setFormData(f => ({ ...f, permanent_address: e.target.value }))}
+                          placeholder="Full permanent address"
+                        />
+                      </div>
+                      <div>
+                        <Label>City (शहर)</Label>
+                        <Input
+                          value={formData.city}
+                          onChange={e => setFormData(f => ({ ...f, city: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label>State (राज्य)</Label>
+                        <select
+                          className="w-full border rounded-lg px-3 py-2 h-10"
+                          value={formData.state}
+                          onChange={e => setFormData(f => ({ ...f, state: e.target.value }))}
+                        >
+                          <option value="">Select State</option>
+                          <option value="Madhya Pradesh">Madhya Pradesh</option>
+                          <option value="Rajasthan">Rajasthan</option>
+                          <option value="Uttar Pradesh">Uttar Pradesh</option>
+                          <option value="Maharashtra">Maharashtra</option>
+                          <option value="Gujarat">Gujarat</option>
+                          <option value="Bihar">Bihar</option>
+                          <option value="Chhattisgarh">Chhattisgarh</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label>Pincode (पिनकोड)</Label>
+                        <Input
+                          value={formData.pincode}
+                          onChange={e => setFormData(f => ({ ...f, pincode: e.target.value }))}
+                          placeholder="6 digit pincode"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label>Qualification</Label>
-                    <Input
-                      value={formData.qualification}
-                      onChange={e => setFormData(f => ({ ...f, qualification: e.target.value }))}
-                      placeholder="e.g., M.A., B.Ed"
-                    />
+                </div>
+              )}
+
+              {/* Tab 3: Identity Documents */}
+              {activeFormTab === 'identity' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">🆔 Identity Documents (पहचान दस्तावेज़)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Aadhar Number (आधार नंबर)</Label>
+                      <Input
+                        value={formData.aadhar_no}
+                        onChange={e => setFormData(f => ({ ...f, aadhar_no: e.target.value }))}
+                        placeholder="12 digit Aadhar"
+                      />
+                    </div>
+                    <div>
+                      <Label>PAN Number (पैन नंबर)</Label>
+                      <Input
+                        value={formData.pan_number}
+                        onChange={e => setFormData(f => ({ ...f, pan_number: e.target.value.toUpperCase() }))}
+                        placeholder="ABCDE1234F"
+                      />
+                    </div>
+                    <div>
+                      <Label>Voter ID (मतदाता पहचान पत्र)</Label>
+                      <Input
+                        value={formData.voter_id}
+                        onChange={e => setFormData(f => ({ ...f, voter_id: e.target.value }))}
+                        placeholder="Voter ID number"
+                      />
+                    </div>
+                    <div>
+                      <Label>Driving License (ड्राइविंग लाइसेंस)</Label>
+                      <Input
+                        value={formData.driving_license}
+                        onChange={e => setFormData(f => ({ ...f, driving_license: e.target.value }))}
+                        placeholder="DL number"
+                      />
+                    </div>
+                    <div>
+                      <Label>UAN Number (EPF)</Label>
+                      <Input
+                        value={formData.uan_number}
+                        onChange={e => setFormData(f => ({ ...f, uan_number: e.target.value }))}
+                        placeholder="Universal Account Number"
+                      />
+                    </div>
+                    <div>
+                      <Label>ESI Number (ESI नंबर)</Label>
+                      <Input
+                        value={formData.esi_number}
+                        onChange={e => setFormData(f => ({ ...f, esi_number: e.target.value }))}
+                        placeholder="ESI number"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Joining Date</Label>
-                    <Input
-                      type="date"
-                      value={formData.joining_date}
-                      onChange={e => setFormData(f => ({ ...f, joining_date: e.target.value }))}
-                    />
+                </div>
+              )}
+
+              {/* Tab 4: Qualification */}
+              {activeFormTab === 'qualification' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">🎓 Qualification & Experience (योग्यता और अनुभव)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Highest Qualification (उच्चतम योग्यता)</Label>
+                      <select
+                        className="w-full border rounded-lg px-3 py-2 h-10"
+                        value={formData.qualification}
+                        onChange={e => setFormData(f => ({ ...f, qualification: e.target.value }))}
+                      >
+                        <option value="">Select</option>
+                        <option value="10th Pass">10th Pass (दसवीं पास)</option>
+                        <option value="12th Pass">12th Pass (बारहवीं पास)</option>
+                        <option value="Graduate">Graduate (स्नातक)</option>
+                        <option value="Post Graduate">Post Graduate (स्नातकोत्तर)</option>
+                        <option value="B.Ed">B.Ed</option>
+                        <option value="M.Ed">M.Ed</option>
+                        <option value="PhD">PhD</option>
+                        <option value="ITI">ITI</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Specialization (विशेषज्ञता)</Label>
+                      <Input
+                        value={formData.specialization}
+                        onChange={e => setFormData(f => ({ ...f, specialization: e.target.value }))}
+                        placeholder="e.g., Mathematics, Physics, Hindi"
+                      />
+                    </div>
+                    <div>
+                      <Label>Total Experience (Years) (कुल अनुभव वर्ष)</Label>
+                      <Input
+                        type="number"
+                        value={formData.experience_years}
+                        onChange={e => setFormData(f => ({ ...f, experience_years: e.target.value }))}
+                        placeholder="Years of experience"
+                      />
+                    </div>
+                    <div>
+                      <Label>Previous Employer (पिछला नियोक्ता)</Label>
+                      <Input
+                        value={formData.previous_employer}
+                        onChange={e => setFormData(f => ({ ...f, previous_employer: e.target.value }))}
+                        placeholder="Previous school/company name"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Monthly Salary (₹)</Label>
-                    <Input
-                      type="number"
-                      value={formData.salary}
-                      onChange={e => setFormData(f => ({ ...f, salary: e.target.value }))}
-                      placeholder="25000"
-                    />
+                </div>
+              )}
+
+              {/* Tab 5: Bank & Salary */}
+              {activeFormTab === 'bank' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">🏦 Bank & Salary Details (बैंक और वेतन)</h4>
+                  
+                  {/* Salary Section */}
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h5 className="font-medium text-green-800 mb-3">💰 Salary Details (वेतन विवरण)</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Monthly Salary (₹)</Label>
+                        <Input
+                          type="number"
+                          value={formData.salary}
+                          onChange={e => setFormData(f => ({ ...f, salary: e.target.value }))}
+                          placeholder="25000"
+                        />
+                      </div>
+                      <div>
+                        <Label>Salary Type</Label>
+                        <select
+                          className="w-full border rounded-lg px-3 py-2 h-10"
+                          value={formData.salary_type}
+                          onChange={e => setFormData(f => ({ ...f, salary_type: e.target.value }))}
+                        >
+                          <option value="monthly">Monthly (मासिक)</option>
+                          <option value="daily">Daily (दैनिक)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-4 mt-3">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={formData.pf_applicable}
+                          onChange={e => setFormData(f => ({ ...f, pf_applicable: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                        PF Applicable (PF लागू)
+                      </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={formData.esi_applicable}
+                          onChange={e => setFormData(f => ({ ...f, esi_applicable: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                        ESI Applicable (ESI लागू)
+                      </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={formData.tds_applicable}
+                          onChange={e => setFormData(f => ({ ...f, tds_applicable: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                        TDS Applicable (TDS लागू)
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {/* Bank Section */}
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h5 className="font-medium text-blue-800 mb-3">🏦 Bank Details (बैंक विवरण)</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Bank Name</Label>
+                        <Input
+                          value={formData.bank_name}
+                          onChange={e => setFormData(f => ({ ...f, bank_name: e.target.value }))}
+                          placeholder="State Bank of India"
+                        />
+                      </div>
+                      <div>
+                        <Label>Account Number</Label>
+                        <Input
+                          value={formData.bank_account_no}
+                          onChange={e => setFormData(f => ({ ...f, bank_account_no: e.target.value }))}
+                          placeholder="Account number"
+                        />
+                      </div>
+                      <div>
+                        <Label>IFSC Code</Label>
+                        <Input
+                          value={formData.ifsc_code}
+                          onChange={e => setFormData(f => ({ ...f, ifsc_code: e.target.value.toUpperCase() }))}
+                          placeholder="SBIN0001234"
+                        />
+                      </div>
+                      <div>
+                        <Label>Branch Name</Label>
+                        <Input
+                          value={formData.bank_branch}
+                          onChange={e => setFormData(f => ({ ...f, bank_branch: e.target.value }))}
+                          placeholder="Branch name"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 6: Contact */}
+              {activeFormTab === 'contact' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">📞 Emergency Contact (आपातकालीन संपर्क)</h4>
+                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <p className="text-sm text-red-600 mb-3">🆘 Emergency contact ID card पर भी दिखेगा</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Emergency Contact Name</Label>
+                        <Input
+                          value={formData.emergency_contact_name}
+                          onChange={e => setFormData(f => ({ ...f, emergency_contact_name: e.target.value }))}
+                          placeholder="Family member name"
+                        />
+                      </div>
+                      <div>
+                        <Label>Emergency Contact Number</Label>
+                        <Input
+                          value={formData.emergency_contact || ''}
+                          onChange={e => setFormData(f => ({ ...f, emergency_contact: e.target.value }))}
+                          placeholder="10 digit mobile"
+                        />
+                      </div>
+                      <div>
+                        <Label>Relation (रिश्ता)</Label>
+                        <select
+                          className="w-full border rounded-lg px-3 py-2 h-10"
+                          value={formData.emergency_relation}
+                          onChange={e => setFormData(f => ({ ...f, emergency_relation: e.target.value }))}
+                        >
+                          <option value="">Select</option>
+                          <option value="Spouse">Spouse (पति/पत्नी)</option>
+                          <option value="Father">Father (पिता)</option>
+                          <option value="Mother">Mother (माता)</option>
+                          <option value="Brother">Brother (भाई)</option>
+                          <option value="Sister">Sister (बहन)</option>
+                          <option value="Son">Son (पुत्र)</option>
+                          <option value="Daughter">Daughter (पुत्री)</option>
+                          <option value="Other">Other (अन्य)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 7: Login Access */}
+              {activeFormTab === 'login' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">🔐 Login Access (लॉगिन एक्सेस)</h4>
                   </div>
                 </div>
               </div>
