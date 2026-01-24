@@ -1242,22 +1242,12 @@ export default function EmployeeManagementPage() {
               {activeFormTab === 'login' && (
                 <div className="space-y-4 animate-in fade-in">
                   <h4 className="font-semibold text-slate-800 border-b pb-2">🔐 Login Access (लॉगिन एक्सेस)</h4>
-                  </div>
-                </div>
-              </div>
-
-              {/* Login & Permissions */}
-              <div className="border-t pt-4 mt-4">
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                  <Key className="w-4 h-4" /> Role & Login Settings
-                </h4>
-                
-                <div className="space-y-4">
-                  {/* Role Selection - Always visible */}
+                  
+                  {/* Role Selection */}
                   <div>
-                    <Label>System Role *</Label>
+                    <Label>System Role * (सिस्टम भूमिका)</Label>
                     <select
-                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      className="w-full border rounded-lg px-3 py-2 h-10 bg-white"
                       value={formData.role}
                       onChange={e => setFormData(f => ({ ...f, role: e.target.value }))}
                     >
@@ -1329,6 +1319,7 @@ export default function EmployeeManagementPage() {
                               {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
                                 <button
                                   key={key}
+                                  type="button"
                                   onClick={() => {
                                     setPermissionPreset(key);
                                     setFormData(f => ({ ...f, custom_permissions: { ...preset.permissions } }));
@@ -1340,11 +1331,6 @@ export default function EmployeeManagementPage() {
                                   }`}
                                 >
                                   <div className="font-medium">{preset.label}</div>
-                                  {preset.description && (
-                                    <div className={`text-[10px] mt-0.5 ${permissionPreset === key ? 'text-indigo-200' : 'text-gray-400'}`}>
-                                      {preset.description}
-                                    </div>
-                                  )}
                                 </button>
                               ))}
                             </div>
@@ -1352,7 +1338,7 @@ export default function EmployeeManagementPage() {
                           
                           {/* Individual Permissions */}
                           <div className="border-t pt-4">
-                            <p className="text-sm font-medium text-gray-700 mb-2">🔐 Individual Permissions (Custom):</p>
+                            <p className="text-sm font-medium text-gray-700 mb-2">🔐 Individual Permissions:</p>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                               {Object.entries(ALL_PERMISSIONS).map(([key, perm]) => (
                                 <label 
@@ -1385,38 +1371,19 @@ export default function EmployeeManagementPage() {
                               ))}
                             </div>
                           </div>
-                          
-                          {/* Active Permissions Summary */}
-                          {formData.custom_permissions && (
-                            <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
-                              <p className="text-xs font-medium text-indigo-700 mb-1">
-                                ✅ Active Permissions ({Object.values(formData.custom_permissions).filter(Boolean).length}):
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {Object.entries(formData.custom_permissions)
-                                  .filter(([_, v]) => v)
-                                  .map(([key]) => (
-                                    <span key={key} className="px-2 py-0.5 bg-white rounded text-xs text-indigo-600 border border-indigo-200">
-                                      {ALL_PERMISSIONS[key]?.icon} {ALL_PERMISSIONS[key]?.label || key}
-                                    </span>
-                                  ))
-                                }
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
                     </>
                   )}
                 </div>
-              </div>
+              )}
             </div>
             
             <div className="flex gap-3 mt-6 pt-4 border-t">
               <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>
                 Cancel
               </Button>
-              <Button className="flex-1" onClick={handleSubmit} disabled={saving}>
+              <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={handleSubmit} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 {editingEmployee ? 'Update' : 'Add'} Employee
               </Button>
