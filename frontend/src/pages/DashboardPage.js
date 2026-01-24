@@ -441,7 +441,13 @@ export default function DashboardPage() {
                   </div>
                   <span className="text-xs text-slate-400 flex-shrink-0">{item.time}</span>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-6 text-slate-400">
+                  <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">कोई हालिया गतिविधि नहीं</p>
+                  <p className="text-xs">No recent activity</p>
+                </div>
+              )}
             </div>
           </div>
 
