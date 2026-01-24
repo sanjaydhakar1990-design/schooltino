@@ -1,27 +1,24 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 24, 2026 (Session 15 - Part 4)
+## Last Updated: January 24, 2026 (Session 15 - Part 5)
 
 ---
 
 ## ✅ COMPLETED TODAY (January 24, 2026)
 
-### Part 1: DigitalEdu Theme
-- Dark sidebar, White header, Blue (#2563EB) primary
+### Part 1-3: Theme, Tab Merging, AI Paper
+- DigitalEdu theme, Form tabs merged, Hindi chapters
 
-### Part 2: Tab Merging & Photo
-- Photo column in Students table, Form tabs merged
+### Part 4: Bug Fixes
+- Class 6 सामाजिक विज्ञान Hindi chapters, Dashboard real data
 
-### Part 3: AI Paper Generator Fixes
-- Hindi chapters for Hindi subjects, Faster generation
-
-### Part 4: Bug Fixes (Current)
+### Part 5: More Bug Fixes (Current)
 | Bug | Fix |
 |-----|-----|
-| **Class 6 सामाजिक विज्ञान in English** | Added Hindi chapters: 'क्या, कब, कहाँ और कैसे?', 'आरंभिक नगर', etc. |
-| **Dashboard demo data** | Replaced with real API data, empty state for no activities |
-| **Exam Name crash** | Verified - Input works correctly (was user misunderstanding) |
-| **Answer Key same page** | Added page-break-before CSS for print separation |
+| **Admit Card classes not showing** | Fixed API path: `/classes/${schoolId}` → `/classes?school_id=${schoolId}` |
+| **Class 7 सामाजिक विज्ञान English chapters** | Added Hindi chapters (NCERT 2024) |
+| **Class 8 सामाजिक विज्ञान English chapters** | Added Hindi chapters (NCERT 2024) |
+| **Orphan entries in syllabus** | Removed duplicate geo8-civ8 entries |
 
 ---
 
@@ -29,27 +26,27 @@
 
 | Iteration | Tests | Status |
 |-----------|-------|--------|
-| **54** | **Bug Fixes** | ✅ **100% (5/5)** |
-| 53 | AI Paper Improvements | ✅ 100% |
-| 52 | Tab Merging | ✅ 100% |
-| 51 | DigitalEdu Theme | ✅ 100% |
+| **55** | **Admit Card + Hindi Chapters** | ✅ **100% (5/5)** |
+| 54 | Bug Fixes | ✅ 100% |
+| 53 | AI Paper | ✅ 100% |
 
 ---
 
-## 🟢 WHAT'S WORKING
+## 🟢 WHAT'S NOW WORKING
 
-### AI Paper Generator:
-- ✅ Hindi subjects → Hindi chapters (Devanagari)
-- ✅ Class 6 सामाजिक विज्ञान → Hindi chapters
-- ✅ Exam Name input works correctly
-- ✅ Print: Answer Key on separate page (page-break CSS)
-- ✅ Paper Language: Hindi/English options
-- ✅ Class-wise default marks
+### Admit Card:
+- ✅ Classes show in Create Exam dialog (Class 5, etc.)
+- ✅ API path corrected with query params
+
+### AI Paper - Hindi Medium Chapters:
+- ✅ Class 6 सामाजिक विज्ञान - Hindi chapters
+- ✅ Class 7 सामाजिक विज्ञान - Hindi chapters (10 इतिहास, 9 भूगोल, 8 नागरिक शास्त्र)
+- ✅ Class 8 सामाजिक विज्ञान - Hindi chapters (10 इतिहास, 6 भूगोल, 10 नागरिक शास्त्र)
 
 ### Dashboard:
-- ✅ Real data from API (not demo)
-- ✅ Empty state when no activities
-- ✅ Stat cards with real counts
+- ✅ Real data from API (8 Students, 6 Staff)
+- ✅ No demo/mock data
+- ✅ School name in sidebar
 
 ---
 
@@ -59,10 +56,8 @@
 
 ---
 
-## 📁 Key Files Modified (Part 4)
+## 📁 Key Files Modified (Part 5)
 | File | Changes |
 |------|---------|
-| `boardSyllabus.js` | Added '6_सामाजिक विज्ञान' Hindi chapters, isHindiMedium detection |
-| `DashboardPage.js` | Real data from API, empty state |
-| `AIPaperPage.js` | page-break-before for Answer Key |
-| `index.css` | .page-break-before CSS rule |
+| `AdmitCardManagement.js` | API path fixed to use query params |
+| `boardSyllabus.js` | Added '7_सामाजिक विज्ञान' (28 chapters), '8_सामाजिक विज्ञान' (26 chapters), removed orphan entries |
