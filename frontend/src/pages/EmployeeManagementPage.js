@@ -731,20 +731,17 @@ export default function EmployeeManagementPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 my-8">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <User className="w-6 h-6 text-indigo-600" />
+              <User className="w-6 h-6 text-blue-600" />
               {editingEmployee ? '✏️ Edit Employee' : '👤 Add New Employee'}
             </h3>
             
-            {/* Form Tabs Navigation */}
+            {/* Form Tabs Navigation - Merged tabs */}
             <div className="flex gap-1 p-1 bg-slate-100 rounded-lg mb-4 overflow-x-auto">
               {[
-                { id: 'basic', label: '📋 Basic Info' },
-                { id: 'personal', label: '👤 Personal' },
-                { id: 'identity', label: '🆔 ID & Docs' },
-                { id: 'qualification', label: '🎓 Qualification' },
+                { id: 'basic', label: '📋 Basic' },
+                { id: 'personal', label: '👤 Personal & Contact' },
+                { id: 'identity', label: '🆔 ID & Documents' },
                 { id: 'bank', label: '🏦 Bank & Salary' },
-                { id: 'contact', label: '📞 Contact' },
-                { id: 'documents', label: '📄 Documents' },
                 { id: 'login', label: '🔐 Login Access' },
               ].map(tab => (
                 <button
@@ -753,7 +750,7 @@ export default function EmployeeManagementPage() {
                   onClick={() => setActiveFormTab(tab.id)}
                   className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
                     activeFormTab === tab.id 
-                      ? 'bg-white text-indigo-700 shadow-sm' 
+                      ? 'bg-white text-blue-600 shadow-sm' 
                       : 'text-slate-600 hover:bg-white/50'
                   }`}
                 >
