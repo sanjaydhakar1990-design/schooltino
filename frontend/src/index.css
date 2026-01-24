@@ -205,6 +205,166 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
+/* ==================== TINO AI ANIMATIONS ==================== */
+
+/* Breathing animation for idle state */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+/* Fast pulse for listening */
+@keyframes pulse-fast {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Speaking pulse */
+@keyframes pulse-speak {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.05); }
+  50% { transform: scale(0.98); }
+  75% { transform: scale(1.03); }
+}
+
+/* Slow spin for thinking */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Ping animations for rings */
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes ping-slower {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Wave animations for speaking */
+@keyframes wave-expand-1 {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes wave-expand-2 {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes wave-expand-3 {
+  0% { transform: scale(1); opacity: 0.2; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Sound bar animations for listening */
+@keyframes sound-bar-1 {
+  0%, 100% { height: 12px; }
+  50% { height: 20px; }
+}
+
+@keyframes sound-bar-2 {
+  0%, 100% { height: 16px; }
+  50% { height: 8px; }
+}
+
+@keyframes sound-bar-3 {
+  0%, 100% { height: 8px; }
+  50% { height: 24px; }
+}
+
+/* Speaking bar animations */
+@keyframes speak-bar-1 {
+  0%, 100% { height: 8px; }
+  25% { height: 16px; }
+  50% { height: 10px; }
+  75% { height: 20px; }
+}
+
+@keyframes speak-bar-2 {
+  0%, 100% { height: 16px; }
+  33% { height: 8px; }
+  66% { height: 24px; }
+}
+
+@keyframes speak-bar-3 {
+  0%, 100% { height: 12px; }
+  50% { height: 6px; }
+}
+
+/* Animation classes */
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.animate-pulse-fast {
+  animation: pulse-fast 0.8s ease-in-out infinite;
+}
+
+.animate-pulse-speak {
+  animation: pulse-speak 0.6s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2s ease-out infinite;
+}
+
+.animate-ping-slower {
+  animation: ping-slower 2.5s ease-out infinite 0.5s;
+}
+
+.animate-wave-1 {
+  animation: wave-expand-1 1.5s ease-out infinite;
+}
+
+.animate-wave-2 {
+  animation: wave-expand-2 1.5s ease-out infinite 0.3s;
+}
+
+.animate-wave-3 {
+  animation: wave-expand-3 1.5s ease-out infinite 0.6s;
+}
+
+.animate-sound-bar-1 {
+  animation: sound-bar-1 0.4s ease-in-out infinite;
+}
+
+.animate-sound-bar-2 {
+  animation: sound-bar-2 0.5s ease-in-out infinite 0.1s;
+}
+
+.animate-sound-bar-3 {
+  animation: sound-bar-3 0.3s ease-in-out infinite 0.2s;
+}
+
+.animate-speak-bar-1 {
+  animation: speak-bar-1 0.5s ease-in-out infinite;
+}
+
+.animate-speak-bar-2 {
+  animation: speak-bar-2 0.4s ease-in-out infinite;
+}
+
+.animate-speak-bar-3 {
+  animation: speak-bar-3 0.6s ease-in-out infinite 0.15s;
+}
+
+/* Tino AI Panel Glassmorphism */
+.tino-panel {
+  @apply bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl;
+}
+
+.tino-panel-dark {
+  @apply bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl rounded-2xl;
+}
+
 
 /* ==================== PRINT STYLES ==================== */
 @media print {
