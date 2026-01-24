@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState('');
+  const [recentActivities, setRecentActivities] = useState([]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -49,6 +50,17 @@ export default function DashboardPage() {
     try {
       const response = await axios.get(`${API}/dashboard/stats?school_id=${schoolId}`);
       setStats(response.data);
+      // Set recent activities from real data
+      if (response.data.recent_activities) {
+        setRecentActivities(response.data.recent_activities.slice(0, 4).map(activity => ({
+          action: activity.action || 'Activity',
+          name: activity.user_name || 'User',
+          time: formatTimeAgo(activity.created_at),
+          type: activity.module === 'student' ? 'student' : 
+                activity.module === 'fee' ? 'fee' : 
+                activity.module === 'attendance' ? 'attendance' : 'notice'
+        })));
+      }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
@@ -56,23 +68,32 @@ export default function DashboardPage() {
     }
   };
 
+  // Helper to format time ago
+  const formatTimeAgo = (dateStr) => {
+    if (!dateStr) return 'Just now';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000); // seconds
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+  };
+
   const attendanceData = stats ? [
-    { name: 'Present', value: stats.attendance_today?.present || 75, color: '#10B981' },
-    { name: 'Absent', value: stats.attendance_today?.absent || 15, color: '#EF4444' },
-    { name: 'Leave', value: stats.attendance_today?.late || 10, color: '#F59E0B' }
+    { name: 'Present', value: stats.attendance_today?.present || 0, color: '#10B981' },
+    { name: 'Absent', value: stats.attendance_today?.absent || 0, color: '#EF4444' },
+    { name: 'Leave', value: stats.attendance_today?.late || 0, color: '#F59E0B' }
   ] : [
-    { name: 'Present', value: 75, color: '#10B981' },
-    { name: 'Absent', value: 15, color: '#EF4444' },
-    { name: 'Leave', value: 10, color: '#F59E0B' }
+    { name: 'Present', value: 0, color: '#10B981' },
+    { name: 'Absent', value: 0, color: '#EF4444' },
+    { name: 'Leave', value: 0, color: '#F59E0B' }
   ];
 
-  const feeData = [
-    { month: 'Jan', collected: 45000, pending: 15000 },
-    { month: 'Feb', collected: 52000, pending: 12000 },
-    { month: 'Mar', collected: 48000, pending: 18000 },
-    { month: 'Apr', collected: 55000, pending: 10000 },
-    { month: 'May', collected: 60000, pending: 8000 },
-  ];
+  // Use real fee data from stats if available
+  const feeData = stats ? [
+    { month: 'This Month', collected: stats.fee_collection_month || 0, pending: stats.pending_fees || 0 },
+  ] : [];
 
   if (loading) {
     return (
