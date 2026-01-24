@@ -123,7 +123,7 @@ const TinoFace = ({
         <span className={`text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg transition-all ${
           state === 'listening' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white' :
           state === 'speaking' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' :
-          state === 'thinking' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white' :
+          state === 'thinking' ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white' :
           'bg-white/90 text-slate-700 border border-slate-200'
         }`}>
           {state === 'listening' ? '🎤 सुन रहा हूं...' :
