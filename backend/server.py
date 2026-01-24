@@ -77,6 +77,7 @@ from routes.govt_exam_docs import router as govt_exam_router
 from routes.super_admin import router as super_admin_router
 from routes.message_credits import router as message_credits_router
 from routes.tino_ai import router as tino_ai_router
+from routes.tino_voice import router as tino_voice_router
 
 # ==================== MODELS ====================
 
