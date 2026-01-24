@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="12" time="3.997" timestamp="2026-01-24T04:37:55.256903+00:00" hostname="agent-env-5ba7065e-fed8-43f7-b12b-be34f778a9ca"><testcase classname="backend.tests.test_iteration42.TestTinoAI" name="test_tino_ai_chat_endpoint_exists" time="1.938" /><testcase classname="backend.tests.test_iteration42.TestTinoAI" name="test_tino_ai_returns_valid_response" time="0.817" /><testcase classname="backend.tests.test_iteration42.TestTinoAI" name="test_tino_ai_returns_suggestions" time="0.754" /><testcase classname="backend.tests.test_iteration42.TestTinoAI" name="test_tino_ai_quick_stats" time="0.045" /><testcase classname="backend.tests.test_iteration42.TestFeeStructure" name="test_fee_structures_endpoint" time="0.036"><failure message="AssertionError: Fee structures failed: 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:125: in test_fee_structures_endpoint
+    assert response.status_code == 200, f"Fee structures failed: {response.status_code}"
+E   AssertionError: Fee structures failed: 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration42.TestFeeStructure" name="test_fee_structure_no_negative_values" time="0.036"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:138: in test_fee_structure_no_negative_values
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration42.TestFeeStructure" name="test_classes_endpoint" time="0.074"><failure message="AssertionError: Classes endpoint failed: 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:156: in test_classes_endpoint
+    assert response.status_code == 200, f"Classes endpoint failed: {response.status_code}"
+E   AssertionError: Classes endpoint failed: 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration42.TestEventDesigner" name="test_schools_endpoint_for_event_designer" time="0.038"><failure message="AssertionError: Schools endpoint failed: 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:173: in test_schools_endpoint_for_event_designer
+    assert response.status_code == 200, f"Schools endpoint failed: {response.status_code}"
+E   AssertionError: Schools endpoint failed: 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration42.TestEventDesigner" name="test_event_design_generate_endpoint" time="0.036"><failure message="AssertionError: Unexpected status: 401&#10;assert 401 in [200, 201, 404, 422, 500]&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:205: in test_event_design_generate_endpoint
+    assert response.status_code in [200, 201, 404, 422, 500], f"Unexpected status: {response.status_code}"
+E   AssertionError: Unexpected status: 401
+E   assert 401 in [200, 201, 404, 422, 500]
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration42.TestFeeManagementAPIs" name="test_fee_collections_endpoint" time="0.036"><failure message="AssertionError: Fee collections failed: 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:219: in test_fee_collections_endpoint
+    assert response.status_code == 200, f"Fee collections failed: {response.status_code}"
+E   AssertionError: Fee collections failed: 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration42.TestFeeManagementAPIs" name="test_old_dues_endpoint" time="0.036"><failure message="AssertionError: Old dues failed: 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:232: in test_old_dues_endpoint
+    assert response.status_code == 200, f"Old dues failed: {response.status_code}"
+E   AssertionError: Old dues failed: 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration42.TestFeeManagementAPIs" name="test_students_endpoint" time="0.033"><failure message="AssertionError: Students endpoint failed: 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iteration42.py:245: in test_students_endpoint
+    assert response.status_code == 200, f"Students endpoint failed: {response.status_code}"
+E   AssertionError: Students endpoint failed: 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase></testsuite></testsuites>
