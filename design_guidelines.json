@@ -1,134 +1,188 @@
 {
+  "identity": {
+    "name": "Schooltino",
+    "persona": "E1: The Anti-AI Designer",
+    "tone": "Professional, Trustworthy, Efficient, Organized",
+    "theme_strategy": "Corporate Clean (DigitalEdu.net Clone)",
+    "target_audience": "School Administrators, Teachers, Principals (India)"
+  },
   "typography": {
     "font_family": {
       "heading": "Manrope, sans-serif",
       "body": "Inter, sans-serif",
       "mono": "JetBrains Mono, monospace"
     },
+    "weights": {
+      "heading": "600 (SemiBold) or 700 (Bold)",
+      "body": "400 (Regular) or 500 (Medium)"
+    },
     "scale": {
-      "h1": "text-4xl font-bold tracking-tight",
-      "h2": "text-3xl font-bold tracking-tight",
-      "h3": "text-2xl font-semibold tracking-tight",
-      "h4": "text-xl font-semibold tracking-tight",
-      "body_large": "text-lg leading-relaxed",
-      "body_default": "text-base leading-relaxed",
-      "caption": "text-sm text-muted-foreground"
-    }
+      "h1": "text-4xl md:text-5xl tracking-tight font-bold",
+      "h2": "text-3xl tracking-tight font-semibold",
+      "h3": "text-2xl font-semibold",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed",
+      "caption": "text-sm text-slate-500"
+    },
+    "rules": [
+      "Headings must never use Inter. Use Manrope.",
+      "Use tight tracking (-0.02em) for headings larger than 24px.",
+      "Use relaxed leading (1.6) for body text to improve readability.",
+      "Uppercase labels must use tracking-widest (0.1em) and text-xs."
+    ]
   },
   "colors": {
     "palette": {
       "primary": {
-        "default": "#4F46E5",
-        "gradient": "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
-        "foreground": "#FFFFFF"
+        "DEFAULT": "#2563EB",
+        "foreground": "#FFFFFF",
+        "hover": "#1D4ED8",
+        "description": "Vibrant Corporate Blue for primary actions (Buttons, Active States)"
       },
       "secondary": {
-        "default": "#F1F5F9",
-        "foreground": "#0F172A"
+        "DEFAULT": "#F1F5F9",
+        "foreground": "#0F172A",
+        "description": "Slate-100 for secondary buttons and backgrounds"
       },
       "background": {
-        "default": "#F8FAFC",
-        "paper": "#FFFFFF",
-        "sidebar": "#0F172A"
+        "DEFAULT": "#FFFFFF",
+        "alt": "#F8FAFC",
+        "description": "Pure White for main surfaces, Slate-50 for app background"
       },
-      "accents": {
-        "success": "#10B981",
-        "warning": "#F59E0B",
-        "error": "#EF4444",
-        "info": "#3B82F6"
+      "sidebar": {
+        "DEFAULT": "#1E293B",
+        "foreground": "#F8FAFC",
+        "active": "#334155",
+        "border": "#334155",
+        "description": "Slate-800 for professional dark sidebar"
+      },
+      "accent": {
+        "DEFAULT": "#0EA5E9",
+        "foreground": "#FFFFFF",
+        "description": "Sky Blue for highlights and progress bars"
+      },
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444",
+      "text": {
+        "primary": "#0F172A",
+        "secondary": "#64748B",
+        "muted": "#94A3B8"
       }
     },
-    "usage": {
-      "dashboard_background": "bg-slate-50",
-      "card_background": "bg-white",
-      "sidebar_background": "bg-slate-900",
-      "primary_gradient": "bg-gradient-to-br from-indigo-600 to-purple-600",
-      "text_primary": "text-slate-900",
-      "text_secondary": "text-slate-500"
+    "gradients": {
+      "primary": "bg-gradient-to-r from-blue-600 to-blue-500",
+      "sidebar": "bg-slate-900"
     }
   },
   "layout": {
-    "structure": "Sidebar (Left, Fixed) + Header (Top, Sticky) + Main Content (Scrollable)",
+    "spacing": {
+      "container_padding": "p-6 md:p-8",
+      "section_gap": "gap-8",
+      "component_gap": "gap-4"
+    },
     "grid_system": {
       "dashboard": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
-      "quick_actions": "grid grid-cols-2 md:grid-cols-4 gap-4"
+      "form": "grid grid-cols-1 md:grid-cols-2 gap-6"
     },
-    "spacing": {
-      "page_padding": "p-6 md:p-8",
-      "card_padding": "p-6",
-      "section_gap": "gap-8"
+    "sidebar": {
+      "width": "w-64",
+      "collapsed_width": "w-20",
+      "mobile_behavior": "drawer"
     }
   },
   "components": {
-    "cards": {
-      "style": "rounded-xl border border-slate-200 shadow-sm bg-white hover:shadow-md transition-all duration-200",
-      "metric_card": "flex flex-col justify-between h-full p-6 relative overflow-hidden",
-      "gradient_card": "text-white bg-gradient-to-br from-indigo-600 to-purple-600 border-none shadow-lg"
-    },
     "buttons": {
-      "primary": "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-lg px-4 py-2 font-medium transition-all",
-      "secondary": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm rounded-lg px-4 py-2 font-medium transition-all",
-      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg px-4 py-2 transition-all",
-      "quick_action": "flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/50 transition-all gap-3 group"
+      "primary": "bg-blue-600 hover:bg-blue-700 text-white shadow-sm rounded-md px-6 py-2.5 font-medium transition-all active:scale-95",
+      "secondary": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm rounded-md px-6 py-2.5 font-medium transition-all",
+      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-md px-4 py-2 transition-all",
+      "danger": "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-md px-4 py-2 transition-all"
     },
-    "charts": {
-      "library": "Recharts",
-      "style": "Minimalist, rounded tooltips, custom legends",
-      "colors": ["#4F46E5", "#8B5CF6", "#EC4899", "#10B981"]
+    "cards": {
+      "stat": "bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200",
+      "container": "bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+    },
+    "tables": {
+      "wrapper": "w-full rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm",
+      "header": "bg-slate-50 border-b border-slate-200",
+      "header_cell": "text-slate-500 font-semibold text-xs uppercase tracking-wider py-3 px-4 text-left",
+      "row": "hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0",
+      "cell": "py-3 px-4 text-sm text-slate-700"
+    },
+    "inputs": {
+      "base": "flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      "label": "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block text-slate-700"
+    },
+    "badges": {
+      "base": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+      "success": "border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-200",
+      "warning": "border-transparent bg-amber-100 text-amber-700 hover:bg-amber-200",
+      "error": "border-transparent bg-rose-100 text-rose-700 hover:bg-rose-200",
+      "info": "border-transparent bg-blue-100 text-blue-700 hover:bg-blue-200"
     }
   },
   "visual_enhancers": {
-    "glassmorphism": "backdrop-blur-md bg-white/80 border border-white/20",
     "shadows": {
-      "card": "shadow-sm hover:shadow-md",
-      "dropdown": "shadow-lg ring-1 ring-black/5"
+      "card": "shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
+      "dropdown": "shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
+      "hover": "shadow-[0_8px_30px_rgba(0,0,0,0.12)]"
     },
-    "gradients": {
-      "primary": "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500",
-      "subtle": "bg-gradient-to-b from-white to-slate-50"
+    "borders": {
+      "default": "border border-slate-200",
+      "subtle": "border border-slate-100"
     },
-    "icons": "Lucide React (Stroke width: 1.5px)"
-  },
-  "images": {
-    "students": {
-      "url": "https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzY2hvb2wlMjBzdHVkZW50cyUyMGNsYXNzcm9vbXxlbnwwfHx8fDE3NjkyNDg5MDh8MA&ixlib=rb-4.1.0&q=85",
-      "alt": "Indian students in classroom",
-      "usage": "Dashboard Hero / Recent Activities"
-    },
-    "school_building": {
-      "url": "https://images.unsplash.com/photo-1758611228434-7b5b697abd0a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBzY2hvb2wlMjBidWlsZGluZyUyMGV4dGVyaW9yfGVufDB8fHx8MTc2OTI0ODkxMHww&ixlib=rb-4.1.0&q=85",
-      "alt": "Modern School Building",
-      "usage": "Login Page / Dashboard Header Background"
-    },
-    "teacher": {
-      "url": "https://images.unsplash.com/photo-1544264796-acfb69e05b37?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHw0fHxpbmRpYW4lMjB0ZWFjaGVyJTIwcHJvZmVzc2lvbmFsJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY5MjQ4OTEyfDA&ixlib=rb-4.1.0&q=85",
-      "alt": "Professional Teacher",
-      "usage": "Staff Section / Testimonials"
+    "radius": {
+      "default": "rounded-lg",
+      "card": "rounded-xl",
+      "button": "rounded-md"
     }
   },
+  "motion": {
+    "transitions": "transition-all duration-200 ease-in-out",
+    "hover_lift": "hover:-translate-y-1",
+    "page_enter": "animate-fade-in"
+  },
+  "image_urls": {
+    "students": [
+      "https://images.unsplash.com/photo-1765572144519-1dc1e6e07bc9?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1659464761467-34247eb8e002?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1675268919487-33bc3c4c0892?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1746942101995-bb2b67e31a88?crop=entropy&cs=srgb&fm=jpg&q=85"
+    ],
+    "teachers": [
+      "https://images.unsplash.com/photo-1622460241924-a114e6abe1ff?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1595956935400-eced8114c8ea?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.pexels.com/photos/11853989/pexels-photo-11853989.jpeg",
+      "https://images.pexels.com/photos/5212321/pexels-photo-5212321.jpeg"
+    ],
+    "buildings": [
+      "https://images.unsplash.com/photo-1758611228434-7b5b697abd0a?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1764943630631-b63aadf86e19?crop=entropy&cs=srgb&fm=jpg&q=85"
+    ]
+  },
   "instructions_to_main_agent": [
-    "Implement the dashboard using the 'Bento Grid' layout strategy for the main metrics.",
-    "Use the 'Manrope' font for all headings to give a modern, friendly feel.",
-    "Apply the 'primary_gradient' (Indigo to Purple) to the 'Total Students' or main CTA cards to mimic the DigitalEdu style.",
-    "Ensure the Sidebar is dark (Slate-900) and the main content area is light (Slate-50).",
-    "Use 'Lucide React' icons for the Quick Actions grid. Make them large (w-8 h-8) and colored with the primary brand color.",
-    "The 'Recent Activities' section should use the 'students' image as a thumbnail or context image.",
-    "Ensure all interactive elements have 'data-testid' attributes.",
-    "Do NOT use default Shadcn card styles blindly; customize them with the 'rounded-xl' and 'shadow-sm' classes defined in components.",
-    "For the Attendance Chart, use a Donut chart with the defined chart colors.",
-    "Maintain the 'Tino AI' floating button/widget if it exists, ensuring it doesn't overlap with critical UI."
+    "STRICTLY follow the 'Corporate Clean' theme. No gradients on backgrounds.",
+    "Use the defined 'Blue' (#2563EB) for all primary actions. Do not use the old Indigo.",
+    "Ensure the Sidebar is Dark (#1E293B) with light text.",
+    "Data Tables must look professional: distinct header row, borders, alternating row colors on hover.",
+    "Use 'Manrope' for all headings and 'Inter' for body text.",
+    "Add 'data-testid' to all interactive elements.",
+    "Use 'sonner' for toast notifications.",
+    "Maintain generous spacing (p-6 or p-8) inside containers.",
+    "Do not use 'transparent' backgrounds for dropdowns or headers.",
+    "For the 'Tino AI' assistant, preserve the existing animations in index.css but ensure they fit the new color scheme."
   ],
   "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
-    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
     "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
-    "Create depth through layered design elements with z-index hierarchy.",
-    "Use glass-morphism effects with backdrop filters (12-24px blur).",
-    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) sparingly (only for overlays/modals).",
+    "You MUST NOT apply universal transition. Eg: `transition: all`. This results in breaking transforms.",
     "You MUST NOT center align the app container.",
     "Always use modern button styles like pill-shaped, or sharp button with interaction animations.",
-    "NEVER use AI assistant Emoji characters for icons.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠 etc for icons.",
     "Every interaction needs micro-animations - hover states, transitions.",
     "Use 2-3x more spacing than feels comfortable.",
-    "Prioritize using pre-existing components from src/components/ui when applicable."
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary."
   ]
 }
