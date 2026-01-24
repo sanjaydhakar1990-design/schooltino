@@ -1212,43 +1212,41 @@ Note: First login पर password change करें।`;
                       </select>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Tab 4: Contact Info */}
-              {activeFormTab === 'contact' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <h3 className="font-semibold text-slate-800 border-b pb-2">📞 Contact Information (संपर्क जानकारी)</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Primary Mobile * (for login)</Label>
-                      <Input name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="Parent's mobile for OTP" data-testid="mobile-input" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Secondary Phone (ID Card)</Label>
-                      <Input name="parent_phone" value={formData.parent_phone} onChange={handleChange} placeholder="Alternate number" data-testid="parent-phone-input" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Optional" />
-                    </div>
-                    <div className="space-y-2 col-span-2 md:col-span-3">
-                      <Label>{t('address')} *</Label>
-                      <Input name="address" value={formData.address} onChange={handleChange} required placeholder="Full Address" data-testid="address-input" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Emergency Contact Name</Label>
-                      <Input name="emergency_contact_name" value={formData.emergency_contact_name} onChange={handleChange} placeholder="Emergency person name" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Emergency Contact Number</Label>
-                      <Input name="emergency_contact" value={formData.emergency_contact} onChange={handleChange} placeholder="Emergency mobile" />
+                  {/* Contact Info Section - Merged */}
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200 mt-4">
+                    <h4 className="font-medium text-green-800 mb-3">📞 Contact Information (संपर्क जानकारी)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Primary Mobile * (for login)</Label>
+                        <Input name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="Parent's mobile for OTP" data-testid="mobile-input" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Secondary Phone (ID Card)</Label>
+                        <Input name="parent_phone" value={formData.parent_phone} onChange={handleChange} placeholder="Alternate number" data-testid="parent-phone-input" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Optional" />
+                      </div>
+                      <div className="space-y-2 col-span-2 md:col-span-3">
+                        <Label>{t('address')} *</Label>
+                        <Input name="address" value={formData.address} onChange={handleChange} required placeholder="Full Address" data-testid="address-input" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Emergency Contact Name</Label>
+                        <Input name="emergency_contact_name" value={formData.emergency_contact_name} onChange={handleChange} placeholder="Emergency person name" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Emergency Contact Number</Label>
+                        <Input name="emergency_contact" value={formData.emergency_contact} onChange={handleChange} placeholder="Emergency mobile" />
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Tab 5: Bank Details */}
+              {/* Tab 4: Bank Details */}
               {activeFormTab === 'bank' && (
                 <div className="space-y-4 animate-in fade-in">
                   <h3 className="font-semibold text-slate-800 border-b pb-2">🏦 Bank Details (छात्रवृत्ति के लिए)</h3>
