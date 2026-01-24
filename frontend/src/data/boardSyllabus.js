@@ -1414,6 +1414,9 @@ export const RBSE_CHAPTERS = {
 
 // Get chapters based on board, class and subject
 export const getChapters = (board, className, subject) => {
+  // Check if subject is in Hindi script - if yes, return Hindi chapters directly
+  const isHindiMedium = /[\u0900-\u097F]/.test(subject); // Check for Devanagari characters
+  
   // Normalize subject name - map Hindi script to English key
   const normalizeSubject = (sub) => {
     // Hindi subject mappings (script to key)
@@ -1495,6 +1498,14 @@ export const getChapters = (board, className, subject) => {
   
   // Handle Middle School (6-8)
   if (['6', '7', '8'].includes(classNum)) {
+    // For Hindi medium सामाजिक विज्ञान, return Hindi chapters
+    if (isHindiMedium && (subject === 'सामाजिक विज्ञान' || subject.includes('सामाजिक'))) {
+      const hindiKey = `${classNum}_सामाजिक विज्ञान`;
+      if (MIDDLE_SCHOOL_CHAPTERS[hindiKey]) {
+        return MIDDLE_SCHOOL_CHAPTERS[hindiKey];
+      }
+    }
+    
     let subjectKey = normalizedSubject;
     // Normalize subject names
     if ((normalizedSubject.includes('विज्ञान') || normalizedSubject === 'Science') && !normalizedSubject.includes('सामाजिक')) {
