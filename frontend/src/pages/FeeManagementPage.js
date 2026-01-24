@@ -605,23 +605,31 @@ export default function FeeManagementPage() {
                       const structure = getClassFeeStructure(cls.id);
                       const fees = structure?.fees || {};
                       
+                      // Safely get numeric values, ensuring no NaN or negative
+                      const safeNumber = (val) => {
+                        const num = Number(val) || 0;
+                        return num > 0 ? num : 0;
+                      };
+                      
+                      const admissionFee = safeNumber(fees.admission_fee);
+                      const tuitionFee = safeNumber(fees.tuition_fee);
+                      const examFee = safeNumber(fees.exam_fee);
+                      
                       // Calculate other fees (all fees except admission, tuition, exam)
+                      // Only count positive values
                       const otherFees = Object.entries(fees)
-                        .filter(([key, val]) => !['admission_fee', 'tuition_fee', 'exam_fee'].includes(key) && val > 0)
-                        .reduce((sum, [_, val]) => sum + (val || 0), 0);
+                        .filter(([key, val]) => !['admission_fee', 'tuition_fee', 'exam_fee'].includes(key))
+                        .reduce((sum, [_, val]) => sum + safeNumber(val), 0);
                       
                       // Calculate total annual (admission + tuition*12 + exam + other)
-                      const totalAnnual = (fees.admission_fee || 0) + 
-                                         ((fees.tuition_fee || 0) * 12) + 
-                                         (fees.exam_fee || 0) + 
-                                         otherFees;
+                      const totalAnnual = admissionFee + (tuitionFee * 12) + examFee + otherFees;
                       
                       return (
                         <TableRow key={cls.id}>
                           <TableCell className="font-medium">{cls.name}</TableCell>
-                          <TableCell>₹{fees.admission_fee?.toLocaleString('en-IN') || '-'}</TableCell>
-                          <TableCell>₹{fees.tuition_fee?.toLocaleString('en-IN') || '-'}/month</TableCell>
-                          <TableCell>₹{fees.exam_fee?.toLocaleString('en-IN') || '-'}</TableCell>
+                          <TableCell>₹{admissionFee > 0 ? admissionFee.toLocaleString('en-IN') : '-'}</TableCell>
+                          <TableCell>₹{tuitionFee > 0 ? tuitionFee.toLocaleString('en-IN') : '-'}/month</TableCell>
+                          <TableCell>₹{examFee > 0 ? examFee.toLocaleString('en-IN') : '-'}</TableCell>
                           <TableCell>
                             ₹{otherFees > 0 ? otherFees.toLocaleString('en-IN') : '0'}
                           </TableCell>
