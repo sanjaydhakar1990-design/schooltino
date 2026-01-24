@@ -140,22 +140,63 @@ export default function EmployeeManagementPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   
+  // Form Tab state
+  const [activeFormTab, setActiveFormTab] = useState('basic');
+  
   const [formData, setFormData] = useState({
+    // Basic Info
     name: '',
     mobile: '',
     email: '',
-    address: '',
     designation: 'teacher',
     department: '',
-    qualification: '',
     joining_date: new Date().toISOString().split('T')[0],
+    // Personal Info
+    gender: 'male',
+    dob: '',
+    blood_group: '',
+    marital_status: '',
+    father_name: '',
+    spouse_name: '',
+    nationality: 'Indian',
+    // Address
+    address: '',
+    permanent_address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    // Identity Documents
+    aadhar_no: '',
+    pan_number: '',
+    uan_number: '', // EPF
+    esi_number: '',
+    voter_id: '',
+    driving_license: '',
+    // Qualification
+    qualification: '',
+    specialization: '',
+    experience_years: '',
+    previous_employer: '',
+    // Bank Details
+    bank_name: '',
+    bank_account_no: '',
+    ifsc_code: '',
+    bank_branch: '',
+    // Salary
     salary: '',
+    salary_type: 'monthly', // monthly/daily
+    pf_applicable: false,
+    esi_applicable: false,
+    tds_applicable: false,
+    // Contact
+    emergency_contact: '',
+    emergency_contact_name: '',
+    emergency_relation: '',
+    // Login
     create_login: true,
     password: '',
     role: 'teacher',
-    custom_permissions: null,
-    blood_group: '',
-    emergency_contact: '' // Family phone for ID card
+    custom_permissions: null
   });
   
   const [showPermissions, setShowPermissions] = useState(false);
