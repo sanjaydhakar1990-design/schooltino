@@ -1349,21 +1349,59 @@ export const RBSE_CHAPTERS = {
 
 // Get chapters based on board, class and subject
 export const getChapters = (board, className, subject) => {
+  // Normalize subject name - map Hindi script to English key
+  const normalizeSubject = (sub) => {
+    // Hindi subject mappings (script to key)
+    const subjectMap = {
+      'हिंदी': 'Hindi',
+      'गणित': 'Mathematics',
+      'अंग्रेजी': 'English',
+      'अंग्रेज़ी': 'English',
+      'विज्ञान': 'Science',
+      'सामाजिक विज्ञान': 'Social Science',
+      'पर्यावरण': 'EVS',
+      'पर्यावरण अध्ययन': 'EVS',
+      'संस्कृत': 'Sanskrit',
+      'चित्रकला': 'Drawing',
+      'कला': 'Drawing',
+      'सामान्य ज्ञान': 'GK',
+      'भौतिक विज्ञान': 'Physics',
+      'भौतिकी': 'Physics',
+      'रसायन विज्ञान': 'Chemistry',
+      'रसायन शास्त्र': 'Chemistry',
+      'जीव विज्ञान': 'Biology',
+      'अर्थशास्त्र': 'Economics',
+      'वाणिज्य': 'Commerce',
+      'वाणिज्य शास्त्र': 'Commerce',
+      'लेखाशास्त्र': 'Accountancy',
+      'इतिहास': 'History',
+      'भूगोल': 'Geography',
+      'नागरिक शास्त्र': 'Civics',
+      'राजनीति विज्ञान': 'Political Science',
+    };
+    return subjectMap[sub] || sub;
+  };
+
+  const normalizedSubject = normalizeSubject(subject);
+  
   // Handle Pre-Primary Classes
   if (['Nursery', 'LKG', 'UKG'].includes(className)) {
     // Normalize subject names
-    let subjectKey = subject;
-    if (subject.includes('GK') || subject.includes('General') || subject.includes('Awareness') || subject === 'EVS' || subject === 'पर्यावरण') {
+    let subjectKey = normalizedSubject;
+    if (normalizedSubject.includes('GK') || normalizedSubject.includes('General') || normalizedSubject.includes('Awareness') || normalizedSubject === 'EVS' || normalizedSubject === 'पर्यावरण') {
       subjectKey = 'GK';
     }
-    if (subject.includes('गणित') || subject === 'Mathematics') {
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
       subjectKey = 'Mathematics';
     }
-    if (subject === 'हिंदी') {
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
       subjectKey = 'Hindi';
     }
-    if (subject.includes('Drawing') || subject.includes('चित्रकला') || subject.includes('Art')) {
+    if (normalizedSubject.includes('Drawing') || normalizedSubject.includes('चित्रकला') || normalizedSubject.includes('Art')) {
       subjectKey = 'Drawing';
+    }
+    if (normalizedSubject.includes('Rhyme') || normalizedSubject.includes('गीत')) {
+      subjectKey = 'Rhymes';
     }
     const key = `${className}_${subjectKey}`;
     return PRE_PRIMARY_CHAPTERS[key] || [];
@@ -1372,18 +1410,18 @@ export const getChapters = (board, className, subject) => {
   // Handle Primary Classes (1-5)
   const classNum = className.replace('Class ', '');
   if (['1', '2', '3', '4', '5'].includes(classNum)) {
-    let subjectKey = subject;
+    let subjectKey = normalizedSubject;
     // Normalize subject names for primary
-    if (subject.includes('EVS') || subject.includes('पर्यावरण') || subject.includes('GK')) {
+    if (normalizedSubject.includes('EVS') || normalizedSubject.includes('पर्यावरण') || normalizedSubject.includes('GK')) {
       subjectKey = 'EVS';
     }
-    if (subject.includes('गणित') || subject === 'Mathematics') {
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
       subjectKey = 'Mathematics';
     }
-    if (subject === 'हिंदी') {
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
       subjectKey = 'Hindi';
     }
-    if (subject.includes('Drawing') || subject.includes('चित्रकला') || subject.includes('Art')) {
+    if (normalizedSubject.includes('Drawing') || normalizedSubject.includes('चित्रकला') || normalizedSubject.includes('Art')) {
       subjectKey = 'Drawing';
     }
     const key = `${classNum}_${subjectKey}`;
@@ -1392,18 +1430,18 @@ export const getChapters = (board, className, subject) => {
   
   // Handle Middle School (6-8)
   if (['6', '7', '8'].includes(classNum)) {
-    let subjectKey = subject;
+    let subjectKey = normalizedSubject;
     // Normalize subject names
-    if (subject.includes('विज्ञान') && !subject.includes('सामाजिक')) {
+    if ((normalizedSubject.includes('विज्ञान') || normalizedSubject === 'Science') && !normalizedSubject.includes('सामाजिक')) {
       subjectKey = 'Science';
     }
-    if (subject.includes('सामाजिक') || subject.includes('Social')) {
+    if (normalizedSubject.includes('सामाजिक') || normalizedSubject.includes('Social')) {
       subjectKey = 'Social Science';
     }
-    if (subject.includes('गणित') || subject === 'Mathematics') {
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
       subjectKey = 'Mathematics';
     }
-    if (subject === 'हिंदी') {
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
       subjectKey = 'Hindi';
     }
     const key = `${classNum}_${subjectKey}`;
@@ -1412,18 +1450,18 @@ export const getChapters = (board, className, subject) => {
   
   // Handle Secondary Classes (9-10)
   if (['9', '10'].includes(classNum)) {
-    let subjectKey = subject;
+    let subjectKey = normalizedSubject;
     // Normalize subject names
-    if (subject.includes('विज्ञान') && !subject.includes('सामाजिक')) {
+    if ((normalizedSubject.includes('विज्ञान') || normalizedSubject === 'Science') && !normalizedSubject.includes('सामाजिक')) {
       subjectKey = 'Science';
     }
-    if (subject.includes('सामाजिक') || subject.includes('Social')) {
+    if (normalizedSubject.includes('सामाजिक') || normalizedSubject.includes('Social')) {
       subjectKey = 'Social Science';
     }
-    if (subject.includes('गणित') || subject === 'Mathematics') {
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
       subjectKey = 'Mathematics';
     }
-    if (subject === 'हिंदी') {
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
       subjectKey = 'Hindi';
     }
     const key = `${classNum}_${subjectKey}`;
@@ -1440,12 +1478,12 @@ export const getChapters = (board, className, subject) => {
   
   // Handle Senior Secondary (11-12)
   if (['11', '12'].includes(classNum)) {
-    let subjectKey = subject;
+    let subjectKey = normalizedSubject;
     // Normalize subject names
-    if (subject.includes('भौतिक') || subject === 'Physics') {
+    if (normalizedSubject.includes('भौतिक') || normalizedSubject === 'Physics') {
       subjectKey = 'Physics';
     }
-    if (subject.includes('रसायन') || subject === 'Chemistry') {
+    if (normalizedSubject.includes('रसायन') || normalizedSubject === 'Chemistry') {
       subjectKey = 'Chemistry';
     }
     if (subject.includes('जीव') || subject === 'Biology') {
