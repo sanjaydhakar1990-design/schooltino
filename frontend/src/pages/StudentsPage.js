@@ -1823,6 +1823,7 @@ Note: First login पर password change करें।`;
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-20">Photo</TableHead>
                     <TableHead>Student ID</TableHead>
                     <TableHead>{t('student_name')}</TableHead>
                     <TableHead>{t('class_section')}</TableHead>
@@ -1835,6 +1836,15 @@ Note: First login पर password change करें।`;
                 <TableBody>
                   {students.map((student) => (
                     <TableRow key={student.id} data-testid={`student-row-${student.id}`}>
+                      <TableCell>
+                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+                          {student.photo_url ? (
+                            <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-5 h-5 text-slate-400" />
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="font-mono text-sm font-medium">{student.student_id || student.admission_no}</TableCell>
                       <TableCell className="font-medium">{student.name}</TableCell>
                       <TableCell>
