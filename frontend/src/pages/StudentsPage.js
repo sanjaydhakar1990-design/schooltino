@@ -1427,7 +1427,7 @@ Note: First login पर password change करें।`;
               {!editingStudent && (
                 <div className="border-t border-slate-200 pt-4 mt-4">
                   <Label className="text-base font-semibold flex items-center gap-2 mb-3">
-                    <Camera className="w-5 h-5 text-indigo-600" />
+                    <Camera className="w-5 h-5 text-blue-600" />
                     Student Photo (AI Attendance के लिए) - Optional
                   </Label>
                   
@@ -1436,7 +1436,7 @@ Note: First login पर password change करें।`;
                       <Button
                         type="button"
                         variant="outline"
-                        className="flex-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50 h-20"
+                        className="flex-1 border-blue-200 text-blue-700 hover:bg-blue-50 h-20"
                         onClick={startCamera}
                         data-testid="open-camera-btn"
                       >
@@ -1446,7 +1446,7 @@ Note: First login पर password change करें।`;
                         </div>
                       </Button>
                       <label className="flex-1">
-                        <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg h-20 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+                        <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg h-20 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all">
                           <Upload className="w-6 h-6 text-slate-400 mb-1" />
                           <span className="text-sm text-slate-600">📁 Photo Upload</span>
                         </div>
@@ -1476,7 +1476,7 @@ Note: First login पर password change करें।`;
                         <Button
                           type="button"
                           onClick={capturePhoto}
-                          className="bg-white text-indigo-600 hover:bg-indigo-50"
+                          className="bg-white text-blue-600 hover:bg-blue-50"
                           data-testid="capture-btn"
                         >
                           <Camera className="w-5 h-5 mr-2" />
@@ -1867,7 +1867,7 @@ Note: First login पर password change करें।`;
                                 setShowIDCard(true);
                               }}
                             >
-                              <CreditCard className="w-4 h-4 mr-2 text-indigo-600" />
+                              <CreditCard className="w-4 h-4 mr-2 text-blue-600" />
                               View ID Card
                             </DropdownMenuItem>
                             <DropdownMenuItem 
