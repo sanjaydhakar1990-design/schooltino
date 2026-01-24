@@ -36,7 +36,13 @@ export const EMPLOYEE_DOCUMENT_TYPES = [
   { id: 'pan_card', label: 'PAN Card (पैन कार्ड)', required: false, icon: '💳' },
   { id: 'resume', label: 'Resume/CV (बायोडाटा)', required: false, icon: '📄' },
   { id: 'photo', label: 'Passport Photo (पासपोर्ट फोटो)', required: true, icon: '📷' },
+  // Qualification Marksheets
+  { id: 'marksheet_10th', label: '10th Marksheet (दसवीं मार्कशीट)', required: false, icon: '📊' },
+  { id: 'marksheet_12th', label: '12th Marksheet (बारहवीं मार्कशीट)', required: false, icon: '📊' },
+  { id: 'marksheet_graduation', label: 'Graduation Marksheet (स्नातक मार्कशीट)', required: false, icon: '📊' },
+  { id: 'marksheet_pg', label: 'Post Graduation (स्नातकोत्तर मार्कशीट)', required: false, icon: '📊' },
   { id: 'degree_certificate', label: 'Degree Certificate (डिग्री प्रमाण पत्र)', required: false, icon: '🎓' },
+  { id: 'bed_certificate', label: 'B.Ed Certificate (B.Ed प्रमाण पत्र)', required: false, icon: '🎓' },
   { id: 'experience_letter', label: 'Experience Letter (अनुभव पत्र)', required: false, icon: '📋' },
   { id: 'relieving_letter', label: 'Relieving Letter (मुक्ति पत्र)', required: false, icon: '📝' },
   { id: 'police_verification', label: 'Police Verification (पुलिस सत्यापन)', required: false, icon: '🚔' },
