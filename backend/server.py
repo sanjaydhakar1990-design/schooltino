@@ -4090,9 +4090,9 @@ VERIFY: Sum of all question marks = {request.total_marks}"""
             api_key=api_key,
             session_id=f"paper-{str(uuid.uuid4())[:8]}",
             system_message=system_prompt
-        ).with_model("openai", "gpt-4o")
+        ).with_model("openai", "gpt-4o-mini")  # Use gpt-4o-mini for faster generation
         
-        user_msg = UserMessage(text=f"Generate a {request.subject} question paper for {request.class_name} on topic: {request.chapter}. Total marks MUST be exactly {request.total_marks}.")
+        user_msg = UserMessage(text=f"Generate a {request.subject} question paper for {request.class_name} on topic: {request.chapter}. Total marks MUST be exactly {request.total_marks}. Generate in {request.language} language.")
         response = await chat.send_message(user_msg)
         
         # Parse response
