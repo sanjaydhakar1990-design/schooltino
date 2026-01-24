@@ -924,6 +924,7 @@ Note: First login पर password change करें।`;
                 { id: 'transport', label: '🚌 Transport' },
                 { id: 'medical', label: '🏥 Medical' },
                 { id: 'education', label: '📚 Education' },
+                { id: 'documents', label: '📄 Documents' },
               ].map(tab => (
                 <button
                   key={tab.id}
