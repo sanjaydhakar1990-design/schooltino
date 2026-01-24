@@ -191,10 +191,10 @@ export const Layout = () => {
               <span className="font-medium">{otherLang.flag} {otherLang.shortLabel}</span>
             </button>
             
-            {/* Ask Tino Button */}
+            {/* Ask Tino Button - Opens Tino AI Page */}
             <button
-              onClick={() => setVoiceModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              onClick={() => navigate('/app/tino-ai')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               data-testid="ask-tino-btn"
             >
               <Mic className="w-4 h-4" />
@@ -211,9 +211,6 @@ export const Layout = () => {
           </div>
         </main>
       </div>
-
-      {/* Voice Assistant FAB */}
-      <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
   );
 };
