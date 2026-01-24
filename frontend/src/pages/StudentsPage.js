@@ -932,7 +932,7 @@ Note: First login पर password change करें।`;
                   onClick={() => setActiveFormTab(tab.id)}
                   className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
                     activeFormTab === tab.id 
-                      ? 'bg-white text-blue-700 shadow-sm' 
+                      ? 'bg-white text-blue-600 shadow-sm' 
                       : 'text-slate-600 hover:bg-white/50'
                   }`}
                 >
