@@ -18,7 +18,7 @@ TEST_PASSWORD = "test1234"
 TEST_SCHOOL_ID = "SCH-TEST-2026"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def auth_token():
     """Get authentication token"""
     response = requests.post(f"{BASE_URL}/api/auth/login", json={
@@ -26,14 +26,19 @@ def auth_token():
         "password": TEST_PASSWORD
     })
     if response.status_code == 200:
-        return response.json().get("token")
+        token = response.json().get("token")
+        print(f"Auth token obtained: {token[:20]}...")
+        return token
     pytest.skip(f"Authentication failed: {response.status_code} - {response.text}")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def auth_headers(auth_token):
     """Get headers with auth token"""
-    return {"Authorization": f"Bearer {auth_token}"}
+    return {
+        "Authorization": f"Bearer {auth_token}",
+        "Content-Type": "application/json"
+    }
 
 
 class TestTinoAI:
