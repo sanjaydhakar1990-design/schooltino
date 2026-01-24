@@ -743,6 +743,7 @@ export default function EmployeeManagementPage() {
                 { id: 'qualification', label: '🎓 Qualification' },
                 { id: 'bank', label: '🏦 Bank & Salary' },
                 { id: 'contact', label: '📞 Contact' },
+                { id: 'documents', label: '📄 Documents' },
                 { id: 'login', label: '🔐 Login Access' },
               ].map(tab => (
                 <button
