@@ -187,28 +187,36 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-8" data-testid="dashboard-page">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Welcome Header - Clean Blue Theme */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-6 text-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white rounded-full" />
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white rounded-full" />
+        </div>
+        
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <p className="text-indigo-200 text-sm">{greeting}</p>
+            <p className="text-blue-200 text-sm font-medium">{greeting} 👋</p>
             <h1 className="text-2xl font-bold mt-1">{user?.name || 'Director'}</h1>
-            <p className="text-indigo-200 text-sm mt-1">
+            <p className="text-blue-200 text-sm mt-1">
               {schoolData?.name || 'Your School'} • {new Date().toLocaleDateString('hi-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
           <div className="flex gap-3">
             <Button 
               onClick={() => navigate('/app/tino-ai')}
-              className="bg-white/20 hover:bg-white/30 text-white border-0 gap-2"
+              className="bg-white text-blue-700 hover:bg-blue-50 gap-2 font-semibold shadow-lg"
+              data-testid="tino-ai-btn"
             >
               <Brain className="w-4 h-4" />
-              Tino AI
+              Ask Tino AI
             </Button>
             <Button 
               onClick={() => setShowProfileDialog(true)}
               variant="outline"
-              className="border-white/30 text-white hover:bg-white/20"
+              className="border-white/40 text-white hover:bg-white/20"
+              data-testid="settings-btn"
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -216,7 +224,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Stats Row - Competitor Style */}
+      {/* Quick Stats Row - Modern Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-testid="quick-stats">
         <StatCard
           icon={Users}
@@ -248,12 +256,12 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Module Categories - Card Grid */}
+      {/* Module Categories - Clean Card Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {moduleCategories.map((category, idx) => (
-          <Card key={idx} className="overflow-hidden border-0 shadow-sm">
-            <div className={`${category.color} px-4 py-3`}>
-              <h3 className="font-semibold text-white">{category.title}</h3>
+          <Card key={idx} className="overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className={`${category.color} px-5 py-3`}>
+              <h3 className="font-semibold text-white text-sm tracking-wide">{category.title}</h3>
             </div>
             <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-3">
@@ -261,22 +269,22 @@ export default function DashboardPage() {
                   <button
                     key={mIdx}
                     onClick={() => navigate(module.path)}
-                    className={`${category.lightColor} hover:shadow-md transition-all rounded-xl p-4 text-left group relative`}
-                    data-testid={`module-${module.label.toLowerCase().replace(' ', '-')}`}
+                    className={`${category.lightColor} hover:shadow-md transition-all rounded-xl p-4 text-left group relative border border-transparent hover:border-slate-200`}
+                    data-testid={`module-${module.label.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center`}>
+                      <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center shadow-sm`}>
                         <module.icon className="w-5 h-5 text-white" />
                       </div>
                       {module.badge && (
-                        <Badge className={`text-[10px] ${module.badge === 'AI' ? 'bg-purple-500' : module.badge === 'NEW' ? 'bg-green-500' : 'bg-blue-500'}`}>
+                        <Badge className={`text-[10px] ${module.badge === 'AI' ? 'bg-blue-500' : module.badge === 'NEW' ? 'bg-green-500' : 'bg-cyan-500'}`}>
                           {module.badge}
                         </Badge>
                       )}
                     </div>
-                    <p className={`font-medium mt-3 ${category.textColor}`}>{module.label}</p>
+                    <p className={`font-medium mt-3 ${category.textColor} text-sm`}>{module.label}</p>
                     {module.count !== undefined && (
-                      <p className="text-sm text-slate-500 mt-1">{module.count}</p>
+                      <p className="text-xs text-slate-500 mt-1">{module.count}</p>
                     )}
                     <ChevronRight className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
