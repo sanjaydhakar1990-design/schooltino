@@ -80,6 +80,7 @@ import TimetableManagement from './pages/TimetableManagement';
 import CertificateGenerator from './pages/CertificateGenerator';
 import ExamReportCard from './pages/ExamReportCard';
 import TinoAICenter from './pages/AIJarvisCenter';
+import TinoAIAgent from './pages/TinoAIAgent';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
