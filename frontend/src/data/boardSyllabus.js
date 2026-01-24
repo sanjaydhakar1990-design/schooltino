@@ -248,6 +248,40 @@ export const PRE_PRIMARY_CHAPTERS = {
     { id: 'ch9', name: 'Sports Items (खेल सामान)', hasDrawing: true },
     { id: 'ch10', name: 'Free Hand Drawing (स्वतंत्र चित्र)', hasDrawing: true },
   ],
+  // Rhymes - गीत और कविताएं
+  'Nursery_Rhymes': [
+    { id: 'ch1', name: 'Twinkle Twinkle Little Star' },
+    { id: 'ch2', name: 'Johny Johny Yes Papa' },
+    { id: 'ch3', name: 'Baa Baa Black Sheep' },
+    { id: 'ch4', name: 'मछली जल की रानी है' },
+    { id: 'ch5', name: 'चंदा मामा दूर के' },
+    { id: 'ch6', name: 'नानी तेरी मोरनी' },
+    { id: 'ch7', name: 'Humpty Dumpty' },
+    { id: 'ch8', name: 'Jack and Jill' },
+  ],
+  'LKG_Rhymes': [
+    { id: 'ch1', name: 'Row Row Row Your Boat' },
+    { id: 'ch2', name: 'Old MacDonald Had a Farm' },
+    { id: 'ch3', name: 'Rain Rain Go Away' },
+    { id: 'ch4', name: 'Wheels on the Bus' },
+    { id: 'ch5', name: 'आलू कचालू बेटा कहाँ गए थे' },
+    { id: 'ch6', name: 'रेलगाड़ी रेलगाड़ी' },
+    { id: 'ch7', name: 'मेरे प्यारे देश की धरती' },
+    { id: 'ch8', name: 'Happy Birthday Song' },
+    { id: 'ch9', name: 'If You Are Happy' },
+  ],
+  'UKG_Rhymes': [
+    { id: 'ch1', name: 'Mary Had a Little Lamb' },
+    { id: 'ch2', name: 'Head Shoulders Knees and Toes' },
+    { id: 'ch3', name: 'ABC Song (Alphabet Song)' },
+    { id: 'ch4', name: 'Hickory Dickory Dock' },
+    { id: 'ch5', name: 'तितली उड़ी' },
+    { id: 'ch6', name: 'गुड़िया रानी' },
+    { id: 'ch7', name: 'जन गण मन (National Anthem)' },
+    { id: 'ch8', name: 'वंदे मातरम्' },
+    { id: 'ch9', name: 'Incy Wincy Spider' },
+    { id: 'ch10', name: 'Five Little Monkeys' },
+  ],
 };
 
 // Class 1-5 CBSE/NCERT Chapters
