@@ -67,9 +67,9 @@ const AdmitCardManagement = () => {
     setLoading(true);
     try {
       const [settingsRes, examsRes, classesRes] = await Promise.allSettled([
-        axios.get(`${API}/admit-card/settings/${schoolId}`),
-        axios.get(`${API}/admit-card/exams/${schoolId}`),
-        axios.get(`${API}/classes/${schoolId}`)
+        axios.get(`${API}/api/admit-card/settings/${schoolId}`),
+        axios.get(`${API}/api/admit-card/exams/${schoolId}`),
+        axios.get(`${API}/api/classes?school_id=${schoolId}`)
       ]);
 
       if (settingsRes.status === 'fulfilled') {
