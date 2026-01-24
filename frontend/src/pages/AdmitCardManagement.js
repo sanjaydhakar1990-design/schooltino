@@ -438,13 +438,31 @@ const AdmitCardManagement = () => {
             </div>
 
             <div>
-              <Label>Classes</Label>
-              <Input
-                placeholder="e.g., Class 10, Class 9"
-                value={examForm.classes.join(', ')}
-                onChange={(e) => setExamForm({...examForm, classes: e.target.value.split(',').map(c => c.trim())})}
-              />
-              <p className="text-xs text-gray-500 mt-1">Comma separated class names</p>
+              <Label>Select Classes</Label>
+              <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-2">
+                {classes.length > 0 ? (
+                  classes.map(cls => (
+                    <label key={cls.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={examForm.classes.includes(cls.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setExamForm({...examForm, classes: [...examForm.classes, cls.id]});
+                          } else {
+                            setExamForm({...examForm, classes: examForm.classes.filter(c => c !== cls.id)});
+                          }
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">{cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}</span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500">No classes found. Add classes first.</p>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Select classes for this exam</p>
             </div>
 
             <Button 
