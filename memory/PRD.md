@@ -1,10 +1,62 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 23, 2026 (Session 10 - Part 3)
+## Last Updated: January 24, 2026 (Session 11 - Critical Bug Fixes)
 
 ---
 
-## ✅ LATEST CHANGES (Session 10 - Part 7)
+## ✅ LATEST CHANGES (Session 11 - January 24, 2026)
+
+### 🔴 Critical Bug Fixes:
+
+#### 1. Fee Structure Negative Values Bug - FIXED ✅
+- **Problem:** "Other Fees" column was showing large negative values (e.g., ₹-82,499)
+- **Root Cause:** Calculation wasn't handling invalid/negative numbers properly
+- **Solution:** Added `safeNumber()` function in FeeManagementPage.js (lines 609-612)
+  - Ensures all fee values are positive
+  - Handles NaN and undefined values
+  - Returns 0 for invalid inputs
+- **File Changed:** `frontend/src/pages/FeeManagementPage.js`
+
+#### 2. Tino AI Not Working - FIXED ✅
+- **Problem:** AI was returning error message "माफ करें, कुछ गड़बड़ हो गई"
+- **Root Cause:** Response handling and error logging were incomplete
+- **Solution:** Enhanced chat endpoint in tino_ai.py
+  - Added detailed logging for debugging
+  - Improved response type checking (ensures string response)
+  - Added traceback for error diagnosis
+  - Better HTTPException handling
+- **File Changed:** `backend/routes/tino_ai.py`
+- **Verification:** Tested with Hindi queries - working correctly
+
+#### 3. Event Designer Page Blank - FIXED ✅
+- **Problem:** Page at `/app/event-designer` was completely blank
+- **Root Cause:** Missing `useEffect` import in the component
+- **Solution:** Added `useEffect` to the import statement
+- **File Changed:** `frontend/src/pages/EventDesignerPage.js` (line 1)
+- **Features Now Working:**
+  - Design Type selection (Pamphlet/Invitation)
+  - Event Type templates
+  - Design Style options
+  - Auto-fetch school details for branding
+  - Preview generation
+  - WhatsApp share
+
+### 🟡 Pending Items (User Requested):
+
+#### 1. UI/UX & Graphics Overhaul
+- User wants design inspired by:
+  - `digitaledu.net` 
+  - `bloombyte.io`
+- User requested **mockups BEFORE implementation**
+- Affects: Dashboard, StudyTino, TeachTino pages
+
+#### 2. App Icon & PWA Install Button
+- Logic exists in Layout.js and PWAInstaller.js
+- May need further debugging if user reports issues again
+
+---
+
+## ✅ EARLIER CHANGES (Session 10 - Part 7)
 
 ### 1. Setup Wizard Functions Fixed ✅
 - Added `/app` prefix to step routes
