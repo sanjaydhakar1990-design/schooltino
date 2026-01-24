@@ -183,9 +183,9 @@ input:focus, select:focus, textarea:focus {
     transition: opacity 300ms ease-out, transform 300ms ease-out;
 }
 
-/* Loading spinner */
+/* Loading spinner - DigitalEdu Blue */
 .spinner {
-    @apply animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600;
+    @apply animate-spin rounded-full border-2 border-slate-200 border-t-blue-600;
 }
 
 /* Priority indicators */
