@@ -15,10 +15,12 @@ import { Label } from '../components/ui/label';
 import { 
   Users, Plus, Search, Edit2, Trash2, UserCheck, UserX, Key,
   Shield, Loader2, Phone, Mail, Building, Award, Calendar,
-  IndianRupee, CheckCircle, XCircle, Settings, Eye, EyeOff, CreditCard, Printer
+  IndianRupee, CheckCircle, XCircle, Settings, Eye, EyeOff, CreditCard, Printer,
+  FileUp, Heart, Briefcase, GraduationCap, MapPin, User, Wallet
 } from 'lucide-react';
 import { toast } from 'sonner';
 import EmployeeIDCard from '../components/EmployeeIDCard';
+import BulkImport from '../components/BulkImport';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
