@@ -91,7 +91,7 @@ export const Layout = () => {
             start_url: '/',
             display: 'standalone',
             background_color: '#ffffff',
-            theme_color: '#6366f1'
+            theme_color: '#2563EB'
           };
           const blob = new Blob([JSON.stringify(dynamicManifest)], { type: 'application/json' });
           const oldUrl = manifestLink.href;
