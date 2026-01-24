@@ -1272,100 +1272,76 @@ Note: First login पर password change करें।`;
                 </div>
               )}
 
-              {/* Tab 6: Transport */}
-              {activeFormTab === 'transport' && (
+              {/* Tab 5: Transport, Medical & Education - Merged */}
+              {activeFormTab === 'other' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h3 className="font-semibold text-slate-800 border-b pb-2">🚌 Transport Details (परिवहन)</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Transport Mode</Label>
-                      <select name="transport_mode" value={formData.transport_mode} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
-                        <option value="">Select</option>
-                        <option value="School Bus">School Bus (स्कूल बस)</option>
-                        <option value="Private Vehicle">Private Vehicle (निजी वाहन)</option>
-                        <option value="Walking">Walking (पैदल)</option>
-                        <option value="Bicycle">Bicycle (साइकिल)</option>
-                        <option value="Auto/Rickshaw">Auto/Rickshaw</option>
-                        <option value="Public Transport">Public Transport</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Bus Route</Label>
-                      <Input name="bus_route" value={formData.bus_route} onChange={handleChange} placeholder="Route No. / Name" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Bus Stop</Label>
-                      <Input name="bus_stop" value={formData.bus_stop} onChange={handleChange} placeholder="Stop Name" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Pickup Point</Label>
-                      <Input name="pickup_point" value={formData.pickup_point} onChange={handleChange} placeholder="Pickup Location" />
-                    </div>
-                  </div>
-                  
-                  {/* Hostel Section */}
-                  <div className="border-t pt-4 mt-4">
-                    <h4 className="font-medium text-slate-700 mb-3">🏠 Hostel Details (छात्रावास)</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center gap-2">
-                        <input type="checkbox" id="is_hosteler" name="is_hosteler" checked={formData.is_hosteler} onChange={(e) => setFormData({...formData, is_hosteler: e.target.checked})} className="w-4 h-4" />
-                        <Label htmlFor="is_hosteler">Hostel Student (छात्रावासी)</Label>
+                  {/* Transport Section */}
+                  <div className="p-4 bg-teal-50 rounded-lg border border-teal-200">
+                    <h4 className="font-medium text-teal-800 mb-3">🚌 Transport Details (परिवहन)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="space-y-2">
+                        <Label>Transport Mode</Label>
+                        <select name="transport_mode" value={formData.transport_mode} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3 text-sm">
+                          <option value="">Select</option>
+                          <option value="School Bus">School Bus</option>
+                          <option value="Private Vehicle">Private Vehicle</option>
+                          <option value="Walking">Walking</option>
+                          <option value="Bicycle">Bicycle</option>
+                          <option value="Auto/Rickshaw">Auto/Rickshaw</option>
+                        </select>
                       </div>
-                      {formData.is_hosteler && (
-                        <div className="space-y-2">
-                          <Label>Room Number</Label>
-                          <Input name="hostel_room_no" value={formData.hostel_room_no} onChange={handleChange} placeholder="Room No." />
-                        </div>
-                      )}
+                      <div className="space-y-2">
+                        <Label>Bus Route</Label>
+                        <Input name="bus_route" value={formData.bus_route} onChange={handleChange} placeholder="Route No." className="h-10" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Bus Stop</Label>
+                        <Input name="bus_stop" value={formData.bus_stop} onChange={handleChange} placeholder="Stop Name" className="h-10" />
+                      </div>
+                      <div className="flex items-center gap-2 pt-6">
+                        <input type="checkbox" id="is_hosteler" name="is_hosteler" checked={formData.is_hosteler} onChange={(e) => setFormData({...formData, is_hosteler: e.target.checked})} className="w-4 h-4" />
+                        <Label htmlFor="is_hosteler">Hostel Student</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Medical Section */}
+                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <h4 className="font-medium text-red-800 mb-3">🏥 Medical Information</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Medical Conditions (बीमारियाँ)</Label>
+                        <Input name="medical_conditions" value={formData.medical_conditions} onChange={handleChange} placeholder="Asthma, Diabetes, etc." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Allergies (एलर्जी)</Label>
+                        <Input name="allergies" value={formData.allergies} onChange={handleChange} placeholder="Food/medicine allergies" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Previous Education Section */}
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 className="font-medium text-purple-800 mb-3">📚 Previous Education (पूर्व शिक्षा)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="space-y-2 col-span-2">
+                        <Label>Previous School</Label>
+                        <Input name="previous_school" value={formData.previous_school} onChange={handleChange} placeholder="School name" data-testid="prev-school-input" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Previous Class</Label>
+                        <Input name="previous_class" value={formData.previous_class} onChange={handleChange} placeholder="Last class" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>TC Number</Label>
+                        <Input name="tc_number" value={formData.tc_number} onChange={handleChange} placeholder="TC/LC No." />
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Tab 7: Medical */}
-              {activeFormTab === 'medical' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <h3 className="font-semibold text-slate-800 border-b pb-2">🏥 Medical Information (चिकित्सा जानकारी)</h3>
-                  <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">💉 Medical information से emergency में मदद मिलती है</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2 col-span-2">
-                      <Label>Medical Conditions (बीमारियाँ)</Label>
-                      <Input name="medical_conditions" value={formData.medical_conditions} onChange={handleChange} placeholder="Asthma, Diabetes, Heart condition, etc." />
-                    </div>
-                    <div className="space-y-2 col-span-2">
-                      <Label>Allergies (एलर्जी)</Label>
-                      <Input name="allergies" value={formData.allergies} onChange={handleChange} placeholder="Food allergies, medicine allergies, etc." />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 8: Previous Education */}
-              {activeFormTab === 'education' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <h3 className="font-semibold text-slate-800 border-b pb-2">📚 Previous Education (पूर्व शिक्षा)</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="space-y-2 col-span-2">
-                      <Label>Previous School Name</Label>
-                      <Input name="previous_school" value={formData.previous_school} onChange={handleChange} placeholder="Name of previous school" data-testid="prev-school-input" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Previous Class</Label>
-                      <Input name="previous_class" value={formData.previous_class} onChange={handleChange} placeholder="Last class passed" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Previous Percentage</Label>
-                      <Input name="previous_percentage" value={formData.previous_percentage} onChange={handleChange} placeholder="e.g., 85%" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>TC Number (Transfer Certificate)</Label>
-                      <Input name="tc_number" value={formData.tc_number} onChange={handleChange} placeholder="TC/LC Number" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 9: Documents Upload */}
+              {/* Tab 6: Documents Upload */}
               {activeFormTab === 'documents' && (
                 <div className="space-y-4 animate-in fade-in">
                   <h3 className="font-semibold text-slate-800 border-b pb-2">📄 Documents Upload (दस्तावेज़ अपलोड)</h3>
