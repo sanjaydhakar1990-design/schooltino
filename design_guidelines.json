@@ -1,172 +1,148 @@
 {
-  "design_system": {
-    "name": "Schooltino AI Design System",
-    "version": "2.0",
-    "theme_strategy": "Academic Future",
-    "description": "A professional, clean, and AI-forward design system for a modern School ERP. Combines the reliability of academic institutions with the futuristic, fluid nature of AI agents.",
-    "typography": {
-      "font_family": {
-        "heading": "Manrope, sans-serif",
-        "body": "Inter, sans-serif",
-        "mono": "JetBrains Mono, monospace"
-      },
-      "scale": {
-        "h1": "text-4xl md:text-5xl font-bold tracking-tight leading-tight",
-        "h2": "text-3xl md:text-4xl font-bold tracking-tight",
-        "h3": "text-2xl font-semibold tracking-tight",
-        "h4": "text-xl font-semibold tracking-tight",
-        "body_lg": "text-lg leading-relaxed text-slate-600",
-        "body_base": "text-base leading-relaxed text-slate-600",
-        "caption": "text-sm font-medium text-slate-500 uppercase tracking-wide"
-      }
+  "brand_identity": {
+    "name": "SchoolERP",
+    "archetype": "The Modern Institution",
+    "core_values": ["Clarity", "Trust", "Efficiency", "Intelligence"],
+    "visual_mood": "Clean, Professional, Airy, Data-Rich but not Cluttered"
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
     },
-    "colors": {
-      "palette": {
-        "primary": {
-          "DEFAULT": "#4F46E5",
-          "foreground": "#FFFFFF",
-          "hover": "#4338CA",
-          "light": "#E0E7FF"
-        },
-        "secondary": {
-          "DEFAULT": "#F8FAFC",
-          "foreground": "#0F172A",
-          "hover": "#F1F5F9"
-        },
-        "accent": {
-          "DEFAULT": "#8B5CF6",
-          "foreground": "#FFFFFF",
-          "glow": "rgba(139, 92, 246, 0.5)"
-        },
-        "success": {
-          "DEFAULT": "#10B981",
-          "bg": "#ECFDF5"
-        },
-        "warning": {
-          "DEFAULT": "#F59E0B",
-          "bg": "#FFFBEB"
-        },
-        "destructive": {
-          "DEFAULT": "#EF4444",
-          "bg": "#FEF2F2"
-        },
-        "background": {
-          "DEFAULT": "#FFFFFF",
-          "subtle": "#F8FAFC",
-          "dark": "#0F172A"
-        },
-        "tino_ai": {
-          "core": "#6366F1",
-          "glow": "#A855F7",
-          "listening": "#EC4899",
-          "speaking": "#3B82F6"
-        }
-      }
+    "weights": {
+      "headings": "600 (SemiBold) or 800 (ExtraBold)",
+      "body": "400 (Regular) or 500 (Medium)"
     },
-    "layout": {
-      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-      "spacing": {
-        "section": "py-12 md:py-16",
-        "component": "p-6 md:p-8"
-      },
-      "grid": {
-        "dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6",
-        "cards": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-      },
-      "radius": {
-        "default": "rounded-xl",
-        "button": "rounded-lg",
-        "card": "rounded-xl"
-      }
+    "tracking": {
+      "headings": "-0.02em (tight)",
+      "overline": "0.05em (wide)"
     },
-    "visual_enhancers": {
-      "shadows": {
-        "card": "shadow-sm hover:shadow-md transition-shadow duration-200",
-        "floating": "shadow-xl shadow-indigo-500/10",
-        "glow": "0 0 20px rgba(79, 70, 229, 0.3)"
-      },
-      "glassmorphism": {
-        "sidebar": "bg-white/80 backdrop-blur-md border-r border-slate-200/50",
-        "overlay": "bg-slate-900/20 backdrop-blur-sm",
-        "tino_panel": "bg-white/90 backdrop-blur-xl border border-white/20 shadow-2xl"
-      },
-      "gradients": {
-        "hero": "bg-gradient-to-br from-indigo-50 via-white to-purple-50",
-        "tino_orb": "bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"
-      }
-    },
-    "components": {
-      "buttons": {
-        "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all active:scale-95",
-        "secondary": "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm transition-all",
-        "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors",
-        "tino_trigger": "rounded-full p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-indigo-500/30 hover:scale-105 transition-all"
-      },
-      "cards": {
-        "stat": "bg-white border border-slate-100 rounded-xl p-6 shadow-sm hover:border-indigo-100 transition-colors relative overflow-hidden",
-        "feature": "bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-all group"
-      },
-      "inputs": {
-        "default": "h-10 rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-      }
-    },
-    "motion": {
-      "transitions": {
-        "default": "transition-all duration-200 ease-in-out",
-        "slow": "transition-all duration-500 ease-out"
-      },
-      "animations": {
-        "fade_in": "animate-fade-in",
-        "slide_up": "animate-slide-up",
-        "pulse_slow": "animate-pulse-slow",
-        "tino_breathe": "animate-tino-breathe"
-      }
-    },
-    "assets": {
-      "images": {
-        "login_bg": "https://images.pexels.com/photos/3231359/pexels-photo-3231359.jpeg",
-        "school_placeholder": "https://images.pexels.com/photos/5212703/pexels-photo-5212703.jpeg",
-        "principal_office": "https://images.unsplash.com/photo-1609872537874-f946fe4b361e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxzY2hvb2wlMjBwcmluY2lwYWwlMjBvZmZpY2UlMjBtb2Rlcm4lMjBkZXNrfGVufDB8fHx8MTc2OTIzMDUzMHww&ixlib=rb-4.1.0&q=85",
-        "teacher_tablet": "https://images.pexels.com/photos/5212703/pexels-photo-5212703.jpeg"
-      },
-      "icons": {
-        "library": "lucide-react",
-        "style": "stroke-width={1.5} className='w-5 h-5'"
-      }
-    },
-    "tino_ai_guidelines": {
-      "personality": "Professional, Efficient, Empathetic, Proactive",
-      "visual_identity": {
-        "orb_container": "relative w-16 h-16 flex items-center justify-center",
-        "orb_core": "w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 blur-[2px]",
-        "orb_glow": "absolute inset-0 rounded-full bg-indigo-400/30 blur-xl animate-pulse-slow",
-        "listening_state": "Orb expands and contracts with audio input (simulated with CSS animation)",
-        "speaking_state": "Orb pulses rapidly with brighter core"
-      },
-      "interaction": {
-        "trigger": "Floating Action Button (FAB) bottom-right or Top-Navbar Center",
-        "mode": "Overlay Panel or 'Command Center' Modal",
-        "feedback": "Real-time text streaming + Voice visualization"
-      }
-    },
-    "universal_guidelines": [
-      "Use 'Manrope' for all headings to give a modern, tech-forward feel.",
-      "Use 'Inter' for body text for maximum readability.",
-      "Avoid pure black (#000000). Use Slate-900 (#0F172A) instead.",
-      "All cards must have a subtle border (border-slate-100) and shadow-sm.",
-      "Primary buttons should always use the 'Tino Blue' gradient or solid color.",
-      "The AI interface must feel distinct from the rest of the ERP - use glassmorphism and glows to separate it.",
-      "Ensure high contrast for text (WCAG AA compliance).",
-      "Use 'lucide-react' icons with 1.5px stroke width for a refined look.",
-      "Add 'data-testid' to all interactive elements."
+    "rules": [
+      "Never use Inter for Headings larger than 24px.",
+      "Use Manrope for all numbers and data displays.",
+      "Headings must be dark slate (slate-900), not pure black."
     ]
   },
-  "instructions_to_main_agent": {
-    "step_1": "Update tailwind.config.js with the new color palette and font families.",
-    "step_2": "Create the 'TinoOrb' component using the visual identity guidelines.",
-    "step_3": "Refactor the Sidebar to use the glassmorphism style.",
-    "step_4": "Redesign the Dashboard using the Bento Grid layout.",
-    "step_5": "Apply the new typography and button styles globally in index.css.",
-    "step_6": "Ensure the 'Tino AI' floating trigger is visible on all authenticated pages."
-  }
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#2563EB",
+        "foreground": "#FFFFFF",
+        "hover": "#1D4ED8",
+        "active": "#1E40AF"
+      },
+      "secondary": {
+        "DEFAULT": "#F1F5F9",
+        "foreground": "#0F172A"
+      },
+      "accent": {
+        "DEFAULT": "#F59E0B",
+        "foreground": "#FFFFFF"
+      },
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "border": "#E2E8F0",
+      "muted": "#64748B"
+    },
+    "semantic": {
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444",
+      "info": "#3B82F6"
+    },
+    "gradients": {
+      "primary_soft": "linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)",
+      "glass_surface": "linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%)"
+    }
+  },
+  "layout_system": {
+    "spacing_scale": {
+      "container_padding": "p-6 md:p-8 lg:p-10",
+      "section_gap": "gap-8",
+      "item_gap": "gap-4"
+    },
+    "grid_strategies": {
+      "dashboard_bento": "grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-6",
+      "stats_row": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6",
+      "form_layout": "grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
+    },
+    "containers": {
+      "card": "bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200",
+      "panel": "bg-white rounded-2xl border border-slate-100 shadow-lg",
+      "sidebar": "bg-slate-900 text-slate-300 w-64 fixed h-full z-50"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-white hover:bg-primary/90 shadow-sm rounded-lg px-6 py-2.5 font-medium transition-all active:scale-95",
+      "secondary": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm rounded-lg px-6 py-2.5 font-medium",
+      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg px-4 py-2"
+    },
+    "cards": {
+      "stat_card": "relative overflow-hidden bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-primary/50 transition-colors",
+      "feature_card": "bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all"
+    },
+    "inputs": {
+      "default": "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    "navigation": {
+      "sidebar_item": "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white/10 hover:text-white",
+      "sidebar_item_active": "bg-primary text-white shadow-md"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "soft": "0 2px 8px -2px rgba(0,0,0,0.05)",
+      "medium": "0 4px 12px -2px rgba(0,0,0,0.08)",
+      "glow": "0 0 20px -5px rgba(37, 99, 235, 0.3)"
+    },
+    "borders": {
+      "subtle": "1px solid #E2E8F0",
+      "active": "1px solid #3B82F6"
+    },
+    "glassmorphism": {
+      "header": "backdrop-blur-md bg-white/80 border-b border-slate-200/50 sticky top-0 z-40"
+    }
+  },
+  "motion": {
+    "transitions": {
+      "default": "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+      "smooth": "all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)"
+    },
+    "animations": {
+      "fade_in": "animate-fade-in",
+      "slide_up": "animate-slide-up",
+      "pulse_slow": "animate-pulse-slow"
+    }
+  },
+  "assets": {
+    "images": {
+      "login_hero": "https://images.unsplash.com/photo-1730106443463-0fb1512c5e60?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBzY2hvb2wlMjBidWlsZGluZyUyMGFyY2hpdGVjdHVyZXxlbnwwfHx8fDE3NjkyMzk5MTR8MA&ixlib=rb-4.1.0&q=85",
+      "student_banner": "https://images.unsplash.com/photo-1623303366639-0e330d7c3d9f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzY2hvb2wlMjBzdHVkZW50cyUyMHN0dWR5aW5nfGVufDB8fHx8MTc2OTIzOTkxMXww&ixlib=rb-4.1.0&q=85",
+      "classroom_bg": "https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwyfHxpbmRpYW4lMjBzY2hvb2wlMjBzdHVkZW50cyUyMHN0dWR5aW5nfGVufDB8fHx8MTc2OTIzOTkxMXww&ixlib=rb-4.1.0&q=85"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "stroke-width={1.5} size={20}"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. UPDATE TAILWIND CONFIG: Replace the existing colors in tailwind.config.js with the palette defined above. Ensure 'primary' is set to the new blue.",
+    "2. REFINE SIDEBAR: Update the sidebar styles in index.css to match the 'sidebar' container specs. Use the 'sidebar_item_active' class for the active state.",
+    "3. MODERNIZE CARDS: In DashboardPage.js (and others), replace standard card classes with the 'stat_card' definition. Remove heavy shadows, use borders.",
+    "4. TYPOGRAPHY: Apply 'font-heading' to all h1-h6 elements and 'font-body' to p, span, div. Ensure headings have tight tracking.",
+    "5. BENTO GRID: Refactor the main dashboard layout to use the 'dashboard_bento' grid strategy. Group related stats.",
+    "6. LOGIN PAGE: Update the login page to use the 'login_hero' image as a side banner or background.",
+    "7. DATA-TESTID: Ensure every interactive element (buttons, inputs, links) has a data-testid attribute (e.g., data-testid='login-submit-btn').",
+    "8. DO NOT BREAK FUNCTIONALITY: Keep all existing logic, routes, and contexts. Only change the visual presentation (JSX classes and CSS)."
+  ],
+  "universal_guidelines": [
+    "Avoid gradients for text.",
+    "Use 24px padding inside cards minimum.",
+    "Input fields should have a subtle border (slate-200) and focus ring (primary/20).",
+    "Use 'sonner' for all toast notifications.",
+    "Ensure high contrast for text (slate-600 for secondary text, slate-900 for primary)."
+  ]
 }
