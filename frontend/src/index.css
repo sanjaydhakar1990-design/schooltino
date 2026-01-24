@@ -166,9 +166,9 @@
     @apply bg-blue-50 text-blue-700 border border-blue-200;
 }
 
-/* Input focus styles */
+/* Input focus styles - DigitalEdu Blue */
 input:focus, select:focus, textarea:focus {
-    @apply ring-2 ring-indigo-500/20 border-indigo-500 outline-none;
+    @apply ring-2 ring-blue-500/20 border-blue-500 outline-none;
 }
 
 /* Page transitions */
