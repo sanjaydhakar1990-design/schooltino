@@ -508,7 +508,7 @@ export default function EmployeeManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -519,7 +519,7 @@ export default function EmployeeManagementPage() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="w-7 h-7 text-indigo-600" />
+            <Users className="w-7 h-7 text-blue-600" />
             Employee Management
           </h1>
           <p className="text-gray-500 text-sm">Staff + Users एक जगह manage करें</p>
@@ -541,7 +541,7 @@ export default function EmployeeManagementPage() {
             {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
             Bulk Print ID Cards
           </Button>
-          <Button onClick={openAddForm} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={openAddForm} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4" /> Add Employee
           </Button>
         </div>
@@ -585,9 +585,9 @@ export default function EmployeeManagementPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-indigo-50 rounded-xl p-4">
-          <div className="text-2xl font-bold text-indigo-700">{employees.length}</div>
-          <div className="text-sm text-indigo-600">Total Employees</div>
+        <div className="bg-blue-50 rounded-xl p-4">
+          <div className="text-2xl font-bold text-blue-700">{employees.length}</div>
+          <div className="text-sm text-blue-600">Total Employees</div>
         </div>
         <div className="bg-green-50 rounded-xl p-4">
           <div className="text-2xl font-bold text-green-700">
@@ -627,7 +627,7 @@ export default function EmployeeManagementPage() {
                 <tr key={emp.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
                         {emp.name?.charAt(0)?.toUpperCase()}
                       </div>
                       <div>
@@ -670,7 +670,7 @@ export default function EmployeeManagementPage() {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="text-indigo-600"
+                        className="text-blue-600"
                         onClick={() => {
                           setSelectedEmployeeForID(emp);
                           setShowIDCard(true);
