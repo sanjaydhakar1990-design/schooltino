@@ -152,12 +152,12 @@ export const Layout = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        {/* Top Header Bar - SCHOOL BRANDING */}
-        <header className="sticky top-0 h-16 bg-gradient-to-r from-slate-900 to-indigo-900 z-30 flex items-center justify-between px-4" data-testid="app-header">
+        {/* Top Header Bar - DigitalEdu Clean White Style */}
+        <header className="sticky top-0 h-16 bg-white border-b border-slate-200 z-30 flex items-center justify-between px-4 shadow-sm" data-testid="app-header">
           {/* Mobile Menu Button */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg"
+            className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
             data-testid="mobile-menu-btn"
           >
             <Menu className="w-5 h-5" />
@@ -166,15 +166,15 @@ export const Layout = () => {
           {/* School Logo + Name for mobile (Custom Branding - DEFAULT) */}
           <div className="lg:hidden flex items-center gap-2 flex-1 ml-2" data-testid="mobile-header-branding">
             {schoolLogo ? (
-              <div className="w-10 h-10 bg-white rounded-full p-0.5 flex-shrink-0 shadow-lg">
+              <div className="w-10 h-10 bg-white rounded-full p-0.5 flex-shrink-0 shadow-md border border-slate-200">
                 <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
               </div>
             ) : (
-              <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
                 {(schoolName || 'S').charAt(0)}
               </div>
             )}
-            <span className="text-white font-bold text-base truncate max-w-[150px]" data-testid="mobile-school-name">
+            <span className="text-slate-800 font-bold text-base truncate max-w-[150px]" data-testid="mobile-school-name">
               {schoolName || 'School'}
             </span>
           </div>
@@ -182,20 +182,20 @@ export const Layout = () => {
           {/* School Logo + Name for Desktop (Custom Branding - DEFAULT) */}
           <div className="hidden lg:flex items-center gap-4" data-testid="desktop-header-branding">
             {schoolLogo ? (
-              <div className="w-12 h-12 bg-white rounded-full p-0.5 flex-shrink-0 shadow-lg border-2 border-white/20">
+              <div className="w-12 h-12 bg-white rounded-full p-0.5 flex-shrink-0 shadow-md border-2 border-slate-200">
                 <img src={schoolLogo} alt="" className="w-full h-full object-contain rounded-full" />
               </div>
             ) : (
-              <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
                 {(schoolName || 'S').charAt(0)}
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-white font-bold text-lg leading-tight tracking-wide" data-testid="desktop-school-name">
+              <span className="text-slate-800 font-bold text-lg leading-tight tracking-tight" data-testid="desktop-school-name">
                 {schoolName || 'School Management'}
               </span>
               {schoolData?.address && (
-                <span className="text-white/70 text-xs leading-tight max-w-[300px] truncate">
+                <span className="text-slate-500 text-xs leading-tight max-w-[300px] truncate">
                   {schoolData.address}
                 </span>
               )}
@@ -210,20 +210,20 @@ export const Layout = () => {
             {/* Language Toggle - One Click Switch */}
             <button
               onClick={handleQuickToggle}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-all border border-white/20"
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm transition-all border border-slate-200"
               data-testid="language-toggle"
               title={`Switch to ${otherLang.label}`}
             >
               <Globe className="w-4 h-4" />
               <span className="font-medium">{currentLang.flag} {currentLang.shortLabel}</span>
-              <span className="text-white/60">→</span>
+              <span className="text-slate-400">→</span>
               <span className="font-medium">{otherLang.flag} {otherLang.shortLabel}</span>
             </button>
             
             {/* Ask Tino Button - Opens Tino AI Page */}
             <button
               onClick={() => navigate('/app/tino-ai')}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
               data-testid="ask-tino-btn"
             >
               <Mic className="w-4 h-4" />
