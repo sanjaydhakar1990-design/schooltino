@@ -116,9 +116,9 @@ export function SupportFAB() {
   if (!TRIAL_CONFIG.isTrialMode) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 left-6 z-50">
       {isOpen && (
-        <div className="absolute bottom-16 right-0 bg-white rounded-2xl shadow-2xl p-4 w-72 border">
+        <div className="absolute bottom-16 left-0 bg-white rounded-2xl shadow-2xl p-4 w-72 border">
           <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-emerald-500" />
             Need Help?
