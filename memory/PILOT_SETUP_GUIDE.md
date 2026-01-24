@@ -17,7 +17,7 @@ export const TRIAL_CONFIG = {
 ```
 
 ### Step 2: School Register Karo
-1. Go to: https://tinoai-dashboard.preview.emergentagent.com/app/school-registration
+1. Go to: https://edumanage-revamp.preview.emergentagent.com/app/school-registration
 2. Fill school details
 3. Note down the School ID
 
@@ -113,9 +113,9 @@ Weekly school se ye poochho:
 
 ## 📱 Quick Links:
 
-- **Admin Panel:** https://tinoai-dashboard.preview.emergentagent.com/login
-- **TeachTino:** https://tinoai-dashboard.preview.emergentagent.com/teachtino
-- **StudyTino:** https://tinoai-dashboard.preview.emergentagent.com/studytino
+- **Admin Panel:** https://edumanage-revamp.preview.emergentagent.com/login
+- **TeachTino:** https://edumanage-revamp.preview.emergentagent.com/teachtino
+- **StudyTino:** https://edumanage-revamp.preview.emergentagent.com/studytino
 - **WhatsApp Support:** wa.me/917879967616
 
 ---
