@@ -1370,6 +1370,59 @@ Note: First login पर password change करें।`;
                 </div>
               )}
 
+              {/* Tab 9: Documents Upload */}
+              {activeFormTab === 'documents' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">📄 Documents Upload (दस्तावेज़ अपलोड)</h3>
+                  <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                    💡 Scholarship और government benefits के लिए documents जरूरी हैं। Admission के बाद भी upload कर सकते हैं।
+                  </p>
+                  
+                  {editingStudent ? (
+                    <DocumentUpload 
+                      personId={editingStudent.id}
+                      personType="student"
+                      schoolId={schoolId}
+                      existingDocuments={[]}
+                    />
+                  ) : (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                      <div className="text-4xl mb-2">📁</div>
+                      <h4 className="font-medium text-blue-800 mb-2">Documents बाद में Upload करें</h4>
+                      <p className="text-sm text-blue-600">
+                        Student admission complete होने के बाद Edit करके documents upload कर सकते हैं।
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Document Checklist */}
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-medium text-slate-700 mb-3">📋 Required Documents Checklist:</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {[
+                        { icon: '📄', name: 'Birth Certificate (जन्म प्रमाण पत्र)' },
+                        { icon: '🆔', name: 'Aadhar Card (आधार कार्ड)' },
+                        { icon: '📋', name: 'Transfer Certificate (TC)' },
+                        { icon: '📊', name: 'Previous Marksheet' },
+                        { icon: '📜', name: 'Caste Certificate (जाति प्रमाण पत्र)' },
+                        { icon: '💰', name: 'Income Certificate (आय प्रमाण पत्र)' },
+                        { icon: '🏠', name: 'Domicile Certificate' },
+                        { icon: '📷', name: 'Passport Photo' },
+                        { icon: '👨', name: 'Father Aadhar (पिता का आधार)' },
+                        { icon: '👩', name: 'Mother Aadhar (माता का आधार)' },
+                        { icon: '🎫', name: 'BPL Card (यदि लागू हो)' },
+                        { icon: '🏦', name: 'Bank Passbook (छात्रवृत्ति के लिए)' },
+                      ].map((doc, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm p-2 bg-slate-50 rounded">
+                          <span>{doc.icon}</span>
+                          <span className="text-slate-600">{doc.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Photo Capture Section - Only for new admission */}
               {!editingStudent && (
                 <div className="border-t border-slate-200 pt-4 mt-4">
