@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -47,9 +47,16 @@ import {
 
 export const Sidebar = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, logout, schoolData } = useAuth();
   const navigate = useNavigate();
   const [expandedGroups, setExpandedGroups] = useState(['dashboard', 'academic']);
+  const [schoolLogo, setSchoolLogo] = useState(null);
+
+  useEffect(() => {
+    if (schoolData?.logo) {
+      setSchoolLogo(schoolData.logo);
+    }
+  }, [schoolData]);
 
   const handleLogout = () => {
     logout();
