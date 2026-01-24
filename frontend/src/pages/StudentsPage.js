@@ -1090,11 +1090,11 @@ Note: First login पर password change करें।`;
                   
                   {/* Father's Info */}
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="font-medium text-blue-800 mb-3">👨 Father's Details (पिता की जानकारी)</h4>
+                    <h4 className="font-medium text-blue-800 mb-3">👨 Father Details (पिता की जानकारी)</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label>{t('father_name')} *</Label>
-                        <Input name="father_name" value={formData.father_name} onChange={handleChange} required placeholder="Father's Full Name" data-testid="father-name-input" />
+                        <Input name="father_name" value={formData.father_name} onChange={handleChange} required placeholder="Father Full Name" data-testid="father-name-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Occupation (व्यवसाय)</Label>
