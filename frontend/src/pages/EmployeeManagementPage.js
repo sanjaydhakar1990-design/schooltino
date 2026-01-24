@@ -841,137 +841,106 @@ export default function EmployeeManagementPage() {
                 </div>
               )}
 
-              {/* Tab 2: Personal Details */}
+              {/* Tab 2: Personal Details & Contact - Merged */}
               {activeFormTab === 'personal' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h4 className="font-semibold text-slate-800 border-b pb-2">👤 Personal Details (व्यक्तिगत जानकारी)</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Gender (लिंग)</Label>
-                      <select
-                        className="w-full border rounded-lg px-3 py-2 h-10"
-                        value={formData.gender}
-                        onChange={e => setFormData(f => ({ ...f, gender: e.target.value }))}
-                      >
-                        <option value="male">Male (पुरुष)</option>
-                        <option value="female">Female (महिला)</option>
-                        <option value="other">Other (अन्य)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Date of Birth (जन्म तिथि)</Label>
-                      <Input
-                        type="date"
-                        value={formData.dob}
-                        onChange={e => setFormData(f => ({ ...f, dob: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label>Blood Group (रक्त समूह)</Label>
-                      <select
-                        className="w-full border rounded-lg px-3 py-2 h-10"
-                        value={formData.blood_group || ''}
-                        onChange={e => setFormData(f => ({ ...f, blood_group: e.target.value }))}
-                      >
-                        <option value="">Select</option>
-                        {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => 
-                          <option key={bg} value={bg}>{bg}</option>
-                        )}
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Marital Status (वैवाहिक स्थिति)</Label>
-                      <select
-                        className="w-full border rounded-lg px-3 py-2 h-10"
-                        value={formData.marital_status}
-                        onChange={e => setFormData(f => ({ ...f, marital_status: e.target.value }))}
-                      >
-                        <option value="">Select</option>
-                        <option value="Single">Single (अविवाहित)</option>
-                        <option value="Married">Married (विवाहित)</option>
-                        <option value="Divorced">Divorced (तलाकशुदा)</option>
-                        <option value="Widowed">Widowed (विधवा/विधुर)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Father Name (पिता का नाम)</Label>
-                      <Input
-                        value={formData.father_name}
-                        onChange={e => setFormData(f => ({ ...f, father_name: e.target.value }))}
-                        placeholder="Father's name"
-                      />
-                    </div>
-                    <div>
-                      <Label>Spouse Name (पति/पत्नी का नाम)</Label>
-                      <Input
-                        value={formData.spouse_name}
-                        onChange={e => setFormData(f => ({ ...f, spouse_name: e.target.value }))}
-                        placeholder="If married"
-                      />
-                    </div>
-                    <div>
-                      <Label>Nationality (राष्ट्रीयता)</Label>
-                      <Input
-                        value={formData.nationality}
-                        onChange={e => setFormData(f => ({ ...f, nationality: e.target.value }))}
-                        placeholder="Indian"
-                      />
+                  {/* Personal Info */}
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="font-medium text-blue-800 mb-3">👤 Personal Details</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div>
+                        <Label>Gender</Label>
+                        <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.gender} onChange={e => setFormData(f => ({ ...f, gender: e.target.value }))}>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label>Date of Birth</Label>
+                        <Input type="date" value={formData.dob} onChange={e => setFormData(f => ({ ...f, dob: e.target.value }))} />
+                      </div>
+                      <div>
+                        <Label>Blood Group</Label>
+                        <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.blood_group || ''} onChange={e => setFormData(f => ({ ...f, blood_group: e.target.value }))}>
+                          <option value="">Select</option>
+                          {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <Label>Marital Status</Label>
+                        <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.marital_status} onChange={e => setFormData(f => ({ ...f, marital_status: e.target.value }))}>
+                          <option value="">Select</option>
+                          <option value="Single">Single</option>
+                          <option value="Married">Married</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label>Father Name</Label>
+                        <Input value={formData.father_name} onChange={e => setFormData(f => ({ ...f, father_name: e.target.value }))} placeholder="Father's name" />
+                      </div>
+                      <div>
+                        <Label>Spouse Name</Label>
+                        <Input value={formData.spouse_name} onChange={e => setFormData(f => ({ ...f, spouse_name: e.target.value }))} placeholder="If married" />
+                      </div>
+                      <div>
+                        <Label>Nationality</Label>
+                        <Input value={formData.nationality} onChange={e => setFormData(f => ({ ...f, nationality: e.target.value }))} placeholder="Indian" />
+                      </div>
                     </div>
                   </div>
-                  
+
                   {/* Address Section */}
-                  <div className="border-t pt-4 mt-4">
-                    <h5 className="font-medium text-slate-700 mb-3">🏠 Address (पता)</h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="col-span-2">
-                        <Label>Current Address (वर्तमान पता)</Label>
-                        <Input
-                          value={formData.address}
-                          onChange={e => setFormData(f => ({ ...f, address: e.target.value }))}
-                          placeholder="Full current address"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Label>Permanent Address (स्थायी पता)</Label>
-                        <Input
-                          value={formData.permanent_address}
-                          onChange={e => setFormData(f => ({ ...f, permanent_address: e.target.value }))}
-                          placeholder="Full permanent address"
-                        />
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h4 className="font-medium text-green-800 mb-3">🏠 Address (पता)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="col-span-2 md:col-span-3">
+                        <Label>Current Address</Label>
+                        <Input value={formData.address} onChange={e => setFormData(f => ({ ...f, address: e.target.value }))} placeholder="Full current address" />
                       </div>
                       <div>
-                        <Label>City (शहर)</Label>
-                        <Input
-                          value={formData.city}
-                          onChange={e => setFormData(f => ({ ...f, city: e.target.value }))}
-                        />
+                        <Label>City</Label>
+                        <Input value={formData.city} onChange={e => setFormData(f => ({ ...f, city: e.target.value }))} />
                       </div>
                       <div>
-                        <Label>State (राज्य)</Label>
-                        <select
-                          className="w-full border rounded-lg px-3 py-2 h-10"
-                          value={formData.state}
-                          onChange={e => setFormData(f => ({ ...f, state: e.target.value }))}
-                        >
+                        <Label>State</Label>
+                        <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.state} onChange={e => setFormData(f => ({ ...f, state: e.target.value }))}>
                           <option value="">Select State</option>
                           <option value="Madhya Pradesh">Madhya Pradesh</option>
                           <option value="Rajasthan">Rajasthan</option>
                           <option value="Uttar Pradesh">Uttar Pradesh</option>
                           <option value="Maharashtra">Maharashtra</option>
-                          <option value="Gujarat">Gujarat</option>
-                          <option value="Bihar">Bihar</option>
-                          <option value="Chhattisgarh">Chhattisgarh</option>
-                          <option value="Delhi">Delhi</option>
                           <option value="Other">Other</option>
                         </select>
                       </div>
                       <div>
-                        <Label>Pincode (पिनकोड)</Label>
-                        <Input
-                          value={formData.pincode}
-                          onChange={e => setFormData(f => ({ ...f, pincode: e.target.value }))}
-                          placeholder="6 digit pincode"
-                        />
+                        <Label>Pincode</Label>
+                        <Input value={formData.pincode} onChange={e => setFormData(f => ({ ...f, pincode: e.target.value }))} placeholder="6 digit" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Emergency Contact */}
+                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <h4 className="font-medium text-red-800 mb-3">🆘 Emergency Contact</h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <Label>Contact Name</Label>
+                        <Input value={formData.emergency_contact_name} onChange={e => setFormData(f => ({ ...f, emergency_contact_name: e.target.value }))} placeholder="Family member" />
+                      </div>
+                      <div>
+                        <Label>Contact Number</Label>
+                        <Input value={formData.emergency_contact || ''} onChange={e => setFormData(f => ({ ...f, emergency_contact: e.target.value }))} placeholder="10 digit mobile" />
+                      </div>
+                      <div>
+                        <Label>Relation</Label>
+                        <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.emergency_relation} onChange={e => setFormData(f => ({ ...f, emergency_relation: e.target.value }))}>
+                          <option value="">Select</option>
+                          <option value="Spouse">Spouse</option>
+                          <option value="Father">Father</option>
+                          <option value="Mother">Mother</option>
+                          <option value="Other">Other</option>
+                        </select>
                       </div>
                     </div>
                   </div>
