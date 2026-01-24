@@ -1239,7 +1239,60 @@ export default function EmployeeManagementPage() {
                 </div>
               )}
 
-              {/* Tab 7: Login Access */}
+              {/* Tab 7: Documents Upload */}
+              {activeFormTab === 'documents' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">📄 Documents Upload (दस्तावेज़ अपलोड)</h4>
+                  <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                    💡 Employee documents payroll और verification के लिए जरूरी हैं।
+                  </p>
+                  
+                  {editingEmployee ? (
+                    <DocumentUpload 
+                      personId={editingEmployee.id}
+                      personType="employee"
+                      schoolId={schoolId}
+                      existingDocuments={[]}
+                    />
+                  ) : (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                      <div className="text-4xl mb-2">📁</div>
+                      <h4 className="font-medium text-blue-800 mb-2">Documents बाद में Upload करें</h4>
+                      <p className="text-sm text-blue-600">
+                        Employee add होने के बाद Edit करके documents upload कर सकते हैं।
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Document Checklist */}
+                  <div className="border rounded-lg p-4">
+                    <h5 className="font-medium text-slate-700 mb-3">📋 Required Documents Checklist:</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {[
+                        { icon: '🆔', name: 'Aadhar Card (आधार कार्ड)' },
+                        { icon: '💳', name: 'PAN Card (पैन कार्ड)' },
+                        { icon: '📄', name: 'Resume/CV (बायोडाटा)' },
+                        { icon: '📷', name: 'Passport Photo' },
+                        { icon: '🎓', name: 'Degree Certificate' },
+                        { icon: '📋', name: 'Experience Letter' },
+                        { icon: '📝', name: 'Relieving Letter' },
+                        { icon: '🚔', name: 'Police Verification' },
+                        { icon: '🏥', name: 'Medical Certificate' },
+                        { icon: '🏦', name: 'Bank Account Details' },
+                        { icon: '🏠', name: 'Address Proof' },
+                        { icon: '📁', name: 'Other Documents' },
+                      ].map((doc, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm p-2 bg-slate-50 rounded">
+                          <span>{doc.icon}</span>
+                          <span className="text-slate-600">{doc.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 8: Login Access */}
               {activeFormTab === 'login' && (
                 <div className="space-y-4 animate-in fade-in">
                   <h4 className="font-semibold text-slate-800 border-b pb-2">🔐 Login Access (लॉगिन एक्सेस)</h4>
