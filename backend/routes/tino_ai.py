@@ -217,7 +217,8 @@ async def chat_with_tino(request: TinoMessage):
     """Main chat endpoint for Tino AI"""
     try:
         if not EMERGENT_LLM_KEY:
-            raise HTTPException(status_code=500, detail="AI service not configured")
+            print("ERROR: EMERGENT_LLM_KEY is not configured!")
+            raise HTTPException(status_code=500, detail="AI service not configured - Please check EMERGENT_LLM_KEY")
         
         # Get school context
         context = await get_school_context(request.school_id)
@@ -243,6 +244,9 @@ async def chat_with_tino(request: TinoMessage):
         # Prepare session ID
         session_id = request.session_id or f"tino_{request.school_id}_{request.user_id or 'default'}"
         
+        print(f"Tino AI: Processing query from session {session_id}")
+        print(f"Tino AI: Query = {request.message[:100]}...")
+        
         # Initialize LLM Chat
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
@@ -259,7 +263,13 @@ User Query: {request.message}
         
         # Send message to LLM
         user_message = UserMessage(text=full_message)
-        response = await chat.send_message(user_message)
+        response_text = await chat.send_message(user_message)
+        
+        # Ensure response is a string
+        if not isinstance(response_text, str):
+            response_text = str(response_text) if response_text else "माफ करें, response प्राप्त नहीं हुआ।"
+        
+        print(f"Tino AI: Got response of length {len(response_text)}")
         
         # Generate smart suggestions based on context
         suggestions = []
@@ -279,13 +289,19 @@ User Query: {request.message}
         suggestions.extend([s for s in default_suggestions if s not in suggestions][:2])
         
         return TinoResponse(
-            response=response,
+            response=response_text,
             data=context,
             suggestions=suggestions[:4]
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"Tino AI Error: {e}")
+        print(f"Traceback: {error_trace}")
+        # Return a user-friendly error in Hindi
         raise HTTPException(status_code=500, detail=f"AI Error: {str(e)}")
 
 
