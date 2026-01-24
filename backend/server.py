@@ -448,6 +448,49 @@ class StudentResponse(BaseModel):
     status: str = "active"
     is_active: bool = True
     created_at: str
+    # Extended fields for enhanced admission form
+    admission_date: Optional[str] = None
+    scholar_no: Optional[str] = None
+    pen_number: Optional[str] = None
+    sssmid: Optional[str] = None
+    samagra_family_id: Optional[str] = None
+    jan_aadhar_no: Optional[str] = None
+    caste: Optional[str] = None
+    sub_caste: Optional[str] = None
+    religion: Optional[str] = None
+    category: Optional[str] = None
+    nationality: Optional[str] = None
+    mother_tongue: Optional[str] = None
+    birth_place: Optional[str] = None
+    identification_mark: Optional[str] = None
+    rte_status: Optional[bool] = None
+    father_occupation: Optional[str] = None
+    father_qualification: Optional[str] = None
+    mother_occupation: Optional[str] = None
+    mother_qualification: Optional[str] = None
+    guardian_name: Optional[str] = None
+    guardian_relation: Optional[str] = None
+    guardian_mobile: Optional[str] = None
+    guardian_occupation: Optional[str] = None
+    annual_income: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_account_no: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    bank_branch: Optional[str] = None
+    transport_mode: Optional[str] = None
+    bus_route: Optional[str] = None
+    bus_stop: Optional[str] = None
+    pickup_point: Optional[str] = None
+    is_hosteler: Optional[bool] = None
+    hostel_room_no: Optional[str] = None
+    medical_conditions: Optional[str] = None
+    allergies: Optional[str] = None
+    previous_school: Optional[str] = None
+    previous_class: Optional[str] = None
+    previous_percentage: Optional[str] = None
+    tc_number: Optional[str] = None
 
 # Staff Models
 class StaffCreate(BaseModel):
