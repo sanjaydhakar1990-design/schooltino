@@ -90,7 +90,7 @@ const AdmitCardManagement = () => {
 
   const saveSettings = async () => {
     try {
-      await axios.post(`${API}/admit-card/settings`, {
+      await axios.post(`${API}/api/admit-card/settings`, {
         school_id: schoolId,
         ...settings
       });
@@ -103,7 +103,7 @@ const AdmitCardManagement = () => {
 
   const createExam = async () => {
     try {
-      const res = await axios.post(`${API}/admit-card/exam`, {
+      const res = await axios.post(`${API}/api/admit-card/exam`, {
         school_id: schoolId,
         ...examForm,
         created_by: user?.id
@@ -126,7 +126,7 @@ const AdmitCardManagement = () => {
 
   const generateBulkAdmitCards = async (examId, classId) => {
     try {
-      const res = await axios.post(`${API}/admit-card/generate-bulk`, {
+      const res = await axios.post(`${API}/api/admit-card/generate-bulk`, {
         school_id: schoolId,
         exam_id: examId,
         class_id: classId
