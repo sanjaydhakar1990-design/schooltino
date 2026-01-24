@@ -1,148 +1,134 @@
 {
-  "brand_identity": {
-    "name": "SchoolERP",
-    "archetype": "The Modern Institution",
-    "core_values": ["Clarity", "Trust", "Efficiency", "Intelligence"],
-    "visual_mood": "Clean, Professional, Airy, Data-Rich but not Cluttered"
-  },
   "typography": {
     "font_family": {
-      "headings": "Manrope, sans-serif",
+      "heading": "Manrope, sans-serif",
       "body": "Inter, sans-serif",
       "mono": "JetBrains Mono, monospace"
     },
-    "weights": {
-      "headings": "600 (SemiBold) or 800 (ExtraBold)",
-      "body": "400 (Regular) or 500 (Medium)"
-    },
-    "tracking": {
-      "headings": "-0.02em (tight)",
-      "overline": "0.05em (wide)"
-    },
-    "rules": [
-      "Never use Inter for Headings larger than 24px.",
-      "Use Manrope for all numbers and data displays.",
-      "Headings must be dark slate (slate-900), not pure black."
-    ]
+    "scale": {
+      "h1": "text-4xl font-bold tracking-tight",
+      "h2": "text-3xl font-bold tracking-tight",
+      "h3": "text-2xl font-semibold tracking-tight",
+      "h4": "text-xl font-semibold tracking-tight",
+      "body_large": "text-lg leading-relaxed",
+      "body_default": "text-base leading-relaxed",
+      "caption": "text-sm text-muted-foreground"
+    }
   },
   "colors": {
     "palette": {
       "primary": {
-        "DEFAULT": "#2563EB",
-        "foreground": "#FFFFFF",
-        "hover": "#1D4ED8",
-        "active": "#1E40AF"
-      },
-      "secondary": {
-        "DEFAULT": "#F1F5F9",
-        "foreground": "#0F172A"
-      },
-      "accent": {
-        "DEFAULT": "#F59E0B",
+        "default": "#4F46E5",
+        "gradient": "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
         "foreground": "#FFFFFF"
       },
-      "background": "#F8FAFC",
-      "surface": "#FFFFFF",
-      "border": "#E2E8F0",
-      "muted": "#64748B"
+      "secondary": {
+        "default": "#F1F5F9",
+        "foreground": "#0F172A"
+      },
+      "background": {
+        "default": "#F8FAFC",
+        "paper": "#FFFFFF",
+        "sidebar": "#0F172A"
+      },
+      "accents": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "info": "#3B82F6"
+      }
     },
-    "semantic": {
-      "success": "#10B981",
-      "warning": "#F59E0B",
-      "error": "#EF4444",
-      "info": "#3B82F6"
-    },
-    "gradients": {
-      "primary_soft": "linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)",
-      "glass_surface": "linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%)"
+    "usage": {
+      "dashboard_background": "bg-slate-50",
+      "card_background": "bg-white",
+      "sidebar_background": "bg-slate-900",
+      "primary_gradient": "bg-gradient-to-br from-indigo-600 to-purple-600",
+      "text_primary": "text-slate-900",
+      "text_secondary": "text-slate-500"
     }
   },
-  "layout_system": {
-    "spacing_scale": {
-      "container_padding": "p-6 md:p-8 lg:p-10",
-      "section_gap": "gap-8",
-      "item_gap": "gap-4"
+  "layout": {
+    "structure": "Sidebar (Left, Fixed) + Header (Top, Sticky) + Main Content (Scrollable)",
+    "grid_system": {
+      "dashboard": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+      "quick_actions": "grid grid-cols-2 md:grid-cols-4 gap-4"
     },
-    "grid_strategies": {
-      "dashboard_bento": "grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-6",
-      "stats_row": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6",
-      "form_layout": "grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
-    },
-    "containers": {
-      "card": "bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200",
-      "panel": "bg-white rounded-2xl border border-slate-100 shadow-lg",
-      "sidebar": "bg-slate-900 text-slate-300 w-64 fixed h-full z-50"
+    "spacing": {
+      "page_padding": "p-6 md:p-8",
+      "card_padding": "p-6",
+      "section_gap": "gap-8"
     }
   },
   "components": {
-    "buttons": {
-      "primary": "bg-primary text-white hover:bg-primary/90 shadow-sm rounded-lg px-6 py-2.5 font-medium transition-all active:scale-95",
-      "secondary": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm rounded-lg px-6 py-2.5 font-medium",
-      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg px-4 py-2"
-    },
     "cards": {
-      "stat_card": "relative overflow-hidden bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-primary/50 transition-colors",
-      "feature_card": "bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all"
+      "style": "rounded-xl border border-slate-200 shadow-sm bg-white hover:shadow-md transition-all duration-200",
+      "metric_card": "flex flex-col justify-between h-full p-6 relative overflow-hidden",
+      "gradient_card": "text-white bg-gradient-to-br from-indigo-600 to-purple-600 border-none shadow-lg"
     },
-    "inputs": {
-      "default": "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    "buttons": {
+      "primary": "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-lg px-4 py-2 font-medium transition-all",
+      "secondary": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm rounded-lg px-4 py-2 font-medium transition-all",
+      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg px-4 py-2 transition-all",
+      "quick_action": "flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/50 transition-all gap-3 group"
     },
-    "navigation": {
-      "sidebar_item": "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white/10 hover:text-white",
-      "sidebar_item_active": "bg-primary text-white shadow-md"
+    "charts": {
+      "library": "Recharts",
+      "style": "Minimalist, rounded tooltips, custom legends",
+      "colors": ["#4F46E5", "#8B5CF6", "#EC4899", "#10B981"]
     }
   },
   "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-md bg-white/80 border border-white/20",
     "shadows": {
-      "soft": "0 2px 8px -2px rgba(0,0,0,0.05)",
-      "medium": "0 4px 12px -2px rgba(0,0,0,0.08)",
-      "glow": "0 0 20px -5px rgba(37, 99, 235, 0.3)"
+      "card": "shadow-sm hover:shadow-md",
+      "dropdown": "shadow-lg ring-1 ring-black/5"
     },
-    "borders": {
-      "subtle": "1px solid #E2E8F0",
-      "active": "1px solid #3B82F6"
+    "gradients": {
+      "primary": "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500",
+      "subtle": "bg-gradient-to-b from-white to-slate-50"
     },
-    "glassmorphism": {
-      "header": "backdrop-blur-md bg-white/80 border-b border-slate-200/50 sticky top-0 z-40"
-    }
+    "icons": "Lucide React (Stroke width: 1.5px)"
   },
-  "motion": {
-    "transitions": {
-      "default": "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-      "smooth": "all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)"
+  "images": {
+    "students": {
+      "url": "https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzY2hvb2wlMjBzdHVkZW50cyUyMGNsYXNzcm9vbXxlbnwwfHx8fDE3NjkyNDg5MDh8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Indian students in classroom",
+      "usage": "Dashboard Hero / Recent Activities"
     },
-    "animations": {
-      "fade_in": "animate-fade-in",
-      "slide_up": "animate-slide-up",
-      "pulse_slow": "animate-pulse-slow"
-    }
-  },
-  "assets": {
-    "images": {
-      "login_hero": "https://images.unsplash.com/photo-1730106443463-0fb1512c5e60?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBzY2hvb2wlMjBidWlsZGluZyUyMGFyY2hpdGVjdHVyZXxlbnwwfHx8fDE3NjkyMzk5MTR8MA&ixlib=rb-4.1.0&q=85",
-      "student_banner": "https://images.unsplash.com/photo-1623303366639-0e330d7c3d9f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzY2hvb2wlMjBzdHVkZW50cyUyMHN0dWR5aW5nfGVufDB8fHx8MTc2OTIzOTkxMXww&ixlib=rb-4.1.0&q=85",
-      "classroom_bg": "https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwyfHxpbmRpYW4lMjBzY2hvb2wlMjBzdHVkZW50cyUyMHN0dWR5aW5nfGVufDB8fHx8MTc2OTIzOTkxMXww&ixlib=rb-4.1.0&q=85"
+    "school_building": {
+      "url": "https://images.unsplash.com/photo-1758611228434-7b5b697abd0a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBzY2hvb2wlMjBidWlsZGluZyUyMGV4dGVyaW9yfGVufDB8fHx8MTc2OTI0ODkxMHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Modern School Building",
+      "usage": "Login Page / Dashboard Header Background"
     },
-    "icons": {
-      "library": "lucide-react",
-      "style": "stroke-width={1.5} size={20}"
+    "teacher": {
+      "url": "https://images.unsplash.com/photo-1544264796-acfb69e05b37?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHw0fHxpbmRpYW4lMjB0ZWFjaGVyJTIwcHJvZmVzc2lvbmFsJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY5MjQ4OTEyfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Professional Teacher",
+      "usage": "Staff Section / Testimonials"
     }
   },
   "instructions_to_main_agent": [
-    "1. UPDATE TAILWIND CONFIG: Replace the existing colors in tailwind.config.js with the palette defined above. Ensure 'primary' is set to the new blue.",
-    "2. REFINE SIDEBAR: Update the sidebar styles in index.css to match the 'sidebar' container specs. Use the 'sidebar_item_active' class for the active state.",
-    "3. MODERNIZE CARDS: In DashboardPage.js (and others), replace standard card classes with the 'stat_card' definition. Remove heavy shadows, use borders.",
-    "4. TYPOGRAPHY: Apply 'font-heading' to all h1-h6 elements and 'font-body' to p, span, div. Ensure headings have tight tracking.",
-    "5. BENTO GRID: Refactor the main dashboard layout to use the 'dashboard_bento' grid strategy. Group related stats.",
-    "6. LOGIN PAGE: Update the login page to use the 'login_hero' image as a side banner or background.",
-    "7. DATA-TESTID: Ensure every interactive element (buttons, inputs, links) has a data-testid attribute (e.g., data-testid='login-submit-btn').",
-    "8. DO NOT BREAK FUNCTIONALITY: Keep all existing logic, routes, and contexts. Only change the visual presentation (JSX classes and CSS)."
+    "Implement the dashboard using the 'Bento Grid' layout strategy for the main metrics.",
+    "Use the 'Manrope' font for all headings to give a modern, friendly feel.",
+    "Apply the 'primary_gradient' (Indigo to Purple) to the 'Total Students' or main CTA cards to mimic the DigitalEdu style.",
+    "Ensure the Sidebar is dark (Slate-900) and the main content area is light (Slate-50).",
+    "Use 'Lucide React' icons for the Quick Actions grid. Make them large (w-8 h-8) and colored with the primary brand color.",
+    "The 'Recent Activities' section should use the 'students' image as a thumbnail or context image.",
+    "Ensure all interactive elements have 'data-testid' attributes.",
+    "Do NOT use default Shadcn card styles blindly; customize them with the 'rounded-xl' and 'shadow-sm' classes defined in components.",
+    "For the Attendance Chart, use a Donut chart with the defined chart colors.",
+    "Maintain the 'Tino AI' floating button/widget if it exists, ensuring it doesn't overlap with critical UI."
   ],
-  "universal_guidelines": [
-    "Avoid gradients for text.",
-    "Use 24px padding inside cards minimum.",
-    "Input fields should have a subtle border (slate-200) and focus ring (primary/20).",
-    "Use 'sonner' for all toast notifications.",
-    "Ensure high contrast for text (slate-600 for secondary text, slate-900 for primary)."
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms.",
+    "You MUST NOT center align the app container.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations.",
+    "NEVER use AI assistant Emoji characters for icons.",
+    "Every interaction needs micro-animations - hover states, transitions.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Prioritize using pre-existing components from src/components/ui when applicable."
   ]
 }
