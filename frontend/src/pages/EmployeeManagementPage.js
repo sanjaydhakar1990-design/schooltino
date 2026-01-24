@@ -1274,14 +1274,18 @@ export default function EmployeeManagementPage() {
                         { icon: '💳', name: 'PAN Card (पैन कार्ड)' },
                         { icon: '📄', name: 'Resume/CV (बायोडाटा)' },
                         { icon: '📷', name: 'Passport Photo' },
+                        { icon: '📊', name: '10th Marksheet (दसवीं)' },
+                        { icon: '📊', name: '12th Marksheet (बारहवीं)' },
+                        { icon: '📊', name: 'Graduation Marksheet (स्नातक)' },
+                        { icon: '📊', name: 'PG Marksheet (स्नातकोत्तर)' },
                         { icon: '🎓', name: 'Degree Certificate' },
+                        { icon: '🎓', name: 'B.Ed Certificate' },
                         { icon: '📋', name: 'Experience Letter' },
                         { icon: '📝', name: 'Relieving Letter' },
                         { icon: '🚔', name: 'Police Verification' },
                         { icon: '🏥', name: 'Medical Certificate' },
                         { icon: '🏦', name: 'Bank Account Details' },
                         { icon: '🏠', name: 'Address Proof' },
-                        { icon: '📁', name: 'Other Documents' },
                       ].map((doc, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-sm p-2 bg-slate-50 rounded">
                           <span>{doc.icon}</span>
