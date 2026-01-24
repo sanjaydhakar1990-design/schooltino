@@ -913,17 +913,14 @@ Note: First login पर password change करें।`;
               </DialogDescription>
             </DialogHeader>
             
-            {/* Form Tabs Navigation */}
+            {/* Form Tabs Navigation - Merged tabs for less scrolling */}
             <div className="flex gap-1 p-1 bg-slate-100 rounded-lg mb-4 overflow-x-auto">
               {[
-                { id: 'basic', label: '📋 Basic Info' },
+                { id: 'basic', label: '📋 Basic' },
                 { id: 'identity', label: '🆔 ID & Docs' },
-                { id: 'family', label: '👨‍👩‍👦 Family' },
-                { id: 'contact', label: '📞 Contact' },
+                { id: 'family', label: '👨‍👩‍👦 Family & Contact' },
                 { id: 'bank', label: '🏦 Bank' },
-                { id: 'transport', label: '🚌 Transport' },
-                { id: 'medical', label: '🏥 Medical' },
-                { id: 'education', label: '📚 Education' },
+                { id: 'other', label: '🚌 Transport & Medical' },
                 { id: 'documents', label: '📄 Documents' },
               ].map(tab => (
                 <button
