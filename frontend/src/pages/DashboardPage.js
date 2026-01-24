@@ -414,20 +414,15 @@ export default function DashboardPage() {
             </Button>
           </div>
 
-          {/* Recent Activity */}
+          {/* Recent Activity - Real Data */}
           <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-800">Recent Activity</h3>
-              <span className="text-xs text-blue-600 cursor-pointer hover:text-blue-700 font-medium">View All</span>
+              <span className="text-xs text-slate-400">वास्तविक डेटा</span>
             </div>
             
             <div className="space-y-3">
-              {[
-                { action: 'New admission', name: 'Rahul Kumar', time: '2 mins ago', type: 'student' },
-                { action: 'Fee paid', name: 'Priya Sharma', time: '10 mins ago', type: 'fee' },
-                { action: 'Attendance marked', name: 'Class 5-A', time: '30 mins ago', type: 'attendance' },
-                { action: 'Notice published', name: 'Holiday Notice', time: '1 hour ago', type: 'notice' },
-              ].map((item, idx) => (
+              {recentActivities.length > 0 ? recentActivities.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors border border-slate-100">
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                     item.type === 'student' ? 'bg-blue-100 text-blue-600' :
