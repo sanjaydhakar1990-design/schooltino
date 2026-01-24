@@ -11257,6 +11257,7 @@ api_router.include_router(tino_ai_router)
 api_router.include_router(tino_voice_router)
 api_router.include_router(did_avatar_router)
 api_router.include_router(documents_router)
+api_router.include_router(bulk_import_router)
 
 app.include_router(api_router)
 
