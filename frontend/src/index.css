@@ -528,6 +528,12 @@ input:focus, select:focus, textarea:focus {
     color-adjust: exact !important;
   }
 
+  /* Force page break for answer key */
+  .page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
   /* Calendar print layout */
   .calendar-print-container {
     page-break-inside: avoid;
