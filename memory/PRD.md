@@ -1,31 +1,27 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 24, 2026 (Session 15 - Part 3)
+## Last Updated: January 24, 2026 (Session 15 - Part 4)
 
 ---
 
 ## ✅ COMPLETED TODAY (January 24, 2026)
 
-### Session 15 - Part 1: DigitalEdu Theme
-- Dark sidebar (#1E293B → #0F172A gradient)
-- White header with school branding
-- Blue (#2563EB) primary color
-- Progress bars on stat cards
+### Part 1: DigitalEdu Theme
+- Dark sidebar, White header, Blue (#2563EB) primary
 
-### Session 15 - Part 2: Tab Merging & Photo
-- Photo column added to Students table
-- Student form tabs merged (9→6)
-- Employee form tabs merged (8→5)
-- School logo in sidebar
+### Part 2: Tab Merging & Photo
+- Photo column in Students table, Form tabs merged
 
-### Session 15 - Part 3: AI Paper Generator Fixes
-| Issue | Fix Applied |
-|-------|-------------|
-| **Hindi chapters in English** | Added `normalizeSubject()` function to map Hindi script subjects (हिंदी, गणित, विज्ञान) to English keys |
-| **Paper generation slow** | Changed from `gpt-4o` to `gpt-4o-mini` for faster generation |
-| **Class-wise default marks** | `CLASS_PAPER_DEFAULTS` already working (Nursery: 20 marks/30 min, Class 10: 80 marks/180 min) |
-| **Nursery/LKG/UKG syllabus** | Drawing chapters exist with bilingual names, added Rhymes chapters |
-| **Diagram images** | Image generation API exists for diagram questions |
+### Part 3: AI Paper Generator Fixes
+- Hindi chapters for Hindi subjects, Faster generation
+
+### Part 4: Bug Fixes (Current)
+| Bug | Fix |
+|-----|-----|
+| **Class 6 सामाजिक विज्ञान in English** | Added Hindi chapters: 'क्या, कब, कहाँ और कैसे?', 'आरंभिक नगर', etc. |
+| **Dashboard demo data** | Replaced with real API data, empty state for no activities |
+| **Exam Name crash** | Verified - Input works correctly (was user misunderstanding) |
+| **Answer Key same page** | Added page-break-before CSS for print separation |
 
 ---
 
@@ -33,40 +29,27 @@
 
 | Iteration | Tests | Status |
 |-----------|-------|--------|
-| **53** | **AI Paper Generator** | ✅ **100% (8/8)** |
-| 52 | Tab Merging & Photo | ✅ 100% |
+| **54** | **Bug Fixes** | ✅ **100% (5/5)** |
+| 53 | AI Paper Improvements | ✅ 100% |
+| 52 | Tab Merging | ✅ 100% |
 | 51 | DigitalEdu Theme | ✅ 100% |
-
----
-
-## 🟡 REMAINING KNOWN ISSUES
-
-### P1 - Medium Priority:
-1. **App Icon / Favicon** - Still may not update due to browser cache
-2. **Actual Paper Generation Speed** - Needs real-world testing with users
 
 ---
 
 ## 🟢 WHAT'S WORKING
 
 ### AI Paper Generator:
-- ✅ Hindi subject → Hindi chapters (Devanagari script)
-- ✅ Drawing/चित्रकला → Drawing chapters with bilingual names
-- ✅ Nursery/LKG/UKG → Drawing + Rhymes subjects available
-- ✅ Class-wise default marks: Nursery (20/30), Class 5 (40/90), Class 10 (80/180)
+- ✅ Hindi subjects → Hindi chapters (Devanagari)
+- ✅ Class 6 सामाजिक विज्ञान → Hindi chapters
+- ✅ Exam Name input works correctly
+- ✅ Print: Answer Key on separate page (page-break CSS)
 - ✅ Paper Language: Hindi/English options
-- ✅ Board-specific subjects: RBSE/MPBSE show Hindi names
+- ✅ Class-wise default marks
 
-### Student Management:
-- ✅ Photo column in student list
-- ✅ 6 merged tabs (less scrolling)
-- ✅ Bulk Import (CSV/Excel)
-- ✅ Document Upload UI
-
-### Employee Management:
-- ✅ 5 merged tabs (less scrolling)
-- ✅ Bulk Import
-- ✅ Document Upload UI
+### Dashboard:
+- ✅ Real data from API (not demo)
+- ✅ Empty state when no activities
+- ✅ Stat cards with real counts
 
 ---
 
@@ -76,8 +59,10 @@
 
 ---
 
-## 🎨 Design System - DigitalEdu Theme
-- **Primary:** Blue-600 (#2563EB)
-- **Sidebar:** Dark gradient (#1E293B → #0F172A)
-- **Header:** White with shadow
-- **Active Nav:** Blue-600 background, white text
+## 📁 Key Files Modified (Part 4)
+| File | Changes |
+|------|---------|
+| `boardSyllabus.js` | Added '6_सामाजिक विज्ञान' Hindi chapters, isHindiMedium detection |
+| `DashboardPage.js` | Real data from API, empty state |
+| `AIPaperPage.js` | page-break-before for Answer Key |
+| `index.css` | .page-break-before CSS rule |
