@@ -14,7 +14,7 @@ import requests
 import os
 import json
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://erp-revival-1.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tinoai-dashboard.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 DIRECTOR_EMAIL = "director@test.com"
