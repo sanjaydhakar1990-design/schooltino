@@ -870,7 +870,13 @@ Note: First login पर password change करें।`;
           <h1 className="text-3xl font-bold font-heading text-slate-900">{t('students')}</h1>
           <p className="text-slate-500 mt-1">Student Admission & Management</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {/* Bulk Import Button */}
+          <BulkImport 
+            type="student" 
+            schoolId={schoolId} 
+            onImportComplete={fetchStudents}
+          />
           {/* Promotion Button */}
           <Button 
             variant="outline" 
