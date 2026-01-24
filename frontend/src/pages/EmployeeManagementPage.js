@@ -523,7 +523,13 @@ export default function EmployeeManagementPage() {
           </h1>
           <p className="text-gray-500 text-sm">Staff + Users एक जगह manage करें</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {/* Bulk Import Button */}
+          <BulkImport 
+            type="employee" 
+            schoolId={schoolId} 
+            onImportComplete={fetchEmployees}
+          />
           <Button 
             variant="outline" 
             onClick={handleBulkPrintIDCards}
@@ -534,7 +540,7 @@ export default function EmployeeManagementPage() {
             {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
             Bulk Print ID Cards
           </Button>
-          <Button onClick={openAddForm} className="gap-2">
+          <Button onClick={openAddForm} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
             <Plus className="w-4 h-4" /> Add Employee
           </Button>
         </div>
