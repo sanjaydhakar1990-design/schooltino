@@ -604,7 +604,17 @@ export default function FeeManagementPage() {
                     {classes.map(cls => {
                       const structure = getClassFeeStructure(cls.id);
                       const fees = structure?.fees || {};
-                      const total = Object.values(fees).reduce((a, b) => a + (b || 0), 0);
+                      
+                      // Calculate other fees (all fees except admission, tuition, exam)
+                      const otherFees = Object.entries(fees)
+                        .filter(([key, val]) => !['admission_fee', 'tuition_fee', 'exam_fee'].includes(key) && val > 0)
+                        .reduce((sum, [_, val]) => sum + (val || 0), 0);
+                      
+                      // Calculate total annual (admission + tuition*12 + exam + other)
+                      const totalAnnual = (fees.admission_fee || 0) + 
+                                         ((fees.tuition_fee || 0) * 12) + 
+                                         (fees.exam_fee || 0) + 
+                                         otherFees;
                       
                       return (
                         <TableRow key={cls.id}>
@@ -613,10 +623,10 @@ export default function FeeManagementPage() {
                           <TableCell>₹{fees.tuition_fee?.toLocaleString('en-IN') || '-'}/month</TableCell>
                           <TableCell>₹{fees.exam_fee?.toLocaleString('en-IN') || '-'}</TableCell>
                           <TableCell>
-                            ₹{(total - (fees.admission_fee || 0) - ((fees.tuition_fee || 0) * 12) - (fees.exam_fee || 0)).toLocaleString('en-IN')}
+                            ₹{otherFees > 0 ? otherFees.toLocaleString('en-IN') : '0'}
                           </TableCell>
                           <TableCell className="font-bold text-emerald-600">
-                            ₹{total.toLocaleString('en-IN')}
+                            ₹{totalAnnual.toLocaleString('en-IN')}
                           </TableCell>
                           <TableCell>
                             <Button 
