@@ -34,35 +34,59 @@ export const Layout = () => {
   useEffect(() => {
     if (schoolLogo && schoolLogo.length > 100) {  // Valid logo (not placeholder)
       try {
-        // Update favicon
-        let link = document.querySelector("link[rel*='icon']");
-        if (!link) {
-          link = document.createElement('link');
-          link.rel = 'shortcut icon';
-          document.head.appendChild(link);
-        }
-        link.type = schoolLogo.startsWith('data:') ? 'image/png' : 'image/x-icon';
-        link.href = schoolLogo;
+        // Remove ALL existing favicon links first
+        const existingIcons = document.querySelectorAll("link[rel*='icon']");
+        existingIcons.forEach(icon => icon.remove());
         
-        // Update apple touch icon
-        let appleLink = document.querySelector("link[rel='apple-touch-icon']");
-        if (!appleLink) {
-          appleLink = document.createElement('link');
+        // Create new favicon link
+        const faviconLink = document.createElement('link');
+        faviconLink.rel = 'icon';
+        faviconLink.type = 'image/png';
+        faviconLink.href = schoolLogo;
+        document.head.appendChild(faviconLink);
+        
+        // Create shortcut icon for older browsers
+        const shortcutLink = document.createElement('link');
+        shortcutLink.rel = 'shortcut icon';
+        shortcutLink.type = 'image/png';
+        shortcutLink.href = schoolLogo;
+        document.head.appendChild(shortcutLink);
+        
+        // Remove and recreate apple touch icons
+        const existingAppleIcons = document.querySelectorAll("link[rel='apple-touch-icon']");
+        existingAppleIcons.forEach(icon => icon.remove());
+        
+        // Create apple touch icons in multiple sizes
+        const appleSizes = ['180x180', '192x192', '152x152', '144x144', '120x120'];
+        appleSizes.forEach(size => {
+          const appleLink = document.createElement('link');
           appleLink.rel = 'apple-touch-icon';
+          appleLink.sizes = size;
+          appleLink.href = schoolLogo;
           document.head.appendChild(appleLink);
-        }
-        appleLink.href = schoolLogo;
+        });
+        
+        // Default apple touch icon
+        const defaultApple = document.createElement('link');
+        defaultApple.rel = 'apple-touch-icon';
+        defaultApple.href = schoolLogo;
+        document.head.appendChild(defaultApple);
         
         // Update PWA manifest icon dynamically
         const manifestLink = document.querySelector("link[rel='manifest']");
         if (manifestLink) {
-          // Create dynamic manifest with school logo
           const dynamicManifest = {
             name: schoolName || 'Schooltino',
             short_name: schoolName?.split(' ')[0] || 'School',
             icons: [
-              { src: schoolLogo, sizes: '192x192', type: 'image/png' },
-              { src: schoolLogo, sizes: '512x512', type: 'image/png' }
+              { src: schoolLogo, sizes: '72x72', type: 'image/png', purpose: 'any maskable' },
+              { src: schoolLogo, sizes: '96x96', type: 'image/png', purpose: 'any maskable' },
+              { src: schoolLogo, sizes: '128x128', type: 'image/png', purpose: 'any maskable' },
+              { src: schoolLogo, sizes: '144x144', type: 'image/png', purpose: 'any maskable' },
+              { src: schoolLogo, sizes: '152x152', type: 'image/png', purpose: 'any maskable' },
+              { src: schoolLogo, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+              { src: schoolLogo, sizes: '384x384', type: 'image/png', purpose: 'any maskable' },
+              { src: schoolLogo, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
             ],
             start_url: '/',
             display: 'standalone',
@@ -70,7 +94,12 @@ export const Layout = () => {
             theme_color: '#6366f1'
           };
           const blob = new Blob([JSON.stringify(dynamicManifest)], { type: 'application/json' });
+          const oldUrl = manifestLink.href;
           manifestLink.href = URL.createObjectURL(blob);
+          // Cleanup old blob URL
+          if (oldUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(oldUrl);
+          }
         }
         
         // Update document title if school name exists
@@ -78,7 +107,7 @@ export const Layout = () => {
           document.title = `${schoolName} - Schooltino`;
         }
         
-        console.log('App icon updated with school logo');
+        console.log('✅ App icon updated with school logo:', schoolLogo.substring(0, 50) + '...');
       } catch (error) {
         console.error('Failed to update app icon:', error);
       }
