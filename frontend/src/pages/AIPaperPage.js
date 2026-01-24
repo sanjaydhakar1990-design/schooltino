@@ -845,8 +845,8 @@ export default function AIPaperPage() {
             ))}
           </div>
 
-          {/* Answer Key - New Page in Print */}
-          <div className="mt-10 pt-6 border-t-2 border-dashed border-gray-400 print:break-before-page print:pt-4 print:mt-0 print:border-0">
+          {/* Answer Key - SEPARATE PAGE in Print */}
+          <div className="mt-10 pt-6 border-t-2 border-dashed border-gray-400 page-break-before print:mt-0 print:pt-8 print:border-0" style={{ pageBreakBefore: 'always' }}>
             <h2 className="text-lg font-bold mb-4 text-center border-b pb-2">{langText.answerKey}</h2>
             <div className="space-y-4">
               {paper?.questions?.map((q, idx) => (
