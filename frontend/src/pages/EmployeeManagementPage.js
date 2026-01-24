@@ -978,112 +978,84 @@ export default function EmployeeManagementPage() {
                 </div>
               )}
 
-              {/* Tab 3: Identity Documents */}
+              {/* Tab 3: Identity, Qualification & Documents - Merged */}
               {activeFormTab === 'identity' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h4 className="font-semibold text-slate-800 border-b pb-2">🆔 Identity Documents (पहचान दस्तावेज़)</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Aadhar Number (आधार नंबर)</Label>
-                      <Input
-                        value={formData.aadhar_no}
-                        onChange={e => setFormData(f => ({ ...f, aadhar_no: e.target.value }))}
-                        placeholder="12 digit Aadhar"
-                      />
-                    </div>
-                    <div>
-                      <Label>PAN Number (पैन नंबर)</Label>
-                      <Input
-                        value={formData.pan_number}
-                        onChange={e => setFormData(f => ({ ...f, pan_number: e.target.value.toUpperCase() }))}
-                        placeholder="ABCDE1234F"
-                      />
-                    </div>
-                    <div>
-                      <Label>Voter ID (मतदाता पहचान पत्र)</Label>
-                      <Input
-                        value={formData.voter_id}
-                        onChange={e => setFormData(f => ({ ...f, voter_id: e.target.value }))}
-                        placeholder="Voter ID number"
-                      />
-                    </div>
-                    <div>
-                      <Label>Driving License (ड्राइविंग लाइसेंस)</Label>
-                      <Input
-                        value={formData.driving_license}
-                        onChange={e => setFormData(f => ({ ...f, driving_license: e.target.value }))}
-                        placeholder="DL number"
-                      />
-                    </div>
-                    <div>
-                      <Label>UAN Number (EPF)</Label>
-                      <Input
-                        value={formData.uan_number}
-                        onChange={e => setFormData(f => ({ ...f, uan_number: e.target.value }))}
-                        placeholder="Universal Account Number"
-                      />
-                    </div>
-                    <div>
-                      <Label>ESI Number (ESI नंबर)</Label>
-                      <Input
-                        value={formData.esi_number}
-                        onChange={e => setFormData(f => ({ ...f, esi_number: e.target.value }))}
-                        placeholder="ESI number"
-                      />
+                  {/* Identity Documents Section */}
+                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                    <h4 className="font-medium text-slate-800 mb-3">🆔 Identity Documents (पहचान दस्तावेज़)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div>
+                        <Label>Aadhar Number</Label>
+                        <Input value={formData.aadhar_no} onChange={e => setFormData(f => ({ ...f, aadhar_no: e.target.value }))} placeholder="12 digit Aadhar" />
+                      </div>
+                      <div>
+                        <Label>PAN Number</Label>
+                        <Input value={formData.pan_number} onChange={e => setFormData(f => ({ ...f, pan_number: e.target.value.toUpperCase() }))} placeholder="ABCDE1234F" />
+                      </div>
+                      <div>
+                        <Label>Voter ID</Label>
+                        <Input value={formData.voter_id} onChange={e => setFormData(f => ({ ...f, voter_id: e.target.value }))} placeholder="Voter ID" />
+                      </div>
+                      <div>
+                        <Label>UAN (EPF)</Label>
+                        <Input value={formData.uan_number} onChange={e => setFormData(f => ({ ...f, uan_number: e.target.value }))} placeholder="UAN Number" />
+                      </div>
+                      <div>
+                        <Label>ESI Number</Label>
+                        <Input value={formData.esi_number} onChange={e => setFormData(f => ({ ...f, esi_number: e.target.value }))} placeholder="ESI number" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Tab 4: Qualification */}
-              {activeFormTab === 'qualification' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <h4 className="font-semibold text-slate-800 border-b pb-2">🎓 Qualification & Experience (योग्यता और अनुभव)</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Highest Qualification (उच्चतम योग्यता)</Label>
-                      <select
-                        className="w-full border rounded-lg px-3 py-2 h-10"
-                        value={formData.qualification}
-                        onChange={e => setFormData(f => ({ ...f, qualification: e.target.value }))}
-                      >
-                        <option value="">Select</option>
-                        <option value="10th Pass">10th Pass (दसवीं पास)</option>
-                        <option value="12th Pass">12th Pass (बारहवीं पास)</option>
-                        <option value="Graduate">Graduate (स्नातक)</option>
-                        <option value="Post Graduate">Post Graduate (स्नातकोत्तर)</option>
-                        <option value="B.Ed">B.Ed</option>
-                        <option value="M.Ed">M.Ed</option>
-                        <option value="PhD">PhD</option>
-                        <option value="ITI">ITI</option>
-                        <option value="Diploma">Diploma</option>
-                        <option value="Other">Other</option>
-                      </select>
+                  {/* Qualification Section */}
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 className="font-medium text-purple-800 mb-3">🎓 Qualification & Experience</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div>
+                        <Label>Highest Qualification</Label>
+                        <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.qualification} onChange={e => setFormData(f => ({ ...f, qualification: e.target.value }))}>
+                          <option value="">Select</option>
+                          <option value="10th Pass">10th Pass</option>
+                          <option value="12th Pass">12th Pass</option>
+                          <option value="Graduate">Graduate</option>
+                          <option value="Post Graduate">Post Graduate</option>
+                          <option value="B.Ed">B.Ed</option>
+                          <option value="PhD">PhD</option>
+                          <option value="ITI">ITI</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label>Specialization</Label>
+                        <Input value={formData.specialization} onChange={e => setFormData(f => ({ ...f, specialization: e.target.value }))} placeholder="e.g., Maths, Physics" />
+                      </div>
+                      <div>
+                        <Label>Experience (Years)</Label>
+                        <Input type="number" value={formData.experience_years} onChange={e => setFormData(f => ({ ...f, experience_years: e.target.value }))} placeholder="Years" />
+                      </div>
+                      <div>
+                        <Label>Previous Employer</Label>
+                        <Input value={formData.previous_employer} onChange={e => setFormData(f => ({ ...f, previous_employer: e.target.value }))} placeholder="Previous school" />
+                      </div>
                     </div>
-                    <div>
-                      <Label>Specialization (विशेषज्ञता)</Label>
-                      <Input
-                        value={formData.specialization}
-                        onChange={e => setFormData(f => ({ ...f, specialization: e.target.value }))}
-                        placeholder="e.g., Mathematics, Physics, Hindi"
-                      />
-                    </div>
-                    <div>
-                      <Label>Total Experience (Years) (कुल अनुभव वर्ष)</Label>
-                      <Input
-                        type="number"
-                        value={formData.experience_years}
-                        onChange={e => setFormData(f => ({ ...f, experience_years: e.target.value }))}
-                        placeholder="Years of experience"
-                      />
-                    </div>
-                    <div>
-                      <Label>Previous Employer (पिछला नियोक्ता)</Label>
-                      <Input
-                        value={formData.previous_employer}
-                        onChange={e => setFormData(f => ({ ...f, previous_employer: e.target.value }))}
-                        placeholder="Previous school/company name"
-                      />
+                  </div>
+
+                  {/* Documents Upload Section */}
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <h4 className="font-medium text-amber-800 mb-3">📄 Documents Upload</h4>
+                    {editingEmployee ? (
+                      <DocumentUpload personId={editingEmployee.id} personType="employee" schoolId={schoolId} existingDocuments={[]} />
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-amber-600">💡 Employee add होने के बाद Edit करके documents upload करें</p>
+                      </div>
+                    )}
+                    
+                    {/* Compact Checklist */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {['Aadhar', 'PAN', 'Photo', '10th', '12th', 'Degree', 'B.Ed', 'Experience Letter', 'Bank Proof'].map((doc, idx) => (
+                        <span key={idx} className="px-2 py-1 bg-white rounded text-xs text-slate-600 border">{doc}</span>
+                      ))}
                     </div>
                   </div>
                 </div>
