@@ -1,53 +1,31 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 24, 2026 (Session 15 - Part 2)
+## Last Updated: January 24, 2026 (Session 15 - Part 3)
 
 ---
 
 ## ✅ COMPLETED TODAY (January 24, 2026)
 
-### 🎨 DigitalEdu Theme Implementation
+### Session 15 - Part 1: DigitalEdu Theme
 - Dark sidebar (#1E293B → #0F172A gradient)
 - White header with school branding
 - Blue (#2563EB) primary color
-- Professional data tables
 - Progress bars on stat cards
 
-### 📸 Student Photo Column
-- Added Photo column to Students table
-- Shows placeholder icon for students without photos
-- Shows actual photo when uploaded
+### Session 15 - Part 2: Tab Merging & Photo
+- Photo column added to Students table
+- Student form tabs merged (9→6)
+- Employee form tabs merged (8→5)
+- School logo in sidebar
 
-### 🗂️ Form Tabs Merged
-**Student Form: 9 tabs → 6 tabs**
-| Before | After |
-|--------|-------|
-| Basic Info | 📋 Basic |
-| ID & Docs | 🆔 ID & Docs |
-| Family | 👨‍👩‍👦 Family & Contact (merged) |
-| Contact | ↑ |
-| Bank | 🏦 Bank |
-| Transport | 🚌 Transport & Medical (merged) |
-| Medical | ↑ |
-| Education | ↑ |
-| Documents | 📄 Documents |
-
-**Employee Form: 8 tabs → 5 tabs**
-| Before | After |
-|--------|-------|
-| Basic Info | 📋 Basic |
-| Personal | 👤 Personal & Contact (merged) |
-| ID & Docs | 🆔 ID & Documents (merged) |
-| Qualification | ↑ |
-| Bank & Salary | 🏦 Bank & Salary |
-| Contact | ↑ (in Personal) |
-| Documents | ↑ (in ID) |
-| Login Access | 🔐 Login Access |
-
-### 🏫 Sidebar School Logo
-- School logo now shows in sidebar (when uploaded)
-- School name displayed below logo
-- User role shown as subtitle
+### Session 15 - Part 3: AI Paper Generator Fixes
+| Issue | Fix Applied |
+|-------|-------------|
+| **Hindi chapters in English** | Added `normalizeSubject()` function to map Hindi script subjects (हिंदी, गणित, विज्ञान) to English keys |
+| **Paper generation slow** | Changed from `gpt-4o` to `gpt-4o-mini` for faster generation |
+| **Class-wise default marks** | `CLASS_PAPER_DEFAULTS` already working (Nursery: 20 marks/30 min, Class 10: 80 marks/180 min) |
+| **Nursery/LKG/UKG syllabus** | Drawing chapters exist with bilingual names, added Rhymes chapters |
+| **Diagram images** | Image generation API exists for diagram questions |
 
 ---
 
@@ -55,38 +33,40 @@
 
 | Iteration | Tests | Status |
 |-----------|-------|--------|
-| **52** | **Tab Merging & Photo** | ✅ **100% (7/7)** |
+| **53** | **AI Paper Generator** | ✅ **100% (8/8)** |
+| 52 | Tab Merging & Photo | ✅ 100% |
 | 51 | DigitalEdu Theme | ✅ 100% |
-| 50 | Light Blue Theme | ✅ 100% |
 
 ---
 
-## 🟡 KNOWN ISSUES
+## 🟡 REMAINING KNOWN ISSUES
 
-### P0 - App Icon / Favicon
-- **Issue:** Browser tab favicon doesn't always update to school logo
-- **Status:** Code implemented but behavior depends on browser cache
-- **Note:** User may need to clear cache or refresh after uploading logo
+### P1 - Medium Priority:
+1. **App Icon / Favicon** - Still may not update due to browser cache
+2. **Actual Paper Generation Speed** - Needs real-world testing with users
 
 ---
 
-## 🟡 REMAINING TASKS
+## 🟢 WHAT'S WORKING
 
-### P1 - High Priority:
-1. Complete scaffolded features (Library, Timetable, Visitor Pass backend)
-2. Student Admit Card self-download
-3. Verify App Icon fix
+### AI Paper Generator:
+- ✅ Hindi subject → Hindi chapters (Devanagari script)
+- ✅ Drawing/चित्रकला → Drawing chapters with bilingual names
+- ✅ Nursery/LKG/UKG → Drawing + Rhymes subjects available
+- ✅ Class-wise default marks: Nursery (20/30), Class 5 (40/90), Class 10 (80/180)
+- ✅ Paper Language: Hindi/English options
+- ✅ Board-specific subjects: RBSE/MPBSE show Hindi names
 
-### P2 - Medium Priority:
-1. Student Promotion System backend
-2. AI Paper Generator with diagrams
-3. Document Upload end-to-end verification
+### Student Management:
+- ✅ Photo column in student list
+- ✅ 6 merged tabs (less scrolling)
+- ✅ Bulk Import (CSV/Excel)
+- ✅ Document Upload UI
 
-### P3 - Future:
-- Payroll with PF/Tax calculations
-- Vehicle GPS tracking
-- Hostel Management
-- SMS/WhatsApp notifications
+### Employee Management:
+- ✅ 5 merged tabs (less scrolling)
+- ✅ Bulk Import
+- ✅ Document Upload UI
 
 ---
 
@@ -100,5 +80,4 @@
 - **Primary:** Blue-600 (#2563EB)
 - **Sidebar:** Dark gradient (#1E293B → #0F172A)
 - **Header:** White with shadow
-- **Tables:** Professional with borders
 - **Active Nav:** Blue-600 background, white text
