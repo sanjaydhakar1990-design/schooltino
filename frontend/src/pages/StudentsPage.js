@@ -896,187 +896,469 @@ Note: First login पर password change करें।`;
               New Admission
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingStudent ? 'Edit Student' : 'New Student Admission'}</DialogTitle>
+              <DialogTitle className="text-xl">{editingStudent ? 'Edit Student' : '📝 New Student Admission Form'}</DialogTitle>
               <DialogDescription>
-                {!editingStudent && 'Student ID और Password automatically generate होंगे'}
+                {!editingStudent && 'Student ID और Password automatically generate होंगे। सभी * fields भरना जरूरी है।'}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('student_name')} *</Label>
-                  <Input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    data-testid="student-name-input"
-                  />
+            
+            {/* Form Tabs Navigation */}
+            <div className="flex gap-1 p-1 bg-slate-100 rounded-lg mb-4 overflow-x-auto">
+              {[
+                { id: 'basic', label: '📋 Basic Info' },
+                { id: 'identity', label: '🆔 ID & Docs' },
+                { id: 'family', label: '👨‍👩‍👦 Family' },
+                { id: 'contact', label: '📞 Contact' },
+                { id: 'bank', label: '🏦 Bank' },
+                { id: 'transport', label: '🚌 Transport' },
+                { id: 'medical', label: '🏥 Medical' },
+                { id: 'education', label: '📚 Education' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveFormTab(tab.id)}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
+                    activeFormTab === tab.id 
+                      ? 'bg-white text-blue-700 shadow-sm' 
+                      : 'text-slate-600 hover:bg-white/50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Tab 1: Basic Info */}
+              {activeFormTab === 'basic' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">📋 Basic Information (मूल जानकारी)</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('student_name')} *</Label>
+                      <Input name="name" value={formData.name} onChange={handleChange} required placeholder="Student Full Name" data-testid="student-name-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('class_section')} *</Label>
+                      <select name="class_id" value={formData.class_id} onChange={handleChange} required className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="class-select">
+                        <option value="">{t('select_class')}</option>
+                        {classes.map(cls => (
+                          <option key={cls.id} value={cls.id}>{cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('gender')} *</Label>
+                      <select name="gender" value={formData.gender} onChange={handleChange} required className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="gender-select">
+                        <option value="male">{t('male')}</option>
+                        <option value="female">{t('female')}</option>
+                        <option value="other">{t('other')}</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('dob')} *</Label>
+                      <Input name="dob" type="date" value={formData.dob} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="dob-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Admission Date *</Label>
+                      <Input name="admission_date" type="date" value={formData.admission_date} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="admission-date-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('blood_group')}</Label>
+                      <select name="blood_group" value={formData.blood_group} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                        <option value="">Select</option>
+                        {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Birth Place (जन्म स्थान)</Label>
+                      <Input name="birth_place" value={formData.birth_place} onChange={handleChange} placeholder="City/Village" />
+                    </div>
+                    <div className="space-y-2 col-span-2">
+                      <Label>Identification Mark (पहचान चिन्ह)</Label>
+                      <Input name="identification_mark" value={formData.identification_mark} onChange={handleChange} placeholder="Mole on right cheek, etc." />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t('class_section')} *</Label>
-                  <select
-                    name="class_id"
-                    value={formData.class_id}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-10 rounded-lg border border-slate-200 px-3"
-                    data-testid="class-select"
-                  >
-                    <option value="">{t('select_class')}</option>
-                    {classes.map(cls => (
-                      <option key={cls.id} value={cls.id}>
-                        {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
-                      </option>
-                    ))}
-                  </select>
+              )}
+
+              {/* Tab 2: Identity Documents */}
+              {activeFormTab === 'identity' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">🆔 Identity Documents (पहचान दस्तावेज़)</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Scholar No. / Enrollment No.</Label>
+                      <Input name="scholar_no" value={formData.scholar_no} onChange={handleChange} placeholder="If existing student" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>PEN Number (CBSE)</Label>
+                      <Input name="pen_number" value={formData.pen_number} onChange={handleChange} placeholder="Permanent Education Number" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Aadhar Number</Label>
+                      <Input name="aadhar_no" value={formData.aadhar_no} onChange={handleChange} placeholder="12 digit Aadhar" data-testid="aadhar-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>SSSMID / Samagra ID (MP)</Label>
+                      <Input name="sssmid" value={formData.sssmid} onChange={handleChange} placeholder="समग्र ID" data-testid="samgra-id-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Samagra Family ID (MP)</Label>
+                      <Input name="samagra_family_id" value={formData.samagra_family_id} onChange={handleChange} placeholder="समग्र परिवार ID" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Jan Aadhar / Bhamashah (RJ)</Label>
+                      <Input name="jan_aadhar_no" value={formData.jan_aadhar_no} onChange={handleChange} placeholder="जन आधार" />
+                    </div>
+                  </div>
+                  <div className="border-t pt-4 mt-4">
+                    <h4 className="font-medium text-slate-700 mb-3">📂 Category Information (श्रेणी)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Caste (जाति)</Label>
+                        <select name="caste" value={formData.caste} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select Caste</option>
+                          <option value="General">General (सामान्य)</option>
+                          <option value="OBC">OBC (अन्य पिछड़ा वर्ग)</option>
+                          <option value="SC">SC (अनुसूचित जाति)</option>
+                          <option value="ST">ST (अनुसूचित जनजाति)</option>
+                          <option value="EWS">EWS (आर्थिक कमजोर)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Sub-Caste (उप जाति)</Label>
+                        <Input name="sub_caste" value={formData.sub_caste} onChange={handleChange} placeholder="Sub-caste" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Religion (धर्म)</Label>
+                        <select name="religion" value={formData.religion} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select Religion</option>
+                          <option value="Hindu">Hindu (हिन्दू)</option>
+                          <option value="Muslim">Muslim (मुस्लिम)</option>
+                          <option value="Christian">Christian (ईसाई)</option>
+                          <option value="Sikh">Sikh (सिख)</option>
+                          <option value="Buddhist">Buddhist (बौद्ध)</option>
+                          <option value="Jain">Jain (जैन)</option>
+                          <option value="Other">Other (अन्य)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Category (वर्ग)</Label>
+                        <select name="category" value={formData.category} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select</option>
+                          <option value="APL">APL (गरीबी रेखा से ऊपर)</option>
+                          <option value="BPL">BPL (गरीबी रेखा से नीचे)</option>
+                          <option value="EWS">EWS (आर्थिक कमजोर)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Mother Tongue (मातृभाषा)</Label>
+                        <select name="mother_tongue" value={formData.mother_tongue} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select</option>
+                          <option value="Hindi">Hindi (हिन्दी)</option>
+                          <option value="English">English (अंग्रेजी)</option>
+                          <option value="Marathi">Marathi (मराठी)</option>
+                          <option value="Gujarati">Gujarati (गुजराती)</option>
+                          <option value="Punjabi">Punjabi (पंजाबी)</option>
+                          <option value="Bengali">Bengali (बंगाली)</option>
+                          <option value="Urdu">Urdu (उर्दू)</option>
+                          <option value="Other">Other (अन्य)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Nationality (राष्ट्रीयता)</Label>
+                        <Input name="nationality" value={formData.nationality} onChange={handleChange} placeholder="Indian" />
+                      </div>
+                      <div className="flex items-center gap-2 col-span-2">
+                        <input type="checkbox" id="rte_status" name="rte_status" checked={formData.rte_status} onChange={(e) => setFormData({...formData, rte_status: e.target.checked})} className="w-4 h-4" />
+                        <Label htmlFor="rte_status">RTE Admission (शिक्षा का अधिकार)</Label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t('gender')} *</Label>
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-10 rounded-lg border border-slate-200 px-3"
-                    data-testid="gender-select"
-                  >
-                    <option value="male">{t('male')}</option>
-                    <option value="female">{t('female')}</option>
-                    <option value="other">{t('other')}</option>
-                  </select>
+              )}
+
+              {/* Tab 3: Family Info */}
+              {activeFormTab === 'family' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">👨‍👩‍👦 Family Information (परिवार जानकारी)</h3>
+                  
+                  {/* Father's Info */}
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="font-medium text-blue-800 mb-3">👨 Father's Details (पिता की जानकारी)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t('father_name')} *</Label>
+                        <Input name="father_name" value={formData.father_name} onChange={handleChange} required placeholder="Father's Full Name" data-testid="father-name-input" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Occupation (व्यवसाय)</Label>
+                        <select name="father_occupation" value={formData.father_occupation} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select</option>
+                          <option value="Government Job">Government Job (सरकारी नौकरी)</option>
+                          <option value="Private Job">Private Job (प्राइवेट नौकरी)</option>
+                          <option value="Business">Business (व्यापार)</option>
+                          <option value="Farmer">Farmer (किसान)</option>
+                          <option value="Daily Wage">Daily Wage (दैनिक मजदूर)</option>
+                          <option value="Self Employed">Self Employed (स्वरोजगार)</option>
+                          <option value="Other">Other (अन्य)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Qualification (शिक्षा)</Label>
+                        <select name="father_qualification" value={formData.father_qualification} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select</option>
+                          <option value="Below 10th">Below 10th</option>
+                          <option value="10th Pass">10th Pass</option>
+                          <option value="12th Pass">12th Pass</option>
+                          <option value="Graduate">Graduate</option>
+                          <option value="Post Graduate">Post Graduate</option>
+                          <option value="Professional">Professional Degree</option>
+                          <option value="Illiterate">Illiterate (अशिक्षित)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mother's Info */}
+                  <div className="p-4 bg-pink-50 rounded-lg border border-pink-200">
+                    <h4 className="font-medium text-pink-800 mb-3">👩 Mother's Details (माता की जानकारी)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t('mother_name')} *</Label>
+                        <Input name="mother_name" value={formData.mother_name} onChange={handleChange} required placeholder="Mother's Full Name" data-testid="mother-name-input" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Occupation (व्यवसाय)</Label>
+                        <select name="mother_occupation" value={formData.mother_occupation} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select</option>
+                          <option value="Housewife">Housewife (गृहिणी)</option>
+                          <option value="Government Job">Government Job</option>
+                          <option value="Private Job">Private Job</option>
+                          <option value="Business">Business</option>
+                          <option value="Teacher">Teacher (शिक्षक)</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Qualification (शिक्षा)</Label>
+                        <select name="mother_qualification" value={formData.mother_qualification} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select</option>
+                          <option value="Below 10th">Below 10th</option>
+                          <option value="10th Pass">10th Pass</option>
+                          <option value="12th Pass">12th Pass</option>
+                          <option value="Graduate">Graduate</option>
+                          <option value="Post Graduate">Post Graduate</option>
+                          <option value="Illiterate">Illiterate</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Guardian Info */}
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <h4 className="font-medium text-amber-800 mb-3">🧓 Guardian Details (if different from parents)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Guardian Name</Label>
+                        <Input name="guardian_name" value={formData.guardian_name} onChange={handleChange} placeholder="Guardian's Full Name" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Relation (रिश्ता)</Label>
+                        <select name="guardian_relation" value={formData.guardian_relation} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                          <option value="">Select</option>
+                          <option value="Grandfather">Grandfather (दादा/नाना)</option>
+                          <option value="Grandmother">Grandmother (दादी/नानी)</option>
+                          <option value="Uncle">Uncle (चाचा/मामा)</option>
+                          <option value="Aunt">Aunt (चाची/मामी)</option>
+                          <option value="Brother">Brother (भाई)</option>
+                          <option value="Sister">Sister (बहन)</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Guardian Mobile</Label>
+                        <Input name="guardian_mobile" value={formData.guardian_mobile} onChange={handleChange} placeholder="10 digit mobile" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Guardian Occupation</Label>
+                        <Input name="guardian_occupation" value={formData.guardian_occupation} onChange={handleChange} placeholder="व्यवसाय" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Annual Income */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Annual Family Income (वार्षिक आय)</Label>
+                      <select name="annual_income" value={formData.annual_income} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                        <option value="">Select</option>
+                        <option value="Below 1 Lakh">Below ₹1 Lakh</option>
+                        <option value="1-2.5 Lakh">₹1 - 2.5 Lakh</option>
+                        <option value="2.5-5 Lakh">₹2.5 - 5 Lakh</option>
+                        <option value="5-10 Lakh">₹5 - 10 Lakh</option>
+                        <option value="Above 10 Lakh">Above ₹10 Lakh</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t('dob')} *</Label>
-                  <Input
-                    name="dob"
-                    type="date"
-                    value={formData.dob}
-                    onChange={handleChange}
-                    required
-                    max={new Date().toISOString().split('T')[0]}
-                    min="1990-01-01"
-                    data-testid="dob-input"
-                  />
+              )}
+
+              {/* Tab 4: Contact Info */}
+              {activeFormTab === 'contact' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">📞 Contact Information (संपर्क जानकारी)</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Primary Mobile * (for login)</Label>
+                      <Input name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="Parent's mobile for OTP" data-testid="mobile-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Secondary Phone (ID Card)</Label>
+                      <Input name="parent_phone" value={formData.parent_phone} onChange={handleChange} placeholder="Alternate number" data-testid="parent-phone-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Optional" />
+                    </div>
+                    <div className="space-y-2 col-span-2 md:col-span-3">
+                      <Label>{t('address')} *</Label>
+                      <Input name="address" value={formData.address} onChange={handleChange} required placeholder="Full Address" data-testid="address-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Emergency Contact Name</Label>
+                      <Input name="emergency_contact_name" value={formData.emergency_contact_name} onChange={handleChange} placeholder="Emergency person name" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Emergency Contact Number</Label>
+                      <Input name="emergency_contact" value={formData.emergency_contact} onChange={handleChange} placeholder="Emergency mobile" />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Admission Date (प्रवेश तिथि) *</Label>
-                  <Input
-                    name="admission_date"
-                    type="date"
-                    value={formData.admission_date}
-                    onChange={handleChange}
-                    required
-                    max={new Date().toISOString().split('T')[0]}
-                    min="2000-01-01"
-                    data-testid="admission-date-input"
-                  />
-                  <p className="text-xs text-slate-500">Mid-session joining schools के लिए पुरानी date डाल सकते हैं</p>
+              )}
+
+              {/* Tab 5: Bank Details */}
+              {activeFormTab === 'bank' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">🏦 Bank Details (छात्रवृत्ति के लिए)</h3>
+                  <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">💡 Scholarship और government benefits के लिए bank details जरूरी हैं</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Bank Name</Label>
+                      <Input name="bank_name" value={formData.bank_name} onChange={handleChange} placeholder="State Bank of India" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Account Number</Label>
+                      <Input name="bank_account_no" value={formData.bank_account_no} onChange={handleChange} placeholder="Account Number" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>IFSC Code</Label>
+                      <Input name="ifsc_code" value={formData.ifsc_code} onChange={handleChange} placeholder="SBIN0001234" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Branch Name</Label>
+                      <Input name="bank_branch" value={formData.bank_branch} onChange={handleChange} placeholder="Branch Name" />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t('father_name')} *</Label>
-                  <Input
-                    name="father_name"
-                    value={formData.father_name}
-                    onChange={handleChange}
-                    required
-                    data-testid="father-name-input"
-                  />
+              )}
+
+              {/* Tab 6: Transport */}
+              {activeFormTab === 'transport' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">🚌 Transport Details (परिवहन)</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Transport Mode</Label>
+                      <select name="transport_mode" value={formData.transport_mode} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3">
+                        <option value="">Select</option>
+                        <option value="School Bus">School Bus (स्कूल बस)</option>
+                        <option value="Private Vehicle">Private Vehicle (निजी वाहन)</option>
+                        <option value="Walking">Walking (पैदल)</option>
+                        <option value="Bicycle">Bicycle (साइकिल)</option>
+                        <option value="Auto/Rickshaw">Auto/Rickshaw</option>
+                        <option value="Public Transport">Public Transport</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bus Route</Label>
+                      <Input name="bus_route" value={formData.bus_route} onChange={handleChange} placeholder="Route No. / Name" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bus Stop</Label>
+                      <Input name="bus_stop" value={formData.bus_stop} onChange={handleChange} placeholder="Stop Name" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Pickup Point</Label>
+                      <Input name="pickup_point" value={formData.pickup_point} onChange={handleChange} placeholder="Pickup Location" />
+                    </div>
+                  </div>
+                  
+                  {/* Hostel Section */}
+                  <div className="border-t pt-4 mt-4">
+                    <h4 className="font-medium text-slate-700 mb-3">🏠 Hostel Details (छात्रावास)</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" id="is_hosteler" name="is_hosteler" checked={formData.is_hosteler} onChange={(e) => setFormData({...formData, is_hosteler: e.target.checked})} className="w-4 h-4" />
+                        <Label htmlFor="is_hosteler">Hostel Student (छात्रावासी)</Label>
+                      </div>
+                      {formData.is_hosteler && (
+                        <div className="space-y-2">
+                          <Label>Room Number</Label>
+                          <Input name="hostel_room_no" value={formData.hostel_room_no} onChange={handleChange} placeholder="Room No." />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t('mother_name')} *</Label>
-                  <Input
-                    name="mother_name"
-                    value={formData.mother_name}
-                    onChange={handleChange}
-                    required
-                    data-testid="mother-name-input"
-                  />
+              )}
+
+              {/* Tab 7: Medical */}
+              {activeFormTab === 'medical' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">🏥 Medical Information (चिकित्सा जानकारी)</h3>
+                  <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">💉 Medical information से emergency में मदद मिलती है</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2 col-span-2">
+                      <Label>Medical Conditions (बीमारियाँ)</Label>
+                      <Input name="medical_conditions" value={formData.medical_conditions} onChange={handleChange} placeholder="Asthma, Diabetes, Heart condition, etc." />
+                    </div>
+                    <div className="space-y-2 col-span-2">
+                      <Label>Allergies (एलर्जी)</Label>
+                      <Input name="allergies" value={formData.allergies} onChange={handleChange} placeholder="Food allergies, medicine allergies, etc." />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Parent Mobile * (for login)</Label>
-                  <Input
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleChange}
-                    required
-                    placeholder="Will be used for OTP login"
-                    data-testid="mobile-input"
-                  />
+              )}
+
+              {/* Tab 8: Previous Education */}
+              {activeFormTab === 'education' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="font-semibold text-slate-800 border-b pb-2">📚 Previous Education (पूर्व शिक्षा)</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-2 col-span-2">
+                      <Label>Previous School Name</Label>
+                      <Input name="previous_school" value={formData.previous_school} onChange={handleChange} placeholder="Name of previous school" data-testid="prev-school-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Previous Class</Label>
+                      <Input name="previous_class" value={formData.previous_class} onChange={handleChange} placeholder="Last class passed" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Previous Percentage</Label>
+                      <Input name="previous_percentage" value={formData.previous_percentage} onChange={handleChange} placeholder="e.g., 85%" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>TC Number (Transfer Certificate)</Label>
+                      <Input name="tc_number" value={formData.tc_number} onChange={handleChange} placeholder="TC/LC Number" />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>📞 Parent Phone (for ID Card) *</Label>
-                  <Input
-                    name="parent_phone"
-                    value={formData.parent_phone}
-                    onChange={handleChange}
-                    placeholder="Father/Mother का phone number"
-                    data-testid="parent-phone-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Samgra ID (MP Board)</Label>
-                  <Input
-                    name="samgra_id"
-                    value={formData.samgra_id}
-                    onChange={handleChange}
-                    placeholder="Only for MP Board schools"
-                    data-testid="samgra-id-input"
-                  />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label>{t('address')} *</Label>
-                  <Input
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
-                    data-testid="address-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('blood_group')}</Label>
-                  <select
-                    name="blood_group"
-                    value={formData.blood_group}
-                    onChange={handleChange}
-                    className="w-full h-10 rounded-lg border border-slate-200 px-3"
-                    data-testid="blood-group-select"
-                  >
-                    <option value="">Select</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Aadhar Number</Label>
-                  <Input
-                    name="aadhar_no"
-                    value={formData.aadhar_no}
-                    onChange={handleChange}
-                    placeholder="Optional"
-                    data-testid="aadhar-input"
-                  />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label>Previous School</Label>
-                  <Input
-                    name="previous_school"
-                    value={formData.previous_school}
-                    onChange={handleChange}
-                    placeholder="If transfer student"
-                    data-testid="prev-school-input"
-                  />
-                </div>
-              </div>
+              )}
 
               {/* Photo Capture Section - Only for new admission */}
               {!editingStudent && (
