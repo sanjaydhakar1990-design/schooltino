@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 import shutil
 
-router = APIRouter(prefix="/api/documents", tags=["documents"])
+router = APIRouter(prefix="/documents", tags=["documents"])
 
 # Import from main server
 import sys

@@ -11,7 +11,7 @@ import io
 from datetime import datetime
 import json
 
-router = APIRouter(prefix="/api/bulk-import", tags=["bulk-import"])
+router = APIRouter(prefix="/bulk-import", tags=["bulk-import"])
 
 # Sample templates
 STUDENT_TEMPLATE_HEADERS = [
