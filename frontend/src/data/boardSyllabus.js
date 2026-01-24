@@ -909,17 +909,6 @@ export const MIDDLE_SCHOOL_CHAPTERS = {
     { id: 'civ7', name: 'हमारे आस-पास के बाज़ार' },
     { id: 'civ8', name: 'बाज़ार में एक कमीज़' },
   ],
-    { id: 'geo8', name: 'Human Environment Interactions' },
-    { id: 'geo9', name: 'Life in the Deserts' },
-    { id: 'civ1', name: 'On Equality' },
-    { id: 'civ2', name: 'Role of the Government in Health' },
-    { id: 'civ3', name: 'How the State Government Works' },
-    { id: 'civ4', name: 'Growing up as Boys and Girls' },
-    { id: 'civ5', name: 'Women Change the World' },
-    { id: 'civ6', name: 'Understanding Media' },
-    { id: 'civ7', name: 'Markets Around Us' },
-    { id: 'civ8', name: 'A Shirt in the Market' },
-  ],
   // Class 8
   '8_Hindi': [
     { id: 'ch1', name: 'ध्वनि' },
