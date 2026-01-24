@@ -394,6 +394,92 @@ input:focus, select:focus, textarea:focus {
   transform: scale(1.02);
 }
 
+.scale-103 {
+  transform: scale(1.03);
+}
+
+/* ==================== AVATAR ANIMATIONS ==================== */
+
+/* Avatar idle breathing */
+@keyframes avatar-idle {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.01); }
+}
+
+.animate-avatar-idle {
+  animation: avatar-idle 3s ease-in-out infinite;
+}
+
+/* Avatar listening - excited bounce */
+@keyframes avatar-listen {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-1deg); }
+  75% { transform: translateY(-5px) rotate(1deg); }
+}
+
+.animate-avatar-listen {
+  animation: avatar-listen 0.6s ease-in-out infinite;
+}
+
+/* Avatar thinking - gentle sway */
+@keyframes avatar-think {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-2px) rotate(-2deg); }
+  66% { transform: translateY(-2px) rotate(2deg); }
+}
+
+.animate-avatar-think {
+  animation: avatar-think 1.5s ease-in-out infinite;
+}
+
+/* Avatar speaking - energetic movement with lip sync feel */
+@keyframes avatar-speak {
+  0%, 100% { transform: translateY(0) scale(1); }
+  10% { transform: translateY(-2px) scale(1.01); }
+  20% { transform: translateY(0) scale(0.99); }
+  30% { transform: translateY(-3px) scale(1.02); }
+  40% { transform: translateY(-1px) scale(1); }
+  50% { transform: translateY(-2px) scale(1.01); }
+  60% { transform: translateY(0) scale(0.99); }
+  70% { transform: translateY(-2px) scale(1.01); }
+  80% { transform: translateY(-1px) scale(1); }
+  90% { transform: translateY(-2px) scale(1.01); }
+}
+
+.animate-avatar-speak {
+  animation: avatar-speak 0.5s ease-in-out infinite;
+}
+
+/* Happy expression */
+@keyframes avatar-happy {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.05) rotate(2deg); }
+}
+
+.animate-avatar-happy {
+  animation: avatar-happy 0.4s ease-in-out;
+}
+
+/* Continuous listening pulse */
+@keyframes continuous-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
+  50% { box-shadow: 0 0 0 20px rgba(6, 182, 212, 0); }
+}
+
+.animate-continuous-pulse {
+  animation: continuous-pulse 2s ease-in-out infinite;
+}
+
+/* Meeting mode indicator */
+@keyframes meeting-mode {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-meeting-mode {
+  animation: meeting-mode 1s ease-in-out infinite;
+}
+
 /* Tino AI Panel Glassmorphism */
 .tino-panel {
   @apply bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl;
