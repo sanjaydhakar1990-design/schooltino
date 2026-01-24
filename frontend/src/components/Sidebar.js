@@ -211,15 +211,23 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <X className="w-5 h-5 text-slate-300" />
         </button>
 
-        {/* Logo - DigitalEdu Style */}
+        {/* Logo - School Logo with Name */}
         <div className="p-5 border-b border-slate-700/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-white text-lg tracking-tight">Schooltino</h1>
-              <p className="text-xs text-slate-400 capitalize">{user?.role || 'Admin'}</p>
+            {schoolLogo ? (
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden flex-shrink-0">
+                <img src={schoolLogo} alt="School Logo" className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <h1 className="font-bold text-white text-base leading-tight truncate">
+                {schoolData?.name || 'Schooltino'}
+              </h1>
+              <p className="text-xs text-slate-400 capitalize truncate">{user?.role || 'Admin'}</p>
             </div>
           </div>
         </div>
