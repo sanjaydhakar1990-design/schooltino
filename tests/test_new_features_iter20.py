@@ -6,7 +6,7 @@ Iteration 20: Testing New Features
 - School auto-setup from website
 - Director personalized greeting
 
-Backend URL: https://edumanage-revamp.preview.emergentagent.com
+Backend URL: https://smartschool-ai-4.preview.emergentagent.com
 """
 
 import pytest
@@ -15,7 +15,7 @@ import os
 import json
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://edumanage-revamp.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://smartschool-ai-4.preview.emergentagent.com')
 
 # Test credentials
 DIRECTOR_EMAIL = "director@schooltino.com"
