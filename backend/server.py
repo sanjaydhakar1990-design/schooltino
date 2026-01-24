@@ -11161,6 +11161,7 @@ api_router.include_router(super_admin_router)
 api_router.include_router(message_credits_router)
 api_router.include_router(tino_ai_router)
 api_router.include_router(tino_voice_router)
+api_router.include_router(did_avatar_router)
 
 app.include_router(api_router)
 
