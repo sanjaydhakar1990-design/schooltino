@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner';
 import EmployeeIDCard from '../components/EmployeeIDCard';
 import BulkImport from '../components/BulkImport';
+import DocumentUpload from '../components/DocumentUpload';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
