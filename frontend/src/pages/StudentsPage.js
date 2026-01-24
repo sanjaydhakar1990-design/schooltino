@@ -98,25 +98,74 @@ export default function StudentsPage() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
+  // Form Tab State
+  const [activeFormTab, setActiveFormTab] = useState('basic');
+  
   const [formData, setFormData] = useState({
+    // Basic Info
     name: '',
     class_id: '',
-    father_name: '',
-    mother_name: '',
-    guardian_name: '',
-    guardian_relation: '',
     dob: '',
     gender: 'male',
-    address: '',
-    mobile: '',
-    parent_phone: '',  // Parent's phone for ID card
-    email: '',
     blood_group: '',
+    admission_date: new Date().toISOString().split('T')[0],
+    // Identity Documents
     aadhar_no: '',
-    samgra_id: '',  // Samgra ID for MP Board schools
-    jan_aadhar_no: '',  // Jan Aadhar/Bhamashah for RBSE
+    scholar_no: '',
+    pen_number: '',
+    sssmid: '',
+    samagra_family_id: '',
+    jan_aadhar_no: '',
+    // Category Info
+    caste: '',
+    sub_caste: '',
+    religion: '',
+    category: '',
+    nationality: 'Indian',
+    mother_tongue: '',
+    birth_place: '',
+    identification_mark: '',
+    rte_status: false,
+    // Family Info
+    father_name: '',
+    father_occupation: '',
+    father_qualification: '',
+    mother_name: '',
+    mother_occupation: '',
+    mother_qualification: '',
+    guardian_name: '',
+    guardian_relation: '',
+    guardian_mobile: '',
+    guardian_occupation: '',
+    annual_income: '',
+    // Contact Info
+    mobile: '',
+    parent_phone: '',
+    email: '',
+    address: '',
+    emergency_contact: '',
+    emergency_contact_name: '',
+    // Bank Details (Scholarship)
+    bank_name: '',
+    bank_account_no: '',
+    ifsc_code: '',
+    bank_branch: '',
+    // Transport
+    transport_mode: '',
+    bus_route: '',
+    bus_stop: '',
+    pickup_point: '',
+    // Hostel
+    is_hosteler: false,
+    hostel_room_no: '',
+    // Medical
+    medical_conditions: '',
+    allergies: '',
+    // Previous Education
     previous_school: '',
-    admission_date: new Date().toISOString().split('T')[0] // Default to today
+    previous_class: '',
+    previous_percentage: '',
+    tc_number: ''
   });
   
   // Document uploads
