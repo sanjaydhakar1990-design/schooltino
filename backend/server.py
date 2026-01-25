@@ -4003,9 +4003,21 @@ Your role is to generate a COMPLETE, PRINT-READY QUESTION PAPER
 and a SEPARATE ANSWER PAPER based strictly on the LATEST SYLLABUS
 for Academic Year 2025–2026.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📌 EXAM DETAILS (PROVIDED BY USER)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━
+🔐 NON-NEGOTIABLE RULES
+━━━━━━━━━━━━━━━━━━━━━━
+1. Use ONLY latest syllabus (2025–26).
+2. Follow NCERT + selected Board mapping.
+3. No old syllabus, no outdated patterns.
+4. Language must be 100% correct, formal, board-standard.
+5. Hindi medium → Pure Hindi (no English words)
+6. English medium → Pure English (no Hindi words)
+7. Never mix languages.
+8. Question paper & Answer paper must be in SEPARATE sections of the output.
+
+━━━━━━━━━━━━━━━━━━━━━━
+📌 EXAM DETAILS (PROVIDED)
+━━━━━━━━━━━━━━━━━━━━━━
 • Subject: {request.subject}
 • Class: {request.class_name}
 • Chapter/Topic: {request.chapter}
@@ -4013,19 +4025,8 @@ for Academic Year 2025–2026.
 • Academic Year: 2025–2026
 • Time Duration: {request.time_duration} minutes
 • Maximum Marks: {request.total_marks}
-• Difficulty Level: {request.difficulty}
 • Language/Medium: {request.language}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔒 STRICT MANDATORY RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. ✅ NEVER use old syllabus - ONLY LATEST 2025-26 NCERT/Board syllabus
-2. ✅ ALWAYS follow board exam format (CBSE/MP Board/RBSE standard)
-3. ✅ Language must be 100% correct, formal and board-standard
-4. ✅ NO mixed or broken Hindi/English - Pure language only
-5. ✅ Paper must match REAL board exam format exactly
-6. ✅ Total marks MUST be EXACTLY {request.total_marks} (verify twice!)
-7. ✅ Output must be exam-ready (NO explanations, NO notes)
+• Difficulty Level: {request.difficulty}
 
 {lang_instruction}
 
