@@ -1006,6 +1006,18 @@ export const MIDDLE_SCHOOL_CHAPTERS = {
     { id: 'ch15', name: 'Introduction to Graphs' },
     { id: 'ch16', name: 'Playing with Numbers' },
   ],
+  '8_गणित': [
+    { id: 'ch1', name: 'परिमेय संख्याएँ' },
+    { id: 'ch2', name: 'एक चर वाले रैखिक समीकरण' },
+    { id: 'ch3', name: 'चतुर्भुजों को समझना' },
+    { id: 'ch4', name: 'आँकड़ों का प्रबंधन' },
+    { id: 'ch5', name: 'वर्ग और वर्गमूल' },
+    { id: 'ch6', name: 'घन और घनमूल' },
+    { id: 'ch7', name: 'राशियों की तुलना' },
+    { id: 'ch8', name: 'बीजीय व्यंजक एवं सर्वसमिकाएँ' },
+    { id: 'ch9', name: 'क्षेत्रमिति' },
+    { id: 'ch10', name: 'घातांक और घात' },
+  ],
   '8_Science': [
     { id: 'ch1', name: 'Crop Production and Management' },
     { id: 'ch2', name: 'Microorganisms: Friend and Foe' },
