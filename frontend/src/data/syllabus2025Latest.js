@@ -432,7 +432,7 @@ export const SYLLABUS_2025 = {
           { id: 3, name: 'A Day with Nandu', nameHi: 'नंदू के साथ एक दिन' },
           { id: 4, name: 'The Story of Amrita', nameHi: 'अमृता की कहानी' },
           { id: 5, name: 'Anita and the Honeybees', nameHi: 'अनीता और मधुमक्खियां' },
-          { id: 6, name: 'Omana's Journey', nameHi: 'ओमना की यात्रा' },
+          { id: 6, name: "Omana's Journey', nameHi: 'ओमना की यात्रा' },
         ]
       },
       Drawing: {
@@ -455,7 +455,7 @@ export const SYLLABUS_2025 = {
           { id: 4, name: 'My Elder Brother', nameHi: 'मेरे बड़े भाई' },
           { id: 5, name: 'Rip Van Winkle', nameHi: 'रिप वैन विंकल' },
           { id: 6, name: 'Topsy-Turvy Land', nameHi: 'उल्टी-पुल्टी भूमि' },
-          { id: 7, name: 'Nobody's Friend', nameHi: 'किसी का दोस्त नहीं' },
+          { id: 7, name: "Nobody's Friend', nameHi: 'किसी का दोस्त नहीं' },
         ]
       },
       Hindi: {
@@ -485,7 +485,7 @@ export const SYLLABUS_2025 = {
         nameHi: 'पर्यावरण अध्ययन',
         chapters: [
           { id: 1, name: 'Super Senses', nameHi: 'सुपर सेंस' },
-          { id: 2, name: 'A Snake Charmer's Story', nameHi: 'सपेरे की कहानी' },
+          { id: 2, name: "A Snake Charmer's Story', nameHi: 'सपेरे की कहानी' },
           { id: 3, name: 'From Tasting to Digesting', nameHi: 'स्वाद से पाचन तक' },
           { id: 4, name: 'Mangoes Round the Year', nameHi: 'साल भर आम' },
           { id: 5, name: 'Seeds and Seeds', nameHi: 'बीज और बीज' },
