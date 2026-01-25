@@ -4093,88 +4093,117 @@ In answer key, provide:
 • List ALL parts to be labeled
 • Key features to highlight
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📌 OUTPUT FORMAT (JSON ONLY - NO EXTRA TEXT)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━
+📄 OUTPUT FORMAT (MANDATORY STRUCTURE)
+━━━━━━━━━━━━━━━━━━━━━━
 
-Return ONLY valid JSON in this EXACT format:
+You MUST return JSON with TWO SEPARATE PARTS:
+
+PART 1: QUESTION PAPER (for students)
+PART 2: ANSWER PAPER (for teachers)
+
+Return in this EXACT JSON format:
 
 {{
-    "paper_header": {{
-        "school_name": "<<TO BE FILLED BY SCHOOL>>",
-        "board": "CBSE/MP Board/RBSE",
-        "exam_name": "{request.exam_name or 'Examination'}",
-        "class": "{request.class_name}",
-        "subject": "{request.subject}",
-        "time": "{request.time_duration} minutes",
-        "max_marks": "{request.total_marks}",
-        "date": "<<TO BE FILLED>>"
+    "question_paper": {{
+        "header": {{
+            "school_name": "__________ School",
+            "board": "MP Board / CBSE / RBSE",
+            "exam_name": "{request.exam_name or 'Examination'}",
+            "academic_year": "2025-2026",
+            "class": "{request.class_name}",
+            "subject": "{request.subject}",
+            "time": "{request.time_duration} minutes",
+            "max_marks": {request.total_marks},
+            "date": "___/___/2026",
+            "medium": "{request.language.title()}"
+        }},
+        "general_instructions": [
+            "All questions are compulsory.",
+            "Marks for each question are indicated.",
+            "Draw neat and labeled diagrams wherever required.",
+            "Write answers in clean handwriting.",
+            "Internal choices are provided where applicable."
+        ],
+        "sections": [
+            {{
+                "section_name": "Section A - Objective Questions",
+                "total_marks": 20,
+                "questions": [
+                    {{
+                        "q_no": 1,
+                        "type": "mcq",
+                        "question": "Question text in {request.language}?",
+                        "options": ["(a) option1", "(b) option2", "(c) option3", "(d) option4"],
+                        "marks": 1
+                    }}
+                ]
+            }},
+            {{
+                "section_name": "Section B - Short Answer Questions",  
+                "total_marks": 18,
+                "questions": [
+                    {{
+                        "q_no": 10,
+                        "type": "short",
+                        "question": "Question requiring 50-60 word answer",
+                        "marks": 3,
+                        "internal_choice": false
+                    }}
+                ]
+            }},
+            {{
+                "section_name": "Section C - Long Answer Questions",
+                "total_marks": 20,
+                "questions": [
+                    {{
+                        "q_no": 15,
+                        "type": "long",
+                        "question": "Detailed question",
+                        "marks": 5,
+                        "internal_choice": true,
+                        "choice_question": "OR: Alternative question for internal choice"
+                    }}
+                ]
+            }}
+        ]
     }},
-    "general_instructions": [
-        "All questions are compulsory.",
-        "Marks for each question are indicated against it.",
-        "Draw neat and labeled diagrams wherever required.",
-        "Write answers in clean and legible handwriting.",
-        "Use of calculator is not allowed (if applicable)."
-    ],
-    "sections": [
-        {{
-            "section_name": "Section A - Objective Questions",
-            "questions": [
-                {{
-                    "q_no": 1,
-                    "type": "mcq",
-                    "question": "Question text in {request.language}?",
-                    "options": ["A) option1", "B) option2", "C) option3", "D) option4"],
-                    "marks": 1,
-                    "answer": "Correct answer with brief explanation",
-                    "difficulty": "easy"
-                }}
-            ]
+    "answer_paper": {{
+        "header": {{
+            "title": "ANSWER KEY / MARKING SCHEME",
+            "exam_name": "{request.exam_name or 'Examination'}",
+            "class": "{request.class_name}",
+            "subject": "{request.subject}"
         }},
-        {{
-            "section_name": "Section B - Short Answer Questions",
-            "questions": [
-                {{
-                    "q_no": 5,
-                    "type": "short",
-                    "question": "Question text requiring 50-60 word answer",
-                    "marks": 3,
-                    "answer": "Complete answer in proper format",
-                    "difficulty": "medium"
-                }}
-            ]
-        }},
-        {{
-            "section_name": "Section C - Long Answer Questions",
-            "questions": [
-                {{
-                    "q_no": 10,
-                    "type": "long",
-                    "question": "Detailed question",
-                    "marks": 5,
-                    "answer": "Comprehensive answer with all key points (100-120 words)",
-                    "difficulty": "hard"
-                }}
-            ]
-        }},
-        {{
-            "section_name": "Section D - Diagram/Case-Based Questions",
-            "questions": [
-                {{
-                    "q_no": 15,
-                    "type": "diagram",
-                    "question": "Draw a neat labelled diagram of...",
-                    "marks": 3,
-                    "answer": "Diagram should show: [list all parts to be drawn and labeled]",
-                    "diagram_description": "Step 1: Draw [main structure]. Step 2: Label parts - A: [name], B: [name], C: [name]. Step 3: Add arrows/connections as needed.",
-                    "difficulty": "medium"
-                }}
-            ]
-        }}
-    ],
-    "total_marks_verification": {request.total_marks},
-    "answer_key_included": true
+        "answers": [
+            {{
+                "q_no": 1,
+                "type": "mcq",
+                "correct_answer": "(c) option3",
+                "explanation": "Brief explanation why this is correct",
+                "marks": 1
+            }},
+            {{
+                "q_no": 10,
+                "type": "short",
+                "model_answer": "Complete answer in 50-60 words with all key points...",
+                "marking_points": ["Point 1 (1 mark)", "Point 2 (1 mark)", "Point 3 (1 mark)"],
+                "marks": 3
+            }},
+            {{
+                "q_no": 15,
+                "type": "diagram",
+                "model_answer": "Diagram instructions...",
+                "diagram_steps": [
+                    "Step 1: Draw main structure",
+                    "Step 2: Label parts - A: [name], B: [name], C: [name]",
+                    "Step 3: Add arrows/connections"
+                ],
+                "marks": 3
+            }}
+        ]
+    }},
+    "total_marks_verification": {request.total_marks}
 }}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
