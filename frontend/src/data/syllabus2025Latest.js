@@ -368,11 +368,11 @@ export const SYLLABUS_2025 = {
       EVS: {
         nameHi: 'पर्यावरण अध्ययन',
         chapters: [
-          { id: 1, name: 'Poonam's Day Out', nameHi: 'पूनम की सैर' },
+          { id: 1, name: "Poonam's Day Out", nameHi: 'पूनम की सैर' },
           { id: 2, name: 'The Plant Fairy', nameHi: 'पौधे की परी' },
           { id: 3, name: 'Water O Water', nameHi: 'पानी रे पानी' },
           { id: 4, name: 'Our First School', nameHi: 'हमारा पहला स्कूल' },
-          { id: 5, name: 'Chhotu's House', nameHi: 'छोटू का घर' },
+          { id: 5, name: "Chhotu's House", nameHi: 'छोटू का घर' },
           { id: 6, name: 'Foods We Eat', nameHi: 'हमारा भोजन' },
         ]
       },
