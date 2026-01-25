@@ -146,51 +146,72 @@ export default function AIPaperPage() {
 
   useEffect(() => {
     if (formData.class_name && formData.subject) {
-      // Determine which board's chapters to use
+      // ✅ USE NEW COMPREHENSIVE SYLLABUS 2025-26
       let chapters = [];
       
-      // PRE-PRIMARY CLASSES - Direct lookup (Drawing etc.)
-      const prePrimaryClasses = ['Nursery', 'LKG', 'UKG'];
-      if (prePrimaryClasses.includes(formData.class_name)) {
-        // For pre-primary, always use getChapters which handles PRE_PRIMARY_CHAPTERS
-        chapters = getChapters('CBSE', formData.class_name, formData.subject);
-        if (chapters.length === 0) {
-          chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+      // Try to get chapters from new comprehensive syllabus first
+      try {
+        // Normalize board name for lookup
+        let boardKey = schoolBoard;
+        if (schoolBoard === 'MP Board' || schoolBoard === 'MP_BOARD') boardKey = 'MPBSE';
+        if (schoolBoard === 'Rajasthan Board' || schoolBoard === 'RBSE_BOARD') boardKey = 'RBSE';
+        if (!boardKey || boardKey === 'NCERT') boardKey = 'CBSE'; // Fallback to CBSE for NCERT
+        
+        // Get chapters from new syllabus
+        chapters = getChapters2025(boardKey, formData.class_name, formData.subject, formData.language);
+        
+        // If not found, try CBSE as fallback
+        if (!chapters || chapters.length === 0) {
+          chapters = getChapters2025('CBSE', formData.class_name, formData.subject, formData.language);
         }
-        setAvailableChapters(chapters);
-        return;
+      } catch (error) {
+        console.log('New syllabus lookup failed, falling back to old syllabus:', error);
       }
       
-      // Check if this is a core subject that typically follows NCERT
-      const ncertCoreSubjects = ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'EVS', 
-                                  'हिंदी', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'पर्यावरण', 'Drawing', 'चित्रकला', 'Art'];
-      const isNcertSubject = ncertCoreSubjects.some(s => 
-        formData.subject.toLowerCase().includes(s.toLowerCase()) || 
-        s.toLowerCase().includes(formData.subject.toLowerCase())
-      );
-      
-      // Get chapters based on syllabus source selection or auto-detect
-      if (formData.syllabus_source === 'ncert' || (formData.syllabus_source === 'auto' && useNcertSyllabus && isNcertSubject)) {
-        // Use NCERT chapters for core subjects
-        chapters = getChapters('NCERT', formData.class_name, formData.subject);
+      // Fallback to old syllabus if new one doesn't have data
+      if (!chapters || chapters.length === 0) {
+        // PRE-PRIMARY CLASSES - Direct lookup (Drawing etc.)
+        const prePrimaryClasses = ['Nursery', 'LKG', 'UKG'];
+        if (prePrimaryClasses.includes(formData.class_name)) {
+          chapters = getChapters('CBSE', formData.class_name, formData.subject);
+          if (chapters.length === 0) {
+            chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+          }
+          setAvailableChapters(chapters);
+          return;
+        }
+        
+        // Check if this is a core subject that typically follows NCERT
+        const ncertCoreSubjects = ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'EVS', 
+                                    'हिंदी', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'पर्यावरण', 'Drawing', 'चित्रकला', 'Art'];
+        const isNcertSubject = ncertCoreSubjects.some(s => 
+          formData.subject.toLowerCase().includes(s.toLowerCase()) || 
+          s.toLowerCase().includes(formData.subject.toLowerCase())
+        );
+        
+        // Get chapters based on syllabus source selection or auto-detect
+        if (formData.syllabus_source === 'ncert' || (formData.syllabus_source === 'auto' && useNcertSyllabus && isNcertSubject)) {
+          // Use NCERT chapters for core subjects
+          chapters = getChapters('NCERT', formData.class_name, formData.subject);
+          if (chapters.length === 0) {
+            chapters = getChapters('CBSE', formData.class_name, formData.subject);
+          }
+        }
+        
+        // If no NCERT chapters or using state board
+        if (chapters.length === 0 || formData.syllabus_source === 'state_board') {
+          chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+        }
+        
+        // Fallback to CBSE if nothing found
         if (chapters.length === 0) {
           chapters = getChapters('CBSE', formData.class_name, formData.subject);
         }
       }
       
-      // If no NCERT chapters or using state board
-      if (chapters.length === 0 || formData.syllabus_source === 'state_board') {
-        chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
-      }
-      
-      // Fallback to CBSE if nothing found
-      if (chapters.length === 0) {
-        chapters = getChapters('CBSE', formData.class_name, formData.subject);
-      }
-      
-      setAvailableChapters(chapters);
+      setAvailableChapters(chapters || []);
     }
-  }, [formData.class_name, formData.subject, formData.syllabus_source, schoolBoard, useNcertSyllabus]);
+  }, [formData.class_name, formData.subject, formData.syllabus_source, formData.language, schoolBoard, useNcertSyllabus]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
