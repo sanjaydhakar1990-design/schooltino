@@ -679,6 +679,21 @@ backend:
         agent: "testing"
         comment: "✅ Tino Brain Absence Query VERIFIED WORKING! POST /api/tino-brain/query with 'Aaj kitne bachhe absent hain?' responds correctly: 'Aaj 6 bachhe absent hain. 👦📋' ✅. AI properly handles Hindi/Hinglish absence queries, processes attendance data, and provides accurate responses. Tino Brain AI system fully operational and handles school-specific queries correctly."
 
+  - task: "AI Paper Generator - MP Board & RBSE Chapter Loading"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Testing AI Paper Generator for MP Board Sanskrit and RBSE chapters as per review request"
+      - working: true
+        agent: "testing"
+        comment: "✅ AI PAPER GENERATOR CHAPTER LOADING WORKING! Test Case 1 - MP Board Sanskrit (Class 6): GET /api/ai/paper/subjects/Class%206 returns 7 subjects including Sanskrit ✅ GET /api/ai/paper/chapters/Class%206/sanskrit returns 15 chapters (generic fallback) ✅ NO 'No chapters available' error ✅. Test Case 2 - RBSE Mathematics (Class 7): GET /api/ai/paper/subjects/Class%207 returns 7 subjects including Mathematics ✅ GET /api/ai/paper/chapters/Class%207/mathematics returns 15 chapters (generic fallback) ✅. Both MP Board and RBSE are using CBSE/NCERT chapters as fallback (generic Chapter 1-15) which prevents 'No chapters available' error. Chapter selection working correctly for paper generation."
+
 frontend:
   - task: "PWA Install Prompt"
     implemented: true
