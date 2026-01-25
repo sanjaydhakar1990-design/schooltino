@@ -1725,3 +1725,84 @@ export const DRAWING_PAPER_TYPES = {
   match_picture: { label: 'चित्र मिलाओ / Match the pictures', marks: 3 },
   scenery: { label: 'दृश्य बनाओ / Draw scenery', marks: 10 },
 };
+
+// =====================================================
+// GET CHAPTERS FUNCTION - COMPREHENSIVE
+// =====================================================
+export const getChapters = (board, className, subject) => {
+  // ✅ MP BOARD & RBSE USE NCERT SYLLABUS - Auto fallback
+  // Since MPBSE and RBSE follow NCERT, use NCERT/CBSE chapters for all subjects
+  if (board === 'MPBSE' || board === 'MP Board' || board === 'RBSE' || board === 'Rajasthan Board') {
+    board = 'CBSE'; // Use CBSE/NCERT syllabus as they follow same pattern
+  }
+  
+  // Check if subject is in Hindi script
+  const isHindiMedium = /[\u0900-\u097F]/.test(subject);
+  
+  // Normalize subject name - map Hindi script to English key
+  const normalizeSubject = (sub) => {
+    const subjectMap = {
+      'हिंदी': 'Hindi',
+      'गणित': 'Mathematics',
+      'अंग्रेजी': 'English',
+      'विज्ञान': 'Science',
+      'सामाजिक विज्ञान': 'Social Science',
+      'पर्यावरण': 'EVS',
+      'संस्कृत': 'Sanskrit',
+      'चित्रकला': 'Drawing',
+      'सामान्य ज्ञान': 'GK',
+      'भौतिकी': 'Physics',
+      'भौतिक विज्ञान': 'Physics',
+      'रसायन विज्ञान': 'Chemistry',
+      'जीव विज्ञान': 'Biology',
+      'अर्थशास्त्र': 'Economics',
+      'वाणिज्य शास्त्र': 'Business Studies',
+      'लेखाशास्त्र': 'Accountancy',
+      'इतिहास': 'History',
+      'भूगोल': 'Geography',
+      'राजनीति विज्ञान': 'Political Science',
+    };
+    return subjectMap[sub] || sub;
+  };
+
+  const normalizedSubject = normalizeSubject(subject);
+  
+  // Handle Pre-Primary Classes
+  const prePrimaryClasses = ['Nursery', 'LKG', 'UKG'];
+  if (prePrimaryClasses.includes(className)) {
+    const key = `${className}_${normalizedSubject}`;
+    if (PRE_PRIMARY_CHAPTERS[key]) return PRE_PRIMARY_CHAPTERS[key];
+    
+    // Fallback for Hindi names
+    const hindiKey = `${className}_${subject}`;
+    if (PRE_PRIMARY_CHAPTERS[hindiKey]) return PRE_PRIMARY_CHAPTERS[hindiKey];
+    
+    return [];
+  }
+  
+  // For Class 11-12, use SENIOR_SECONDARY_CHAPTERS
+  if (className === 'Class 11' || className === 'Class 12') {
+    const classNum = className.split(' ')[1];
+    const chapterKey = `${classNum}_${normalizedSubject}`;
+    if (typeof SENIOR_SECONDARY_CHAPTERS !== 'undefined' && SENIOR_SECONDARY_CHAPTERS[chapterKey]) {
+      return SENIOR_SECONDARY_CHAPTERS[chapterKey];
+    }
+  }
+  
+  // For other classes (1-10)
+  const classNum = className.replace('Class ', '');
+  const chapterKey = `${classNum}_${normalizedSubject}`;
+  
+  // Try direct lookup
+  if (PRIMARY_CHAPTERS[chapterKey]) return PRIMARY_CHAPTERS[chapterKey];
+  if (MIDDLE_SCHOOL_CHAPTERS[chapterKey]) return MIDDLE_SCHOOL_CHAPTERS[chapterKey];
+  if (HIGH_SCHOOL_CHAPTERS[chapterKey]) return HIGH_SCHOOL_CHAPTERS[chapterKey];
+  
+  // Try with Hindi subject name
+  const hindiKey = `${classNum}_${subject}`;
+  if (PRIMARY_CHAPTERS[hindiKey]) return PRIMARY_CHAPTERS[hindiKey];
+  if (MIDDLE_SCHOOL_CHAPTERS[hindiKey]) return MIDDLE_SCHOOL_CHAPTERS[hindiKey];
+  if (HIGH_SCHOOL_CHAPTERS[hindiKey]) return HIGH_SCHOOL_CHAPTERS[hindiKey];
+  
+  return [];
+};
