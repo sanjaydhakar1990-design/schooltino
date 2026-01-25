@@ -933,6 +933,16 @@ export const MIDDLE_SCHOOL_CHAPTERS = {
     { id: 'civ7', name: 'हमारे आस-पास के बाज़ार' },
     { id: 'civ8', name: 'बाज़ार में एक कमीज़' },
   ],
+  '7_Sanskrit': [
+    { id: 'ch1', name: 'सुभाषितानि (Subhashitani)' },
+    { id: 'ch2', name: 'दुर्बुद्धिः विनश्यति (Durbuddhi Vinashyati)' },
+    { id: 'ch3', name: 'स्वावलम्बनम् (Swavalambam)' },
+    { id: 'ch4', name: 'हास्यबालकविता (Hasya Bal Kavita)' },
+    { id: 'ch5', name: 'पण्डिता रमाबाई (Pandita Ramabai)' },
+    { id: 'ch6', name: 'सदाचारः (Sadacharah)' },
+    { id: 'ch7', name: 'संकल्पः सिद्धिदायकः (Sankalp Siddhidayak)' },
+    { id: 'ch8', name: 'त्रिवर्णः ध्वजः (Trivarna Dhwajah)' },
+  ],
   // Class 8
   '8_Hindi': [
     { id: 'ch1', name: 'ध्वनि' },
@@ -1085,6 +1095,16 @@ export const CBSE_CHAPTERS = {
     { id: 'ch16', name: 'यमराज की दिशा' },
     { id: 'ch17', name: 'बच्चे काम पर जा रहे हैं' },
   ],
+  '8_Sanskrit': [
+    { id: 'ch1', name: 'सुभाषितानि (Subhashitani)' },
+    { id: 'ch2', name: 'बिलस्य वाणी (Bilasya Vani)' },
+    { id: 'ch3', name: 'डिजीभारतम् (DigiIndia)' },
+    { id: 'ch4', name: 'सदैव पुरतो निधेहि चरणम् (Keep Moving Forward)' },
+    { id: 'ch5', name: 'कण्टकेनैव कण्टकम् (Thorn with Thorn)' },
+    { id: 'ch6', name: 'गृहं शून्यं सुतां विना (Empty Home)' },
+    { id: 'ch7', name: 'भारतजनताऽहम् (I am Indian)' },
+    { id: 'ch8', name: 'संसारसागरस्य नायकाः (Heroes of World)' },
+  ],
   '9_English': [
     { id: 'ch1', name: 'The Fun They Had' },
     { id: 'ch2', name: 'The Sound of Music' },
@@ -1147,6 +1167,14 @@ export const CBSE_CHAPTERS = {
     { id: 'eco2', name: 'People as Resource' },
     { id: 'eco3', name: 'Poverty as a Challenge' },
     { id: 'eco4', name: 'Food Security in India' },
+  ],
+  '9_Sanskrit': [
+    { id: 'ch1', name: 'भारतीवसन्तगीतिः (Bharati Vasant Geetih)' },
+    { id: 'ch2', name: 'स्वामी विवेकानन्दः (Swami Vivekanand)' },
+    { id: 'ch3', name: 'गोदोहनम् (Godoh anam)' },
+    { id: 'ch4', name: 'मन्दाकिनीवर्णनम् (Mandakini Varnanam)' },
+    { id: 'ch5', name: 'सूक्तयः (Sukti)' },
+    { id: 'ch6', name: 'भ्रान्तो बालः (Bhranto Balah)' },
   ],
   // Class 10
   '10_Hindi': [
@@ -1257,6 +1285,14 @@ export const SENIOR_SECONDARY_CHAPTERS = {
     { id: 'ch13', name: 'Kinetic Theory' },
     { id: 'ch14', name: 'Oscillations' },
     { id: 'ch15', name: 'Waves' },
+  ],
+  '10_Sanskrit': [
+    { id: 'ch1', name: 'शुचिपर्यावरणम् (Clean Environment)' },
+    { id: 'ch2', name: 'बुद्धिर्बलवती सदा (Intelligence is Powerful)' },
+    { id: 'ch3', name: 'व्यायामः सर्वदा पथ्यः (Exercise is Beneficial)' },
+    { id: 'ch4', name: 'शिशुलालनम् (Child Care)' },
+    { id: 'ch5', name: 'जननी तुल्यवत्सला (Mother is Loving)' },
+    { id: 'ch6', name: 'सुभाषितानि (Wise Sayings)' },
   ],
   '11_Chemistry': [
     { id: 'ch1', name: 'Some Basic Concepts of Chemistry' },
