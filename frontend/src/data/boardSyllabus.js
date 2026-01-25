@@ -1473,6 +1473,12 @@ export const RBSE_CHAPTERS = {
 
 // Get chapters based on board, class and subject
 export const getChapters = (board, className, subject) => {
+  // ✅ MP BOARD & RBSE USE NCERT SYLLABUS - Auto fallback
+  // Since MPBSE and RBSE follow NCERT, use NCERT/CBSE chapters for all subjects
+  if (board === 'MPBSE' || board === 'MP Board' || board === 'RBSE' || board === 'Rajasthan Board') {
+    board = 'CBSE'; // Use CBSE/NCERT syllabus as they follow same pattern
+  }
+  
   // Check if subject is in Hindi script - if yes, return Hindi chapters directly
   const isHindiMedium = /[\u0900-\u097F]/.test(subject); // Check for Devanagari characters
   
