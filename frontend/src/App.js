@@ -15,6 +15,7 @@ import AttendancePage from './pages/AttendancePage';
 import FeesPage from './pages/FeesPage';
 import NoticesPage from './pages/NoticesPage';
 import AIPaperPage from './pages/AIPaperPage';
+import AIPaperGeneratorNew from './pages/AIPaperGeneratorNew';
 import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
 import UserManagementPage from './pages/UserManagementPage';
@@ -309,7 +310,8 @@ function AppRoutes() {
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="fees" element={<FeesPage />} />
         <Route path="notices" element={<NoticesPage />} />
-        <Route path="ai-paper" element={<AIPaperPage />} />
+        <Route path="ai-paper" element={<AIPaperGeneratorNew />} />
+        <Route path="ai-paper-old" element={<AIPaperPage />} />
         <Route path="ai-content" element={<Navigate to="/app/event-designer" replace />} />
         <Route path="voice-assistant" element={<VoiceAssistant />} />
         <Route path="gallery" element={<ImageGallery />} />
