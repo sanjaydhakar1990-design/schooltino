@@ -4030,74 +4030,67 @@ for Academic Year 2025–2026.
 
 {lang_instruction}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 MARKS DISTRIBUTION (BOARD PATTERN 2025-26)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━
+📊 MARKS DISTRIBUTION (FOLLOW EXACTLY)
+━━━━━━━━━━━━━━━━━━━━━━
 {dist_str}
 
-STANDARD MARKS ALLOCATION:
+STANDARD MARKS ALLOCATION (2025-26 Board Pattern):
 - MCQ (Multiple Choice) = 1 mark each
 - Fill in the Blanks = 1 mark each
-- Very Short Answer (VSAQ) = 2 marks each
-- Short Answer = 3 marks each
-- Long Answer = 4-5 marks each
+- Very Short Answer (VSA/VSAQ) = 2 marks each
+- Short Answer (SA) = 3 marks each
+- Long Answer (LA) = 4-5 marks each
 - Diagram-Based Questions = 3 marks each
 - HOTS (Higher Order Thinking) = 4 marks each
 - Case-Based/Competency-Based = 4 marks each
 - Assertion-Reason = 1 mark each (Class 9-12)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🧠 CLASS-WISE QUESTION DESIGN LOGIC
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━
+🧩 CLASS-WISE QUESTION LOGIC (STRICTLY FOLLOW)
+━━━━━━━━━━━━━━━━━━━━━━
+{"• Nursery–UKG:" if request.class_name in ["Nursery", "LKG", "UKG"] else ""}
+{"  - Picture based, Oral, Draw, Match, Colour" if request.class_name in ["Nursery", "LKG", "UKG"] else ""}
+{"  - NO written long answers" if request.class_name in ["Nursery", "LKG", "UKG"] else ""}
+{"  - Example: 'Circle the RED apple' / 'Draw 3 balloons'" if request.class_name in ["Nursery", "LKG", "UKG"] else ""}
 
-FOR NURSERY–UKG (Pre-Primary):
-• Oral questions, Picture-based, Match the following
-• Simple drawing, Coloring, Identify and name
-• NO written long answers
-• Example: "Circle the RED apple" / "Draw 3 balloons"
+{"• Class 1–5 (Primary):" if request.class_name in ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"] else ""}
+{"  - Objective (Fill blanks, True/False, Match)" if request.class_name in ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"] else ""}
+{"  - Very short answers (1-2 lines)" if request.class_name in ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"] else ""}
+{"  - Picture-based questions" if request.class_name in ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"] else ""}
+{"  - Simple diagrams (for EVS/Science)" if request.class_name in ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"] else ""}
 
-FOR CLASS 1–5 (Primary):
-• Objective (Fill blanks, True/False, Match)
-• Very short answers (1-2 lines)
-• Picture-based questions
-• Simple diagrams (for EVS/Science)
-• Example: "Name the parts of a plant"
+{"• Class 6–8 (Middle School):" if request.class_name in ["Class 6", "Class 7", "Class 8"] else ""}
+{"  - MCQ, Very Short (2 marks), Short (3 marks)" if request.class_name in ["Class 6", "Class 7", "Class 8"] else ""}
+{"  - Diagram-based questions (Science)" if request.class_name in ["Class 6", "Class 7", "Class 8"] else ""}
+{"  - Map work (Social Science)" if request.class_name in ["Class 6", "Class 7", "Class 8"] else ""}
 
-FOR CLASS 6–8 (Middle School):
-• MCQ, Very Short (2 marks), Short (3 marks)
-• Diagram-based questions (Science)
-• Map work (Social Science)
-• Example: "Explain the process of photosynthesis in 3-4 sentences"
+{"• Class 9–10 (High School):" if request.class_name in ["Class 9", "Class 10"] else ""}
+{"  - MCQ, Assertion-Reason, Case-based questions" if request.class_name in ["Class 9", "Class 10"] else ""}
+{"  - Short (3 marks), Long (5 marks)" if request.class_name in ["Class 9", "Class 10"] else ""}
+{"  - Numericals (Maths/Science with steps)" if request.class_name in ["Class 9", "Class 10"] else ""}
+{"  - HOTS questions" if request.class_name in ["Class 9", "Class 10"] else ""}
 
-FOR CLASS 9–10 (High School):
-• MCQ, Assertion-Reason, Case-based questions
-• Short answers (3 marks), Long answers (5 marks)
-• Numericals (Maths/Science with steps)
-• HOTS questions
-• Example: "A current of 0.5A flows through a conductor. Calculate..."
+{"• Class 11–12 (Senior Secondary):" if request.class_name in ["Class 11", "Class 12"] else ""}
+{"  - Competency-based questions" if request.class_name in ["Class 11", "Class 12"] else ""}
+{"  - Case studies with sub-questions" if request.class_name in ["Class 11", "Class 12"] else ""}
+{"  - Analytical (Analyze, Evaluate, Compare)" if request.class_name in ["Class 11", "Class 12"] else ""}
+{"  - Application-based numericals" if request.class_name in ["Class 11", "Class 12"] else ""}
 
-FOR CLASS 11–12 (Senior Secondary):
-• Competency-based questions
-• Case studies with multiple sub-questions
-• Analytical questions (Analyze, Evaluate, Compare)
-• Application-based numericals
-• Research/Project-based questions
-• Example: "Analyze the impact of globalization on Indian economy"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🖼️ DIAGRAM & IMAGE QUESTIONS (CRITICAL FOR SCIENCE/BIOLOGY)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━
+🖼️ DIAGRAM QUESTIONS (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━
 For subjects requiring diagrams (Biology, Physics, Chemistry, Geography):
-• Include questions with: "Draw a neat and labelled diagram of..."
-• For maps (Geography/History): "On an outline map of India, mark and label..."
+• Include: "Draw a neat and labelled diagram of..."
+• For maps (Geography/History): "On an outline map, mark and label..."
 • Examples:
   - "Draw a neat labelled diagram of human digestive system"
   - "Draw the structure of a plant cell and label its parts"
-  - "Draw a ray diagram showing refraction through a glass slab"
+  - "Draw a ray diagram showing refraction"
 
 In answer key, provide:
-• Detailed description of what to draw
-• List of all parts to be labeled
+• Step-by-step drawing instructions
+• List ALL parts to be labeled
 • Key features to highlight
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
