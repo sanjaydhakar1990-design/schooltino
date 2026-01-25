@@ -815,15 +815,15 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 4
+  test_sequence: 5
   run_ui: true
 
 test_plan:
   current_focus:
-    - "Student ID Card API Testing Complete"
+    - "AI Paper Generator - MP Board & RBSE Chapter Loading"
   stuck_tasks: []
-  test_all: true
-  test_priority: "id_card_testing_complete"
+  test_all: false
+  test_priority: "ai_paper_generator_review"
 
 agent_communication:
   - agent: "main"
