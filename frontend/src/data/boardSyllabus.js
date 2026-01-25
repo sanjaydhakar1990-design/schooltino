@@ -1266,10 +1266,9 @@ export const CBSE_CHAPTERS = {
   ],
 };
 
-// Class 11-12 CBSE Chapters - COMPREHENSIVE 2025-26
+// Class 11-12 CBSE Chapters
 export const SENIOR_SECONDARY_CHAPTERS = {
-  // ========== CLASS 11 - ALL STREAMS ==========
-  // SCIENCE STREAM
+  // Class 11 Physics
   '11_Physics': [
     { id: 'ch1', name: 'Physical World' },
     { id: 'ch2', name: 'Units and Measurements' },
@@ -1287,6 +1286,14 @@ export const SENIOR_SECONDARY_CHAPTERS = {
     { id: 'ch14', name: 'Oscillations' },
     { id: 'ch15', name: 'Waves' },
   ],
+  '10_Sanskrit': [
+    { id: 'ch1', name: 'शुचिपर्यावरणम् (Clean Environment)' },
+    { id: 'ch2', name: 'बुद्धिर्बलवती सदा (Intelligence is Powerful)' },
+    { id: 'ch3', name: 'व्यायामः सर्वदा पथ्यः (Exercise is Beneficial)' },
+    { id: 'ch4', name: 'शिशुलालनम् (Child Care)' },
+    { id: 'ch5', name: 'जननी तुल्यवत्सला (Mother is Loving)' },
+    { id: 'ch6', name: 'सुभाषितानि (Wise Sayings)' },
+  ],
   '11_Chemistry': [
     { id: 'ch1', name: 'Some Basic Concepts of Chemistry' },
     { id: 'ch2', name: 'Structure of Atom' },
@@ -1297,9 +1304,9 @@ export const SENIOR_SECONDARY_CHAPTERS = {
     { id: 'ch7', name: 'Equilibrium' },
     { id: 'ch8', name: 'Redox Reactions' },
     { id: 'ch9', name: 'Hydrogen' },
-    { id: 'ch10', name: 'The s-Block Elements' },
-    { id: 'ch11', name: 'The p-Block Elements' },
-    { id: 'ch12', name: 'Organic Chemistry - Basic Principles' },
+    { id: 'ch10', name: 's-Block Elements' },
+    { id: 'ch11', name: 'p-Block Elements' },
+    { id: 'ch12', name: 'Organic Chemistry - Some Basic Principles' },
     { id: 'ch13', name: 'Hydrocarbons' },
     { id: 'ch14', name: 'Environmental Chemistry' },
   ],
@@ -1322,142 +1329,28 @@ export const SENIOR_SECONDARY_CHAPTERS = {
     { id: 'ch16', name: 'Digestion and Absorption' },
     { id: 'ch17', name: 'Breathing and Exchange of Gases' },
     { id: 'ch18', name: 'Body Fluids and Circulation' },
-    { id: 'ch19', name: 'Excretory Products and Elimination' },
+    { id: 'ch19', name: 'Excretory Products and their Elimination' },
     { id: 'ch20', name: 'Locomotion and Movement' },
     { id: 'ch21', name: 'Neural Control and Coordination' },
-    { id: 'ch22', name: 'Chemical Coordination' },
+    { id: 'ch22', name: 'Chemical Coordination and Integration' },
   ],
   '11_Mathematics': [
     { id: 'ch1', name: 'Sets' },
     { id: 'ch2', name: 'Relations and Functions' },
     { id: 'ch3', name: 'Trigonometric Functions' },
-    { id: 'ch4', name: 'Principle of Mathematical Induction' },
-    { id: 'ch5', name: 'Complex Numbers and Quadratic Equations' },
-    { id: 'ch6', name: 'Linear Inequalities' },
-    { id: 'ch7', name: 'Permutations and Combinations' },
-    { id: 'ch8', name: 'Binomial Theorem' },
-    { id: 'ch9', name: 'Sequences and Series' },
-    { id: 'ch10', name: 'Straight Lines' },
-    { id: 'ch11', name: 'Conic Sections' },
-    { id: 'ch12', name: 'Introduction to Three Dimensional Geometry' },
-    { id: 'ch13', name: 'Limits and Derivatives' },
-    { id: 'ch14', name: 'Mathematical Reasoning' },
-    { id: 'ch15', name: 'Statistics' },
-    { id: 'ch16', name: 'Probability' },
+    { id: 'ch4', name: 'Complex Numbers and Quadratic Equations' },
+    { id: 'ch5', name: 'Linear Inequalities' },
+    { id: 'ch6', name: 'Permutations and Combinations' },
+    { id: 'ch7', name: 'Binomial Theorem' },
+    { id: 'ch8', name: 'Sequences and Series' },
+    { id: 'ch9', name: 'Straight Lines' },
+    { id: 'ch10', name: 'Conic Sections' },
+    { id: 'ch11', name: 'Introduction to Three Dimensional Geometry' },
+    { id: 'ch12', name: 'Limits and Derivatives' },
+    { id: 'ch13', name: 'Statistics' },
+    { id: 'ch14', name: 'Probability' },
   ],
-  // COMMERCE STREAM
-  '11_Accountancy': [
-    { id: 'ch1', name: 'Introduction to Accounting' },
-    { id: 'ch2', name: 'Theory Base of Accounting' },
-    { id: 'ch3', name: 'Recording of Transactions - I' },
-    { id: 'ch4', name: 'Recording of Transactions - II' },
-    { id: 'ch5', name: 'Bank Reconciliation Statement' },
-    { id: 'ch6', name: 'Trial Balance and Rectification of Errors' },
-    { id: 'ch7', name: 'Depreciation, Provisions and Reserves' },
-    { id: 'ch8', name: 'Bill of Exchange' },
-    { id: 'ch9', name: 'Financial Statements - I' },
-    { id: 'ch10', name: 'Financial Statements - II' },
-    { id: 'ch11', name: 'Accounts from Incomplete Records' },
-    { id: 'ch12', name: 'Applications of Computers in Accounting' },
-  ],
-  '11_Business Studies': [
-    { id: 'ch1', name: 'Nature and Purpose of Business' },
-    { id: 'ch2', name: 'Forms of Business Organisation' },
-    { id: 'ch3', name: 'Private, Public and Global Enterprises' },
-    { id: 'ch4', name: 'Business Services' },
-    { id: 'ch5', name: 'Emerging Modes of Business' },
-    { id: 'ch6', name: 'Social Responsibilities of Business' },
-    { id: 'ch7', name: 'Formation of a Company' },
-    { id: 'ch8', name: 'Sources of Business Finance' },
-    { id: 'ch9', name: 'Small Business' },
-    { id: 'ch10', name: 'Internal Trade' },
-    { id: 'ch11', name: 'International Business' },
-  ],
-  '11_Economics': [
-    { id: 'ch1', name: 'Introduction to Microeconomics' },
-    { id: 'ch2', name: 'Theory of Consumer Behaviour' },
-    { id: 'ch3', name: 'Production and Costs' },
-    { id: 'ch4', name: 'Theory of Firm under Perfect Competition' },
-    { id: 'ch5', name: 'Market Equilibrium' },
-    { id: 'ch6', name: 'Non-Competitive Markets' },
-    { id: 'ch7', name: 'Introduction to Statistics' },
-    { id: 'ch8', name: 'Collection of Data' },
-    { id: 'ch9', name: 'Organisation of Data' },
-    { id: 'ch10', name: 'Presentation of Data' },
-    { id: 'ch11', name: 'Measures of Central Tendency' },
-    { id: 'ch12', name: 'Measures of Dispersion' },
-    { id: 'ch13', name: 'Correlation' },
-    { id: 'ch14', name: 'Index Numbers' },
-  ],
-  // ARTS/HUMANITIES STREAM
-  '11_History': [
-    { id: 'ch1', name: 'From the Beginning of Time' },
-    { id: 'ch2', name: 'Writing and City Life' },
-    { id: 'ch3', name: 'An Empire Across Three Continents' },
-    { id: 'ch4', name: 'The Central Islamic Lands' },
-    { id: 'ch5', name: 'Nomadic Empires' },
-    { id: 'ch6', name: 'The Three Orders' },
-    { id: 'ch7', name: 'Changing Cultural Traditions' },
-    { id: 'ch8', name: 'Confrontation of Cultures' },
-    { id: 'ch9', name: 'The Industrial Revolution' },
-    { id: 'ch10', name: 'Displacing Indigenous Peoples' },
-    { id: 'ch11', name: 'Paths to Modernisation' },
-  ],
-  '11_Geography': [
-    { id: 'ch1', name: 'Geography as a Discipline' },
-    { id: 'ch2', name: 'The Origin and Evolution of the Earth' },
-    { id: 'ch3', name: 'Interior of the Earth' },
-    { id: 'ch4', name: 'Distribution of Oceans and Continents' },
-    { id: 'ch5', name: 'Minerals and Rocks' },
-    { id: 'ch6', name: 'Geomorphic Processes' },
-    { id: 'ch7', name: 'Landforms and their Evolution' },
-    { id: 'ch8', name: 'Composition and Structure of Atmosphere' },
-    { id: 'ch9', name: 'Solar Radiation, Heat Balance' },
-    { id: 'ch10', name: 'Atmospheric Circulation' },
-    { id: 'ch11', name: 'Water in the Atmosphere' },
-    { id: 'ch12', name: 'World Climate' },
-    { id: 'ch13', name: 'Water (Oceans)' },
-    { id: 'ch14', name: 'Movements of Ocean Water' },
-    { id: 'ch15', name: 'Biodiversity and Conservation' },
-  ],
-  '11_Political Science': [
-    { id: 'ch1', name: 'Political Theory: An Introduction' },
-    { id: 'ch2', name: 'Freedom' },
-    { id: 'ch3', name: 'Equality' },
-    { id: 'ch4', name: 'Social Justice' },
-    { id: 'ch5', name: 'Rights' },
-    { id: 'ch6', name: 'Citizenship' },
-    { id: 'ch7', name: 'Nationalism' },
-    { id: 'ch8', name: 'Secularism' },
-    { id: 'ch9', name: 'Peace' },
-    { id: 'ch10', name: 'Development' },
-  ],
-  '11_Psychology': [
-    { id: 'ch1', name: 'What is Psychology?' },
-    { id: 'ch2', name: 'Methods of Enquiry in Psychology' },
-    { id: 'ch3', name: 'The Bases of Human Behaviour' },
-    { id: 'ch4', name: 'Human Development' },
-    { id: 'ch5', name: 'Sensory, Attentional and Perceptual Processes' },
-    { id: 'ch6', name: 'Learning' },
-    { id: 'ch7', name: 'Human Memory' },
-    { id: 'ch8', name: 'Thinking' },
-    { id: 'ch9', name: 'Motivation and Emotion' },
-  ],
-  '11_Sociology': [
-    { id: 'ch1', name: 'Sociology and Society' },
-    { id: 'ch2', name: 'Terms, Concepts and their Use in Sociology' },
-    { id: 'ch3', name: 'Understanding Social Institutions' },
-    { id: 'ch4', name: 'Culture and Socialisation' },
-    { id: 'ch5', name: 'Doing Sociology: Research Methods' },
-    { id: 'ch6', name: 'Social Structure, Stratification and Social Processes' },
-    { id: 'ch7', name: 'Social Change and Social Order' },
-    { id: 'ch8', name: 'Environment and Society' },
-    { id: 'ch9', name: 'Western Social Thinkers' },
-    { id: 'ch10', name: 'Indian Sociologists' },
-  ],
-  
-  // ========== CLASS 12 - ALL STREAMS ==========
-  // SCIENCE STREAM
+  // Class 12 Physics
   '12_Physics': [
     { id: 'ch1', name: 'Electric Charges and Fields' },
     { id: 'ch2', name: 'Electrostatic Potential and Capacitance' },
@@ -1481,8 +1374,8 @@ export const SENIOR_SECONDARY_CHAPTERS = {
     { id: 'ch4', name: 'Chemical Kinetics' },
     { id: 'ch5', name: 'Surface Chemistry' },
     { id: 'ch6', name: 'General Principles and Processes of Isolation of Elements' },
-    { id: 'ch7', name: 'The p-Block Elements' },
-    { id: 'ch8', name: 'The d and f Block Elements' },
+    { id: 'ch7', name: 'p-Block Elements' },
+    { id: 'ch8', name: 'd and f Block Elements' },
     { id: 'ch9', name: 'Coordination Compounds' },
     { id: 'ch10', name: 'Haloalkanes and Haloarenes' },
     { id: 'ch11', name: 'Alcohols, Phenols and Ethers' },
@@ -1504,7 +1397,7 @@ export const SENIOR_SECONDARY_CHAPTERS = {
     { id: 'ch9', name: 'Strategies for Enhancement in Food Production' },
     { id: 'ch10', name: 'Microbes in Human Welfare' },
     { id: 'ch11', name: 'Biotechnology: Principles and Processes' },
-    { id: 'ch12', name: 'Biotechnology and its Applications' },
+    { id: 'ch12', name: 'Biotechnology and Its Applications' },
     { id: 'ch13', name: 'Organisms and Populations' },
     { id: 'ch14', name: 'Ecosystem' },
     { id: 'ch15', name: 'Biodiversity and Conservation' },
@@ -1525,130 +1418,289 @@ export const SENIOR_SECONDARY_CHAPTERS = {
     { id: 'ch12', name: 'Linear Programming' },
     { id: 'ch13', name: 'Probability' },
   ],
-  // COMMERCE STREAM
-  '12_Accountancy': [
-    { id: 'ch1', name: 'Accounting for Partnership Firms' },
-    { id: 'ch2', name: 'Goodwill: Nature and Valuation' },
-    { id: 'ch3', name: 'Change in Profit Sharing Ratio' },
-    { id: 'ch4', name: 'Admission of a Partner' },
-    { id: 'ch5', name: 'Retirement/Death of a Partner' },
-    { id: 'ch6', name: 'Dissolution of Partnership Firm' },
-    { id: 'ch7', name: 'Accounting for Share Capital' },
-    { id: 'ch8', name: 'Issue and Redemption of Debentures' },
-    { id: 'ch9', name: 'Financial Statements of a Company' },
-    { id: 'ch10', name: 'Analysis of Financial Statements' },
-    { id: 'ch11', name: 'Accounting Ratios' },
-    { id: 'ch12', name: 'Cash Flow Statement' },
+};
+
+// MP Board Hindi Medium Chapters
+export const MPBSE_CHAPTERS = {
+  '10_गणित': [
+    { id: 'ch1', name: 'वास्तविक संख्याएँ' },
+    { id: 'ch2', name: 'बहुपद' },
+    { id: 'ch3', name: 'दो चरों वाले रैखिक समीकरण युग्म' },
+    { id: 'ch4', name: 'द्विघात समीकरण' },
+    { id: 'ch5', name: 'समांतर श्रेढ़ी' },
+    { id: 'ch6', name: 'त्रिभुज' },
+    { id: 'ch7', name: 'निर्देशांक ज्यामिति' },
+    { id: 'ch8', name: 'त्रिकोणमिति का परिचय' },
+    { id: 'ch9', name: 'त्रिकोणमिति के कुछ अनुप्रयोग' },
+    { id: 'ch10', name: 'वृत्त' },
+    { id: 'ch11', name: 'वृत्तों से संबंधित क्षेत्रफल' },
+    { id: 'ch12', name: 'पृष्ठीय क्षेत्रफल और आयतन' },
+    { id: 'ch13', name: 'सांख्यिकी' },
+    { id: 'ch14', name: 'प्रायिकता' },
   ],
-  '12_Business Studies': [
-    { id: 'ch1', name: 'Nature and Significance of Management' },
-    { id: 'ch2', name: 'Principles of Management' },
-    { id: 'ch3', name: 'Business Environment' },
-    { id: 'ch4', name: 'Planning' },
-    { id: 'ch5', name: 'Organising' },
-    { id: 'ch6', name: 'Staffing' },
-    { id: 'ch7', name: 'Directing' },
-    { id: 'ch8', name: 'Controlling' },
-    { id: 'ch9', name: 'Financial Management' },
-    { id: 'ch10', name: 'Financial Markets' },
-    { id: 'ch11', name: 'Marketing' },
-    { id: 'ch12', name: 'Consumer Protection' },
+  '10_विज्ञान': [
+    { id: 'ch1', name: 'रासायनिक अभिक्रियाएँ एवं समीकरण' },
+    { id: 'ch2', name: 'अम्ल, क्षारक एवं लवण' },
+    { id: 'ch3', name: 'धातु एवं अधातु' },
+    { id: 'ch4', name: 'कार्बन एवं उसके यौगिक' },
+    { id: 'ch5', name: 'जैव प्रक्रम' },
+    { id: 'ch6', name: 'नियंत्रण एवं समन्वय' },
+    { id: 'ch7', name: 'जीव जनन कैसे करते हैं' },
+    { id: 'ch8', name: 'आनुवंशिकता' },
+    { id: 'ch9', name: 'प्रकाश - परावर्तन तथा अपवर्तन' },
+    { id: 'ch10', name: 'मानव नेत्र तथा रंगबिरंगा संसार' },
+    { id: 'ch11', name: 'विद्युत' },
+    { id: 'ch12', name: 'विद्युत धारा के चुंबकीय प्रभाव' },
+    { id: 'ch13', name: 'हमारा पर्यावरण' },
   ],
-  '12_Economics': [
-    { id: 'ch1', name: 'Introduction to Macroeconomics' },
-    { id: 'ch2', name: 'National Income Accounting' },
-    { id: 'ch3', name: 'Money and Banking' },
-    { id: 'ch4', name: 'Income Determination' },
-    { id: 'ch5', name: 'Government Budget and the Economy' },
-    { id: 'ch6', name: 'Open Economy Macroeconomics' },
-    { id: 'ch7', name: 'Indian Economy on the Eve of Independence' },
-    { id: 'ch8', name: 'Indian Economy 1950-1990' },
-    { id: 'ch9', name: 'Liberalisation, Privatisation and Globalisation' },
-    { id: 'ch10', name: 'Poverty' },
-    { id: 'ch11', name: 'Human Capital Formation' },
-    { id: 'ch12', name: 'Rural Development' },
-    { id: 'ch13', name: 'Employment' },
-    { id: 'ch14', name: 'Sustainable Development' },
-  ],
-  // ARTS/HUMANITIES STREAM
-  '12_History': [
-    { id: 'ch1', name: 'Bricks, Beads and Bones' },
-    { id: 'ch2', name: 'Kings, Farmers and Towns' },
-    { id: 'ch3', name: 'Kinship, Caste and Class' },
-    { id: 'ch4', name: 'Thinkers, Beliefs and Buildings' },
-    { id: 'ch5', name: 'Through the Eyes of Travellers' },
-    { id: 'ch6', name: 'Bhakti-Sufi Traditions' },
-    { id: 'ch7', name: 'An Imperial Capital: Vijayanagara' },
-    { id: 'ch8', name: 'Peasants, Zamindars and the State' },
-    { id: 'ch9', name: 'Kings and Chronicles' },
-    { id: 'ch10', name: 'Colonialism and the Countryside' },
-    { id: 'ch11', name: 'Rebels and the Raj' },
-    { id: 'ch12', name: 'Colonial Cities' },
-    { id: 'ch13', name: 'Mahatma Gandhi and the Nationalist Movement' },
-    { id: 'ch14', name: 'Partition and Independence' },
-    { id: 'ch15', name: 'Framing the Constitution' },
-  ],
-  '12_Geography': [
-    { id: 'ch1', name: 'Population: Distribution, Density and Growth' },
-    { id: 'ch2', name: 'Migration: Types, Causes and Consequences' },
-    { id: 'ch3', name: 'Human Development' },
-    { id: 'ch4', name: 'Primary Activities' },
-    { id: 'ch5', name: 'Secondary Activities' },
-    { id: 'ch6', name: 'Tertiary and Quaternary Activities' },
-    { id: 'ch7', name: 'Transport and Communication' },
-    { id: 'ch8', name: 'International Trade' },
-    { id: 'ch9', name: 'Human Settlements' },
-    { id: 'ch10', name: 'Resources and Development' },
-    { id: 'ch11', name: 'Water Resources' },
-    { id: 'ch12', name: 'Mineral and Energy Resources' },
-    { id: 'ch13', name: 'Planning and Sustainable Development' },
-  ],
-  '12_Political Science': [
-    { id: 'ch1', name: 'The Cold War Era' },
-    { id: 'ch2', name: 'End of Bipolarity' },
-    { id: 'ch3', name: 'US Hegemony in World Politics' },
-    { id: 'ch4', name: 'Alternative Centres of Power' },
-    { id: 'ch5', name: 'Contemporary South Asia' },
-    { id: 'ch6', name: 'International Organisations' },
-    { id: 'ch7', name: 'Security in Contemporary World' },
-    { id: 'ch8', name: 'Environment and Natural Resources' },
-    { id: 'ch9', name: 'Globalisation' },
-    { id: 'ch10', name: 'Challenges of Nation Building' },
-    { id: 'ch11', name: 'Era of One-Party Dominance' },
-    { id: 'ch12', name: 'Politics of Planned Development' },
-    { id: 'ch13', name: 'Indias External Relations' },
-    { id: 'ch14', name: 'Crisis of Democratic Order' },
-    { id: 'ch15', name: 'Rise of Popular Movements' },
-    { id: 'ch16', name: 'Regional Aspirations' },
-    { id: 'ch17', name: 'Recent Developments in Indian Politics' },
-  ],
-  '12_Psychology': [
-    { id: 'ch1', name: 'Variations in Psychological Attributes' },
-    { id: 'ch2', name: 'Self and Personality' },
-    { id: 'ch3', name: 'Meeting Life Challenges' },
-    { id: 'ch4', name: 'Psychological Disorders' },
-    { id: 'ch5', name: 'Therapeutic Approaches' },
-    { id: 'ch6', name: 'Attitude and Social Cognition' },
-    { id: 'ch7', name: 'Social Influence and Group Processes' },
-    { id: 'ch8', name: 'Psychology and Life' },
-    { id: 'ch9', name: 'Developing Psychological Skills' },
-  ],
-  '12_Sociology': [
-    { id: 'ch1', name: 'Structural Change' },
-    { id: 'ch2', name: 'Cultural Change' },
-    { id: 'ch3', name: 'Social Institutions: Continuity and Change' },
-    { id: 'ch4', name: 'The Market as a Social Institution' },
-    { id: 'ch5', name: 'Patterns of Social Inequality and Exclusion' },
-    { id: 'ch6', name: 'The Challenges of Cultural Diversity' },
-    { id: 'ch7', name: 'Suggestions for Project Work' },
-    { id: 'ch8', name: 'Social Change and Development in India' },
-    { id: 'ch9', name: 'Change and Development in Rural Society' },
-    { id: 'ch10', name: 'Change and Development in Industrial Society' },
-    { id: 'ch11', name: 'Globalisation and Social Change' },
-    { id: 'ch12', name: 'Mass Media and Communications' },
+  '10_सामाजिक विज्ञान': [
+    { id: 'hist1', name: 'यूरोप में राष्ट्रवाद का उदय' },
+    { id: 'hist2', name: 'भारत में राष्ट्रवाद' },
+    { id: 'hist3', name: 'भूमंडलीकृत विश्व का बनना' },
+    { id: 'hist4', name: 'औद्योगीकरण का युग' },
+    { id: 'hist5', name: 'मुद्रण संस्कृति और आधुनिक दुनिया' },
+    { id: 'geo1', name: 'संसाधन एवं विकास' },
+    { id: 'geo2', name: 'वन एवं वन्य जीव संसाधन' },
+    { id: 'geo3', name: 'जल संसाधन' },
+    { id: 'geo4', name: 'कृषि' },
+    { id: 'geo5', name: 'खनिज तथा ऊर्जा संसाधन' },
+    { id: 'geo6', name: 'विनिर्माण उद्योग' },
+    { id: 'geo7', name: 'राष्ट्रीय अर्थव्यवस्था की जीवन रेखाएँ' },
+    { id: 'pol1', name: 'सत्ता की साझेदारी' },
+    { id: 'pol2', name: 'संघवाद' },
+    { id: 'pol3', name: 'लोकतंत्र और विविधता' },
+    { id: 'pol4', name: 'जाति, धर्म और लैंगिक मसले' },
+    { id: 'pol5', name: 'राजनीतिक दल' },
+    { id: 'pol6', name: 'लोकतंत्र के परिणाम' },
+    { id: 'eco1', name: 'विकास' },
+    { id: 'eco2', name: 'भारतीय अर्थव्यवस्था के क्षेत्रक' },
+    { id: 'eco3', name: 'मुद्रा और साख' },
+    { id: 'eco4', name: 'वैश्वीकरण और भारतीय अर्थव्यवस्था' },
+    { id: 'eco5', name: 'उपभोक्ता अधिकार' },
   ],
 };
 
+// RBSE Chapters
+export const RBSE_CHAPTERS = {
+  '10_गणित': [
+    { id: 'ch1', name: 'वास्तविक संख्याएँ' },
+    { id: 'ch2', name: 'बहुपद' },
+    { id: 'ch3', name: 'दो चरों वाले रैखिक समीकरण युग्म' },
+    { id: 'ch4', name: 'द्विघात समीकरण' },
+    { id: 'ch5', name: 'समान्तर श्रेढ़ी' },
+    { id: 'ch6', name: 'त्रिभुज' },
+    { id: 'ch7', name: 'निर्देशांक ज्यामिति' },
+    { id: 'ch8', name: 'त्रिकोणमिति का परिचय' },
+    { id: 'ch9', name: 'त्रिकोणमिति के कुछ अनुप्रयोग' },
+    { id: 'ch10', name: 'वृत्त' },
+    { id: 'ch11', name: 'रचनाएँ' },
+    { id: 'ch12', name: 'वृत्तों से संबंधित क्षेत्रफल' },
+    { id: 'ch13', name: 'पृष्ठीय क्षेत्रफल और आयतन' },
+    { id: 'ch14', name: 'सांख्यिकी' },
+    { id: 'ch15', name: 'प्रायिकता' },
+  ],
+  '10_विज्ञान': [
+    { id: 'ch1', name: 'रासायनिक अभिक्रियाएँ एवं समीकरण' },
+    { id: 'ch2', name: 'अम्ल, क्षार एवं लवण' },
+    { id: 'ch3', name: 'धातु एवं अधातु' },
+    { id: 'ch4', name: 'कार्बन एवं उसके यौगिक' },
+    { id: 'ch5', name: 'तत्वों का आवर्त वर्गीकरण' },
+    { id: 'ch6', name: 'जैव प्रक्रम' },
+    { id: 'ch7', name: 'नियंत्रण एवं समन्वय' },
+    { id: 'ch8', name: 'जीव जनन कैसे करते हैं' },
+    { id: 'ch9', name: 'आनुवंशिकता एवं जैव विकास' },
+    { id: 'ch10', name: 'प्रकाश - परावर्तन तथा अपवर्तन' },
+    { id: 'ch11', name: 'मानव नेत्र तथा रंगबिरंगा संसार' },
+    { id: 'ch12', name: 'विद्युत' },
+    { id: 'ch13', name: 'विद्युत धारा के चुंबकीय प्रभाव' },
+    { id: 'ch14', name: 'ऊर्जा के स्रोत' },
+    { id: 'ch15', name: 'हमारा पर्यावरण' },
+    { id: 'ch16', name: 'प्राकृतिक संसाधनों का प्रबंधन' },
+  ],
+  '10_राजस्थान अध्ययन': [
+    { id: 'ch1', name: 'राजस्थान: एक परिचय' },
+    { id: 'ch2', name: 'राजस्थान के भौतिक प्रदेश' },
+    { id: 'ch3', name: 'राजस्थान की जलवायु' },
+    { id: 'ch4', name: 'राजस्थान में जल संसाधन' },
+    { id: 'ch5', name: 'राजस्थान में कृषि' },
+    { id: 'ch6', name: 'राजस्थान में खनिज संसाधन' },
+    { id: 'ch7', name: 'राजस्थान में उद्योग' },
+    { id: 'ch8', name: 'राजस्थान में परिवहन एवं संचार' },
+    { id: 'ch9', name: 'राजस्थान की कला एवं संस्कृति' },
+    { id: 'ch10', name: 'राजस्थान के प्रमुख पर्यटन स्थल' },
+  ],
+};
+
+// Get chapters based on board, class and subject
+export const getChapters = (board, className, subject) => {
+  // ✅ MP BOARD & RBSE USE NCERT SYLLABUS - Auto fallback
+  // Since MPBSE and RBSE follow NCERT, use NCERT/CBSE chapters for all subjects
+  if (board === 'MPBSE' || board === 'MP Board' || board === 'RBSE' || board === 'Rajasthan Board') {
+    board = 'CBSE'; // Use CBSE/NCERT syllabus as they follow same pattern
+  }
+  
+  // Check if subject is in Hindi script - if yes, return Hindi chapters directly
+  const isHindiMedium = /[\u0900-\u097F]/.test(subject); // Check for Devanagari characters
+  
+  // Normalize subject name - map Hindi script to English key
+  const normalizeSubject = (sub) => {
+    // Hindi subject mappings (script to key)
+    const subjectMap = {
+      'हिंदी': 'Hindi',
+      'गणित': 'Mathematics',
+      'अंग्रेजी': 'English',
+      'अंग्रेज़ी': 'English',
+      'विज्ञान': 'Science',
+      'सामाजिक विज्ञान': 'Social Science',
+      'पर्यावरण': 'EVS',
+      'पर्यावरण अध्ययन': 'EVS',
+      'संस्कृत': 'Sanskrit',
+      'चित्रकला': 'Drawing',
+      'कला': 'Drawing',
+      'सामान्य ज्ञान': 'GK',
+      'भौतिक विज्ञान': 'Physics',
+      'भौतिकी': 'Physics',
+      'रसायन विज्ञान': 'Chemistry',
+      'रसायन शास्त्र': 'Chemistry',
+      'जीव विज्ञान': 'Biology',
+      'अर्थशास्त्र': 'Economics',
+      'वाणिज्य': 'Commerce',
+      'वाणिज्य शास्त्र': 'Commerce',
+      'लेखाशास्त्र': 'Accountancy',
+      'इतिहास': 'History',
+      'भूगोल': 'Geography',
+      'नागरिक शास्त्र': 'Civics',
+      'राजनीति विज्ञान': 'Political Science',
+    };
+    return subjectMap[sub] || sub;
+  };
+
+  const normalizedSubject = normalizeSubject(subject);
+  
+  // Handle Pre-Primary Classes
+  if (['Nursery', 'LKG', 'UKG'].includes(className)) {
+    // Normalize subject names
+    let subjectKey = normalizedSubject;
+    if (normalizedSubject.includes('GK') || normalizedSubject.includes('General') || normalizedSubject.includes('Awareness') || normalizedSubject === 'EVS' || normalizedSubject === 'पर्यावरण') {
+      subjectKey = 'GK';
+    }
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
+      subjectKey = 'Hindi';
+    }
+    if (normalizedSubject.includes('Drawing') || normalizedSubject.includes('चित्रकला') || normalizedSubject.includes('Art')) {
+      subjectKey = 'Drawing';
+    }
+    if (normalizedSubject.includes('Rhyme') || normalizedSubject.includes('गीत')) {
+      subjectKey = 'Rhymes';
+    }
+    const key = `${className}_${subjectKey}`;
+    return PRE_PRIMARY_CHAPTERS[key] || [];
+  }
+  
+  // Handle Primary Classes (1-5)
+  const classNum = className.replace('Class ', '');
+  if (['1', '2', '3', '4', '5'].includes(classNum)) {
+    let subjectKey = normalizedSubject;
+    // Normalize subject names for primary
+    if (normalizedSubject.includes('EVS') || normalizedSubject.includes('पर्यावरण') || normalizedSubject.includes('GK')) {
+      subjectKey = 'EVS';
+    }
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
+      subjectKey = 'Hindi';
+    }
+    if (normalizedSubject.includes('Drawing') || normalizedSubject.includes('चित्रकला') || normalizedSubject.includes('Art')) {
+      subjectKey = 'Drawing';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    return PRIMARY_CHAPTERS[key] || [];
+  }
+  
+  // Handle Middle School (6-8)
+  if (['6', '7', '8'].includes(classNum)) {
+    // For Hindi medium सामाजिक विज्ञान, return Hindi chapters
+    if (isHindiMedium && (subject === 'सामाजिक विज्ञान' || subject.includes('सामाजिक'))) {
+      const hindiKey = `${classNum}_सामाजिक विज्ञान`;
+      if (MIDDLE_SCHOOL_CHAPTERS[hindiKey]) {
+        return MIDDLE_SCHOOL_CHAPTERS[hindiKey];
+      }
+    }
+    
+    let subjectKey = normalizedSubject;
+    // Normalize subject names
+    if ((normalizedSubject.includes('विज्ञान') || normalizedSubject === 'Science') && !normalizedSubject.includes('सामाजिक')) {
+      subjectKey = 'Science';
+    }
+    if (normalizedSubject.includes('सामाजिक') || normalizedSubject.includes('Social')) {
+      subjectKey = 'Social Science';
+    }
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
+      subjectKey = 'Hindi';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    return MIDDLE_SCHOOL_CHAPTERS[key] || [];
+  }
+  
+  // Handle Secondary Classes (9-10)
+  if (['9', '10'].includes(classNum)) {
+    let subjectKey = normalizedSubject;
+    // Normalize subject names
+    if ((normalizedSubject.includes('विज्ञान') || normalizedSubject === 'Science') && !normalizedSubject.includes('सामाजिक')) {
+      subjectKey = 'Science';
+    }
+    if (normalizedSubject.includes('सामाजिक') || normalizedSubject.includes('Social')) {
+      subjectKey = 'Social Science';
+    }
+    if (normalizedSubject.includes('गणित') || normalizedSubject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    if (normalizedSubject === 'हिंदी' || normalizedSubject === 'Hindi') {
+      subjectKey = 'Hindi';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    
+    // Check board-specific chapters first
+    if (board === 'MPBSE') {
+      return MPBSE_CHAPTERS[`${classNum}_${subject}`] || CBSE_CHAPTERS[key] || [];
+    }
+    if (board === 'RBSE') {
+      return RBSE_CHAPTERS[`${classNum}_${subject}`] || CBSE_CHAPTERS[key] || [];
+    }
+    return CBSE_CHAPTERS[key] || [];
+  }
+  
+  // Handle Senior Secondary (11-12)
+  if (['11', '12'].includes(classNum)) {
+    let subjectKey = normalizedSubject;
+    // Normalize subject names
+    if (normalizedSubject.includes('भौतिक') || normalizedSubject === 'Physics') {
+      subjectKey = 'Physics';
+    }
+    if (normalizedSubject.includes('रसायन') || normalizedSubject === 'Chemistry') {
+      subjectKey = 'Chemistry';
+    }
+    if (subject.includes('जीव') || subject === 'Biology') {
+      subjectKey = 'Biology';
+    }
+    if (subject.includes('गणित') || subject === 'Mathematics') {
+      subjectKey = 'Mathematics';
+    }
+    const key = `${classNum}_${subjectKey}`;
+    return SENIOR_SECONDARY_CHAPTERS[key] || [];
+  }
+  
+  return [];
+};
+
+// Marks pattern per board
 export const BOARD_MARKS_PATTERN = {
   CBSE: {
     mcq: { marks: 1, label: 'MCQ (1 mark)' },
@@ -1724,85 +1776,4 @@ export const DRAWING_PAPER_TYPES = {
   complete_drawing: { label: 'चित्र पूरा करो / Complete the drawing', marks: 5 },
   match_picture: { label: 'चित्र मिलाओ / Match the pictures', marks: 3 },
   scenery: { label: 'दृश्य बनाओ / Draw scenery', marks: 10 },
-};
-
-// =====================================================
-// GET CHAPTERS FUNCTION - COMPREHENSIVE
-// =====================================================
-export const getChapters = (board, className, subject) => {
-  // ✅ MP BOARD & RBSE USE NCERT SYLLABUS - Auto fallback
-  // Since MPBSE and RBSE follow NCERT, use NCERT/CBSE chapters for all subjects
-  if (board === 'MPBSE' || board === 'MP Board' || board === 'RBSE' || board === 'Rajasthan Board') {
-    board = 'CBSE'; // Use CBSE/NCERT syllabus as they follow same pattern
-  }
-  
-  // Check if subject is in Hindi script
-  const isHindiMedium = /[\u0900-\u097F]/.test(subject);
-  
-  // Normalize subject name - map Hindi script to English key
-  const normalizeSubject = (sub) => {
-    const subjectMap = {
-      'हिंदी': 'Hindi',
-      'गणित': 'Mathematics',
-      'अंग्रेजी': 'English',
-      'विज्ञान': 'Science',
-      'सामाजिक विज्ञान': 'Social Science',
-      'पर्यावरण': 'EVS',
-      'संस्कृत': 'Sanskrit',
-      'चित्रकला': 'Drawing',
-      'सामान्य ज्ञान': 'GK',
-      'भौतिकी': 'Physics',
-      'भौतिक विज्ञान': 'Physics',
-      'रसायन विज्ञान': 'Chemistry',
-      'जीव विज्ञान': 'Biology',
-      'अर्थशास्त्र': 'Economics',
-      'वाणिज्य शास्त्र': 'Business Studies',
-      'लेखाशास्त्र': 'Accountancy',
-      'इतिहास': 'History',
-      'भूगोल': 'Geography',
-      'राजनीति विज्ञान': 'Political Science',
-    };
-    return subjectMap[sub] || sub;
-  };
-
-  const normalizedSubject = normalizeSubject(subject);
-  
-  // Handle Pre-Primary Classes
-  const prePrimaryClasses = ['Nursery', 'LKG', 'UKG'];
-  if (prePrimaryClasses.includes(className)) {
-    const key = `${className}_${normalizedSubject}`;
-    if (PRE_PRIMARY_CHAPTERS[key]) return PRE_PRIMARY_CHAPTERS[key];
-    
-    // Fallback for Hindi names
-    const hindiKey = `${className}_${subject}`;
-    if (PRE_PRIMARY_CHAPTERS[hindiKey]) return PRE_PRIMARY_CHAPTERS[hindiKey];
-    
-    return [];
-  }
-  
-  // For Class 11-12, use SENIOR_SECONDARY_CHAPTERS
-  if (className === 'Class 11' || className === 'Class 12') {
-    const classNum = className.split(' ')[1];
-    const chapterKey = `${classNum}_${normalizedSubject}`;
-    if (typeof SENIOR_SECONDARY_CHAPTERS !== 'undefined' && SENIOR_SECONDARY_CHAPTERS[chapterKey]) {
-      return SENIOR_SECONDARY_CHAPTERS[chapterKey];
-    }
-  }
-  
-  // For other classes (1-10)
-  const classNum = className.replace('Class ', '');
-  const chapterKey = `${classNum}_${normalizedSubject}`;
-  
-  // Try direct lookup
-  if (PRIMARY_CHAPTERS[chapterKey]) return PRIMARY_CHAPTERS[chapterKey];
-  if (MIDDLE_SCHOOL_CHAPTERS[chapterKey]) return MIDDLE_SCHOOL_CHAPTERS[chapterKey];
-  if (HIGH_SCHOOL_CHAPTERS[chapterKey]) return HIGH_SCHOOL_CHAPTERS[chapterKey];
-  
-  // Try with Hindi subject name
-  const hindiKey = `${classNum}_${subject}`;
-  if (PRIMARY_CHAPTERS[hindiKey]) return PRIMARY_CHAPTERS[hindiKey];
-  if (MIDDLE_SCHOOL_CHAPTERS[hindiKey]) return MIDDLE_SCHOOL_CHAPTERS[hindiKey];
-  if (HIGH_SCHOOL_CHAPTERS[hindiKey]) return HIGH_SCHOOL_CHAPTERS[hindiKey];
-  
-  return [];
 };
