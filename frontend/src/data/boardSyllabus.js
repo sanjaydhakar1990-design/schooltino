@@ -1,4 +1,4 @@
-// Board-wise Complete Syllabus Data for India - 2024-25
+// Board-wise Complete Syllabus Data for India - 2025-26
 // CBSE, MP Board (MPBSE), RBSE (Rajasthan Board), NCERT
 // Nursery to Class 12 - All Subjects with Chapters
 
@@ -1073,7 +1073,7 @@ export const MIDDLE_SCHOOL_CHAPTERS = {
   ],
 };
 
-// Class 9-10 CBSE Chapters (NCERT 2024-25 Rationalized Syllabus)
+// Class 9-10 CBSE Chapters (NCERT 2025-26 Latest Syllabus)
 export const CBSE_CHAPTERS = {
   // Class 9
   '9_Hindi': [

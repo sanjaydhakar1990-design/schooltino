@@ -300,7 +300,7 @@ export default function AIPaperPage() {
         time_duration: parseInt(formData.time_duration),
         language: formData.language, // Pass selected language
         marks_config: marksConfig,
-        syllabus_year: '2024-25',
+        syllabus_year: '2025-26',
         board: schoolBoard
       };
 
@@ -417,7 +417,7 @@ export default function AIPaperPage() {
           <BookOpen className="w-6 h-6 text-indigo-600" />
           <div className="flex-1">
             <p className="font-medium text-indigo-900">
-              {BOARDS[schoolBoard]?.name || schoolBoard} - {isAppHindi ? 'सत्र' : 'Session'} 2024-25
+              {BOARDS[schoolBoard]?.name || schoolBoard} - {isAppHindi ? 'सत्र' : 'Session'} 2025-26
             </p>
             <p className="text-sm text-indigo-600">
               {useNcertSyllabus && schoolBoard !== 'NCERT' ? 
@@ -948,7 +948,7 @@ export default function AIPaperPage() {
         <h1 className="text-2xl font-bold text-slate-900">
           {isAppHindi ? 'AI प्रश्न पत्र जनरेटर' : 'AI Question Paper Generator'}
         </h1>
-        <p className="text-slate-500 mt-1">{BOARDS[schoolBoard]?.name} 2024-25 {isAppHindi ? 'पाठ्यक्रम' : 'Syllabus'}</p>
+        <p className="text-slate-500 mt-1">{BOARDS[schoolBoard]?.name} 2025-26 {isAppHindi ? 'पाठ्यक्रम' : 'Syllabus'}</p>
       </div>
 
       {/* Stepper - Hidden in print */}
