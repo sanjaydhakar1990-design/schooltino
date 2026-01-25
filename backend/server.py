@@ -4205,9 +4205,28 @@ GENERATE THE PAPER NOW! Return ONLY the JSON object above.
             api_key=api_key,
             session_id=f"paper-{str(uuid.uuid4())[:8]}",
             system_message=system_prompt
-        ).with_model("openai", "gpt-4o-mini")  # Use gpt-4o-mini for faster generation
+        ).with_model("openai", "gpt-4o-mini")
         
-        user_msg = UserMessage(text=f"Generate a {request.subject} question paper for {request.class_name} on topic: {request.chapter}. Total marks MUST be exactly {request.total_marks}. Generate in {request.language} language.")
+        # ✅ IMPROVED USER MESSAGE - More explicit about marks
+        user_msg = UserMessage(text=f"""Generate a complete question paper with these EXACT requirements:
+
+Subject: {request.subject}
+Class: {request.class_name}  
+Chapter/Topic: {request.chapter}
+Total Marks: {request.total_marks} (MUST BE EXACT - verify sum at end!)
+Language: {request.language}
+Difficulty: {request.difficulty}
+
+CRITICAL: Every question MUST have a "marks" field with a number (1, 2, 3, 4, or 5).
+The sum of ALL question marks MUST equal EXACTLY {request.total_marks}.
+
+Example: If total marks = 20, and you have:
+- 10 MCQs × 1 mark = 10 marks
+- 2 Short × 3 marks = 6 marks  
+- 1 Long × 4 marks = 4 marks
+Total = 10+6+4 = 20 marks ✓
+
+Generate the paper now in pure {request.language} language.""")
         response = await chat.send_message(user_msg)
         
         # Parse response
