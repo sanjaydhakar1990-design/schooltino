@@ -394,7 +394,7 @@ export const SYLLABUS_2025 = {
           { id: 2, name: "Noses", nameHi: "नाक" },
           { id: 3, name: "Run!", nameHi: "दौड़ो!" },
           { id: 4, name: "Why?", nameHi: "क्यों?" },
-          { id: 5, name: "Don"t be Afraid of the Dark', nameHi: "अंधेरे से मत डरो" },
+          { id: 5, name: "Don't be Afraid of the Dark", nameHi: "अंधेरे से मत डरो" },
           { id: 6, name: "The Donkey", nameHi: "गधा" },
           { id: 7, name: "A Watering Rhyme", nameHi: "पानी की कविता" },
           { id: 8, name: "Books", nameHi: "किताबें" },
