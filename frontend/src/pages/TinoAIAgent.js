@@ -315,25 +315,14 @@ export default function TinoAIAgent() {
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </Button>
 
-                {/* Main Voice Button */}
-                <button
-                  onClick={aiState === 'listening' ? stopListening : startListening}
-                  disabled={aiState === 'thinking' || aiState === 'speaking'}
-                  className={`relative w-16 h-16 rounded-full transition-all duration-300 ${
-                    aiState === 'listening'
-                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 scale-110 shadow-lg shadow-pink-500/30'
-                      : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-105 shadow-lg shadow-indigo-500/30'
-                  } ${(aiState === 'thinking' || aiState === 'speaking') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {aiState === 'listening' ? (
-                    <MicOff className="w-6 h-6 text-white mx-auto" />
-                  ) : (
-                    <Mic className="w-6 h-6 text-white mx-auto" />
-                  )}
-                  {aiState === 'listening' && (
-                    <span className="absolute inset-0 rounded-full bg-pink-500/30 animate-ping" />
-                  )}
-                </button>
+                {/* ❌ MICROPHONE DISABLED - Text-only mode
+                <button className="hidden">Voice Disabled</button>
+                */}
+                
+                {/* Text-only notice */}
+                <div className="text-center text-sm text-slate-500 mb-2">
+                  📝 Text Chat Only (Voice Disabled)
+                </div>
 
                 <Button
                   variant="outline"
