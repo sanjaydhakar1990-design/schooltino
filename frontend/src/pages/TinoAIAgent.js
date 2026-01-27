@@ -37,16 +37,17 @@ export default function TinoAIAgent() {
   const { user, schoolId } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [aiState, setAiState] = useState('idle'); // idle, listening, thinking, speaking
+  const [aiState, setAiState] = useState('idle'); // idle, thinking (NO listening, NO speaking - text only)
   const [messages, setMessages] = useState([]);
   const [currentResponse, setCurrentResponse] = useState('');
   const [inputText, setInputText] = useState('');
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false); // ❌ VOICE DISABLED
+  const [isMuted, setIsMuted] = useState(true); // ❌ ALWAYS MUTED (no audio)
   const [stats, setStats] = useState(null);
   
+  // ❌ NO voice recognition - text only
   const recognitionRef = useRef(null);
-  const synthRef = useRef(window.speechSynthesis);
+  const synthRef = useRef(null); // ❌ NO speech synthesis
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
