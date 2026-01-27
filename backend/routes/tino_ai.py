@@ -241,7 +241,66 @@ async def get_specific_data(school_id: str, query_type: str, params: dict = None
 
 @router.post("/chat", response_model=TinoResponse)
 async def chat_with_tino(request: TinoMessage):
-    """Main chat endpoint for Tino AI"""
+    """
+    TEXT-ONLY Chat with AI Tino (2025-26)
+    No voice, no system actions, no form control - pure information assistant
+    """
+    try:
+        # Check for system control commands and BLOCK them
+        blocked_keywords = [
+            'form kholo', 'open form', 'admission kholo', 'kholo', 'open',
+            'data update', 'update karo', 'form fill', 'fill karo',
+            'record update', 'delete karo', 'add karo', 'remove karo',
+            'student add', 'staff add', 'create', 'banao'
+        ]
+        
+        message_lower = request.message.lower()
+        if any(keyword in message_lower for keyword in blocked_keywords):
+            # Polite blocking message in user's language
+            if request.language == 'hi' or any(c in request.message for c in 'अआइईउऊएऐओऔ'):
+                return TinoResponse(
+                    response="🙏 नमस्ते! मैं अब सिर्फ text assistant हूँ। Forms open करने, data update करने या system control के लिए कृपया dashboard में manually जाएं।\n\n💡 मैं आपकी मदद कर सकता हूँ:\n- जानकारी देने में\n- सुझाव देने में\n- सवालों के जवाब देने में\n\nDashboard में जाकर manually काम करें। 😊",
+                    action_taken="blocked_system_command"
+                )
+            else:
+                return TinoResponse(
+                    response="👋 Hello! I'm now a text-only assistant. For opening forms, updating data, or system control, please use the dashboard manually.\n\n💡 I can help you with:\n- Providing information\n- Giving suggestions\n- Answering questions\n\nPlease perform actions manually in the dashboard. 😊",
+                    action_taken="blocked_system_command"
+                )
+        
+        # Use Sarvam API or Emergent LLM for text generation
+        api_key = os.environ.get("SARVAM_API_KEY") or EMERGENT_LLM_KEY
+        
+        if not api_key:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Create chat with TEXT-ONLY system prompt
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=request.session_id or f"tino-text-{request.school_id}",
+            system_message=TINO_SYSTEM_PROMPT
+        ).with_model("openai", "gpt-4o-mini")
+        
+        # Send user message
+        user_msg = UserMessage(text=request.message)
+        response_text = await chat.send_message(user_msg)
+        
+        return TinoResponse(
+            response=response_text,
+            action_taken="text_response"
+        )
+        
+    except Exception as e:
+        # Friendly error in user's language
+        if request.language == 'hi' or any(c in request.message for c in 'अआइईउऊएऐओऔ'):
+            error_msg = f"😔 क्षमा करें! कुछ technical समस्या हो गई। कृपया फिर से try करें।"
+        else:
+            error_msg = f"😔 Sorry! A technical issue occurred. Please try again."
+        
+        return TinoResponse(
+            response=error_msg,
+            action_taken="error"
+        )
     try:
         if not EMERGENT_LLM_KEY:
             print("ERROR: EMERGENT_LLM_KEY is not configured!")
