@@ -147,69 +147,19 @@ export default function TinoAIAgent() {
   };
 
   // Voice Recognition
-  // ❌ VOICE FEATURES DISABLED - Text-only mode
+  // ❌ VOICE DISABLED - Text chat only
   const startListening = useCallback(() => {
-    toast.info('Voice feature disabled. Please use text chat only.');
+    toast.info('🔇 Voice disabled. Please type your message.');
+    return;
   }, []);
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast.error('Voice recognition not supported');
-      return;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = 'hi-IN';
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = true;
-
-    recognitionRef.current.onstart = () => {
-      setAiState('listening');
-    };
-
-    recognitionRef.current.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setInputText(transcript);
-      
-      if (event.results[0].isFinal) {
-        sendMessage(transcript);
-      }
-    };
-
-    recognitionRef.current.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      setAiState('idle');
-    };
-
-    recognitionRef.current.onend = () => {
-      if (aiState === 'listening') {
-        setAiState('idle');
-      }
-    };
-
-    recognitionRef.current.start();
-  }, [aiState]);
 
   const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
     setAiState('idle');
   };
 
-  // Text to Speech
-  // ❌ NO SPEAKING - Text only
   const speakText = (text) => {
-    // Voice disabled - text-only mode
-    return;
-  };
-    if ('speechSynthesis' in window) {
-      const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').replace(/\*\*/g, '');
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'hi-IN';
-      utterance.rate = 0.9;
-      utterance.onend = () => setAiState('idle');
-      synthRef.current.speak(utterance);
-    }
+    // No voice output - text only
+    setAiState('idle');
   };
 
   const handleKeyPress = (e) => {
