@@ -147,7 +147,10 @@ export default function TinoAIAgent() {
   };
 
   // Voice Recognition
+  // ❌ VOICE FEATURES DISABLED - Text-only mode
   const startListening = useCallback(() => {
+    toast.info('Voice feature disabled. Please use text chat only.');
+  }, []);
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast.error('Voice recognition not supported');
       return;
@@ -194,7 +197,11 @@ export default function TinoAIAgent() {
   };
 
   // Text to Speech
+  // ❌ NO SPEAKING - Text only
   const speakText = (text) => {
+    // Voice disabled - text-only mode
+    return;
+  };
     if ('speechSynthesis' in window) {
       const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').replace(/\*\*/g, '');
       const utterance = new SpeechSynthesisUtterance(cleanText);
