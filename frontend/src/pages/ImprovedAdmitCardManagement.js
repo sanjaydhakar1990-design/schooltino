@@ -636,6 +636,10 @@ const ImprovedAdmitCardManagement = () => {
                   onGenerate={() => generateBulkAdmitCards(exam.id, exam.classes)}
                   onPreview={() => showPreview(exam)}
                   onPublish={() => publishToStudyTino(exam.id)}
+                  onEdit={() => openEditExam(exam)}
+                  onDelete={() => confirmDeleteExam(exam)}
+                  onPrint={() => printAdmitCardDirect(exam)}
+                  onCashFee={() => openCashFeeDialog(exam)}
                 />
               ))}
             </div>
