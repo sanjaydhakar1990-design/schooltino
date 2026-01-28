@@ -1141,19 +1141,39 @@ const ImprovedAdmitCardManagement = () => {
 };
 
 // Exam Card Component
-const ExamCard = ({ exam, examTypes, onGenerate, onPreview, onPublish }) => {
+const ExamCard = ({ exam, examTypes, onGenerate, onPreview, onPublish, onEdit, onDelete, onPrint, onCashFee }) => {
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 hover:border-indigo-400 hover:shadow-lg transition-all p-5">
       <div className="flex items-start justify-between mb-3">
-        <div>
+        <div className="flex-1">
           <h3 className="font-bold text-lg text-gray-900">{exam.exam_name}</h3>
           <Badge variant="outline" className="mt-1">
             {examTypes.find(t => t.value === exam.exam_type)?.icon} {examTypes.find(t => t.value === exam.exam_type)?.label}
           </Badge>
         </div>
-        <Badge className={exam.status === 'upcoming' ? 'bg-blue-500' : exam.status === 'ongoing' ? 'bg-green-500' : 'bg-gray-500'}>
-          {exam.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge className={exam.status === 'upcoming' ? 'bg-blue-500' : exam.status === 'ongoing' ? 'bg-green-500' : 'bg-gray-500'}>
+            {exam.status}
+          </Badge>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            onClick={() => onEdit(exam)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-1"
+            title="Edit Exam"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            onClick={() => onDelete(exam)}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1"
+            title="Delete Exam"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-2 text-sm text-gray-600 mb-4">
@@ -1171,28 +1191,42 @@ const ExamCard = ({ exam, examTypes, onGenerate, onPreview, onPublish }) => {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 mb-2">
         <Button 
           size="sm" 
           variant="outline"
-          onClick={onPreview}
+          onClick={() => onPreview(exam)}
           className="text-xs"
         >
-          <Eye className="w-3 h-3" />
+          <Eye className="w-3 h-3 mr-1" />
+          Preview
         </Button>
         <Button 
           size="sm"
-          onClick={onGenerate}
+          onClick={() => onPrint(exam)}
           className="bg-indigo-600 hover:bg-indigo-700 text-xs"
         >
-          <Printer className="w-3 h-3" />
+          <Printer className="w-3 h-3 mr-1" />
+          Print
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <Button 
+          size="sm"
+          variant="outline"
+          onClick={() => onCashFee(exam)}
+          className="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs"
+        >
+          💵 Cash Fee
         </Button>
         <Button 
           size="sm"
-          onClick={onPublish}
+          onClick={() => onPublish(exam.id)}
           className="bg-green-600 hover:bg-green-700 text-xs"
         >
-          <Send className="w-3 h-3" />
+          <Send className="w-3 h-3 mr-1" />
+          Publish
         </Button>
       </div>
     </div>
