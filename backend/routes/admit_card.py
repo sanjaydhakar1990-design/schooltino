@@ -281,13 +281,21 @@ async def get_exams(school_id: str, type: str = None):
     
     query = {"school_id": school_id}
     if type:
-        query["exam_category"] = type
+        # Include exams without exam_category for backward compatibility
+        query["$or"] = [
+            {"exam_category": type},
+            {"exam_category": {"$exists": False}}
+        ]
     
     exams = await db.exams.find(query).sort("created_at", -1).to_list(50)
     
     today = date.today()
     for exam in exams:
         exam.pop("_id", None)
+        
+        # Set default category if missing
+        if "exam_category" not in exam:
+            exam["exam_category"] = "school"
         
         # Update status based on dates
         if exam.get("start_date") and exam.get("end_date"):
