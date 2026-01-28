@@ -368,6 +368,135 @@ const ImprovedAdmitCardManagement = () => {
     }
   };
 
+  // Edit exam
+  const openEditExam = (exam) => {
+    setEditingExam(exam);
+    setExamForm({
+      exam_name: exam.exam_name || '',
+      exam_type: exam.exam_type || 'unit_test',
+      start_date: exam.start_date || '',
+      end_date: exam.end_date || '',
+      classes: exam.classes || [],
+      subjects: exam.subjects || [],
+      instructions: exam.instructions || [],
+      venue: exam.venue || ''
+    });
+    setShowExamDialog(true);
+  };
+
+  // Update exam
+  const updateExam = async () => {
+    if (!examForm.exam_name || !examForm.start_date || !examForm.end_date) {
+      toast.error('Exam name and dates are required');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API}/api/admit-card/exam/${editingExam.id}`, {
+        school_id: schoolId,
+        ...examForm
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success(`✅ Exam "${examForm.exam_name}" updated!`);
+      setShowExamDialog(false);
+      setEditingExam(null);
+      resetExamForm();
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Exam update failed');
+    }
+  };
+
+  // Delete exam
+  const confirmDeleteExam = (exam) => {
+    setExamToDelete(exam);
+    setShowDeleteDialog(true);
+  };
+
+  const deleteExam = async () => {
+    if (!examToDelete) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API}/api/admit-card/exam/${examToDelete.id}?school_id=${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success(`✅ Exam "${examToDelete.exam_name}" deleted!`);
+      setShowDeleteDialog(false);
+      setExamToDelete(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Delete failed');
+    }
+  };
+
+  // Cash fee collection
+  const openCashFeeDialog = (exam) => {
+    setPrintExam(exam);
+    setShowCashFeeDialog(true);
+  };
+
+  const collectCashFee = async (studentId, amount) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/api/admit-card/collect-cash-fee`, {
+        school_id: schoolId,
+        student_id: studentId,
+        exam_id: printExam?.id,
+        amount: parseFloat(amount),
+        collected_by: user?.id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success('✅ Cash fee collected successfully!');
+    } catch (err) {
+      toast.error('Fee collection failed');
+    }
+  };
+
+  // Print admit card directly
+  const printAdmitCardDirect = async (exam, studentId = null) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // If student ID provided, print for that student
+      // Otherwise, bulk print for all students
+      if (studentId) {
+        const previewRes = await axios.get(
+          `${API}/api/admit-card/preview/${schoolId}/${exam.id}/${studentId}?force=true`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setPreviewData(previewRes.data.preview);
+        setShowPreviewDialog(true);
+      } else {
+        // Bulk print - get first student for demo
+        const studentsRes = await axios.get(
+          `${API}/api/students?school_id=${schoolId}&class_id=${exam.classes[0]}&limit=1`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (studentsRes.data.length > 0) {
+          const student = studentsRes.data[0];
+          const previewRes = await axios.get(
+            `${API}/api/admit-card/preview/${schoolId}/${exam.id}/${student.id}?force=true`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setPreviewData(previewRes.data.preview);
+          setShowPreviewDialog(true);
+        } else {
+          toast.error('No students found in selected classes');
+        }
+      }
+    } catch (err) {
+      toast.error('Failed to generate admit card');
+    }
+  };
+
   const examTypes = [
     { value: 'unit_test', label: 'Unit Test', icon: '📝' },
     { value: 'quarterly', label: 'Quarterly / त्रैमासिक', icon: '📚' },
