@@ -61,6 +61,7 @@ import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
 import AdmitCardManagement from './pages/AdmitCardManagement';
 import ImprovedAdmitCardManagement from './pages/ImprovedAdmitCardManagement';
+import AdmitCardManagementFixed from './pages/AdmitCardManagementFixed';
 import PDFDownloadPage from './pages/PDFDownloadPage';
 import SetupGuidePage from './pages/SetupGuidePage';
 import SuperAdminPanel from './pages/SuperAdminPanel';
