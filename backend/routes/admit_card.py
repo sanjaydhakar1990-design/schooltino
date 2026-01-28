@@ -285,8 +285,24 @@ async def get_exams(school_id: str, type: str = None):
     
     exams = await db.exams.find(query).sort("created_at", -1).to_list(50)
     
+    today = date.today()
     for exam in exams:
         exam.pop("_id", None)
+        
+        # Update status based on dates
+        if exam.get("start_date") and exam.get("end_date"):
+            try:
+                start_date = date.fromisoformat(exam["start_date"])
+                end_date = date.fromisoformat(exam["end_date"])
+                
+                if today < start_date:
+                    exam["status"] = "upcoming"
+                elif start_date <= today <= end_date:
+                    exam["status"] = "ongoing"
+                else:
+                    exam["status"] = "completed"
+            except:
+                exam["status"] = "upcoming"
     
     return {"exams": exams}
 
