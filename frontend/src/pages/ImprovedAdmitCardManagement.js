@@ -399,19 +399,23 @@ const ImprovedAdmitCardManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API}/api/admit-card/exam/${editingExam.id}`, {
+      console.log('Updating exam:', editingExam.id, examForm);
+      
+      const response = await axios.put(`${API}/api/admit-card/exam/${editingExam.id}`, {
         school_id: schoolId,
         ...examForm
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Update response:', response.data);
       toast.success(`✅ Exam "${examForm.exam_name}" updated!`);
       setShowExamDialog(false);
       setEditingExam(null);
       resetExamForm();
       fetchData();
     } catch (err) {
+      console.error('Update error:', err);
       toast.error(err.response?.data?.detail || 'Exam update failed');
     }
   };
