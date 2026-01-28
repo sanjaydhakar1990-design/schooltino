@@ -1297,7 +1297,7 @@ const ExamCard = ({ exam, examTypes, onGenerate, onPreview, onPublish, onEdit, o
 };
 
 // Board Exam Card Component
-const BoardExamCard = ({ exam, onPublish }) => {
+const BoardExamCard = ({ exam, onPublish, onBulkUpload }) => {
   return (
     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg transition-all p-5">
       <div className="flex items-start justify-between mb-3">
@@ -1318,12 +1318,12 @@ const BoardExamCard = ({ exam, onPublish }) => {
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 mb-2">
         {exam.admit_card_url && (
           <Button 
             size="sm"
             variant="outline"
-            className="flex-1 text-xs"
+            className="text-xs"
             onClick={() => window.open(exam.admit_card_url, '_blank')}
           >
             <Download className="w-3 h-3 mr-1" />
@@ -1332,13 +1332,22 @@ const BoardExamCard = ({ exam, onPublish }) => {
         )}
         <Button 
           size="sm"
-          onClick={onPublish}
-          className="flex-1 bg-purple-600 hover:bg-purple-700 text-xs"
+          onClick={() => onBulkUpload(exam)}
+          className="bg-purple-600 hover:bg-purple-700 text-xs"
         >
-          <ExternalLink className="w-3 h-3 mr-1" />
-          Publish
+          <Upload className="w-3 h-3 mr-1" />
+          Bulk Upload
         </Button>
       </div>
+
+      <Button 
+        size="sm"
+        onClick={() => onPublish(exam.id)}
+        className="w-full bg-green-600 hover:bg-green-700 text-xs"
+      >
+        <ExternalLink className="w-3 h-3 mr-1" />
+        Publish to StudyTino
+      </Button>
     </div>
   );
 };
