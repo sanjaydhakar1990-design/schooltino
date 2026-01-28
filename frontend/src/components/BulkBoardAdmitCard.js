@@ -193,11 +193,12 @@ Jane Smith,Robert Smith,Linda Smith,2008-08-20,Class 10,102,2026001235,Centre Co
                   className="hidden"
                   id="bulk-student-upload"
                 />
-                <label htmlFor="bulk-student-upload">
-                  <Button as="span" className="cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Choose File
-                  </Button>
+                <label 
+                  htmlFor="bulk-student-upload"
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-4 py-2 cursor-pointer"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Choose File
                 </label>
                 {uploadedFile && (
                   <p className="text-sm text-green-600 mt-3 font-medium">
