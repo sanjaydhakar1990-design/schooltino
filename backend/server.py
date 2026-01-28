@@ -3547,6 +3547,192 @@ async def bulk_upload_attendance_excel(
                 "school_id": school_id
             },
             {
+
+
+@api_router.post("/attendance/student/apply-leave")
+async def student_apply_leave(leave_data: dict, current_user: dict = Depends(get_current_user)):
+    """Student applies for leave - goes to class teacher for approval"""
+    school_id = leave_data.get("school_id")
+    student_id = leave_data.get("student_id")
+    
+    # Get student's class teacher
+    student = await db.students.find_one({"id": student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    class_info = await db.classes.find_one({"id": student.get("class_id")})
+    class_teacher_id = class_info.get("class_teacher_id") if class_info else None
+    
+    leave_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "student_id": student_id,
+        "student_name": student.get("name"),
+        "class_id": student.get("class_id"),
+        "leave_type": leave_data.get("leave_type"),
+        "start_date": leave_data.get("start_date"),
+        "end_date": leave_data.get("end_date"),
+        "reason": leave_data.get("reason", ""),
+        "approver_id": class_teacher_id,
+        "status": "pending",
+        "applied_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.leave_applications.insert_one(leave_record)
+    
+    return {
+        "success": True,
+        "leave_id": leave_record["id"],
+        "status": "pending",
+        "message": "Leave application sent to class teacher"
+    }
+
+@api_router.post("/attendance/teacher/apply-leave")
+async def teacher_apply_leave(leave_data: dict, current_user: dict = Depends(get_current_user)):
+    """Teacher applies for leave - goes to admin for approval"""
+    school_id = leave_data.get("school_id")
+    teacher_id = leave_data.get("teacher_id")
+    
+    leave_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "teacher_id": teacher_id,
+        "teacher_name": current_user.get("name"),
+        "leave_type": leave_data.get("leave_type"),
+        "start_date": leave_data.get("start_date"),
+        "end_date": leave_data.get("end_date"),
+        "reason": leave_data.get("reason", ""),
+        "status": "pending",
+        "applied_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.teacher_leave_applications.insert_one(leave_record)
+    
+    return {
+        "success": True,
+        "leave_id": leave_record["id"],
+        "status": "pending",
+        "message": "Leave application sent to admin"
+    }
+
+@api_router.get("/attendance/pending-leaves")
+async def get_pending_leave_approvals(
+    approver_id: str,
+    school_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get pending leave applications for approval"""
+    leaves = await db.leave_applications.find({
+        "approver_id": approver_id,
+        "school_id": school_id,
+        "status": "pending"
+    }).to_list(50)
+    
+    for leave in leaves:
+        leave.pop("_id", None)
+    
+    return {"leaves": leaves}
+
+@api_router.post("/attendance/approve-leave")
+async def approve_leave_application(approval_data: dict, current_user: dict = Depends(get_current_user)):
+    """Approve or reject leave application"""
+    leave_id = approval_data.get("leave_id")
+    approved = approval_data.get("approved", False)
+    
+    # Update leave status
+    await db.leave_applications.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "approved" if approved else "rejected",
+            "approved_by": current_user.get("id"),
+            "approved_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # If approved, mark attendance
+    if approved:
+        leave = await db.leave_applications.find_one({"id": leave_id})
+        if leave:
+            # Mark attendance as on_leave for date range
+            from datetime import timedelta
+            current = datetime.fromisoformat(leave["start_date"])
+            end = datetime.fromisoformat(leave["end_date"])
+            
+            while current <= end:
+                date_str = current.strftime('%Y-%m-%d')
+                
+                await db.attendance.update_one(
+                    {
+                        "student_id": leave["student_id"],
+                        "date": date_str,
+                        "school_id": leave["school_id"]
+                    },
+                    {
+                        "$set": {
+                            "status": "on_leave",
+                            "leave_type": leave["leave_type"],
+                            "leave_id": leave_id
+                        },
+                        "$setOnInsert": {
+                            "id": str(uuid.uuid4()),
+                            "created_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    },
+                    upsert=True
+                )
+                
+                current += timedelta(days=1)
+    
+    return {
+        "success": True,
+        "message": "Leave approved" if approved else "Leave rejected"
+    }
+
+@api_router.get("/attendance/student/{student_id}")
+async def get_student_attendance_history(
+    student_id: str,
+    school_id: str,
+    limit: int = 30,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get student's attendance history"""
+    attendance_records = await db.attendance.find({
+        "student_id": student_id,
+        "school_id": school_id
+    }).sort("date", -1).limit(limit).to_list(limit)
+    
+    for record in attendance_records:
+        record.pop("_id", None)
+    
+    return {"attendance": attendance_records}
+
+@api_router.get("/attendance/student/{student_id}/stats")
+async def get_student_attendance_stats(
+    student_id: str,
+    school_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get student attendance statistics"""
+    
+    total = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id})
+    present = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "present"})
+    absent = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "absent"})
+    leave = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "on_leave"})
+    late = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "late"})
+    
+    present_percentage = round((present / total * 100), 1) if total > 0 else 0
+    
+    return {
+        "total_days": total,
+        "present_days": present,
+        "absent_days": absent,
+        "leave_days": leave,
+        "late_days": late,
+        "present_percentage": present_percentage
+    }
+
                 "$set": {
                     "status": record.get("status", "present"),
                     "updated_at": datetime.now(timezone.utc).isoformat()
