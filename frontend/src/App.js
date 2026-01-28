@@ -60,6 +60,7 @@ import MarketingPage from './pages/MarketingPage';
 import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
 import AdmitCardManagement from './pages/AdmitCardManagement';
+import ImprovedAdmitCardManagement from './pages/ImprovedAdmitCardManagement';
 import PDFDownloadPage from './pages/PDFDownloadPage';
 import SetupGuidePage from './pages/SetupGuidePage';
 import SuperAdminPanel from './pages/SuperAdminPanel';
