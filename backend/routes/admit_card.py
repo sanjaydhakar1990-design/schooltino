@@ -275,10 +275,15 @@ async def create_exam(exam: ExamCreate):
     }
 
 @router.get("/exams/{school_id}")
-async def get_exams(school_id: str):
-    """Get all exams for a school"""
+async def get_exams(school_id: str, type: str = None):
+    """Get all exams for a school (filter by type: school or board)"""
     db = get_database()
-    exams = await db.exams.find({"school_id": school_id}).sort("created_at", -1).to_list(50)
+    
+    query = {"school_id": school_id}
+    if type:
+        query["exam_category"] = type
+    
+    exams = await db.exams.find(query).sort("created_at", -1).to_list(50)
     
     for exam in exams:
         exam.pop("_id", None)
