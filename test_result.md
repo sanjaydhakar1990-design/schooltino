@@ -709,6 +709,21 @@ backend:
         agent: "testing"
         comment: "✅ STUDENT ADMISSION FORM FIX VERIFIED WORKING! Test Scenario 1 - Empty Strings: POST /api/students/admit with empty strings for optional fields (email='', blood_group='', photo_url='', aadhar_no='', previous_school='') returns 200 OK ✅ Student created successfully: student_id=STU-2026-00003, login_id=STU-2026-00003, temporary_password=9VhHbDbC, parent_id=PAR-2026-00001 ✅ NO 422 validation errors ✅ Empty strings converted to None automatically by validator ✅. Test Scenario 2 - Partial Data: POST /api/students/admit with mix of filled and empty fields (email='teststudent@example.com', blood_group='O+', photo_url='', aadhar_no='123456789012', previous_school='') returns 200 OK ✅ Student created successfully: student_id=STU-2026-00004 ✅ Validator correctly handles mix of filled and empty fields ✅. CONCLUSION: The @validator('*', pre=True) decorator in StudentCreate model (server.py lines 361-365) is working correctly - empty strings are converted to None before validation, preventing 422 errors. Frontend can safely submit empty strings for optional fields."
 
+  - task: "Admit Card Edit/Delete Operations"
+    implemented: true
+    working: true
+    file: "backend/routes/admit_card.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Testing Admit Card Edit/Delete operations as per review request. Expected issue: Edit and Delete showing 'Not Found' error."
+      - working: true
+        agent: "testing"
+        comment: "✅ ADMIT CARD EDIT/DELETE OPERATIONS FULLY WORKING! Test Results: 1) GET /api/admit-card/exams/SCH-DEMO-2026 returns exams list with proper 'id' field ✅ 2) POST /api/admit-card/exam creates exam successfully ✅ 3) PUT /api/admit-card/exam/{exam_id} updates exam successfully - Backend logs show 'Update result: 1 documents modified' ✅ 4) DELETE /api/admit-card/exam/{exam_id}?school_id={school_id} deletes exam successfully - Backend logs show 'Delete result: 1 documents deleted' ✅. All exam documents have proper 'id' field (not '_id'). Both UPDATE and DELETE operations working correctly. ISSUE NOT REPRODUCIBLE - Both operations functioning properly with correct exam lookup by 'id' field."
+
 frontend:
   - task: "PWA Install Prompt"
     implemented: true
