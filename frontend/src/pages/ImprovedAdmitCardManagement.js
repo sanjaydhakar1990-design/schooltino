@@ -803,13 +803,28 @@ const ImprovedAdmitCardManagement = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Create School Exam Dialog */}
-      <Dialog open={showExamDialog} onOpenChange={setShowExamDialog}>
+      {/* Create/Edit School Exam Dialog */}
+      <Dialog open={showExamDialog} onOpenChange={(open) => {
+        setShowExamDialog(open);
+        if (!open) {
+          setEditingExam(null);
+          resetExamForm();
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <Plus className="w-6 h-6 text-indigo-600" />
-              Create School Exam
+              {editingExam ? (
+                <>
+                  <Edit className="w-6 h-6 text-blue-600" />
+                  Edit Exam
+                </>
+              ) : (
+                <>
+                  <Plus className="w-6 h-6 text-indigo-600" />
+                  Create School Exam
+                </>
+              )}
             </DialogTitle>
           </DialogHeader>
           
