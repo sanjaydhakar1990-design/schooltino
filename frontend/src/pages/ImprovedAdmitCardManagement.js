@@ -348,13 +348,14 @@ const ImprovedAdmitCardManagement = () => {
         const previewRes = await axios.get(`${API}/api/admit-card/preview/${schoolId}/${exam.id}/${student.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setPreviewData(previewRes.data);
+        setPreviewData(previewRes.data.preview || previewRes.data);
         setShowPreviewDialog(true);
       } else {
         toast.error('No students found for preview');
       }
     } catch (err) {
-      toast.error('Preview generation failed');
+      console.error('Preview error:', err);
+      toast.error('Preview generation failed: ' + (err.response?.data?.detail || err.message));
     }
   };
 
