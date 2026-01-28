@@ -547,7 +547,7 @@ export default function ImprovedAttendancePage() {
 
       {/* Bulk Upload Dialog */}
       <Dialog open={showBulkUploadDialog} onOpenChange={setShowBulkUploadDialog}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Upload className="w-6 h-6 text-blue-600" />
@@ -555,74 +555,94 @@ export default function ImprovedAttendancePage() {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">📋 Upload Options:</h3>
-              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                <li>Upload old attendance register photos (mobile se click kiya hua)</li>
-                <li>Excel/CSV format mein bulk data upload</li>
-                <li>Date range select kar ke multiple days ka data ek saath</li>
-              </ul>
-            </div>
+          <div className="flex-1 overflow-y-auto pr-2">
+            <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-2">📋 Upload Options:</h3>
+                <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                  <li>Upload old attendance register photos (mobile se click kiya hua)</li>
+                  <li>Excel/CSV format mein bulk data upload</li>
+                  <li>Date range select kar ke multiple days ka data ek saath</li>
+                </ul>
+              </div>
 
-            {/* Photo Upload */}
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-500 transition-all">
-              <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Upload Attendance Register Photos
-              </h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Mobile se old attendance register की photos upload karein
-              </p>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                id="photo-upload"
-                onChange={(e) => {
-                  if (e.target.files?.length > 0) {
-                    toast.success(`${e.target.files.length} photos selected`);
-                    // Handle photo upload
-                  }
-                }}
-              />
-              <label
-                htmlFor="photo-upload"
-                className="inline-flex items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700 h-10 px-6 cursor-pointer"
-              >
-                <Camera className="w-4 h-4 mr-2" />
-                Choose Photos
-              </label>
-            </div>
-
-            {/* Excel Upload */}
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-green-500 transition-all">
-              <FileSpreadsheet className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Upload Excel/CSV File
-              </h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Bulk attendance data upload via Excel
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Template
-                </Button>
+              {/* Photo Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-all">
+                <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  Upload Attendance Register Photos
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Mobile se old attendance register की photos upload karein
+                </p>
                 <input
                   type="file"
-                  accept=".xlsx,.csv"
+                  accept="image/*"
+                  multiple
                   className="hidden"
-                  id="excel-upload"
+                  id="photo-upload"
+                  onChange={(e) => {
+                    if (e.target.files?.length > 0) {
+                      toast.success(`${e.target.files.length} photos selected`);
+                    }
+                  }}
                 />
                 <label
-                  htmlFor="excel-upload"
-                  className="inline-flex items-center justify-center rounded-md bg-green-600 text-white hover:bg-green-700 h-10 px-6 cursor-pointer"
+                  htmlFor="photo-upload"
+                  className="inline-flex items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700 h-10 px-6 cursor-pointer"
                 >
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Upload Excel
+                  <Camera className="w-4 h-4 mr-2" />
+                  Choose Photos
                 </label>
+              </div>
+
+              {/* Excel Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition-all">
+                <FileSpreadsheet className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  Upload Excel/CSV File
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Bulk attendance data upload via Excel
+                </p>
+                <div className="flex gap-3 justify-center flex-wrap">
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      // Generate template CSV
+                      const csv = `Date,Student ID,Student Name,Status\n2026-01-15,STU-2026-00001,Student Name,present\n2026-01-15,STU-2026-00002,Student Name 2,absent\n2026-01-16,STU-2026-00001,Student Name,present`;
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'attendance_template.csv';
+                      link.click();
+                      window.URL.revokeObjectURL(url);
+                      toast.success('Template downloaded!');
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Template
+                  </Button>
+                  <input
+                    type="file"
+                    accept=".xlsx,.csv"
+                    className="hidden"
+                    id="excel-upload"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        toast.success(`File selected: ${e.target.files[0].name}`);
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="excel-upload"
+                    className="inline-flex items-center justify-center rounded-md bg-green-600 text-white hover:bg-green-700 h-10 px-6 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Upload Excel
+                  </label>
+                </div>
               </div>
             </div>
           </div>
