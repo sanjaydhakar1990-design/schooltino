@@ -1635,6 +1635,155 @@ class SchooltinoAPITester:
         
         return success
     
+
+    # ============== STUDENT ADMISSION FORM TESTS - REVIEW REQUEST ==============
+    
+    def test_student_admission_form_submission(self):
+        """Test CRITICAL: Student Admission Form Submission - POST /api/students/admit
+        
+        Review Request: User reports admission form not submitting even after filling all details.
+        Need to identify exact error.
+        """
+        print(f"\n{'='*80}")
+        print(f"🎯 TESTING STUDENT ADMISSION FORM SUBMISSION")
+        print(f"{'='*80}")
+        
+        # Step 1: Login with director credentials
+        print(f"\n📝 Step 1: Login with director@demo.com / demo123")
+        login_data = {
+            "email": "director@demo.com",
+            "password": "demo123"
+        }
+        
+        success, response = self.run_test("Director Login", "POST", "auth/login", 200, login_data)
+        
+        if not success:
+            print(f"\n❌ CRITICAL: Cannot login with director@demo.com / demo123")
+            print(f"   📝 This is blocking the admission form test")
+            return False
+        
+        if 'access_token' in response:
+            self.token = response['access_token']
+            user = response.get('user', {})
+            self.school_id = user.get('school_id')
+            print(f"   ✅ Login successful")
+            print(f"   📝 School ID: {self.school_id}")
+        else:
+            print(f"   ❌ No access token in response")
+            return False
+        
+        # Step 2: Get a valid class_id
+        print(f"\n📝 Step 2: Get valid class_id for admission")
+        success, response = self.run_test("Get Classes", "GET", f"classes?school_id={self.school_id}", 200)
+        
+        if not success or not response.get('classes'):
+            print(f"   ❌ Cannot get classes for school {self.school_id}")
+            return False
+        
+        classes = response.get('classes', [])
+        if not classes:
+            print(f"   ❌ No classes found for school {self.school_id}")
+            return False
+        
+        # Use first available class
+        test_class = classes[0]
+        class_id = test_class.get('id')
+        class_name = test_class.get('name', 'Unknown')
+        print(f"   ✅ Using class: {class_name} (ID: {class_id})")
+        
+        # Step 3: Test POST /api/students/admit with complete student data
+        print(f"\n📝 Step 3: Submit admission form with complete student data")
+        
+        timestamp = datetime.now().strftime('%H%M%S')
+        admission_data = {
+            "name": "Test Student Admission",
+            "class_id": class_id,
+            "school_id": self.school_id,
+            "father_name": "Test Father",
+            "mother_name": "Test Mother",
+            "dob": "2015-01-01",
+            "gender": "male",
+            "address": "Test Address",
+            "mobile": "9876543210",
+            "admission_date": "2026-01-20"
+        }
+        
+        print(f"   📝 Admission Data:")
+        print(f"      - Name: {admission_data['name']}")
+        print(f"      - Class ID: {admission_data['class_id']}")
+        print(f"      - School ID: {admission_data['school_id']}")
+        print(f"      - Father: {admission_data['father_name']}")
+        print(f"      - Mother: {admission_data['mother_name']}")
+        print(f"      - DOB: {admission_data['dob']}")
+        print(f"      - Gender: {admission_data['gender']}")
+        print(f"      - Address: {admission_data['address']}")
+        print(f"      - Mobile: {admission_data['mobile']}")
+        print(f"      - Admission Date: {admission_data['admission_date']}")
+        
+        success, response = self.run_test("Student Admission Form Submit", "POST", "students/admit", 200, admission_data)
+        
+        # Step 4: Check response
+        print(f"\n📝 Step 4: Verify admission response")
+        
+        if not success:
+            print(f"\n❌ ADMISSION FORM SUBMISSION FAILED!")
+            print(f"   📝 This is the exact error the user is experiencing")
+            
+            # Try to get more details about the error
+            try:
+                url = f"{self.base_url}/students/admit"
+                test_headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': f'Bearer {self.token}'
+                }
+                error_response = requests.post(url, json=admission_data, headers=test_headers)
+                print(f"   📝 Status Code: {error_response.status_code}")
+                print(f"   📝 Error Response: {error_response.text}")
+                
+                # Try to parse error details
+                try:
+                    error_json = error_response.json()
+                    print(f"   📝 Error Detail: {error_json.get('detail', 'No detail provided')}")
+                except:
+                    pass
+            except Exception as e:
+                print(f"   📝 Error getting details: {str(e)}")
+            
+            return False
+        
+        # Check if response has required fields
+        print(f"\n✅ ADMISSION FORM SUBMITTED SUCCESSFULLY!")
+        
+        required_fields = ["student_id", "login_id", "temporary_password"]
+        missing_fields = []
+        
+        for field in required_fields:
+            if field in response:
+                print(f"   ✅ {field}: {response[field]}")
+            else:
+                print(f"   ❌ Missing field: {field}")
+                missing_fields.append(field)
+        
+        # Additional response fields
+        if "name" in response:
+            print(f"   📝 Student Name: {response['name']}")
+        if "class_name" in response:
+            print(f"   📝 Class Name: {response['class_name']}")
+        if "parent_id" in response:
+            print(f"   📝 Parent ID: {response['parent_id']}")
+        if "parent_password" in response:
+            print(f"   📝 Parent Password: {response['parent_password']}")
+        
+        if missing_fields:
+            print(f"\n⚠️ WARNING: Response missing required fields: {', '.join(missing_fields)}")
+            return False
+        
+        print(f"\n{'='*80}")
+        print(f"✅ STUDENT ADMISSION FORM TEST COMPLETED SUCCESSFULLY")
+        print(f"{'='*80}")
+        
+        return True
+
     def test_admit_card_apis_priority(self):
         """Test Priority 2: Admit Card APIs"""
         results = []
