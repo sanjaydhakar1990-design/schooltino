@@ -866,6 +866,92 @@ async def get_subjects(school_id: str):
         {"id": "chemistry", "name": "Chemistry (रसायन)"},
         {"id": "biology", "name": "Biology (जीव विज्ञान)"}
     ]
+
+
+@router.put("/exam/{exam_id}")
+async def update_exam(exam_id: str, exam_data: dict):
+    """Update existing exam"""
+    db = get_database()
+    
+    school_id = exam_data.get("school_id")
+    if not school_id:
+        raise HTTPException(status_code=400, detail="school_id required")
+    
+    exam_data.pop("school_id", None)
+    exam_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.exams.update_one(
+        {"id": exam_id, "school_id": school_id},
+        {"$set": exam_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    return {
+        "success": True,
+        "message": "Exam updated successfully"
+    }
+
+@router.delete("/exam/{exam_id}")
+async def delete_exam(exam_id: str, school_id: str):
+    """Delete exam and all related admit cards"""
+    db = get_database()
+    
+    # Delete exam
+    result = await db.exams.delete_one({"id": exam_id, "school_id": school_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    # Delete all admit cards for this exam
+    await db.generated_admit_cards.delete_many({"exam_id": exam_id})
+    
+    return {
+        "success": True,
+        "message": "Exam and admit cards deleted successfully"
+    }
+
+@router.post("/collect-cash-fee")
+async def collect_cash_fee(payment_data: dict):
+    """Collect cash fee for admit card"""
+    db = get_database()
+    
+    # Record cash payment
+    payment_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": payment_data.get("school_id"),
+        "student_id": payment_data.get("student_id"),
+        "exam_id": payment_data.get("exam_id"),
+        "amount": payment_data.get("amount"),
+        "payment_type": "cash",
+        "payment_mode": "cash",
+        "purpose": "admit_card_fee",
+        "collected_by": payment_data.get("collected_by"),
+        "payment_date": datetime.now(timezone.utc).isoformat(),
+        "status": "completed",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payments.insert_one(payment_record)
+    
+    # Update student fee records
+    await db.fee_records.update_one(
+        {
+            "student_id": payment_data.get("student_id"),
+            "school_id": payment_data.get("school_id"),
+            "academic_year": str(date.today().year)
+        },
+        {"$inc": {"paid_amount": payment_data.get("amount")}},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "payment_id": payment_record["id"],
+        "message": "Cash fee collected successfully"
+    }
+
     
     return subjects
 
