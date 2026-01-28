@@ -1676,11 +1676,16 @@ class SchooltinoAPITester:
         print(f"\n📝 Step 2: Get valid class_id for admission")
         success, response = self.run_test("Get Classes", "GET", f"classes?school_id={self.school_id}", 200)
         
-        if not success or not response.get('classes'):
+        if not success:
             print(f"   ❌ Cannot get classes for school {self.school_id}")
             return False
         
-        classes = response.get('classes', [])
+        # Response might be a list or dict with 'classes' key
+        if isinstance(response, list):
+            classes = response
+        else:
+            classes = response.get('classes', [])
+        
         if not classes:
             print(f"   ❌ No classes found for school {self.school_id}")
             return False
