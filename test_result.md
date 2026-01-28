@@ -854,7 +854,8 @@ metadata:
 test_plan:
   current_focus:
     - "Admit Card Edit/Delete Operations"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Admit Card Edit/Delete Operations"
   test_all: false
   test_priority: "admit_card_debug"
 
