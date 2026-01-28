@@ -161,6 +161,11 @@ const ImprovedAdmitCardManagement = () => {
       return;
     }
 
+    // If editing, call update instead
+    if (editingExam) {
+      return updateExam();
+    }
+
     try {
       const token = localStorage.getItem('token');
       await axios.post(`${API}/api/admit-card/exam`, {
