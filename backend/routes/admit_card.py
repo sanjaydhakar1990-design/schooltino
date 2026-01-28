@@ -893,6 +893,14 @@ async def update_exam(exam_id: str, exam_data: dict):
     if not school_id:
         raise HTTPException(status_code=400, detail="school_id required")
     
+    print(f"Update request - exam_id: {exam_id}, school_id: {school_id}")
+    
+    # Check if exam exists
+    exam = await db.exams.find_one({"id": exam_id, "school_id": school_id})
+    if not exam:
+        print(f"Exam not found with id: {exam_id}")
+        raise HTTPException(status_code=404, detail=f"Exam not found with id: {exam_id}")
+    
     exam_data.pop("school_id", None)
     exam_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     
@@ -900,6 +908,8 @@ async def update_exam(exam_id: str, exam_data: dict):
         {"id": exam_id, "school_id": school_id},
         {"$set": exam_data}
     )
+    
+    print(f"Update result: {result.modified_count} documents modified")
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Exam not found")
