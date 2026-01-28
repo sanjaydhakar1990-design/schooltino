@@ -1,0 +1,1105 @@
+/**
+ * IMPROVED ADMIT CARD MANAGEMENT SYSTEM
+ * ✅ School Exams + Board Exams
+ * ✅ Subject-wise scheduling
+ * ✅ Fee validation (percentage-based)
+ * ✅ Preview & Download
+ * ✅ StudyTino Integration
+ * ✅ Better UI/UX
+ */
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Badge } from '../components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+import { 
+  FileText, Settings, Plus, Calendar, Users, Download, CheckCircle,
+  AlertCircle, Percent, Eye, Printer, Upload, BookOpen, School,
+  GraduationCap, Clock, MapPin, X, Edit, Trash2, Send, ExternalLink
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+const API = process.env.REACT_APP_BACKEND_URL || '';
+
+const ImprovedAdmitCardManagement = () => {
+  const { user } = useAuth();
+  const schoolId = user?.school_id;
+
+  const [settings, setSettings] = useState({
+    min_fee_percentage: 30,
+    require_fee_clearance: true,
+    show_photo: true,
+    show_signature: true,
+    show_seal: true,
+    signature_authority: 'principal',
+    enable_studytino_download: true
+  });
+
+  const [exams, setExams] = useState([]);
+  const [boardExams, setBoardExams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showExamDialog, setShowExamDialog] = useState(false);
+  const [showBoardExamDialog, setShowBoardExamDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [classes, setClasses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [activeTab, setActiveTab] = useState('school'); // school or board
+
+  const [examForm, setExamForm] = useState({
+    exam_name: '',
+    exam_type: 'unit_test',
+    start_date: '',
+    end_date: '',
+    classes: [],
+    subjects: [],
+    instructions: [
+      'Admit card अनिवार्य है। बिना admit card के exam में बैठने नहीं दिया जाएगा।',
+      'Exam से 15 मिनट पहले पहुंचें।',
+      'Mobile phone और calculator लाना मना है।'
+    ],
+    venue: ''
+  });
+
+  const [boardExamForm, setBoardExamForm] = useState({
+    exam_name: '',
+    board: 'CBSE',
+    roll_number_prefix: '',
+    centre_code: '',
+    exam_schedule: [],
+    admit_card_file: null
+  });
+
+  useEffect(() => {
+    if (schoolId) {
+      fetchData();
+    }
+  }, [schoolId]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [settingsRes, examsRes, boardExamsRes, classesRes, subjectsRes] = await Promise.allSettled([
+        axios.get(`${API}/api/admit-card/settings/${schoolId}`, { headers }),
+        axios.get(`${API}/api/admit-card/exams/${schoolId}?type=school`, { headers }),
+        axios.get(`${API}/api/admit-card/exams/${schoolId}?type=board`, { headers }),
+        axios.get(`${API}/api/classes?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/api/subjects?school_id=${schoolId}`, { headers })
+      ]);
+
+      if (settingsRes.status === 'fulfilled') {
+        setSettings(settingsRes.value.data);
+      }
+      if (examsRes.status === 'fulfilled') {
+        setExams(examsRes.value.data.exams || []);
+      }
+      if (boardExamsRes.status === 'fulfilled') {
+        setBoardExams(boardExamsRes.value.data.exams || []);
+      }
+      if (classesRes.status === 'fulfilled') {
+        setClasses(classesRes.value.data || []);
+      }
+      if (subjectsRes.status === 'fulfilled') {
+        setSubjects(subjectsRes.value.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      toast.error('Data load करने में समस्या');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/api/admit-card/settings`, {
+        school_id: schoolId,
+        ...settings
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('✅ Settings saved!');
+      setShowSettingsDialog(false);
+    } catch (err) {
+      toast.error('Settings save failed');
+    }
+  };
+
+  const createExam = async () => {
+    if (!examForm.exam_name || !examForm.start_date || !examForm.end_date) {
+      toast.error('Exam name and dates are required');
+      return;
+    }
+
+    if (examForm.classes.length === 0) {
+      toast.error('कम से कम एक class select करें');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/api/admit-card/exam`, {
+        school_id: schoolId,
+        ...examForm,
+        exam_category: 'school',
+        created_by: user?.id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success(`✅ Exam "${examForm.exam_name}" created!`);
+      setShowExamDialog(false);
+      resetExamForm();
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Exam creation failed');
+    }
+  };
+
+  const createBoardExam = async () => {
+    if (!boardExamForm.exam_name || !boardExamForm.board) {
+      toast.error('Exam name and board are required');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      // If admit card file is provided, upload it first
+      let admit_card_url = null;
+      if (boardExamForm.admit_card_file) {
+        const formData = new FormData();
+        formData.append('file', boardExamForm.admit_card_file);
+        formData.append('school_id', schoolId);
+        
+        const uploadRes = await axios.post(`${API}/api/admit-card/upload-board-admit-card`, formData, {
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        admit_card_url = uploadRes.data.file_url;
+      }
+
+      await axios.post(`${API}/api/admit-card/board-exam`, {
+        school_id: schoolId,
+        ...boardExamForm,
+        admit_card_url,
+        exam_category: 'board',
+        created_by: user?.id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success(`✅ Board Exam "${boardExamForm.exam_name}" created!`);
+      setShowBoardExamDialog(false);
+      resetBoardExamForm();
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Board exam creation failed');
+    }
+  };
+
+  const resetExamForm = () => {
+    setExamForm({
+      exam_name: '',
+      exam_type: 'unit_test',
+      start_date: '',
+      end_date: '',
+      classes: [],
+      subjects: [],
+      instructions: [
+        'Admit card अनिवार्य है। बिना admit card के exam में बैठने नहीं दिया जाएगा।',
+        'Exam से 15 मिनट पहले पहुंचें।',
+        'Mobile phone और calculator लाना मना है।'
+      ],
+      venue: ''
+    });
+  };
+
+  const resetBoardExamForm = () => {
+    setBoardExamForm({
+      exam_name: '',
+      board: 'CBSE',
+      roll_number_prefix: '',
+      centre_code: '',
+      exam_schedule: [],
+      admit_card_file: null
+    });
+  };
+
+  const toggleClassSelection = (classId) => {
+    setExamForm(prev => ({
+      ...prev,
+      classes: prev.classes.includes(classId)
+        ? prev.classes.filter(id => id !== classId)
+        : [...prev.classes, classId]
+    }));
+  };
+
+  const addSubject = () => {
+    setExamForm(prev => ({
+      ...prev,
+      subjects: [...prev.subjects, {
+        subject_name: '',
+        exam_date: '',
+        exam_time: '',
+        duration: '3 hours',
+        max_marks: 100
+      }]
+    }));
+  };
+
+  const removeSubject = (index) => {
+    setExamForm(prev => ({
+      ...prev,
+      subjects: prev.subjects.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateSubject = (index, field, value) => {
+    setExamForm(prev => ({
+      ...prev,
+      subjects: prev.subjects.map((subject, i) => 
+        i === index ? { ...subject, [field]: value } : subject
+      )
+    }));
+  };
+
+  const addInstruction = () => {
+    setExamForm(prev => ({
+      ...prev,
+      instructions: [...prev.instructions, '']
+    }));
+  };
+
+  const updateInstruction = (index, value) => {
+    setExamForm(prev => ({
+      ...prev,
+      instructions: prev.instructions.map((inst, i) => i === index ? value : inst)
+    }));
+  };
+
+  const removeInstruction = (index) => {
+    setExamForm(prev => ({
+      ...prev,
+      instructions: prev.instructions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const generateBulkAdmitCards = async (examId, classes) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/api/admit-card/generate-bulk`, {
+        school_id: schoolId,
+        exam_id: examId,
+        class_ids: classes
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success(`✅ ${res.data.generated_count} admit cards generated!`);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Generation failed');
+    }
+  };
+
+  const showPreview = async (exam) => {
+    try {
+      const token = localStorage.getItem('token');
+      // Get first student from first class for preview
+      const studentsRes = await axios.get(`${API}/api/students?school_id=${schoolId}&class_id=${exam.classes[0]}&limit=1`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (studentsRes.data.length > 0) {
+        const student = studentsRes.data[0];
+        const previewRes = await axios.get(`${API}/api/admit-card/preview/${schoolId}/${exam.id}/${student.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPreviewData(previewRes.data);
+        setShowPreviewDialog(true);
+      } else {
+        toast.error('No students found for preview');
+      }
+    } catch (err) {
+      toast.error('Preview generation failed');
+    }
+  };
+
+  const publishToStudyTino = async (examId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/api/admit-card/publish-studytino`, {
+        school_id: schoolId,
+        exam_id: examId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('✅ StudyTino पर publish हो गया! Students download कर सकते हैं।');
+    } catch (err) {
+      toast.error('Publish failed');
+    }
+  };
+
+  const examTypes = [
+    { value: 'unit_test', label: 'Unit Test', icon: '📝' },
+    { value: 'quarterly', label: 'Quarterly / त्रैमासिक', icon: '📚' },
+    { value: 'half_yearly', label: 'Half Yearly / अर्धवार्षिक', icon: '📖' },
+    { value: 'annual', label: 'Annual / वार्षिक', icon: '🎓' },
+    { value: 'pre_board', label: 'Pre-Board', icon: '📋' }
+  ];
+
+  const boards = [
+    { value: 'CBSE', label: 'CBSE' },
+    { value: 'ICSE', label: 'ICSE' },
+    { value: 'MP_BOARD', label: 'MP Board (MPBSE)' },
+    { value: 'RAJASTHAN_BOARD', label: 'Rajasthan Board (RBSE)' },
+    { value: 'UP_BOARD', label: 'UP Board' },
+    { value: 'BIHAR_BOARD', label: 'Bihar Board' },
+    { value: 'OTHER', label: 'Other' }
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Modern Header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 shadow-xl">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="text-white">
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <GraduationCap className="w-8 h-8" />
+              Admit Card Management
+            </h1>
+            <p className="text-indigo-100 mt-1">
+              School Exams + Board Exams | Fee-based Download | StudyTino Integration
+            </p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowSettingsDialog(true)}
+            className="bg-white text-indigo-600 hover:bg-indigo-50 border-0"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Settings
+          </Button>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+          <div className="text-3xl font-bold text-blue-600">{exams.length}</div>
+          <div className="text-sm text-blue-700 mt-1">School Exams</div>
+        </div>
+        <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-200">
+          <div className="text-3xl font-bold text-purple-600">{boardExams.length}</div>
+          <div className="text-sm text-purple-700 mt-1">Board Exams</div>
+        </div>
+        <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
+          <div className="text-3xl font-bold text-green-600">{settings.min_fee_percentage}%</div>
+          <div className="text-sm text-green-700 mt-1">Min Fee Required</div>
+        </div>
+        <div className="bg-amber-50 rounded-xl p-4 border-2 border-amber-200">
+          <div className="text-3xl font-bold text-amber-600">{classes.length}</div>
+          <div className="text-sm text-amber-700 mt-1">Total Classes</div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 border-b">
+        <button
+          onClick={() => setActiveTab('school')}
+          className={`px-6 py-3 font-medium transition-all ${
+            activeTab === 'school'
+              ? 'border-b-2 border-indigo-600 text-indigo-600'
+              : 'text-gray-600 hover:text-indigo-600'
+          }`}
+        >
+          <School className="w-5 h-5 inline mr-2" />
+          School Exams ({exams.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('board')}
+          className={`px-6 py-3 font-medium transition-all ${
+            activeTab === 'board'
+              ? 'border-b-2 border-purple-600 text-purple-600'
+              : 'text-gray-600 hover:text-purple-600'
+          }`}
+        >
+          <GraduationCap className="w-5 h-5 inline mr-2" />
+          Board Exams ({boardExams.length})
+        </button>
+      </div>
+
+      {/* School Exams Tab */}
+      {activeTab === 'school' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              School Exams (Internal)
+            </h2>
+            <Button 
+              onClick={() => setShowExamDialog(true)}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Exam
+            </Button>
+          </div>
+
+          {exams.length === 0 ? (
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+              <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">No school exams created yet</p>
+              <Button 
+                onClick={() => setShowExamDialog(true)}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                Create First Exam
+              </Button>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {exams.map((exam) => (
+                <ExamCard 
+                  key={exam.id}
+                  exam={exam}
+                  examTypes={examTypes}
+                  onGenerate={() => generateBulkAdmitCards(exam.id, exam.classes)}
+                  onPreview={() => showPreview(exam)}
+                  onPublish={() => publishToStudyTino(exam.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Board Exams Tab */}
+      {activeTab === 'board' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Board Exams (CBSE/ICSE/State Boards)
+            </h2>
+            <Button 
+              onClick={() => setShowBoardExamDialog(true)}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Board Exam
+            </Button>
+          </div>
+
+          {boardExams.length === 0 ? (
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+              <GraduationCap className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">No board exams added yet</p>
+              <Button 
+                onClick={() => setShowBoardExamDialog(true)}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Add First Board Exam
+              </Button>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {boardExams.map((exam) => (
+                <BoardExamCard 
+                  key={exam.id}
+                  exam={exam}
+                  onPublish={() => publishToStudyTino(exam.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Settings className="w-6 h-6 text-indigo-600" />
+              Admit Card Settings
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Fee Settings */}
+            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <h3 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
+                <Percent className="w-5 h-5" />
+                Fee Requirements
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <Label>Minimum Fee Percentage (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={settings.min_fee_percentage}
+                    onChange={(e) => setSettings({...settings, min_fee_percentage: parseFloat(e.target.value) || 0})}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-amber-700 mt-1">
+                    Students को कम से कम इतना % fee pay करना होगा admit card download के लिए
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                  <div>
+                    <Label className="text-sm font-medium">Require Fee Clearance</Label>
+                    <p className="text-xs text-gray-500">Enable fee validation before download</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.require_fee_clearance}
+                    onChange={(e) => setSettings({...settings, require_fee_clearance: e.target.checked})}
+                    className="w-5 h-5"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Display Settings */}
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="font-semibold text-blue-900 mb-3">
+                Display Options
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { key: 'show_photo', label: 'Show Student Photo' },
+                  { key: 'show_signature', label: 'Show Authority Signature' },
+                  { key: 'show_seal', label: 'Show School Seal' },
+                  { key: 'enable_studytino_download', label: 'Enable StudyTino Download' }
+                ].map(option => (
+                  <div key={option.key} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                    <Label className="text-sm font-medium">{option.label}</Label>
+                    <input
+                      type="checkbox"
+                      checked={settings[option.key]}
+                      onChange={(e) => setSettings({...settings, [option.key]: e.target.checked})}
+                      className="w-5 h-5"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Signature Authority */}
+            <div>
+              <Label>Signature Authority</Label>
+              <select
+                value={settings.signature_authority}
+                onChange={(e) => setSettings({...settings, signature_authority: e.target.value})}
+                className="w-full p-2 border rounded-lg mt-1"
+              >
+                <option value="director">Director</option>
+                <option value="principal">Principal</option>
+                <option value="vice_principal">Vice Principal</option>
+                <option value="exam_controller">Exam Controller</option>
+              </select>
+            </div>
+
+            <Button 
+              onClick={saveSettings} 
+              className="w-full bg-indigo-600 hover:bg-indigo-700"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Save Settings
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create School Exam Dialog */}
+      <Dialog open={showExamDialog} onOpenChange={setShowExamDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Plus className="w-6 h-6 text-indigo-600" />
+              Create School Exam
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Exam Name *</Label>
+                <Input
+                  placeholder="e.g., Half Yearly 2026"
+                  value={examForm.exam_name}
+                  onChange={(e) => setExamForm({...examForm, exam_name: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Exam Type *</Label>
+                <select
+                  value={examForm.exam_type}
+                  onChange={(e) => setExamForm({...examForm, exam_type: e.target.value})}
+                  className="w-full p-2 border rounded-lg mt-1"
+                >
+                  {examTypes.map(type => (
+                    <option key={type.value} value={type.value}>
+                      {type.icon} {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label>Start Date *</Label>
+                <Input
+                  type="date"
+                  value={examForm.start_date}
+                  onChange={(e) => setExamForm({...examForm, start_date: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>End Date *</Label>
+                <Input
+                  type="date"
+                  value={examForm.end_date}
+                  onChange={(e) => setExamForm({...examForm, end_date: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label>Exam Venue (Optional)</Label>
+                <Input
+                  placeholder="School Premises / Exam Hall"
+                  value={examForm.venue}
+                  onChange={(e) => setExamForm({...examForm, venue: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Class Selection */}
+            <div>
+              <Label className="text-base font-semibold mb-2 block">Select Classes * (कम से कम एक)</Label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-3 border rounded-lg bg-gray-50">
+                {classes.length > 0 ? (
+                  classes.map(cls => (
+                    <label 
+                      key={cls.id} 
+                      className="flex items-center gap-2 p-2 bg-white rounded hover:bg-indigo-50 cursor-pointer border"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={examForm.classes.includes(cls.id)}
+                        onChange={() => toggleClassSelection(cls.id)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm font-medium">{cls.name}</span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="col-span-4 text-center text-gray-500 py-4">
+                    No classes found. Add classes first.
+                  </p>
+                )}
+              </div>
+              {examForm.classes.length > 0 && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✅ {examForm.classes.length} classes selected
+                </p>
+              )}
+            </div>
+
+            {/* Subjects Schedule */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-base font-semibold">Exam Schedule (Subjects)</Label>
+                <Button 
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addSubject}
+                  className="text-indigo-600"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Subject
+                </Button>
+              </div>
+
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {examForm.subjects.map((subject, index) => (
+                  <div key={index} className="p-3 border rounded-lg bg-gray-50">
+                    <div className="grid grid-cols-6 gap-2">
+                      <div className="col-span-2">
+                        <Input
+                          placeholder="Subject Name"
+                          value={subject.subject_name}
+                          onChange={(e) => updateSubject(index, 'subject_name', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          type="date"
+                          value={subject.exam_date}
+                          onChange={(e) => updateSubject(index, 'exam_date', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          type="time"
+                          value={subject.exam_time}
+                          onChange={(e) => updateSubject(index, 'exam_time', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          placeholder="Duration"
+                          value={subject.duration}
+                          onChange={(e) => updateSubject(index, 'duration', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          placeholder="Marks"
+                          value={subject.max_marks}
+                          onChange={(e) => updateSubject(index, 'max_marks', parseInt(e.target.value) || 0)}
+                          className="text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSubject(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {examForm.subjects.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No subjects added yet. Click "Add Subject" to add exam schedule.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-base font-semibold">Instructions</Label>
+                <Button 
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addInstruction}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Instruction
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {examForm.instructions.map((instruction, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={instruction}
+                      onChange={(e) => updateInstruction(index, e.target.value)}
+                      placeholder="Enter instruction"
+                      className="text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeInstruction(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowExamDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={createExam}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Create Exam
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Board Exam Dialog */}
+      <Dialog open={showBoardExamDialog} onOpenChange={setShowBoardExamDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <GraduationCap className="w-6 h-6 text-purple-600" />
+              Add Board Exam
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <p className="text-sm text-purple-800">
+                📌 Board exams के लिए admit card upload करें या details enter करें। 
+                Students StudyTino से download कर सकते हैं।
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Exam Name *</Label>
+                <Input
+                  placeholder="e.g., CBSE Class 10 Annual 2026"
+                  value={boardExamForm.exam_name}
+                  onChange={(e) => setBoardExamForm({...boardExamForm, exam_name: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Board *</Label>
+                <select
+                  value={boardExamForm.board}
+                  onChange={(e) => setBoardExamForm({...boardExamForm, board: e.target.value})}
+                  className="w-full p-2 border rounded-lg mt-1"
+                >
+                  {boards.map(board => (
+                    <option key={board.value} value={board.value}>{board.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label>Roll Number Prefix</Label>
+                <Input
+                  placeholder="e.g., 2026-10-"
+                  value={boardExamForm.roll_number_prefix}
+                  onChange={(e) => setBoardExamForm({...boardExamForm, roll_number_prefix: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Centre Code</Label>
+                <Input
+                  placeholder="e.g., 12345"
+                  value={boardExamForm.centre_code}
+                  onChange={(e) => setBoardExamForm({...boardExamForm, centre_code: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Upload Admit Card */}
+            <div>
+              <Label className="text-base font-semibold mb-2 block">
+                Upload Board Admit Card (Optional)
+              </Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      setBoardExamForm({...boardExamForm, admit_card_file: e.target.files[0]});
+                      toast.success(`File selected: ${e.target.files[0].name}`);
+                    }
+                  }}
+                  className="hidden"
+                  id="board-admit-upload"
+                />
+                <label htmlFor="board-admit-upload" className="cursor-pointer">
+                  <div className="text-sm text-gray-600">
+                    Click to upload admit card template
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    PDF, JPG, PNG (Max 5MB)
+                  </div>
+                </label>
+                {boardExamForm.admit_card_file && (
+                  <div className="mt-3 text-sm text-green-600 font-medium">
+                    ✅ {boardExamForm.admit_card_file.name}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowBoardExamDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={createBoardExam}
+                className="flex-1 bg-purple-600 hover:bg-purple-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Add Board Exam
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Exam Card Component
+const ExamCard = ({ exam, examTypes, onGenerate, onPreview, onPublish }) => {
+  return (
+    <div className="bg-white rounded-xl border-2 border-gray-200 hover:border-indigo-400 hover:shadow-lg transition-all p-5">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-bold text-lg text-gray-900">{exam.exam_name}</h3>
+          <Badge variant="outline" className="mt-1">
+            {examTypes.find(t => t.value === exam.exam_type)?.icon} {examTypes.find(t => t.value === exam.exam_type)?.label}
+          </Badge>
+        </div>
+        <Badge className={exam.status === 'upcoming' ? 'bg-blue-500' : exam.status === 'ongoing' ? 'bg-green-500' : 'bg-gray-500'}>
+          {exam.status}
+        </Badge>
+      </div>
+
+      <div className="space-y-2 text-sm text-gray-600 mb-4">
+        <p className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-indigo-500" />
+          {exam.start_date} - {exam.end_date}
+        </p>
+        <p className="flex items-center gap-2">
+          <Users className="w-4 h-4 text-indigo-500" />
+          {exam.classes?.length || 0} Classes
+        </p>
+        <p className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-indigo-500" />
+          {exam.subjects?.length || 0} Subjects
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <Button 
+          size="sm" 
+          variant="outline"
+          onClick={onPreview}
+          className="text-xs"
+        >
+          <Eye className="w-3 h-3" />
+        </Button>
+        <Button 
+          size="sm"
+          onClick={onGenerate}
+          className="bg-indigo-600 hover:bg-indigo-700 text-xs"
+        >
+          <Printer className="w-3 h-3" />
+        </Button>
+        <Button 
+          size="sm"
+          onClick={onPublish}
+          className="bg-green-600 hover:bg-green-700 text-xs"
+        >
+          <Send className="w-3 h-3" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Board Exam Card Component
+const BoardExamCard = ({ exam, onPublish }) => {
+  return (
+    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg transition-all p-5">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-bold text-lg text-gray-900">{exam.exam_name}</h3>
+          <Badge variant="outline" className="mt-1 bg-white">
+            {exam.board}
+          </Badge>
+        </div>
+      </div>
+
+      {exam.centre_code && (
+        <div className="text-sm text-gray-600 mb-3">
+          <p className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-purple-500" />
+            Centre: {exam.centre_code}
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        {exam.admit_card_url && (
+          <Button 
+            size="sm"
+            variant="outline"
+            className="flex-1 text-xs"
+            onClick={() => window.open(exam.admit_card_url, '_blank')}
+          >
+            <Download className="w-3 h-3 mr-1" />
+            View
+          </Button>
+        )}
+        <Button 
+          size="sm"
+          onClick={onPublish}
+          className="flex-1 bg-purple-600 hover:bg-purple-700 text-xs"
+        >
+          <ExternalLink className="w-3 h-3 mr-1" />
+          Publish
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default ImprovedAdmitCardManagement;
