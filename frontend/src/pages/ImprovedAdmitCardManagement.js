@@ -57,6 +57,15 @@ const ImprovedAdmitCardManagement = () => {
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [activeTab, setActiveTab] = useState('school'); // school or board
+  
+  // New states for edit, delete, cash fee
+  const [editingExam, setEditingExam] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [examToDelete, setExamToDelete] = useState(null);
+  const [showCashFeeDialog, setShowCashFeeDialog] = useState(false);
+  const [cashFeeStudent, setCashFeeStudent] = useState(null);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [printExam, setPrintExam] = useState(null);
 
   const [examForm, setExamForm] = useState({
     exam_name: '',
