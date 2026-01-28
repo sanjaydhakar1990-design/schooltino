@@ -67,6 +67,8 @@ const ImprovedAdmitCardManagement = () => {
   const [cashFeeStudent, setCashFeeStudent] = useState(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   const [printExam, setPrintExam] = useState(null);
+  const [showBulkBoardDialog, setShowBulkBoardDialog] = useState(false);
+  const [selectedBoardExam, setSelectedBoardExam] = useState(null);
 
   const [examForm, setExamForm] = useState({
     exam_name: '',
