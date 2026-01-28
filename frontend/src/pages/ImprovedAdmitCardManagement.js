@@ -693,6 +693,10 @@ const ImprovedAdmitCardManagement = () => {
                   key={exam.id}
                   exam={exam}
                   onPublish={() => publishToStudyTino(exam.id)}
+                  onBulkUpload={(exam) => {
+                    setSelectedBoardExam(exam);
+                    setShowBulkBoardDialog(true);
+                  }}
                 />
               ))}
             </div>
