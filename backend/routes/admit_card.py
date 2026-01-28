@@ -991,37 +991,40 @@ async def collect_cash_fee(payment_data: dict):
 
 
 @router.post("/parse-student-list")
-async def parse_student_list(file: dict):
+async def parse_student_list(file_data: dict):
     """Parse Excel/CSV file and extract student list for board exam"""
-    # Placeholder for actual file parsing
-    # In production, use pandas or openpyxl to parse Excel/CSV
+    db = get_database()
     
-    # Mock data for now
-    sample_students = [
-        {
-            "name": "Student 1",
-            "father_name": "Father 1",
-            "mother_name": "Mother 1",
-            "dob": "2008-05-15",
-            "class": "Class 10",
-            "roll_number": "101",
-            "board_roll_number": "2026001001"
-        },
-        {
-            "name": "Student 2",
-            "father_name": "Father 2",
-            "mother_name": "Mother 2",
-            "dob": "2008-08-20",
-            "class": "Class 10",
-            "roll_number": "102",
-            "board_roll_number": "2026001002"
-        }
-    ]
+    # For now, return sample students
+    # In production, this would parse actual Excel/CSV file
+    
+    school_id = file_data.get("school_id")
+    exam_id = file_data.get("exam_id")
+    
+    # Get students from school database
+    students = await db.students.find({
+        "school_id": school_id,
+        "is_active": True
+    }).limit(50).to_list(50)
+    
+    # Format for board exam
+    formatted_students = []
+    for idx, student in enumerate(students, 1):
+        formatted_students.append({
+            "name": student.get("name", ""),
+            "father_name": student.get("father_name", ""),
+            "mother_name": student.get("mother_name", ""),
+            "dob": student.get("dob", ""),
+            "class": student.get("class_name", f"Class {idx}"),
+            "roll_number": str(idx).zfill(3),
+            "board_roll_number": f"2026{str(idx).zfill(6)}",
+            "student_id": student.get("id")
+        })
     
     return {
         "success": True,
-        "students": sample_students,
-        "count": len(sample_students)
+        "students": formatted_students,
+        "count": len(formatted_students)
     }
 
 @router.post("/generate-board-bulk")
