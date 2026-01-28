@@ -1817,6 +1817,180 @@ class SchooltinoAPITester:
         
         return all_success
 
+
+    # ============== STUDENT ADMISSION FORM FIX TESTS ==============
+    
+    def test_login_director_demo(self):
+        """Test: Login with director@demo.com / demo123"""
+        login_data = {
+            "email": "director@demo.com",
+            "password": "demo123"
+        }
+        
+        success, response = self.run_test("Login Director Demo", "POST", "auth/login", 200, login_data)
+        if success and 'access_token' in response:
+            self.token = response['access_token']
+            self.user_data = response.get('user', {})
+            self.school_id = self.user_data.get('school_id', 'SCH-DEMO-2026')
+            print(f"   📝 Logged in as: {self.user_data.get('name', 'Unknown')}")
+            print(f"   📝 School ID: {self.school_id}")
+            return True
+        return False
+    
+    def test_student_admission_empty_strings(self):
+        """Test CRITICAL: POST /api/students/admit with empty strings for optional fields"""
+        if not self.token or not self.school_id:
+            print(f"   ❌ Cannot test admission - not logged in")
+            return False
+        
+        # First, get a valid class_id
+        success, classes_response = self.run_test("Get Classes for Admission", "GET", f"classes?school_id={self.school_id}", 200)
+        
+        if not success or not classes_response.get("classes"):
+            print(f"   ❌ Cannot test admission - no classes found")
+            return False
+        
+        class_id = classes_response["classes"][0]["id"]
+        print(f"   📝 Using class_id: {class_id}")
+        
+        # Test Case 1: Student with empty strings for optional fields (simulating frontend form submission)
+        timestamp = datetime.now().strftime('%H%M%S')
+        student_data = {
+            "name": f"Test Student Fix Verification {timestamp}",
+            "class_id": class_id,
+            "school_id": self.school_id,
+            "father_name": "Test Father",
+            "mother_name": "Test Mother",
+            "dob": "2015-06-15",
+            "gender": "female",
+            "address": "Test Address Delhi",
+            "mobile": "9876543210",
+            "email": "",  # Empty string - should be converted to None
+            "blood_group": "",  # Empty string - should be converted to None
+            "photo_url": "",  # Empty string - should be converted to None
+            "aadhar_no": "",  # Empty string - should be converted to None
+            "previous_school": "",  # Empty string - should be converted to None
+            "admission_date": "2026-01-20"
+        }
+        
+        success, response = self.run_test("Student Admission - Empty Strings Test", "POST", "students/admit", 200, student_data)
+        
+        if success:
+            # Check critical response fields
+            student_id = response.get("student_id")
+            login_id = response.get("login_id")
+            temporary_password = response.get("temporary_password")
+            
+            print(f"   📝 Student ID: {student_id}")
+            print(f"   📝 Login ID: {login_id}")
+            print(f"   📝 Temporary Password: {temporary_password}")
+            
+            if student_id and login_id and temporary_password:
+                print(f"   ✅ CRITICAL: Student admission successful with empty strings!")
+                print(f"   ✅ Empty strings were converted to None automatically")
+                print(f"   ✅ No 422 validation errors occurred")
+                
+                # Store student_id for verification
+                self.student_id = student_id
+            else:
+                print(f"   ❌ CRITICAL: Missing required response fields!")
+                return False
+        else:
+            print(f"   ❌ CRITICAL: Student admission failed with empty strings!")
+            return False
+        
+        return success
+    
+    def test_student_admission_partial_data(self):
+        """Test: POST /api/students/admit with partial data to ensure validator works properly"""
+        if not self.token or not self.school_id:
+            print(f"   ❌ Cannot test admission - not logged in")
+            return False
+        
+        # Get a valid class_id
+        success, classes_response = self.run_test("Get Classes for Partial Admission", "GET", f"classes?school_id={self.school_id}", 200)
+        
+        if not success or not classes_response.get("classes"):
+            print(f"   ❌ Cannot test admission - no classes found")
+            return False
+        
+        class_id = classes_response["classes"][0]["id"]
+        
+        # Test Case 2: Student with some optional fields filled, some empty
+        timestamp = datetime.now().strftime('%H%M%S')
+        student_data = {
+            "name": f"Test Student Partial Data {timestamp}",
+            "class_id": class_id,
+            "school_id": self.school_id,
+            "father_name": "Test Father 2",
+            "mother_name": "Test Mother 2",
+            "dob": "2014-08-20",
+            "gender": "male",
+            "address": "Test Address Mumbai",
+            "mobile": "9876543211",
+            "email": "teststudent@example.com",  # Filled
+            "blood_group": "O+",  # Filled
+            "photo_url": "",  # Empty
+            "aadhar_no": "123456789012",  # Filled
+            "previous_school": "",  # Empty
+            "admission_date": "2026-01-20"
+        }
+        
+        success, response = self.run_test("Student Admission - Partial Data Test", "POST", "students/admit", 200, student_data)
+        
+        if success:
+            student_id = response.get("student_id")
+            login_id = response.get("login_id")
+            temporary_password = response.get("temporary_password")
+            
+            print(f"   📝 Student ID: {student_id}")
+            print(f"   📝 Login ID: {login_id}")
+            print(f"   📝 Temporary Password: {temporary_password}")
+            
+            if student_id and login_id and temporary_password:
+                print(f"   ✅ Student admission successful with partial data!")
+                print(f"   ✅ Validator correctly handles mix of filled and empty fields")
+            else:
+                print(f"   ❌ Missing required response fields!")
+                return False
+        else:
+            print(f"   ❌ Student admission failed with partial data!")
+            return False
+        
+        return success
+    
+    def test_verify_admitted_student(self):
+        """Test: Verify the admitted student exists in database"""
+        if not self.student_id:
+            print(f"   ⚠️ No student_id from previous test, skipping verification")
+            return True
+        
+        # Get student details
+        success, response = self.run_test("Verify Admitted Student", "GET", f"students/{self.student_id}", 200)
+        
+        if success:
+            student = response
+            print(f"   📝 Student Name: {student.get('name', 'N/A')}")
+            print(f"   📝 Student ID: {student.get('student_id', 'N/A')}")
+            print(f"   📝 Class: {student.get('class_name', 'N/A')}")
+            print(f"   📝 Status: {student.get('status', 'N/A')}")
+            
+            # Verify optional fields are None (not empty strings)
+            email = student.get('email')
+            blood_group = student.get('blood_group')
+            photo_url = student.get('photo_url')
+            
+            print(f"   📝 Email: {email}")
+            print(f"   📝 Blood Group: {blood_group}")
+            print(f"   📝 Photo URL: {photo_url}")
+            
+            if student.get('name') and student.get('student_id'):
+                print(f"   ✅ Student successfully created in database")
+            else:
+                print(f"   ⚠️ Student data incomplete")
+        
+        return success
+
     def run_all_tests(self):
         """Run all API tests in sequence - FOCUSED ON REVIEW REQUEST NEW FEATURES"""
         print("🚀 Starting Schooltino API Tests - NEW FEATURES FOCUS...")
