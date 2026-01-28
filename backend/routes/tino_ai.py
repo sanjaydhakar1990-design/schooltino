@@ -242,8 +242,8 @@ async def get_specific_data(school_id: str, query_type: str, params: dict = None
 @router.post("/chat", response_model=TinoResponse)
 async def chat_with_tino(request: TinoMessage):
     """
-    TEXT-ONLY Chat with AI Tino (2025-26)
-    No voice, no system actions, no form control - pure information assistant
+    TEXT-ONLY Chat with AI Tino using SARVAM API EXCLUSIVELY
+    No OpenAI, No Emergent LLM - Only Sarvam
     """
     try:
         # Check for system control commands and BLOCK them
@@ -256,47 +256,76 @@ async def chat_with_tino(request: TinoMessage):
         
         message_lower = request.message.lower()
         if any(keyword in message_lower for keyword in blocked_keywords):
-            # Polite blocking message in user's language
+            # Polite blocking message
             if request.language == 'hi' or any(c in request.message for c in 'अआइईउऊएऐओऔ'):
                 return TinoResponse(
-                    response="🙏 नमस्ते! मैं अब सिर्फ text assistant हूँ। Forms open करने, data update करने या system control के लिए कृपया dashboard में manually जाएं।\n\n💡 मैं आपकी मदद कर सकता हूँ:\n- जानकारी देने में\n- सुझाव देने में\n- सवालों के जवाब देने में\n\nDashboard में जाकर manually काम करें। 😊",
+                    response="🙏 नमस्ते! मैं अब सिर्फ text assistant हूँ। Forms open करने या data update करने के लिए कृपया dashboard में manually जाएं। मैं आपको जानकारी और सुझाव दे सकता हूँ।",
                     action_taken="blocked_system_command"
                 )
             else:
                 return TinoResponse(
-                    response="👋 Hello! I'm now a text-only assistant. For opening forms, updating data, or system control, please use the dashboard manually.\n\n💡 I can help you with:\n- Providing information\n- Giving suggestions\n- Answering questions\n\nPlease perform actions manually in the dashboard. 😊",
+                    response="👋 Hello! I'm a text-only assistant now. For forms or data updates, please use the dashboard manually. I can provide information and suggestions.",
                     action_taken="blocked_system_command"
                 )
         
-        # Use Sarvam API or Emergent LLM for text generation
-        api_key = os.environ.get("SARVAM_API_KEY") or EMERGENT_LLM_KEY
+        # ✅ SARVAM API EXCLUSIVELY - No other LLM
+        sarvam_api_key = os.environ.get("SARVAM_API_KEY")
         
-        if not api_key:
-            raise HTTPException(status_code=500, detail="AI service not configured")
+        if not sarvam_api_key:
+            return TinoResponse(
+                response="❌ AI service unavailable – please try again later" if request.language == 'en' else "❌ AI सेवा उपलब्ध नहीं है – कृपया बाद में try करें",
+                action_taken="error"
+            )
         
-        # Create chat with TEXT-ONLY system prompt
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=request.session_id or f"tino-text-{request.school_id}",
-            system_message=TINO_SYSTEM_PROMPT
-        ).with_model("openai", "gpt-4o-mini")
+        # Call Sarvam API
+        import httpx
         
-        # Send user message
-        user_msg = UserMessage(text=request.message)
-        response_text = await chat.send_message(user_msg)
+        # Sarvam API system prompt
+        system_prompt = """You are AI Tino, a text assistant for SchoolTino. 
+Respond in pure Hindi for Hindi queries, pure English for English queries.
+Keep responses helpful, accurate, and concise.
+You cannot perform actions like opening forms or updating data - only provide information."""
         
-        return TinoResponse(
-            response=response_text,
-            action_taken="text_response"
-        )
+        # Detect language from message
+        is_hindi = request.language == 'hi' or any(c in request.message for c in 'अआइईउऊएऐओऔ')
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.sarvam.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {sarvam_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "sarvam-m",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": request.message}
+                    ],
+                    "max_tokens": 3000,
+                    "temperature": 0.7
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                # Fallback error message
+                return TinoResponse(
+                    response="❌ AI service unavailable" if request.language == 'en' else "❌ AI सेवा उपलब्ध नहीं",
+                    action_taken="error"
+                )
+            
+            data = response.json()
+            ai_response = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            
+            return TinoResponse(
+                response=ai_response,
+                action_taken="sarvam_text_response"
+            )
         
     except Exception as e:
-        # Friendly error in user's language
-        if request.language == 'hi' or any(c in request.message for c in 'अआइईउऊएऐओऔ'):
-            error_msg = f"😔 क्षमा करें! कुछ technical समस्या हो गई। कृपया फिर से try करें।"
-        else:
-            error_msg = f"😔 Sorry! A technical issue occurred. Please try again."
-        
+        # Friendly error
+        error_msg = "❌ Technical issue - try again" if request.language == 'en' else "❌ Technical समस्या - फिर try करें"
         return TinoResponse(
             response=error_msg,
             action_taken="error"
