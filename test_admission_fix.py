@@ -55,7 +55,13 @@ def test_admission_fix():
             print(f"❌ Get classes failed: {response.status_code}")
             return False
         
-        classes = response.json().get('classes', [])
+        response_data = response.json()
+        # Handle both list and dict responses
+        if isinstance(response_data, list):
+            classes = response_data
+        else:
+            classes = response_data.get('classes', [])
+        
         if not classes:
             print(f"❌ No classes found")
             return False
