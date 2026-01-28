@@ -711,9 +711,9 @@ backend:
 
   - task: "Admit Card Edit/Delete Operations"
     implemented: true
-    working: true
+    working: false
     file: "backend/routes/admit_card.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -723,6 +723,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ ADMIT CARD EDIT/DELETE OPERATIONS FULLY WORKING! Test Results: 1) GET /api/admit-card/exams/SCH-DEMO-2026 returns exams list with proper 'id' field ✅ 2) POST /api/admit-card/exam creates exam successfully ✅ 3) PUT /api/admit-card/exam/{exam_id} updates exam successfully - Backend logs show 'Update result: 1 documents modified' ✅ 4) DELETE /api/admit-card/exam/{exam_id}?school_id={school_id} deletes exam successfully - Backend logs show 'Delete result: 1 documents deleted' ✅. All exam documents have proper 'id' field (not '_id'). Both UPDATE and DELETE operations working correctly. ISSUE NOT REPRODUCIBLE - Both operations functioning properly with correct exam lookup by 'id' field."
+      - working: false
+        agent: "testing"
+        comment: "❌ ROOT CAUSE IDENTIFIED! The issue is NOT with Edit/Delete APIs (they work perfectly). The problem is with EXAM DISPLAY: 1) API Testing: PUT /api/admit-card/exam/{exam_id} returns 200 OK ✅ DELETE /api/admit-card/exam/{exam_id} returns 200 OK ✅ Both operations confirmed working via direct API calls. 2) UI Issue: Exams are created successfully (POST returns 200 OK) but NOT DISPLAYED on page. GET /api/admit-card/exams/SCH-DEMO-2026?type=school returns empty array [] even though exams exist in database. 3) Root Cause: Old exams in database are missing 'exam_category' field. When frontend filters by type=school or type=board, backend query filters by exam_category field, so exams without this field are not returned. Found 1 exam 'Debug Test Exam' with NO CATEGORY field. 4) Solution Needed: Add database migration to set exam_category='school' for all existing exams without this field, OR modify backend to handle exams without exam_category field. User cannot see Edit/Delete buttons because exams are not displayed on UI due to missing exam_category field."
 
 frontend:
   - task: "PWA Install Prompt"
