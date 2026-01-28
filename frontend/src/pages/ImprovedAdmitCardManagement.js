@@ -1203,6 +1203,19 @@ const ImprovedAdmitCardManagement = () => {
           }}
         />
       )}
+
+      {/* Bulk Board Admit Card Dialog */}
+      {showBulkBoardDialog && selectedBoardExam && (
+        <BulkBoardAdmitCard
+          boardExam={selectedBoardExam}
+          schoolId={schoolId}
+          onClose={() => {
+            setShowBulkBoardDialog(false);
+            setSelectedBoardExam(null);
+            fetchData();
+          }}
+        />
+      )}
     </div>
   );
 };
