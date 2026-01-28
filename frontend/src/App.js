@@ -12,6 +12,7 @@ import StudentsPage from './pages/StudentsPage';
 // StaffPage removed - merged into EmployeeManagementPage
 import ClassesPage from './pages/ClassesPage';
 import AttendancePage from './pages/AttendancePage';
+import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
 import FeesPage from './pages/FeesPage';
 import NoticesPage from './pages/NoticesPage';
 import AIPaperPage from './pages/AIPaperPage';
