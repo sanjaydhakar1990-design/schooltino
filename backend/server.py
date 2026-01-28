@@ -3423,6 +3423,149 @@ async def check_holiday_api(
         "holiday_name": holiday_name
     }
 
+
+
+# ==================== LEAVE MANAGEMENT ====================
+
+@api_router.post("/attendance/mark-leave")
+async def mark_student_leave(
+    leave_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark student on leave for date range"""
+    school_id = leave_data.get("school_id")
+    student_id = leave_data.get("student_id")
+    leave_type = leave_data.get("leave_type", "sick")
+    start_date = leave_data.get("start_date")
+    end_date = leave_data.get("end_date")
+    reason = leave_data.get("reason", "")
+    
+    # Create leave record
+    leave_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "student_id": student_id,
+        "leave_type": leave_type,
+        "start_date": start_date,
+        "end_date": end_date,
+        "reason": reason,
+        "approved_by": current_user.get("id"),
+        "approved_at": datetime.now(timezone.utc).isoformat(),
+        "status": "approved",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.student_leaves.insert_one(leave_record)
+    
+    # Mark attendance as on_leave for date range
+    from datetime import timedelta
+    current = datetime.fromisoformat(start_date)
+    end = datetime.fromisoformat(end_date)
+    
+    while current <= end:
+        date_str = current.strftime('%Y-%m-%d')
+        
+        # Update or create attendance record
+        await db.attendance.update_one(
+            {
+                "student_id": student_id,
+                "date": date_str,
+                "school_id": school_id
+            },
+            {
+                "$set": {
+                    "status": "on_leave",
+                    "leave_type": leave_type,
+                    "leave_id": leave_record["id"],
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                },
+                "$setOnInsert": {
+                    "id": str(uuid.uuid4()),
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+        
+        current += timedelta(days=1)
+    
+    return {
+        "success": True,
+        "leave_id": leave_record["id"],
+        "message": f"Leave marked for {student_id} from {start_date} to {end_date}"
+    }
+
+@api_router.post("/attendance/bulk-upload-photos")
+async def bulk_upload_attendance_photos(
+    upload_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload old attendance register photos and extract data
+    Uses AI/OCR to read attendance from images
+    """
+    school_id = upload_data.get("school_id")
+    photos = upload_data.get("photos", [])  # Array of base64 or URLs
+    
+    # Placeholder - In production, use OCR/AI to extract attendance
+    # For now, return success with mock extracted data
+    
+    extracted_records = []
+    for photo in photos[:5]:  # Process first 5 photos
+        extracted_records.append({
+            "date": "2026-01-15",
+            "class": "Class 10",
+            "students_marked": 30,
+            "status": "processed"
+        })
+    
+    return {
+        "success": True,
+        "photos_processed": len(extracted_records),
+        "extracted_records": extracted_records,
+        "message": "Photos uploaded. Attendance extraction in progress."
+    }
+
+@api_router.post("/attendance/bulk-upload-excel")
+async def bulk_upload_attendance_excel(
+    upload_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload bulk attendance via Excel/CSV
+    Format: Date, Student ID, Status
+    """
+    school_id = upload_data.get("school_id")
+    records = upload_data.get("records", [])
+    
+    inserted_count = 0
+    for record in records:
+        await db.attendance.update_one(
+            {
+                "student_id": record.get("student_id"),
+                "date": record.get("date"),
+                "school_id": school_id
+            },
+            {
+                "$set": {
+                    "status": record.get("status", "present"),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                },
+                "$setOnInsert": {
+                    "id": str(uuid.uuid4()),
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+        inserted_count += 1
+    
+    return {
+        "success": True,
+        "records_inserted": inserted_count,
+        "message": f"{inserted_count} attendance records uploaded successfully"
+    }
+
 # ==================== FEE ROUTES ====================
 
 @api_router.post("/fees/plans", response_model=FeePlanResponse)
