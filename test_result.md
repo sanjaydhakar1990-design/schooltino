@@ -835,10 +835,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Student Admission Form - Empty String Validator Fix"
+    - "Admit Card Edit/Delete Operations"
   stuck_tasks: []
   test_all: false
-  test_priority: "student_admission_fix_review"
+  test_priority: "admit_card_debug"
 
 agent_communication:
   - agent: "main"
