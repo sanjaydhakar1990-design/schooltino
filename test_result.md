@@ -835,10 +835,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "AI Paper Generator - MP Board & RBSE Chapter Loading"
+    - "Student Admission Form - Empty String Validator Fix"
   stuck_tasks: []
   test_all: false
-  test_priority: "ai_paper_generator_review"
+  test_priority: "student_admission_fix_review"
 
 agent_communication:
   - agent: "main"
