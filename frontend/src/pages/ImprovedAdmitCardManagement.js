@@ -431,15 +431,19 @@ const ImprovedAdmitCardManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API}/api/admit-card/exam/${examToDelete.id}?school_id=${schoolId}`, {
+      console.log('Deleting exam:', examToDelete.id);
+      
+      const response = await axios.delete(`${API}/api/admit-card/exam/${examToDelete.id}?school_id=${schoolId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Delete response:', response.data);
       toast.success(`✅ Exam "${examToDelete.exam_name}" deleted!`);
       setShowDeleteDialog(false);
       setExamToDelete(null);
       fetchData();
     } catch (err) {
+      console.error('Delete error:', err);
       toast.error(err.response?.data?.detail || 'Delete failed');
     }
   };
