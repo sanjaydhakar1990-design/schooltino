@@ -356,6 +356,13 @@ class StudentCreate(BaseModel):
     aadhar_no: Optional[str] = None
     previous_school: Optional[str] = None
     admission_date: Optional[str] = None  # Date of admission (for mid-year joining schools)
+    
+    # Validator to convert empty strings to None for all optional fields
+    @validator('*', pre=True)
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
     # NEW FIELDS - Extended Student Information
     scholar_no: Optional[str] = None  # Scholar Number / Enrollment Number
     pen_number: Optional[str] = None  # PEN (Permanent Education Number) for CBSE
