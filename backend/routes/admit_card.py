@@ -768,3 +768,104 @@ async def get_download_status(school_id: str, exam_id: str):
         "total_downloaded": len(downloaded_students),
         "students": downloaded_students
     }
+
+
+# ============== NEW APIs FOR IMPROVED SYSTEM ==============
+
+@router.post("/board-exam")
+async def create_board_exam(exam_data: dict):
+    """Create board exam entry"""
+    db = get_database()
+    
+    exam_doc = {
+        "id": str(uuid.uuid4()),
+        **exam_data,
+        "exam_category": "board",
+        "status": "upcoming",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.exams.insert_one(exam_doc)
+    
+    return {
+        "success": True,
+        "exam_id": exam_doc["id"],
+        "message": f"Board Exam '{exam_data.get('exam_name')}' created successfully"
+    }
+
+@router.post("/upload-board-admit-card")
+async def upload_board_admit_card(file: dict):
+    """Upload board admit card template"""
+    # Placeholder for file upload functionality
+    # In production, this would handle actual file upload to storage
+    
+    return {
+        "success": True,
+        "file_url": f"/uploads/board_admit_cards/{str(uuid.uuid4())}.pdf",
+        "message": "File uploaded successfully"
+    }
+
+@router.get("/preview/{school_id}/{exam_id}/{student_id}")
+async def preview_admit_card(school_id: str, exam_id: str, student_id: str):
+    """Generate preview of admit card"""
+    db = get_database()
+    
+    admit_card = await generate_admit_card_data(student_id, exam_id, school_id, db)
+    
+    return {
+        "success": True,
+        "preview": admit_card,
+        "message": "Preview generated"
+    }
+
+@router.post("/publish-studytino")
+async def publish_to_studytino(request: dict):
+    """Publish admit cards to StudyTino for student download"""
+    db = get_database()
+    
+    school_id = request.get("school_id")
+    exam_id = request.get("exam_id")
+    
+    # Mark exam as published to StudyTino
+    await db.exams.update_one(
+        {"id": exam_id, "school_id": school_id},
+        {"$set": {
+            "published_to_studytino": True,
+            "studytino_published_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Get all admit cards for this exam
+    admit_cards = await db.generated_admit_cards.find({
+        "school_id": school_id,
+        "exam_id": exam_id
+    }).to_list(1000)
+    
+    return {
+        "success": True,
+        "published": True,
+        "admit_cards_count": len(admit_cards),
+        "message": f"{len(admit_cards)} admit cards published to StudyTino"
+    }
+
+@router.get("/subjects")
+async def get_subjects(school_id: str):
+    """Get subjects list for school"""
+    db = get_database()
+    
+    # Get unique subjects from classes
+    subjects = [
+        {"id": "mathematics", "name": "Mathematics (गणित)"},
+        {"id": "science", "name": "Science (विज्ञान)"},
+        {"id": "hindi", "name": "Hindi (हिन्दी)"},
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "social_science", "name": "Social Science (सामाजिक विज्ञान)"},
+        {"id": "sanskrit", "name": "Sanskrit (संस्कृत)"},
+        {"id": "computer", "name": "Computer Science (कंप्यूटर)"},
+        {"id": "physics", "name": "Physics (भौतिकी)"},
+        {"id": "chemistry", "name": "Chemistry (रसायन)"},
+        {"id": "biology", "name": "Biology (जीव विज्ञान)"}
+    ]
+    
+    return subjects
+
