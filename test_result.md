@@ -694,6 +694,21 @@ backend:
         agent: "testing"
         comment: "✅ AI PAPER GENERATOR CHAPTER LOADING WORKING! Test Case 1 - MP Board Sanskrit (Class 6): GET /api/ai/paper/subjects/Class%206 returns 7 subjects including Sanskrit ✅ GET /api/ai/paper/chapters/Class%206/sanskrit returns 15 chapters (generic fallback) ✅ NO 'No chapters available' error ✅. Test Case 2 - RBSE Mathematics (Class 7): GET /api/ai/paper/subjects/Class%207 returns 7 subjects including Mathematics ✅ GET /api/ai/paper/chapters/Class%207/mathematics returns 15 chapters (generic fallback) ✅. Both MP Board and RBSE are using CBSE/NCERT chapters as fallback (generic Chapter 1-15) which prevents 'No chapters available' error. Chapter selection working correctly for paper generation. ⚠️ Minor: Paper generation API (POST /api/ai/generate-paper) returns 200 but generates 0 questions due to AI marks mismatch issue (LLM returning 0 marks instead of requested marks). Backend logs show 'Paper marks mismatch: 0 vs 20. Retry 1/2'. This is an LLM prompt/response parsing issue, not a chapter loading issue."
 
+  - task: "Student Admission Form - Empty String Validator Fix"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Testing student admission form fix - empty strings should be converted to None for optional fields"
+      - working: true
+        agent: "testing"
+        comment: "✅ STUDENT ADMISSION FORM FIX VERIFIED WORKING! Test Scenario 1 - Empty Strings: POST /api/students/admit with empty strings for optional fields (email='', blood_group='', photo_url='', aadhar_no='', previous_school='') returns 200 OK ✅ Student created successfully: student_id=STU-2026-00003, login_id=STU-2026-00003, temporary_password=9VhHbDbC, parent_id=PAR-2026-00001 ✅ NO 422 validation errors ✅ Empty strings converted to None automatically by validator ✅. Test Scenario 2 - Partial Data: POST /api/students/admit with mix of filled and empty fields (email='teststudent@example.com', blood_group='O+', photo_url='', aadhar_no='123456789012', previous_school='') returns 200 OK ✅ Student created successfully: student_id=STU-2026-00004 ✅ Validator correctly handles mix of filled and empty fields ✅. CONCLUSION: The @validator('*', pre=True) decorator in StudentCreate model (server.py lines 361-365) is working correctly - empty strings are converted to None before validation, preventing 422 errors. Frontend can safely submit empty strings for optional fields."
+
 frontend:
   - task: "PWA Install Prompt"
     implemented: true
