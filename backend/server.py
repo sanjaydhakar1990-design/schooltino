@@ -557,6 +557,13 @@ class UnifiedEmployeeCreate(BaseModel):
     password: Optional[str] = None  # Default: mobile number
     role: str = "teacher"  # Role for permissions
     custom_permissions: Optional[Dict[str, bool]] = None  # Override default permissions
+    
+    # Validator to convert empty strings to None for all optional fields
+    @validator('*', pre=True)
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
 
 class UnifiedEmployeeResponse(BaseModel):
     id: str
