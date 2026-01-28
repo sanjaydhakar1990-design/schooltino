@@ -44,10 +44,11 @@ export default function TinoBrainDashboard() {
   const [locationTracking, setLocationTracking] = useState([]);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
-  const [isListening, setIsListening] = useState(false);
+  const [isListening, setIsListening] = useState(false); // ❌ ALWAYS FALSE - No voice
   const [isProcessing, setIsProcessing] = useState(false);
-  const [voiceGender, setVoiceGender] = useState(() => localStorage.getItem('tino_voice_gender') || 'female');
+  const [voiceGender, setVoiceGender] = useState('disabled'); // ❌ VOICE DISABLED
   const [showHistory, setShowHistory] = useState(false);
+  const VOICE_ENABLED = false; // ❌ FORCE DISABLE VOICE
   const [chatSessions, setChatSessions] = useState([]);
   
   const messagesEndRef = useRef(null);
