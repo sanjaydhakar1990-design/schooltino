@@ -953,5 +953,79 @@ async def collect_cash_fee(payment_data: dict):
     }
 
     
+
+
+@router.post("/parse-student-list")
+async def parse_student_list(file: dict):
+    """Parse Excel/CSV file and extract student list for board exam"""
+    # Placeholder for actual file parsing
+    # In production, use pandas or openpyxl to parse Excel/CSV
+    
+    # Mock data for now
+    sample_students = [
+        {
+            "name": "Student 1",
+            "father_name": "Father 1",
+            "mother_name": "Mother 1",
+            "dob": "2008-05-15",
+            "class": "Class 10",
+            "roll_number": "101",
+            "board_roll_number": "2026001001"
+        },
+        {
+            "name": "Student 2",
+            "father_name": "Father 2",
+            "mother_name": "Mother 2",
+            "dob": "2008-08-20",
+            "class": "Class 10",
+            "roll_number": "102",
+            "board_roll_number": "2026001002"
+        }
+    ]
+    
+    return {
+        "success": True,
+        "students": sample_students,
+        "count": len(sample_students)
+    }
+
+@router.post("/generate-board-bulk")
+async def generate_board_bulk(request: dict):
+    """Generate board exam admit cards in bulk"""
+    db = get_database()
+    
+    school_id = request.get("school_id")
+    exam_id = request.get("exam_id")
+    students = request.get("students", [])
+    
+    generated_cards = []
+    
+    for student_data in students:
+        # Create admit card for each student
+        admit_card = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "exam_id": exam_id,
+            "student_name": student_data.get("name"),
+            "father_name": student_data.get("father_name"),
+            "mother_name": student_data.get("mother_name"),
+            "dob": student_data.get("dob"),
+            "class": student_data.get("class"),
+            "roll_number": student_data.get("board_roll_number", student_data.get("roll_number")),
+            "exam_centre": student_data.get("exam_centre", ""),
+            "admit_card_type": "board",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "status": "generated"
+        }
+        
+        await db.board_admit_cards.insert_one(admit_card)
+        generated_cards.append(admit_card)
+    
+    return {
+        "success": True,
+        "generated_count": len(generated_cards),
+        "admit_cards": generated_cards
+    }
+
     return subjects
 
