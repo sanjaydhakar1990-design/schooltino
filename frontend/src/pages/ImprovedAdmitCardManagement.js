@@ -27,6 +27,7 @@ import {
   GraduationCap, Clock, MapPin, X, Edit, Trash2, Send, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
+import AdmitCardPreviewComponent from '../components/AdmitCardPreviewComponent';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
