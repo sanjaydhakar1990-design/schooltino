@@ -15,7 +15,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://smartschool-ai-4.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://form-submit-fix-3.preview.emergentagent.com')
 
 # Test credentials
 ADMIN_EMAIL = "director@schooltino.com"

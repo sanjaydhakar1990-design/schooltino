@@ -16,7 +16,7 @@ const WhatsAppPamphlets = () => {
   const pamphletRef = useRef(null);
 
   const WHATSAPP_NUMBER = "917879967616";
-  const WEBSITE_URL = "https://smartschool-ai-4.preview.emergentagent.com";
+  const WEBSITE_URL = "https://form-submit-fix-3.preview.emergentagent.com";
 
   // Daily shareable pamphlets data
   const pamphlets = [

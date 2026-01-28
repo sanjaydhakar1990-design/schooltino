@@ -19,7 +19,7 @@ const PDFDownloadPage = () => {
   };
 
   const shareOnWhatsApp = () => {
-    const text = `🏫 *Schooltino - AI School Management*\n\nभारत का सबसे Advanced School Software!\n\n📄 Brochure देखें: https://smartschool-ai-4.preview.emergentagent.com/marketing\n\n📞 Contact: +91 78799 67616`;
+    const text = `🏫 *Schooltino - AI School Management*\n\nभारत का सबसे Advanced School Software!\n\n📄 Brochure देखें: https://form-submit-fix-3.preview.emergentagent.com/marketing\n\n📞 Contact: +91 78799 67616`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
