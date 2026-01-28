@@ -309,7 +309,7 @@ function AppRoutes() {
         <Route path="students" element={<StudentsPage />} />
         <Route path="staff" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="classes" element={<ClassesPage />} />
-        <Route path="attendance" element={<AttendancePage />} />
+        <Route path="attendance" element={<ImprovedAttendancePage />} />
         <Route path="fees" element={<FeesPage />} />
         <Route path="notices" element={<NoticesPage />} />
         <Route path="ai-paper" element={<AIPaperPage />} />
