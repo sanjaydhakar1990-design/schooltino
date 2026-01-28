@@ -1284,4 +1284,51 @@ const BoardExamCard = ({ exam, onPublish }) => {
   );
 };
 
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="w-6 h-6" />
+              Delete Exam?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-gray-700">
+              Are you sure you want to delete <strong>{examToDelete?.exam_name}</strong>?
+            </p>
+            <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+              ⚠️ This will also delete all generated admit cards for this exam. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDeleteDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={deleteExam}
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Exam
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      {showPreviewDialog && previewData && (
+        <AdmitCardPreviewComponent 
+          admitCardData={previewData}
+          onClose={() => {
+            setShowPreviewDialog(false);
+            setPreviewData(null);
+          }}
+        />
+      )}
+
 export default ImprovedAdmitCardManagement;
