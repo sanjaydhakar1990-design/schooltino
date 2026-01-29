@@ -261,9 +261,14 @@ async def create_exam(exam: ExamCreate):
     """Create a new exam for admit card generation"""
     db = get_database()
     
+    exam_dict = exam.dict()
+    # Ensure exam_category is always set
+    if not exam_dict.get("exam_category"):
+        exam_dict["exam_category"] = "school"
+    
     exam_doc = {
         "id": str(uuid.uuid4()),
-        **exam.dict(),
+        **exam_dict,
         "status": "upcoming",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
