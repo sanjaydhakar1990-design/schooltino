@@ -412,7 +412,7 @@ backend:
         agent: "testing"
         comment: "✅ Syllabus System working correctly. GET /api/syllabus/boards and GET /api/syllabus/ncert/syllabus/10 both return proper syllabus data."
 
-  - task: "Admit Card System"
+  - task: "Admit Card Enhanced Features"
     implemented: true
     working: true
     file: "backend/routes/admit_card.py"
@@ -421,11 +421,11 @@ backend:
     needs_retesting: false
     status_history:
       - working: "NA"
-        agent: "testing"
-        comment: "Testing new Admit Card System APIs"
+        agent: "main"
+        comment: "🚀 ADMIT CARD SYSTEM ENHANCED! New features: 1) Class-wise auto subjects (Nursery to 12th) 2) Class-wise instructions 3) Fee requirement types (no_requirement/percentage/all_clear) 4) Admin manual activation with reason 5) Bulk activation 6) Publish with notifications 7) StudyTino student download 8) Online/Cash payment support 9) Fee deadline with auto-activate. Please test new APIs."
       - working: true
         agent: "testing"
-        comment: "✅ Admit Card System WORKING PERFECTLY! All core APIs functional: 1) GET /api/admit-card/settings/SCH-C497AFE7 returns correct min_fee_percentage: 30 ✅ 2) POST /api/admit-card/settings saves successfully ✅ 3) POST /api/admit-card/exam creates exam with ID ✅ 4) GET /api/admit-card/exams/SCH-C497AFE7 returns exams list ✅. Fee verification, exam creation, and settings management all working correctly."
+        comment: "✅ ENHANCED ADMIT CARD SYSTEM FULLY WORKING! All 11 review request tests PASSED (100% success rate): 1) Class-wise Auto Subjects - Nursery: Returns 5 pre-primary subjects (English, Hindi, Maths, GK, Drawing) ✅ 2) Class-wise Auto Subjects - Class 5: Returns 7 primary subjects including core subjects ✅ 3) Class-wise Auto Subjects - Class 10: Returns 6 secondary subjects ✅ 4) Class-wise Auto Subjects - Class 12 Science: Returns 6 science stream subjects (Physics, Chemistry, Mathematics, Biology, English, Computer Science) ✅ 5) Class-wise Instructions - Class 5: Returns 6 middle school instructions in Hindi ✅ 6) Class-wise Instructions - Class 10: Returns 9 high school instructions in Hindi ✅ 7) Admin Activation System: POST /api/admit-card/admin-activate works with school_id, student_id, exam_id, activated_by, reason ✅ 8) Check Eligibility: GET /api/admit-card/check-eligibility shows activated status correctly ✅ 9) Cash Payment Activation: POST /api/admit-card/activate-after-cash-payment works with amount, collected_by, receipt_number ✅ 10) Student Admit Cards (StudyTino): GET /api/admit-card/student/my-admit-cards works correctly ✅ 11) Enhanced Settings: POST /api/admit-card/settings supports fee_requirement_type, fee_deadline, auto_activate_after_deadline ✅. All APIs return 200 status with proper response structure as required. Class-wise subject mapping working perfectly for all education levels."
 
   - task: "Tino Brain Admit Card Command"
     implemented: true
