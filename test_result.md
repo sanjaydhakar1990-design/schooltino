@@ -711,11 +711,11 @@ backend:
 
   - task: "Admit Card Edit/Delete Operations"
     implemented: true
-    working: false
+    working: true
     file: "backend/routes/admit_card.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "testing"
@@ -726,6 +726,24 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ ROOT CAUSE IDENTIFIED! The issue is NOT with Edit/Delete APIs (they work perfectly). The problem is with EXAM DISPLAY: 1) API Testing: PUT /api/admit-card/exam/{exam_id} returns 200 OK ✅ DELETE /api/admit-card/exam/{exam_id} returns 200 OK ✅ Both operations confirmed working via direct API calls. 2) UI Issue: Exams are created successfully (POST returns 200 OK) but NOT DISPLAYED on page. GET /api/admit-card/exams/SCH-DEMO-2026?type=school returns empty array [] even though exams exist in database. 3) Root Cause: Old exams in database are missing 'exam_category' field. When frontend filters by type=school or type=board, backend query filters by exam_category field, so exams without this field are not returned. Found 1 exam 'Debug Test Exam' with NO CATEGORY field. 4) Solution Needed: Add database migration to set exam_category='school' for all existing exams without this field, OR modify backend to handle exams without exam_category field. User cannot see Edit/Delete buttons because exams are not displayed on UI due to missing exam_category field."
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED! Changes made: 1) Added 'exam_category' field to ExamCreate model with default 'school' 2) Updated create_exam to always set exam_category 3) Updated get_exams to handle missing exam_category with $or query (includes null, empty, non-existent) 4) Updated update_exam and delete_exam to try both 'id' and '_id' fields for backward compatibility 5) Added /migrate-exams endpoint to fix old exams 6) Added automatic migration call in frontend on page load 7) Improved parse-student-list with better error handling"
+
+  - task: "Board Exam Bulk Upload Review Section"
+    implemented: true
+    working: true
+    file: "backend/routes/admit_card.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Board exam में data upload करने के बाद review section नहीं खुल रहा है - 'Not Found' error"
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED! Changes made: 1) Improved parse-student-list API with proper error handling 2) Added validation for school_id 3) Added proper logging for debugging 4) Fixed BulkBoardAdmitCard.js to handle exam.id or exam._id 5) Added empty state handling with helpful messages 6) Increased student limit from 50 to 100"
 
 frontend:
   - task: "PWA Install Prompt"
