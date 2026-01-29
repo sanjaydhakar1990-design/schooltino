@@ -576,19 +576,37 @@ export default function StudyTinoDashboard() {
                 </h3>
               </div>
               <div className="space-y-2">
-                {homework.slice(0, 3).map((hw) => (
-                  <div key={hw.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{hw.subject}</p>
-                      <p className="text-xs text-slate-500">{hw.topic}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge className={hw.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
-                        {hw.status === 'pending' ? 'Pending' : 'Done'}
+                {homework.slice(0, 5).map((hw) => (
+                  <div key={hw.id} className="p-3 bg-slate-50 rounded-lg border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{hw.subject}</p>
+                        <p className="text-xs text-slate-500">{hw.topic || hw.description}</p>
+                      </div>
+                      <Badge className={
+                        hw.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                        hw.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        hw.status === 'revision' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-amber-100 text-amber-700'
+                      }>
+                        {hw.status === 'submitted' ? 'Submitted' :
+                         hw.status === 'approved' ? 'Approved ✓' :
+                         hw.status === 'revision' ? 'Needs Revision' : 'Pending'}
                       </Badge>
-                      <p className="text-[10px] text-slate-400 mt-1">
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-[10px] text-slate-400">
                         Due: {new Date(hw.due_date).toLocaleDateString('hi-IN')}
                       </p>
+                      {(hw.status === 'pending' || hw.status === 'revision') && (
+                        <Button 
+                          size="sm" 
+                          className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
+                          onClick={() => openHomeworkSubmission(hw)}
+                        >
+                          📷 Submit
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
