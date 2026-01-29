@@ -52,6 +52,8 @@ class ExamCreate(BaseModel):
     subjects: Optional[List[Dict]] = None  # [{subject, date, time}]
     instructions: Optional[List[str]] = None
     created_by: str
+    exam_category: Optional[str] = "school"  # school or board
+    venue: Optional[str] = None
 
 class AdmitCardRequest(BaseModel):
     school_id: str
