@@ -1082,6 +1082,77 @@ export default function TeachTinoDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Homework Submissions/Check Dialog */}
+      <Dialog open={showHomeworkList} onOpenChange={setShowHomeworkList}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              Homework Submissions
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {homeworkSubmissions.length > 0 ? (
+              homeworkSubmissions.map((submission, idx) => (
+                <div key={idx} className="p-4 bg-gray-50 rounded-lg border">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{submission.student_name}</p>
+                      <p className="text-sm text-gray-500">{submission.subject} • {submission.class_name}</p>
+                      <p className="text-xs text-gray-400 mt-1">Submitted: {new Date(submission.submitted_at).toLocaleString('hi-IN')}</p>
+                    </div>
+                    <Badge className={
+                      submission.status === 'approved' ? 'bg-green-100 text-green-700' :
+                      submission.status === 'revision' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-blue-100 text-blue-700'
+                    }>
+                      {submission.status || 'Pending Review'}
+                    </Badge>
+                  </div>
+                  
+                  {submission.image_url && (
+                    <div className="mt-3">
+                      <img 
+                        src={submission.image_url} 
+                        alt="Homework" 
+                        className="max-h-40 rounded border cursor-pointer hover:opacity-90"
+                        onClick={() => window.open(submission.image_url, '_blank')}
+                      />
+                    </div>
+                  )}
+                  
+                  {submission.status === 'pending' && (
+                    <div className="flex gap-2 mt-3">
+                      <Button 
+                        size="sm" 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => handleHomeworkReview(submission.id, 'approved', 'अच्छा काम!')}
+                      >
+                        <Check className="w-4 h-4 mr-1" /> Approve
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="text-yellow-700 border-yellow-300"
+                        onClick={() => handleHomeworkReview(submission.id, 'revision', 'Please improve')}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" /> Needs Revision
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <FileEdit className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500">No homework submissions yet</p>
+                <p className="text-sm text-gray-400">Students will appear here when they submit homework</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
