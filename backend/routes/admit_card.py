@@ -81,6 +81,221 @@ class FeePaymentForAdmitCard(BaseModel):
     amount: float
     payment_method: str = "online"
 
+class AdminActivateDownload(BaseModel):
+    school_id: str
+    student_id: str
+    exam_id: str
+    activated_by: str
+    reason: str  # Why admin is manually activating
+
+# ============== CLASS-WISE DATA ==============
+
+# Default subjects for each class level
+CLASS_SUBJECTS = {
+    "nursery": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Maths (गणित)"},
+        {"id": "gk", "name": "General Knowledge (सामान्य ज्ञान)"},
+        {"id": "drawing", "name": "Drawing (चित्रकला)"}
+    ],
+    "lkg": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Maths (गणित)"},
+        {"id": "gk", "name": "General Knowledge (सामान्य ज्ञान)"},
+        {"id": "drawing", "name": "Drawing (चित्रकला)"},
+        {"id": "rhymes", "name": "Rhymes (कविता)"}
+    ],
+    "ukg": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Maths (गणित)"},
+        {"id": "gk", "name": "General Knowledge (सामान्य ज्ञान)"},
+        {"id": "drawing", "name": "Drawing (चित्रकला)"},
+        {"id": "evs", "name": "EVS (पर्यावरण)"}
+    ],
+    "class_1": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "evs", "name": "EVS (पर्यावरण)"},
+        {"id": "gk", "name": "General Knowledge (सामान्य ज्ञान)"},
+        {"id": "drawing", "name": "Drawing (चित्रकला)"}
+    ],
+    "class_2": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "evs", "name": "EVS (पर्यावरण)"},
+        {"id": "gk", "name": "General Knowledge (सामान्य ज्ञान)"},
+        {"id": "computer", "name": "Computer (कंप्यूटर)"}
+    ],
+    "class_3": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "evs", "name": "EVS (पर्यावरण)"},
+        {"id": "gk", "name": "General Knowledge (सामान्य ज्ञान)"},
+        {"id": "computer", "name": "Computer (कंप्यूटर)"}
+    ],
+    "class_4": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "evs", "name": "EVS (पर्यावरण)"},
+        {"id": "gk", "name": "General Knowledge (सामान्य ज्ञान)"},
+        {"id": "computer", "name": "Computer (कंप्यूटर)"}
+    ],
+    "class_5": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "science", "name": "Science (विज्ञान)"},
+        {"id": "social", "name": "Social Science (सामाजिक विज्ञान)"},
+        {"id": "computer", "name": "Computer (कंप्यूटर)"},
+        {"id": "sanskrit", "name": "Sanskrit (संस्कृत)"}
+    ],
+    "class_6": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "science", "name": "Science (विज्ञान)"},
+        {"id": "social", "name": "Social Science (सामाजिक विज्ञान)"},
+        {"id": "sanskrit", "name": "Sanskrit (संस्कृत)"},
+        {"id": "computer", "name": "Computer (कंप्यूटर)"}
+    ],
+    "class_7": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "science", "name": "Science (विज्ञान)"},
+        {"id": "social", "name": "Social Science (सामाजिक विज्ञान)"},
+        {"id": "sanskrit", "name": "Sanskrit (संस्कृत)"},
+        {"id": "computer", "name": "Computer (कंप्यूटर)"}
+    ],
+    "class_8": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "science", "name": "Science (विज्ञान)"},
+        {"id": "social", "name": "Social Science (सामाजिक विज्ञान)"},
+        {"id": "sanskrit", "name": "Sanskrit (संस्कृत)"},
+        {"id": "computer", "name": "Computer (कंप्यूटर)"}
+    ],
+    "class_9": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "science", "name": "Science (विज्ञान)"},
+        {"id": "social", "name": "Social Science (सामाजिक विज्ञान)"},
+        {"id": "it", "name": "Information Technology (IT)"}
+    ],
+    "class_10": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "science", "name": "Science (विज्ञान)"},
+        {"id": "social", "name": "Social Science (सामाजिक विज्ञान)"},
+        {"id": "it", "name": "Information Technology (IT)"}
+    ],
+    "class_11_science": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "physics", "name": "Physics (भौतिकी)"},
+        {"id": "chemistry", "name": "Chemistry (रसायन)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "biology", "name": "Biology (जीव विज्ञान)"},
+        {"id": "computer", "name": "Computer Science (कंप्यूटर)"}
+    ],
+    "class_11_commerce": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "accounts", "name": "Accountancy (लेखाशास्त्र)"},
+        {"id": "business", "name": "Business Studies (व्यवसाय अध्ययन)"},
+        {"id": "economics", "name": "Economics (अर्थशास्त्र)"},
+        {"id": "maths", "name": "Mathematics (गणित)"}
+    ],
+    "class_11_arts": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "history", "name": "History (इतिहास)"},
+        {"id": "geography", "name": "Geography (भूगोल)"},
+        {"id": "political", "name": "Political Science (राजनीति विज्ञान)"}
+    ],
+    "class_12_science": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "physics", "name": "Physics (भौतिकी)"},
+        {"id": "chemistry", "name": "Chemistry (रसायन)"},
+        {"id": "maths", "name": "Mathematics (गणित)"},
+        {"id": "biology", "name": "Biology (जीव विज्ञान)"},
+        {"id": "computer", "name": "Computer Science (कंप्यूटर)"}
+    ],
+    "class_12_commerce": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "accounts", "name": "Accountancy (लेखाशास्त्र)"},
+        {"id": "business", "name": "Business Studies (व्यवसाय अध्ययन)"},
+        {"id": "economics", "name": "Economics (अर्थशास्त्र)"},
+        {"id": "maths", "name": "Mathematics (गणित)"}
+    ],
+    "class_12_arts": [
+        {"id": "english", "name": "English (अंग्रेजी)"},
+        {"id": "hindi", "name": "Hindi (हिंदी)"},
+        {"id": "history", "name": "History (इतिहास)"},
+        {"id": "geography", "name": "Geography (भूगोल)"},
+        {"id": "political", "name": "Political Science (राजनीति विज्ञान)"}
+    ]
+}
+
+# Default instructions for each class level
+CLASS_INSTRUCTIONS = {
+    "primary": [  # Nursery to Class 2
+        "विद्यार्थी को अपने अभिभावक के साथ समय पर परीक्षा केंद्र पहुंचना होगा।",
+        "प्रवेश पत्र अनिवार्य है। बिना प्रवेश पत्र के परीक्षा में बैठने नहीं दिया जाएगा।",
+        "अपनी पेंसिल, रबड़ और शार्पनर स्वयं लाएं।",
+        "परीक्षा के दौरान शांति बनाए रखें।",
+        "परीक्षा समाप्त होने के बाद ही कक्ष छोड़ें।"
+    ],
+    "middle": [  # Class 3 to 5
+        "विद्यार्थी को परीक्षा से 15 मिनट पहले उपस्थित होना अनिवार्य है।",
+        "प्रवेश पत्र अनिवार्य है। बिना प्रवेश पत्र के परीक्षा में बैठने नहीं दिया जाएगा।",
+        "अपनी लेखन सामग्री (पेन, पेंसिल, रबड़, स्केल) स्वयं लाएं।",
+        "परीक्षा कक्ष में किसी भी प्रकार का इलेक्ट्रॉनिक उपकरण लाना वर्जित है।",
+        "नकल करना सख्त मना है। पकड़े जाने पर परीक्षा रद्द की जाएगी।",
+        "परीक्षा समाप्त होने के बाद ही कक्ष छोड़ें।"
+    ],
+    "secondary": [  # Class 6 to 8
+        "विद्यार्थी को परीक्षा से 20 मिनट पहले उपस्थित होना अनिवार्य है।",
+        "प्रवेश पत्र और स्कूल ID कार्ड अनिवार्य है।",
+        "अपनी लेखन सामग्री (नीला/काला पेन, पेंसिल, रबड़, स्केल, जियोमेट्री बॉक्स) स्वयं लाएं।",
+        "मोबाइल फोन, स्मार्ट वॉच या कोई भी इलेक्ट्रॉनिक उपकरण लाना सख्त मना है।",
+        "नकल करना या करवाना दोनों अपराध है। पकड़े जाने पर परीक्षा रद्द और अनुशासनात्मक कार्रवाई होगी।",
+        "उत्तर पुस्तिका पर सही जानकारी भरें। गलत जानकारी पर परीक्षा रद्द हो सकती है।",
+        "परीक्षा के दौरान कक्ष छोड़ना वर्जित है।"
+    ],
+    "high": [  # Class 9 to 10
+        "विद्यार्थी को परीक्षा से 30 मिनट पहले उपस्थित होना अनिवार्य है।",
+        "प्रवेश पत्र और स्कूल ID कार्ड दोनों अनिवार्य हैं।",
+        "केवल नीले या काले बॉलपॉइंट पेन का प्रयोग करें। जेल पेन वर्जित है।",
+        "मोबाइल फोन, स्मार्ट वॉच, कैलकुलेटर या कोई भी इलेक्ट्रॉनिक उपकरण लाना सख्त मना है।",
+        "नकल करने पर परीक्षा तुरंत रद्द और भविष्य की परीक्षाओं से वंचित किया जाएगा।",
+        "उत्तर पुस्तिका पर रोल नंबर और विषय कोड सही भरें।",
+        "प्रश्न पत्र मिलने के बाद पहले 15 मिनट पढ़ने के लिए हैं।",
+        "परीक्षा समाप्त होने तक कक्ष में ही रहें।",
+        "Board परीक्षा की तैयारी के लिए यह internal परीक्षा महत्वपूर्ण है।"
+    ],
+    "senior": [  # Class 11 to 12
+        "विद्यार्थी को परीक्षा से 30 मिनट पहले अपने निर्धारित केंद्र पर उपस्थित होना अनिवार्य है।",
+        "प्रवेश पत्र, स्कूल ID कार्ड और आधार कार्ड अनिवार्य हैं।",
+        "केवल नीले या काले बॉलपॉइंट पेन का प्रयोग करें।",
+        "मोबाइल फोन, स्मार्ट वॉच, ब्लूटूथ डिवाइस या कोई भी इलेक्ट्रॉनिक उपकरण लाना सख्त मना है।",
+        "नकल या अनुचित साधनों का प्रयोग करने पर परीक्षा रद्द और Board को रिपोर्ट किया जाएगा।",
+        "उत्तर पुस्तिका पर सभी details सावधानी से भरें।",
+        "प्रश्न पत्र मिलने के बाद पहले 15 मिनट पढ़ने के लिए हैं। इस दौरान लिखना मना है।",
+        "गणित परीक्षा में logarithm table की अनुमति है (यदि applicable)।",
+        "परीक्षा समाप्त होने पर उत्तर पुस्तिका निरीक्षक को देकर ही जाएं।",
+        "यह परीक्षा आपके Board परीक्षा के internal marks में शामिल होगी।"
+    ]
+}
+
 # ============== HELPER FUNCTIONS ==============
 
 async def get_student_fee_status(student_id: str, school_id: str, db) -> Dict:
