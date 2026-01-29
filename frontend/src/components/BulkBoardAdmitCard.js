@@ -77,12 +77,19 @@ const BulkBoardAdmitCard = ({ boardExam, schoolId, onClose }) => {
   };
 
   const generateBulkAdmitCards = async () => {
+    if (studentsList.length === 0) {
+      toast.error('No students to generate admit cards for');
+      return;
+    }
+    
     setGenerating(true);
     try {
       const token = localStorage.getItem('token');
+      const examId = boardExam?.id || boardExam?._id;
+      
       const response = await axios.post(`${API}/api/admit-card/generate-board-bulk`, {
         school_id: schoolId,
-        exam_id: boardExam.id,
+        exam_id: examId,
         students: studentsList
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -92,6 +99,7 @@ const BulkBoardAdmitCard = ({ boardExam, schoolId, onClose }) => {
       setStep(3);
       toast.success(`✅ ${response.data.generated_count} admit cards generated!`);
     } catch (err) {
+      console.error('Generation error:', err);
       toast.error('Generation failed: ' + (err.response?.data?.detail || err.message));
     } finally {
       setGenerating(false);
