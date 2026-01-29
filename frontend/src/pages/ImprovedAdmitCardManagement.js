@@ -268,13 +268,64 @@ const ImprovedAdmitCardManagement = () => {
     });
   };
 
-  const toggleClassSelection = (classId) => {
+  // Auto-fetch subjects and instructions when class is selected
+  const fetchClassSubjectsAndInstructions = async (className) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const [subjectsRes, instructionsRes] = await Promise.all([
+        axios.get(`${API}/api/admit-card/class-subjects/${encodeURIComponent(className)}?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/api/admit-card/class-instructions/${encodeURIComponent(className)}?school_id=${schoolId}`, { headers })
+      ]);
+      
+      // Format subjects with default exam schedule
+      const formattedSubjects = (subjectsRes.data.subjects || []).map(sub => ({
+        subject_name: sub.name,
+        subject_id: sub.id,
+        exam_date: '',
+        exam_time: '09:00 AM',
+        duration: '3 hours',
+        max_marks: 100
+      }));
+      
+      return {
+        subjects: formattedSubjects,
+        instructions: instructionsRes.data.instructions || []
+      };
+    } catch (err) {
+      console.error('Error fetching class data:', err);
+      return null;
+    }
+  };
+
+  const toggleClassSelection = async (classId) => {
+    const isRemoving = examForm.classes.includes(classId);
+    
     setExamForm(prev => ({
       ...prev,
-      classes: prev.classes.includes(classId)
+      classes: isRemoving
         ? prev.classes.filter(id => id !== classId)
         : [...prev.classes, classId]
     }));
+    
+    // If adding first class, auto-populate subjects and instructions
+    if (!isRemoving && examForm.classes.length === 0) {
+      // Get class name from classes list
+      const selectedClass = classes.find(c => c.id === classId);
+      if (selectedClass) {
+        const classData = await fetchClassSubjectsAndInstructions(selectedClass.name || classId);
+        if (classData) {
+          setExamForm(prev => ({
+            ...prev,
+            classes: [classId],
+            subjects: classData.subjects,
+            instructions: classData.instructions
+          }));
+          toast.success(`✅ ${selectedClass.name} के subjects और instructions auto-filled!`);
+        }
+      }
+    }
   };
 
   const addSubject = () => {
