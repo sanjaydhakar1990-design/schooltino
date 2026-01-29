@@ -184,6 +184,45 @@ export default function TeachTinoDashboard() {
     }
   };
 
+  // Open attendance for a specific class
+  const openAttendanceForClass = async (cls) => {
+    setSelectedClassForAttendance(cls);
+    await fetchClassStudents(cls.id);
+    setShowClassSelector(false);
+    setShowAttendanceSheet(true);
+  };
+
+  // Fetch homework submissions for teacher
+  const fetchHomeworkSubmissions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/homework/submissions?school_id=${user?.school_id}&teacher_id=${user?.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setHomeworkSubmissions(res.data || []);
+    } catch (e) {
+      console.log('No submissions found');
+      setHomeworkSubmissions([]);
+    }
+  };
+
+  // Approve/Reject homework
+  const handleHomeworkReview = async (submissionId, status, feedback = '') => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/homework/submissions/${submissionId}/review`, {
+        status,
+        feedback,
+        reviewed_by: user?.id
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success(`Homework ${status === 'approved' ? 'approved ✅' : 'needs revision 📝'}`);
+      fetchHomeworkSubmissions();
+    } catch (error) {
+      toast.error('Review submit करने में error');
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/teachtino');
