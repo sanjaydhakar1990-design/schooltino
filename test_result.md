@@ -883,7 +883,7 @@ test_plan:
     - "Admin Activation System"
   stuck_tasks: []
   test_all: false
-  test_priority: "admit_card_enhanced"
+  test_priority: "admit_card_enhanced_complete"
 
 agent_communication:
   - agent: "main"
