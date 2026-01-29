@@ -1,4 +1,4 @@
-# /app/backend/routes/mpbse.py
+# ./routes/mpbse.py
 """
 MP Board (MPBSE) Syllabus API Routes
 Madhya Pradesh Board of Secondary Education
@@ -8,7 +8,7 @@ Data from https://mpbse.nic.in/syllabus.htm
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 import sys
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 from services.mpbse_syllabus import MPBSESyllabusService
 
 router = APIRouter(prefix="/mpbse", tags=["MPBSE Syllabus"])

@@ -1,4 +1,4 @@
-# /app/backend/core/helpers.py
+# ./core/helpers.py
 """Helper functions"""
 
 from datetime import datetime, timezone

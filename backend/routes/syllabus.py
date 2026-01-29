@@ -1,4 +1,4 @@
-# /app/backend/routes/syllabus.py
+# ./routes/syllabus.py
 """
 Unified Syllabus API Routes
 Supports multiple boards: NCERT, MPBSE, etc.
@@ -7,7 +7,7 @@ Supports multiple boards: NCERT, MPBSE, etc.
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 import sys
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 from services.ncert_syllabus import NCERTSyllabusService
 from services.mpbse_syllabus import MPBSESyllabusService
 

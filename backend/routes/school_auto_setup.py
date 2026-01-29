@@ -1,4 +1,4 @@
-# /app/backend/routes/school_auto_setup.py
+# ./routes/school_auto_setup.py
 """
 AI-Powered School Auto Setup
 - Extract school details from website URL
@@ -19,7 +19,7 @@ import httpx
 import re
 import secrets
 
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

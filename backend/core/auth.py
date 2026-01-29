@@ -1,4 +1,4 @@
-# /app/backend/core/auth.py
+# ./core/auth.py
 """Authentication utilities"""
 
 import jwt

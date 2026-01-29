@@ -1,4 +1,4 @@
-# /app/backend/routes/syllabus_progress.py
+# ./routes/syllabus_progress.py
 """
 Syllabus Progress Tracking & AI Chapter Summary
 - Teachers update syllabus progress
@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 import uuid
 import os
 import sys
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

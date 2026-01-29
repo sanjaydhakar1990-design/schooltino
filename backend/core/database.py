@@ -1,4 +1,4 @@
-# /app/backend/core/database.py
+# ./core/database.py
 """Database connection module"""
 
 from motor.motor_asyncio import AsyncIOMotorClient

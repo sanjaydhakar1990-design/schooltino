@@ -1,4 +1,8 @@
 from typing import Optional, List, Any
+from pydantic import BaseModel
+
+class UserMessage(BaseModel):
+    content: str
 
 class LlmChat:
     def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4", **kwargs):

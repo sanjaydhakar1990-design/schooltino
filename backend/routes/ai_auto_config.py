@@ -1,4 +1,4 @@
-# /app/backend/routes/ai_auto_config.py
+# ./routes/ai_auto_config.py
 """
 AI-POWERED AUTO CONFIGURATION SYSTEM
 =====================================
@@ -23,7 +23,7 @@ import re
 import socket
 import logging
 
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

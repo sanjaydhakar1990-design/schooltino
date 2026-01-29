@@ -1,4 +1,4 @@
-# /app/backend/services/mpbse_syllabus.py
+# ./services/mpbse_syllabus.py
 """
 MP Board (MPBSE) Syllabus Service
 Based on official MPBSE curriculum from https://mpbse.nic.in/syllabus.htm

@@ -1,4 +1,4 @@
-# /app/backend/routes/ncert.py
+# ./routes/ncert.py
 """
 NCERT Syllabus API Routes
 Real NCERT curriculum data from official sources
@@ -7,7 +7,7 @@ Real NCERT curriculum data from official sources
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional, List
 import sys
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 from services.ncert_syllabus import NCERTSyllabusService
 
 router = APIRouter(prefix="/ncert", tags=["NCERT Syllabus"])

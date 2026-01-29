@@ -1,4 +1,4 @@
-# /app/backend/routes/id_card.py
+# ./routes/id_card.py
 """
 ID Card Generation System
 - Auto-generate ID cards for students and staff
@@ -15,7 +15,7 @@ import os
 import sys
 import base64
 
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

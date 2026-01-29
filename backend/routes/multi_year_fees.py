@@ -1,4 +1,4 @@
-# /app/backend/routes/multi_year_fees.py
+# ./routes/multi_year_fees.py
 """
 Multi-Year Fee Management System
 - Track fee dues from previous years (2-3 years)
@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 import uuid
 import os
 import sys
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

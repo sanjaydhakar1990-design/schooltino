@@ -1,4 +1,4 @@
-# /app/backend/routes/face_recognition.py
+# ./routes/face_recognition.py
 """
 AI Face Recognition System for Student Attendance
 - Multiple photo capture (4-5 angles + full body)
@@ -19,7 +19,7 @@ import base64
 import json
 import httpx
 
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

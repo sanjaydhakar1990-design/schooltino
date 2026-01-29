@@ -1,4 +1,4 @@
-# /app/backend/routes/ai_accountant.py
+# ./routes/ai_accountant.py
 """
 AI Accountant Dashboard
 - Student fee management
@@ -15,7 +15,7 @@ from datetime import datetime, timezone, timedelta
 import uuid
 import os
 import sys
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

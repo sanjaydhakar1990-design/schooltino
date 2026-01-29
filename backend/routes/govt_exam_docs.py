@@ -24,7 +24,7 @@ db_name = os.environ.get('DB_NAME', 'schooltino')
 db_client = AsyncIOMotorClient(mongo_url)
 db = db_client[db_name]
 
-UPLOAD_DIR = Path("/app/backend/uploads/govt_docs")
+UPLOAD_DIR = Path("./uploads/govt_docs")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Models

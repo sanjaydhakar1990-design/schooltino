@@ -1,4 +1,4 @@
-# /app/backend/routes/password_reset.py
+# ./routes/password_reset.py
 """
 Forgot Password / Password Reset System
 - OTP based password reset via email/mobile
@@ -17,7 +17,7 @@ import random
 import string
 import bcrypt
 
-sys.path.append('/app/backend')
+import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 

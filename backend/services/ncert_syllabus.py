@@ -1,4 +1,4 @@
-# /app/backend/services/ncert_syllabus.py
+# ./services/ncert_syllabus.py
 """
 NCERT Syllabus Service
 Based on official NCERT curriculum from https://ncert.nic.in/syllabus.php
