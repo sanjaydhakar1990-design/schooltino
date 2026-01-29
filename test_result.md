@@ -876,7 +876,11 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Admit Card Enhanced Features"
+    - "Class-wise Auto Subjects"
+    - "Fee-based Download Control"
+    - "Admin Activation System"
   stuck_tasks: []
   test_all: false
   test_priority: "admit_card_fixes_completed"
