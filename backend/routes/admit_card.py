@@ -910,19 +910,28 @@ async def update_exam(exam_id: str, exam_data: dict):
     
     print(f"Update request - exam_id: {exam_id}, school_id: {school_id}")
     
-    # Check if exam exists
+    # Check if exam exists - try by 'id' field first, then by '_id'
     exam = await db.exams.find_one({"id": exam_id, "school_id": school_id})
+    if not exam:
+        # Try finding by string _id
+        exam = await db.exams.find_one({"_id": exam_id, "school_id": school_id})
     if not exam:
         print(f"Exam not found with id: {exam_id}")
         raise HTTPException(status_code=404, detail=f"Exam not found with id: {exam_id}")
     
+    # Preserve exam_category if not provided in update
+    if "exam_category" not in exam_data and exam.get("exam_category"):
+        exam_data["exam_category"] = exam["exam_category"]
+    
     exam_data.pop("school_id", None)
     exam_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     
-    result = await db.exams.update_one(
-        {"id": exam_id, "school_id": school_id},
-        {"$set": exam_data}
-    )
+    # Use the same query that found the exam
+    query = {"id": exam_id, "school_id": school_id}
+    if "id" not in exam:
+        query = {"_id": exam_id, "school_id": school_id}
+    
+    result = await db.exams.update_one(query, {"$set": exam_data})
     
     print(f"Update result: {result.modified_count} documents modified")
     
