@@ -5835,6 +5835,112 @@ async def get_homework(school_id: str, class_id: str = None, current_user: dict 
     homework = await db.homework.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
     return homework
 
+@api_router.post("/homework/submit")
+async def submit_homework(
+    file: UploadFile = File(...),
+    homework_id: str = Form(...),
+    student_id: str = Form(...),
+    school_id: str = Form(...),
+    class_id: str = Form(None),
+    subject: str = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Student submits homework with photo"""
+    import base64
+    
+    # Read file
+    content = await file.read()
+    
+    # Save to GridFS or as base64 for now
+    file_data = base64.b64encode(content).decode('utf-8')
+    file_url = f"data:{file.content_type};base64,{file_data[:100]}..."  # Truncated for storage
+    
+    # Get student name
+    student = await db.students.find_one({"id": student_id}, {"name": 1, "class_name": 1})
+    
+    # Get homework details
+    homework = await db.homework.find_one({"id": homework_id})
+    
+    submission = {
+        "id": str(uuid.uuid4()),
+        "homework_id": homework_id,
+        "student_id": student_id,
+        "student_name": student.get("name", "Unknown") if student else "Unknown",
+        "school_id": school_id,
+        "class_id": class_id or (homework.get("class_id") if homework else None),
+        "class_name": student.get("class_name") if student else "",
+        "subject": subject or (homework.get("subject") if homework else ""),
+        "image_data": file_data,
+        "image_url": file_url,
+        "teacher_id": homework.get("assigned_by") if homework else None,
+        "status": "pending",
+        "submitted_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.homework_submissions.insert_one(submission)
+    
+    # Update homework status for this student
+    await db.homework.update_one(
+        {"id": homework_id},
+        {"$addToSet": {"submitted_by": student_id}}
+    )
+    
+    return {"success": True, "message": "Homework submitted", "submission_id": submission["id"]}
+
+@api_router.get("/homework/submissions")
+async def get_homework_submissions(
+    school_id: str,
+    teacher_id: str = None,
+    class_id: str = None,
+    status: str = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get homework submissions for teacher review"""
+    query = {"school_id": school_id}
+    if teacher_id:
+        query["teacher_id"] = teacher_id
+    if class_id:
+        query["class_id"] = class_id
+    if status:
+        query["status"] = status
+    
+    submissions = await db.homework_submissions.find(query, {"_id": 0, "image_data": 0}).sort("submitted_at", -1).to_list(100)
+    return submissions
+
+@api_router.post("/homework/submissions/{submission_id}/review")
+async def review_homework(submission_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Teacher reviews homework submission"""
+    status = data.get("status", "approved")  # approved, revision
+    feedback = data.get("feedback", "")
+    reviewed_by = data.get("reviewed_by")
+    
+    result = await db.homework_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {
+            "status": status,
+            "feedback": feedback,
+            "reviewed_by": reviewed_by,
+            "reviewed_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    return {"success": True, "message": f"Homework {status}"}
+
+@api_router.get("/homework/submissions/{submission_id}/image")
+async def get_submission_image(submission_id: str, current_user: dict = Depends(get_current_user)):
+    """Get homework submission image"""
+    submission = await db.homework_submissions.find_one({"id": submission_id})
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    if submission.get("image_data"):
+        return {"image_data": submission["image_data"]}
+    
+    return {"image_url": submission.get("image_url")}
+
 # ==================== TINO CHAT FOR TEACHERS ====================
 
 @api_router.post("/tino/chat")
