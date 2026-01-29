@@ -3547,7 +3547,24 @@ async def bulk_upload_attendance_excel(
                 "school_id": school_id
             },
             {
-
+                "$set": {
+                    "status": record.get("status", "present"),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                },
+                "$setOnInsert": {
+                    "id": str(uuid.uuid4()),
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+        inserted_count += 1
+    
+    return {
+        "success": True,
+        "records_inserted": inserted_count,
+        "message": f"{inserted_count} attendance records uploaded successfully"
+    }
 
 @api_router.post("/attendance/student/apply-leave")
 async def student_apply_leave(leave_data: dict, current_user: dict = Depends(get_current_user)):
