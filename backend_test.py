@@ -1403,6 +1403,220 @@ class SchooltinoAPITester:
         
         return success
 
+    # ============== ADMIT CARD SYSTEM FIXES TESTS - REVIEW REQUEST ==============
+    
+    def test_admit_card_exam_create_with_category(self):
+        """Test 1: POST /api/admit-card/exam with exam_category: 'school'"""
+        data = {
+            "school_id": "SCH-DEMO-2026",
+            "exam_name": "Mid Term Test 2026",
+            "exam_type": "unit_test",
+            "exam_category": "school",
+            "start_date": "2026-02-15",
+            "end_date": "2026-02-20",
+            "classes": ["Class 10"],
+            "created_by": "director"
+        }
+        success, response = self.run_test("Admit Card - Create Exam with Category", "POST", "admit-card/exam", 200, data)
+        
+        if success:
+            exam_id = response.get("exam_id")
+            if exam_id:
+                print(f"   ✅ Exam created with ID: {exam_id}")
+                self.exam_id = exam_id  # Store for later tests
+                print(f"   📝 Exam category: school (as requested)")
+            else:
+                print(f"   ⚠️ No exam_id returned")
+        
+        return success
+    
+    def test_admit_card_get_exams_with_old_data(self):
+        """Test 2: GET /api/admit-card/exams/{school_id}?type=school - Verify old exams show"""
+        success, response = self.run_test("Admit Card - Get School Exams", "GET", "admit-card/exams/SCH-DEMO-2026?type=school", 200)
+        
+        if success:
+            exams = response.get("exams", [])
+            print(f"   📝 Found {len(exams)} school exams")
+            
+            if exams:
+                print(f"   ✅ Exams returned successfully")
+                # Check if exams have proper structure
+                for exam in exams[:2]:  # Check first 2 exams
+                    exam_name = exam.get("exam_name", "Unknown")
+                    exam_category = exam.get("exam_category", "None")
+                    exam_id = exam.get("id", "No ID")
+                    print(f"   📝 Exam: '{exam_name}' | Category: '{exam_category}' | ID: {exam_id}")
+                    
+                    # Store first exam ID for update/delete tests
+                    if not hasattr(self, 'exam_id') or not self.exam_id:
+                        self.exam_id = exam.get("id")
+            else:
+                print(f"   ⚠️ No exams found - this might indicate the issue")
+        
+        return success
+    
+    def test_admit_card_update_exam(self):
+        """Test 3: PUT /api/admit-card/exam/{exam_id} with school_id in body"""
+        if not hasattr(self, 'exam_id') or not self.exam_id:
+            print(f"   ❌ No exam_id available for update test")
+            return False
+        
+        data = {
+            "school_id": "SCH-DEMO-2026",
+            "exam_name": "Updated Mid Term Test 2026",
+            "exam_type": "unit_test",
+            "start_date": "2026-02-16",
+            "end_date": "2026-02-21"
+        }
+        
+        endpoint = f"admit-card/exam/{self.exam_id}"
+        success, response = self.run_test("Admit Card - Update Exam", "PUT", endpoint, 200, data)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Exam updated successfully")
+                print(f"   📝 Updated exam ID: {self.exam_id}")
+            else:
+                print(f"   ⚠️ Update response indicates failure")
+        
+        return success
+    
+    def test_admit_card_delete_exam(self):
+        """Test 4: DELETE /api/admit-card/exam/{exam_id}?school_id={school_id}"""
+        if not hasattr(self, 'exam_id') or not self.exam_id:
+            print(f"   ❌ No exam_id available for delete test")
+            return False
+        
+        endpoint = f"admit-card/exam/{self.exam_id}?school_id=SCH-DEMO-2026"
+        success, response = self.run_test("Admit Card - Delete Exam", "DELETE", endpoint, 200)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Exam deleted successfully")
+                print(f"   📝 Deleted exam ID: {self.exam_id}")
+                # Clear exam_id since it's deleted
+                self.exam_id = None
+            else:
+                print(f"   ⚠️ Delete response indicates failure")
+        
+        return success
+    
+    def test_admit_card_migrate_exams(self):
+        """Test 5: POST /api/admit-card/migrate-exams with school_id"""
+        data = {
+            "school_id": "SCH-DEMO-2026"
+        }
+        success, response = self.run_test("Admit Card - Migrate Exams", "POST", "admit-card/migrate-exams", 200, data)
+        
+        if success:
+            fixed_count = response.get("fixed_count", 0)
+            total_exams = response.get("total_exams", 0)
+            print(f"   📝 Migration results: Fixed {fixed_count} out of {total_exams} exams")
+            
+            if response.get("success"):
+                print(f"   ✅ Migration completed successfully")
+            else:
+                print(f"   ⚠️ Migration may have failed")
+        
+        return success
+    
+    def test_admit_card_parse_student_list(self):
+        """Test 6: POST /api/admit-card/parse-student-list with school_id and exam_id"""
+        # First create a test exam for this
+        exam_data = {
+            "school_id": "SCH-DEMO-2026",
+            "exam_name": "Board Exam 2026",
+            "exam_type": "annual",
+            "exam_category": "board",
+            "start_date": "2026-03-01",
+            "end_date": "2026-03-15",
+            "classes": ["Class 10", "Class 12"],
+            "created_by": "director"
+        }
+        
+        # Create exam first
+        exam_success, exam_response = self.run_test("Create Board Exam for Parse Test", "POST", "admit-card/exam", 200, exam_data)
+        
+        if not exam_success:
+            print(f"   ❌ Failed to create test exam for parse test")
+            return False
+        
+        test_exam_id = exam_response.get("exam_id")
+        if not test_exam_id:
+            print(f"   ❌ No exam_id returned from exam creation")
+            return False
+        
+        # Now test parse student list
+        parse_data = {
+            "school_id": "SCH-DEMO-2026",
+            "exam_id": test_exam_id
+        }
+        
+        success, response = self.run_test("Admit Card - Parse Student List", "POST", "admit-card/parse-student-list", 200, parse_data)
+        
+        if success:
+            students = response.get("students", [])
+            count = response.get("count", 0)
+            message = response.get("message", "")
+            
+            print(f"   📝 Parse results: {count} students found")
+            print(f"   📝 Message: {message}")
+            
+            if response.get("success"):
+                print(f"   ✅ Student list parsed successfully")
+                if students:
+                    # Show sample student data
+                    sample_student = students[0]
+                    print(f"   📝 Sample student: {sample_student.get('name', 'Unknown')} - {sample_student.get('class', 'Unknown class')}")
+                else:
+                    print(f"   📝 No students in database (expected for new school)")
+            else:
+                print(f"   ⚠️ Parse operation failed")
+        
+        return success
+    
+    def run_admit_card_fixes_comprehensive_test(self):
+        """Run all admit card fixes tests in sequence"""
+        print(f"\n🎯 ADMIT CARD SYSTEM FIXES - COMPREHENSIVE TEST")
+        print(f"=" * 60)
+        
+        tests = [
+            ("Create Exam with Category", self.test_admit_card_exam_create_with_category),
+            ("Get Exams (Old Data Compatible)", self.test_admit_card_get_exams_with_old_data),
+            ("Update Exam", self.test_admit_card_update_exam),
+            ("Delete Exam", self.test_admit_card_delete_exam),
+            ("Migrate Exams", self.test_admit_card_migrate_exams),
+            ("Parse Student List", self.test_admit_card_parse_student_list)
+        ]
+        
+        passed = 0
+        total = len(tests)
+        
+        for test_name, test_func in tests:
+            print(f"\n📋 Testing: {test_name}")
+            try:
+                if test_func():
+                    passed += 1
+                    print(f"✅ {test_name}: PASSED")
+                else:
+                    print(f"❌ {test_name}: FAILED")
+            except Exception as e:
+                print(f"❌ {test_name}: ERROR - {str(e)}")
+        
+        print(f"\n🎯 ADMIT CARD FIXES TEST SUMMARY")
+        print(f"=" * 40)
+        print(f"✅ Passed: {passed}/{total} ({passed/total*100:.1f}%)")
+        print(f"❌ Failed: {total-passed}/{total}")
+        
+        if passed == total:
+            print(f"🎉 ALL ADMIT CARD FIXES WORKING PERFECTLY!")
+        elif passed >= total * 0.8:
+            print(f"✅ Most admit card fixes working correctly")
+        else:
+            print(f"⚠️ Several admit card issues need attention")
+        
+        return passed == total
+
     # ============== NEW FEATURES TESTS - REVIEW REQUEST ==============
     
     def test_gallery_event_types(self):
