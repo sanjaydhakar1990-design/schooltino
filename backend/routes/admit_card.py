@@ -1077,37 +1077,58 @@ async def parse_student_list(file_data: dict):
     """Parse Excel/CSV file and extract student list for board exam"""
     db = get_database()
     
-    # For now, return sample students
-    # In production, this would parse actual Excel/CSV file
-    
     school_id = file_data.get("school_id")
     exam_id = file_data.get("exam_id")
     
-    # Get students from school database
-    students = await db.students.find({
-        "school_id": school_id,
-        "is_active": True
-    }).limit(50).to_list(50)
+    if not school_id:
+        raise HTTPException(status_code=400, detail="school_id is required")
     
-    # Format for board exam
-    formatted_students = []
-    for idx, student in enumerate(students, 1):
-        formatted_students.append({
-            "name": student.get("name", ""),
-            "father_name": student.get("father_name", ""),
-            "mother_name": student.get("mother_name", ""),
-            "dob": student.get("dob", ""),
-            "class": student.get("class_name", f"Class {idx}"),
-            "roll_number": str(idx).zfill(3),
-            "board_roll_number": f"2026{str(idx).zfill(6)}",
-            "student_id": student.get("id")
-        })
+    print(f"Parsing student list for school: {school_id}, exam: {exam_id}")
     
-    return {
-        "success": True,
-        "students": formatted_students,
-        "count": len(formatted_students)
-    }
+    try:
+        # Get students from school database
+        students = await db.students.find({
+            "school_id": school_id,
+            "is_active": True
+        }).limit(100).to_list(100)
+        
+        print(f"Found {len(students)} students")
+        
+        # If no students found, return empty list with helpful message
+        if not students:
+            return {
+                "success": True,
+                "students": [],
+                "count": 0,
+                "message": "No students found. Please add students first or upload CSV file."
+            }
+        
+        # Format for board exam
+        formatted_students = []
+        for idx, student in enumerate(students, 1):
+            # Get class info for better display
+            class_info = await db.classes.find_one({"id": student.get("class_id")})
+            class_name = class_info.get("name") if class_info else student.get("class_name", f"Class {idx}")
+            
+            formatted_students.append({
+                "name": student.get("name", ""),
+                "father_name": student.get("father_name", ""),
+                "mother_name": student.get("mother_name", ""),
+                "dob": student.get("dob", ""),
+                "class": class_name,
+                "roll_number": student.get("roll_no", str(idx).zfill(3)),
+                "board_roll_number": f"2026{str(idx).zfill(6)}",
+                "student_id": student.get("id", student.get("student_id"))
+            })
+        
+        return {
+            "success": True,
+            "students": formatted_students,
+            "count": len(formatted_students)
+        }
+    except Exception as e:
+        print(f"Error parsing student list: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error parsing students: {str(e)}")
 
 @router.post("/generate-board-bulk")
 async def generate_board_bulk(request: dict):
