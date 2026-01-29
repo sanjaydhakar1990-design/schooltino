@@ -106,6 +106,13 @@ const ImprovedAdmitCardManagement = () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
+      // First, run migration to fix any old exams without exam_category
+      try {
+        await axios.post(`${API}/api/admit-card/migrate-exams`, { school_id: schoolId }, { headers });
+      } catch (e) {
+        console.log('Migration skipped:', e.message);
+      }
+
       const [settingsRes, examsRes, boardExamsRes, classesRes, subjectsRes] = await Promise.allSettled([
         axios.get(`${API}/api/admit-card/settings/${schoolId}`, { headers }),
         axios.get(`${API}/api/admit-card/exams/${schoolId}?type=school`, { headers }),
