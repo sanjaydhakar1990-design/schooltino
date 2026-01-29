@@ -715,7 +715,7 @@ backend:
     file: "backend/routes/admit_card.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
@@ -729,6 +729,9 @@ backend:
       - working: true
         agent: "main"
         comment: "✅ FIXED! Changes made: 1) Added 'exam_category' field to ExamCreate model with default 'school' 2) Updated create_exam to always set exam_category 3) Updated get_exams to handle missing exam_category with $or query (includes null, empty, non-existent) 4) Updated update_exam and delete_exam to try both 'id' and '_id' fields for backward compatibility 5) Added /migrate-exams endpoint to fix old exams 6) Added automatic migration call in frontend on page load 7) Improved parse-student-list with better error handling"
+      - working: true
+        agent: "testing"
+        comment: "✅ ADMIT CARD FIXES VERIFICATION COMPLETE! All 6 review request tests PASSED (100% success rate): 1) POST /api/admit-card/exam with exam_category: 'school' - Creates exam successfully with proper category ✅ 2) GET /api/admit-card/exams/SCH-DEMO-2026?type=school - Returns exams including old ones without category (backward compatibility working) ✅ 3) PUT /api/admit-card/exam/{exam_id} with school_id - Updates exam successfully, backend logs confirm '1 documents modified' ✅ 4) DELETE /api/admit-card/exam/{exam_id}?school_id={school_id} - Deletes exam successfully, backend logs confirm '1 documents deleted' ✅ 5) POST /api/admit-card/migrate-exams with school_id - Migration endpoint working correctly ✅ 6) POST /api/admit-card/parse-student-list with school_id and exam_id - Parses student list successfully with helpful messages ✅. All APIs return 200 status as required. Main agent's fixes are working perfectly - exam category handling, backward compatibility, and CRUD operations all functional."
 
   - task: "Board Exam Bulk Upload Review Section"
     implemented: true
