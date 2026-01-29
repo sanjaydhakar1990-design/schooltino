@@ -1172,8 +1172,8 @@ Note: First login पर password change करें।`;
                     <h4 className="font-medium text-pink-800 mb-3">👩 Mother Details (माता की जानकारी)</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>{t('mother_name')} *</Label>
-                        <Input name="mother_name" value={formData.mother_name} onChange={handleChange} required placeholder="Mother Full Name" data-testid="mother-name-input" />
+                        <Label>{t('mother_name')}</Label>
+                        <Input name="mother_name" value={formData.mother_name} onChange={handleChange} placeholder="Mother Full Name" data-testid="mother-name-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Occupation (व्यवसाय)</Label>
