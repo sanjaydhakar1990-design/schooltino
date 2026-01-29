@@ -950,14 +950,19 @@ async def delete_exam(exam_id: str, school_id: str):
     
     print(f"Delete request - exam_id: {exam_id}, school_id: {school_id}")
     
-    # First check if exam exists
+    # First check if exam exists - try by 'id' field first, then by '_id'
     exam = await db.exams.find_one({"id": exam_id, "school_id": school_id})
+    query = {"id": exam_id, "school_id": school_id}
+    if not exam:
+        # Try finding by string _id
+        exam = await db.exams.find_one({"_id": exam_id, "school_id": school_id})
+        query = {"_id": exam_id, "school_id": school_id}
     if not exam:
         print(f"Exam not found with id: {exam_id}")
         raise HTTPException(status_code=404, detail=f"Exam not found with id: {exam_id}")
     
     # Delete exam
-    result = await db.exams.delete_one({"id": exam_id, "school_id": school_id})
+    result = await db.exams.delete_one(query)
     print(f"Delete result: {result.deleted_count} documents deleted")
     
     if result.deleted_count == 0:
