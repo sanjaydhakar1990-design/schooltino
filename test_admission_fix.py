@@ -8,7 +8,7 @@ import requests
 import sys
 from datetime import datetime
 
-BASE_URL = "https://form-submit-fix-3.preview.emergentagent.com/api"
+BASE_URL = "https://exam-fix-1.preview.emergentagent.com/api"
 
 def test_admission_fix():
     """Test the student admission form fix"""

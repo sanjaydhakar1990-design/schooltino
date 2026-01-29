@@ -13,7 +13,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://form-submit-fix-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://exam-fix-1.preview.emergentagent.com')
 
 class TestIteration37Features:
     """Test all features for iteration 37"""

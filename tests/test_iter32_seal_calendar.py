@@ -13,7 +13,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://form-submit-fix-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://exam-fix-1.preview.emergentagent.com')
 
 # Test credentials
 DIRECTOR_EMAIL = "director@demo.com"
