@@ -54,6 +54,10 @@ export default function TeachTinoDashboard() {
   const [showStudentLeaveDialog, setShowStudentLeaveDialog] = useState(false);
   const [showTinoAI, setShowTinoAI] = useState(false);
   const [showAttendanceSheet, setShowAttendanceSheet] = useState(false);
+  const [showClassSelector, setShowClassSelector] = useState(false);
+  const [selectedClassForAttendance, setSelectedClassForAttendance] = useState(null);
+  const [showHomeworkList, setShowHomeworkList] = useState(false);
+  const [homeworkSubmissions, setHomeworkSubmissions] = useState([]);
   
   // Forms
   const [leaveForm, setLeaveForm] = useState({
