@@ -1077,20 +1077,7 @@ const ImprovedAdmitCardManagement = () => {
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={async () => {
-                      const firstClassId = examForm.classes[0];
-                      const selectedClass = classes.find(c => c.id === firstClassId);
-                      const className = selectedClass?.name || firstClassId;
-                      const classData = await fetchClassSubjectsAndInstructions(className);
-                      if (classData && classData.subjects.length > 0) {
-                        setExamForm(prev => ({
-                          ...prev,
-                          subjects: classData.subjects,
-                          instructions: classData.instructions
-                        }));
-                        toast.success(`✅ ${classData.subjects.length} subjects loaded!`);
-                      }
-                    }}
+                    onClick={loadClassSubjects}
                     className="text-indigo-600 text-xs"
                   >
                     🔄 Load Class Subjects
