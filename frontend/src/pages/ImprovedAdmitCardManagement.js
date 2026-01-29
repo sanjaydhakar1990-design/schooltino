@@ -780,19 +780,79 @@ const ImprovedAdmitCardManagement = () => {
                 Fee Requirements
               </h3>
               <div className="space-y-4">
+                {/* Fee Requirement Type */}
                 <div>
-                  <Label>Minimum Fee Percentage (%)</Label>
+                  <Label>Fee Requirement Type</Label>
+                  <select
+                    value={settings.fee_requirement_type || 'percentage'}
+                    onChange={(e) => setSettings({...settings, fee_requirement_type: e.target.value})}
+                    className="w-full p-2 border rounded-lg mt-1"
+                  >
+                    <option value="no_requirement">❌ No Fee Required (सभी download कर सकते हैं)</option>
+                    <option value="percentage">📊 Percentage Based (% pay करना होगा)</option>
+                    <option value="all_clear">✅ All Dues Clear (पूरी fee pay करनी होगी)</option>
+                  </select>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Select करें कि admit card download के लिए fee की क्या condition होगी
+                  </p>
+                </div>
+
+                {/* Percentage field - only show if percentage type selected */}
+                {settings.fee_requirement_type === 'percentage' && (
+                  <div>
+                    <Label>Minimum Fee Percentage (%)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={settings.min_fee_percentage}
+                      onChange={(e) => setSettings({...settings, min_fee_percentage: parseFloat(e.target.value) || 0})}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-amber-700 mt-1">
+                      Students को कम से कम इतना % fee pay करना होगा admit card download के लिए
+                    </p>
+                  </div>
+                )}
+
+                {/* Fee Deadline */}
+                <div>
+                  <Label>Fee Deadline (Optional)</Label>
                   <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={settings.min_fee_percentage}
-                    onChange={(e) => setSettings({...settings, min_fee_percentage: parseFloat(e.target.value) || 0})}
+                    type="date"
+                    value={settings.fee_deadline || ''}
+                    onChange={(e) => setSettings({...settings, fee_deadline: e.target.value})}
                     className="mt-1"
                   />
                   <p className="text-xs text-amber-700 mt-1">
-                    Students को कम से कम इतना % fee pay करना होगा admit card download के लिए
+                    इस date के बाद सभी students download कर पाएंगे (अगर auto-activate enabled है)
                   </p>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                  <div>
+                    <Label className="text-sm font-medium">Auto-activate after Deadline</Label>
+                    <p className="text-xs text-gray-500">Deadline के बाद सभी के लिए enable</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.auto_activate_after_deadline || false}
+                    onChange={(e) => setSettings({...settings, auto_activate_after_deadline: e.target.checked})}
+                    className="w-5 h-5"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                  <div>
+                    <Label className="text-sm font-medium">Enable Online Payment</Label>
+                    <p className="text-xs text-gray-500">StudyTino पर online payment allow करें</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.enable_online_payment !== false}
+                    onChange={(e) => setSettings({...settings, enable_online_payment: e.target.checked})}
+                    className="w-5 h-5"
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-white rounded-lg">
