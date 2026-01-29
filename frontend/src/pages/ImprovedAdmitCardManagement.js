@@ -320,81 +320,88 @@ const ImprovedAdmitCardManagement = () => {
   };
 
   const toggleClassSelection = async (classId) => {
-    const isRemoving = examForm.classes.includes(classId);
-    const wasEmpty = examForm.classes.length === 0;
+    // Single class selection only (like radio button)
+    const selectedClass = classes.find(c => c.id === classId);
+    const className = selectedClass?.name || classId;
     
-    // First update the classes selection
-    const newClasses = isRemoving
-      ? examForm.classes.filter(id => id !== classId)
-      : [...examForm.classes, classId];
-    
+    // Set only this class as selected
     setExamForm(prev => ({
       ...prev,
-      classes: newClasses
+      classes: [classId]
     }));
     
-    // If adding first class (was empty before), auto-populate subjects and instructions
-    if (!isRemoving && wasEmpty) {
-      // Get class name from classes list or use classId directly
-      const selectedClass = classes.find(c => c.id === classId);
-      const className = selectedClass?.name || classId;
+    // Auto-fetch subjects and instructions
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       
-      console.log('Auto-populating for class:', className);
+      const [subjectsRes, instructionsRes] = await Promise.all([
+        axios.get(`${API}/api/admit-card/class-subjects/${encodeURIComponent(className)}`, { headers }),
+        axios.get(`${API}/api/admit-card/class-instructions/${encodeURIComponent(className)}`, { headers })
+      ]);
       
-      try {
-        const classData = await fetchClassSubjectsAndInstructions(className);
-        console.log('Received class data:', classData);
-        
-        if (classData && classData.subjects && classData.subjects.length > 0) {
-          setExamForm(prev => ({
-            ...prev,
-            classes: [classId],
-            subjects: classData.subjects,
-            instructions: classData.instructions
-          }));
-          toast.success(`✅ ${className} के ${classData.subjects.length} subjects auto-filled!`);
-        } else {
-          console.log('No class data received or empty subjects');
-          toast.info('Subjects load नहीं हुए। "Load Class Subjects" button use करें।');
-        }
-      } catch (err) {
-        console.error('Error fetching class data:', err);
-        toast.error('Subjects load करने में error। Manual add करें।');
-      }
+      // Format subjects with default exam schedule
+      const formattedSubjects = (subjectsRes.data.subjects || []).map(sub => ({
+        subject_name: sub.name,
+        subject_id: sub.id,
+        exam_date: '',
+        exam_time: '09:00 AM',
+        duration: '3 hours',
+        max_marks: 100
+      }));
+      
+      setExamForm(prev => ({
+        ...prev,
+        classes: [classId],
+        subjects: formattedSubjects,
+        instructions: instructionsRes.data.instructions || []
+      }));
+      
+      toast.success(`✅ ${className} के ${formattedSubjects.length} subjects loaded!`);
+    } catch (err) {
+      console.error('Error:', err);
+      toast.error('Subjects load नहीं हुए');
     }
   };
 
   // Manual load subjects function
   const loadClassSubjects = async () => {
     if (examForm.classes.length === 0) {
-      toast.error('पहले कोई class select करें');
+      toast.error('पहले class select करें');
       return;
     }
     
-    const firstClassId = examForm.classes[0];
-    const selectedClass = classes.find(c => c.id === firstClassId);
-    const className = selectedClass?.name || firstClassId;
+    const classId = examForm.classes[0];
+    const selectedClass = classes.find(c => c.id === classId);
+    const className = selectedClass?.name || classId;
     
     try {
-      toast.loading('Subjects load हो रहे हैं...');
-      const classData = await fetchClassSubjectsAndInstructions(className);
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       
-      if (classData && classData.subjects && classData.subjects.length > 0) {
-        setExamForm(prev => ({
-          ...prev,
-          subjects: classData.subjects,
-          instructions: classData.instructions
-        }));
-        toast.dismiss();
-        toast.success(`✅ ${classData.subjects.length} subjects और ${classData.instructions.length} instructions loaded!`);
-      } else {
-        toast.dismiss();
-        toast.error('Subjects नहीं मिले');
-      }
+      const [subjectsRes, instructionsRes] = await Promise.all([
+        axios.get(`${API}/api/admit-card/class-subjects/${encodeURIComponent(className)}`, { headers }),
+        axios.get(`${API}/api/admit-card/class-instructions/${encodeURIComponent(className)}`, { headers })
+      ]);
+      
+      const formattedSubjects = (subjectsRes.data.subjects || []).map(sub => ({
+        subject_name: sub.name,
+        subject_id: sub.id,
+        exam_date: '',
+        exam_time: '09:00 AM',
+        duration: '3 hours',
+        max_marks: 100
+      }));
+      
+      setExamForm(prev => ({
+        ...prev,
+        subjects: formattedSubjects,
+        instructions: instructionsRes.data.instructions || []
+      }));
+      
+      toast.success(`✅ ${formattedSubjects.length} subjects loaded!`);
     } catch (err) {
-      toast.dismiss();
       toast.error('Error loading subjects');
-      console.error(err);
     }
   };
 
