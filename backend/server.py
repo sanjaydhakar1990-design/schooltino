@@ -5721,6 +5721,164 @@ You help with: Math, Science, English, Hindi, Social Studies, Computer Science, 
         print(f"Student AI Error: {e}")
         return {"response": f"AI temporarily unavailable. Aapka question: {request.prompt}\n\nPlease try again later.", "error": str(e)}
 
+# ==================== STAFF LEAVES MANAGEMENT ====================
+
+class StaffLeaveRequest(BaseModel):
+    staff_id: str
+    school_id: str
+    leave_type: str  # casual, sick, earned, half_day
+    from_date: str
+    to_date: str
+    reason: str
+
+@api_router.post("/staff/leaves/apply")
+async def apply_staff_leave(leave_data: StaffLeaveRequest, current_user: dict = Depends(get_current_user)):
+    """Staff apply for leave"""
+    leave_doc = {
+        "id": str(uuid.uuid4()),
+        **leave_data.model_dump(),
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Get staff name
+    staff = await db.users.find_one({"id": leave_data.staff_id}, {"name": 1})
+    if staff:
+        leave_doc["staff_name"] = staff.get("name", "Unknown")
+    
+    await db.staff_leaves.insert_one(leave_doc)
+    
+    return {"success": True, "message": "Leave application submitted", "leave_id": leave_doc["id"]}
+
+@api_router.get("/staff/leaves")
+async def get_staff_leaves(staff_id: str = None, school_id: str = None, current_user: dict = Depends(get_current_user)):
+    """Get staff leaves"""
+    query = {}
+    if staff_id:
+        query["staff_id"] = staff_id
+    if school_id:
+        query["school_id"] = school_id
+    
+    leaves = await db.staff_leaves.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return leaves
+
+@api_router.get("/staff/leaves/pending")
+async def get_pending_leaves(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get pending leaves for approval"""
+    leaves = await db.staff_leaves.find({
+        "school_id": school_id,
+        "status": "pending"
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return leaves
+
+@api_router.post("/staff/leaves/{leave_id}/approve")
+async def approve_leave(leave_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Approve staff leave"""
+    result = await db.staff_leaves.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "approved",
+            "approved_by": data.get("approved_by"),
+            "approved_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Leave not found")
+    return {"success": True, "message": "Leave approved"}
+
+@api_router.post("/staff/leaves/{leave_id}/reject")
+async def reject_leave(leave_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Reject staff leave"""
+    result = await db.staff_leaves.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "rejected",
+            "rejected_by": data.get("approved_by"),
+            "rejected_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Leave not found")
+    return {"success": True, "message": "Leave rejected"}
+
+# ==================== HOMEWORK MANAGEMENT ====================
+
+class HomeworkCreate(BaseModel):
+    school_id: str
+    class_id: str
+    subject: str
+    description: str
+    due_date: Optional[str] = None
+    assigned_by: str
+    assigned_date: Optional[str] = None
+
+@api_router.post("/homework")
+async def create_homework(homework: HomeworkCreate, current_user: dict = Depends(get_current_user)):
+    """Create homework assignment"""
+    homework_doc = {
+        "id": str(uuid.uuid4()),
+        **homework.model_dump(),
+        "status": "active",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.homework.insert_one(homework_doc)
+    return {"success": True, "message": "Homework assigned", "homework_id": homework_doc["id"]}
+
+@api_router.get("/homework")
+async def get_homework(school_id: str, class_id: str = None, current_user: dict = Depends(get_current_user)):
+    """Get homework list"""
+    query = {"school_id": school_id}
+    if class_id:
+        query["class_id"] = class_id
+    
+    homework = await db.homework.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return homework
+
+# ==================== TINO CHAT FOR TEACHERS ====================
+
+@api_router.post("/tino/chat")
+async def tino_chat(request: dict, current_user: dict = Depends(get_current_user)):
+    """Tino AI chat endpoint"""
+    try:
+        from emergentintegrations.llm import LlmChat, UserMessage
+        
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            return {"response": "AI service not configured. Please contact admin."}
+        
+        message = request.get("message", "")
+        user_role = request.get("user_role", "teacher")
+        
+        system_prompt = f"""You are Tino, a helpful AI assistant for {user_role}s in Indian schools.
+You help with:
+- Attendance and student management
+- Leave applications
+- Homework and syllabus tracking
+- School notices and communications
+- General school administration queries
+
+Respond in a friendly Hinglish (Hindi-English mix) tone.
+Keep responses concise and helpful.
+"""
+        
+        session_id = f"tino-{current_user.get('id', 'default')[:8]}"
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=session_id,
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+        
+        user_msg = UserMessage(text=message)
+        response = await chat.send_message(user_msg)
+        
+        return {"response": response, "success": True}
+        
+    except Exception as e:
+        print(f"Tino Chat Error: {e}")
+        return {"response": "Sorry, AI service temporarily unavailable.", "error": str(e)}
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/health")
