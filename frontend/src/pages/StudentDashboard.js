@@ -70,6 +70,10 @@ export default function StudyTinoDashboard() {
   const [showComplaintDialog, setShowComplaintDialog] = useState(false);
   const [showActivitiesDialog, setShowActivitiesDialog] = useState(false);
   const [showAdmitCardDialog, setShowAdmitCardDialog] = useState(false);
+  const [showHomeworkDialog, setShowHomeworkDialog] = useState(false);
+  const [selectedHomework, setSelectedHomework] = useState(null);
+  const [homeworkImage, setHomeworkImage] = useState(null);
+  const [uploadingHomework, setUploadingHomework] = useState(false);
   
   const [selectedNotice, setSelectedNotice] = useState(null);
   
