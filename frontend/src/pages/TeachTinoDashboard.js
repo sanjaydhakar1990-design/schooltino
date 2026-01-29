@@ -687,7 +687,7 @@ export default function TeachTinoDashboard() {
             <span className="text-xs">Home</span>
           </button>
           <button 
-            onClick={() => assignedClass && setShowAttendanceSheet(true)}
+            onClick={() => setShowClassSelector(true)}
             className="flex flex-col items-center gap-1 p-2 text-gray-500"
           >
             <ClipboardCheck className="w-5 h-5" />
@@ -701,11 +701,11 @@ export default function TeachTinoDashboard() {
             <span className="text-xs">Leave</span>
           </button>
           <button 
-            onClick={() => setShowNoticeDialog(true)}
+            onClick={() => { fetchHomeworkSubmissions(); setShowHomeworkList(true); }}
             className="flex flex-col items-center gap-1 p-2 text-gray-500"
           >
-            <Bell className="w-5 h-5" />
-            <span className="text-xs">Notice</span>
+            <FileEdit className="w-5 h-5" />
+            <span className="text-xs">Homework</span>
           </button>
           <button 
             onClick={() => setShowTinoAI(true)}
