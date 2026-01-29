@@ -3751,18 +3751,6 @@ async def get_student_attendance_stats(
     }
 
 # ==================== FEE ROUTES ====================
-            },
-            upsert=True
-        )
-        inserted_count += 1
-    
-    return {
-        "success": True,
-        "records_inserted": inserted_count,
-        "message": f"{inserted_count} attendance records uploaded successfully"
-    }
-
-# ==================== FEE ROUTES ====================
 
 @api_router.post("/fees/plans", response_model=FeePlanResponse)
 async def create_fee_plan(plan: FeePlanCreate, current_user: dict = Depends(get_current_user)):
