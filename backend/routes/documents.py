@@ -16,7 +16,8 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-UPLOAD_DIR = "/app/backend/uploads/documents"
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_DIR = os.path.join(ROOT_DIR, "uploads", "documents")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
