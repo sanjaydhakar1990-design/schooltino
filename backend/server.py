@@ -3750,14 +3750,7 @@ async def get_student_attendance_stats(
         "present_percentage": present_percentage
     }
 
-                "$set": {
-                    "status": record.get("status", "present"),
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                },
-                "$setOnInsert": {
-                    "id": str(uuid.uuid4()),
-                    "created_at": datetime.now(timezone.utc).isoformat()
-                }
+# ==================== FEE ROUTES ====================
             },
             upsert=True
         )
