@@ -687,6 +687,146 @@ export default function TimetableManagement() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Time Slots Settings Dialog */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-6 h-6 text-indigo-600" />
+              Edit Time Slots
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                \ud83d\udccc School timing se default slots set honge. Aap inhe edit kar sakte hain.
+              </p>
+            </div>
+
+            {timeSlots.map((slot, idx) => (
+              <div key={idx} className="grid grid-cols-5 gap-3 p-3 border rounded-lg bg-gray-50">
+                <div>
+                  <label className="text-xs font-medium text-gray-700">Label</label>
+                  <Input
+                    value={slot.label}
+                    onChange={(e) => {
+                      const newSlots = [...timeSlots];
+                      newSlots[idx].label = e.target.value;
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-sm mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-700">Start Time</label>
+                  <Input
+                    type="time"
+                    value={slot.start}
+                    onChange={(e) => {
+                      const newSlots = [...timeSlots];
+                      newSlots[idx].start = e.target.value;
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-sm mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-700">End Time</label>
+                  <Input
+                    type="time"
+                    value={slot.end}
+                    onChange={(e) => {
+                      const newSlots = [...timeSlots];
+                      newSlots[idx].end = e.target.value;
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-sm mt-1"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={slot.isBreak || false}
+                      onChange={(e) => {
+                        const newSlots = [...timeSlots];
+                        newSlots[idx].isBreak = e.target.checked;
+                        setTimeSlots(newSlots);
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-xs">Break</span>
+                  </label>
+                </div>
+                <div className="flex items-end justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newSlots = timeSlots.filter((_, i) => i !== idx);
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            
+            <Button
+              variant="outline"
+              onClick={() => {
+                setTimeSlots([...timeSlots, {
+                  id: timeSlots.length + 1,
+                  label: `Period ${timeSlots.filter(s => !s.isBreak).length + 1}`,
+                  start: '09:00',
+                  end: '09:45',
+                  isBreak: false
+                }]);
+              }}
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Slot
+            </Button>
+
+            <div className="flex gap-3 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSettingsDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem('token');
+                    await axios.post(`${API}/timetable/save-time-slots`, {
+                      school_id: schoolId,
+                      slots: timeSlots
+                    }, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    toast.success('\u2705 Time slots saved!');
+                    setShowSettingsDialog(false);
+                    fetchAllData();
+                  } catch (err) {
+                    toast.error('Save failed');
+                  }
+                }}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Time Slots
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
