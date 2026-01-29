@@ -1183,6 +1183,477 @@ async def publish_to_studytino(request: dict):
         "message": f"{len(admit_cards)} admit cards published to StudyTino"
     }
 
+# ============== CLASS-WISE SUBJECTS & INSTRUCTIONS ==============
+
+def get_class_level(class_name: str) -> str:
+    """Determine class level from class name"""
+    class_lower = class_name.lower().replace(" ", "_").replace("-", "_")
+    
+    # Check for pre-primary
+    if any(x in class_lower for x in ["nursery", "nur", "prenursery", "pre_nursery"]):
+        return "nursery"
+    if any(x in class_lower for x in ["lkg", "kg1", "lower_kg"]):
+        return "lkg"
+    if any(x in class_lower for x in ["ukg", "kg2", "upper_kg"]):
+        return "ukg"
+    
+    # Extract class number
+    import re
+    numbers = re.findall(r'\d+', class_lower)
+    if numbers:
+        class_num = int(numbers[0])
+        if class_num <= 2:
+            return f"class_{class_num}"
+        elif class_num <= 5:
+            return f"class_{class_num}"
+        elif class_num <= 8:
+            return f"class_{class_num}"
+        elif class_num <= 10:
+            return f"class_{class_num}"
+        elif class_num == 11:
+            if "science" in class_lower or "pcm" in class_lower or "pcb" in class_lower:
+                return "class_11_science"
+            elif "commerce" in class_lower or "comm" in class_lower:
+                return "class_11_commerce"
+            elif "arts" in class_lower or "humanities" in class_lower:
+                return "class_11_arts"
+            return "class_11_science"  # Default
+        elif class_num == 12:
+            if "science" in class_lower or "pcm" in class_lower or "pcb" in class_lower:
+                return "class_12_science"
+            elif "commerce" in class_lower or "comm" in class_lower:
+                return "class_12_commerce"
+            elif "arts" in class_lower or "humanities" in class_lower:
+                return "class_12_arts"
+            return "class_12_science"  # Default
+    
+    return "class_6"  # Default fallback
+
+def get_instruction_level(class_name: str) -> str:
+    """Determine instruction level from class name"""
+    class_lower = class_name.lower().replace(" ", "_").replace("-", "_")
+    
+    # Pre-primary and primary (Nursery to Class 2)
+    if any(x in class_lower for x in ["nursery", "nur", "lkg", "ukg", "kg", "prenursery"]):
+        return "primary"
+    
+    import re
+    numbers = re.findall(r'\d+', class_lower)
+    if numbers:
+        class_num = int(numbers[0])
+        if class_num <= 2:
+            return "primary"
+        elif class_num <= 5:
+            return "middle"
+        elif class_num <= 8:
+            return "secondary"
+        elif class_num <= 10:
+            return "high"
+        else:
+            return "senior"
+    
+    return "secondary"  # Default
+
+@router.get("/class-subjects/{class_name}")
+async def get_class_subjects(class_name: str, school_id: str = None):
+    """Get default subjects for a specific class"""
+    db = get_database()
+    
+    class_level = get_class_level(class_name)
+    subjects = CLASS_SUBJECTS.get(class_level, CLASS_SUBJECTS.get("class_6", []))
+    
+    # If school_id provided, try to get school's custom subjects
+    if school_id:
+        school_subjects = await db.school_subjects.find_one({
+            "school_id": school_id,
+            "class_level": class_level
+        })
+        if school_subjects and school_subjects.get("subjects"):
+            subjects = school_subjects["subjects"]
+    
+    return {
+        "success": True,
+        "class_name": class_name,
+        "class_level": class_level,
+        "subjects": subjects
+    }
+
+@router.get("/class-instructions/{class_name}")
+async def get_class_instructions(class_name: str, school_id: str = None):
+    """Get default instructions for a specific class level"""
+    db = get_database()
+    
+    instruction_level = get_instruction_level(class_name)
+    instructions = CLASS_INSTRUCTIONS.get(instruction_level, CLASS_INSTRUCTIONS.get("secondary", []))
+    
+    # If school_id provided, try to get school's custom instructions
+    if school_id:
+        school_instructions = await db.school_instructions.find_one({
+            "school_id": school_id,
+            "instruction_level": instruction_level
+        })
+        if school_instructions and school_instructions.get("instructions"):
+            instructions = school_instructions["instructions"]
+    
+    return {
+        "success": True,
+        "class_name": class_name,
+        "instruction_level": instruction_level,
+        "instructions": instructions
+    }
+
+# ============== ADMIN ACTIVATION & NOTIFICATION ==============
+
+@router.post("/admin-activate")
+async def admin_activate_download(data: AdminActivateDownload):
+    """Admin manually activates admit card download for a student"""
+    db = get_database()
+    
+    activation = {
+        "id": str(uuid.uuid4()),
+        "school_id": data.school_id,
+        "student_id": data.student_id,
+        "exam_id": data.exam_id,
+        "activated_by": data.activated_by,
+        "reason": data.reason,
+        "activated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Upsert - if already exists, update
+    await db.admit_card_activations.update_one(
+        {
+            "student_id": data.student_id,
+            "exam_id": data.exam_id,
+            "school_id": data.school_id
+        },
+        {"$set": activation},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": f"Admit card download activated for student {data.student_id}",
+        "activation": activation
+    }
+
+@router.post("/bulk-admin-activate")
+async def bulk_admin_activate(request: dict):
+    """Bulk activate admit card downloads for multiple students"""
+    db = get_database()
+    
+    school_id = request.get("school_id")
+    exam_id = request.get("exam_id")
+    student_ids = request.get("student_ids", [])
+    activated_by = request.get("activated_by")
+    reason = request.get("reason", "Bulk activation by admin")
+    
+    activated_count = 0
+    for student_id in student_ids:
+        activation = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "student_id": student_id,
+            "exam_id": exam_id,
+            "activated_by": activated_by,
+            "reason": reason,
+            "activated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.admit_card_activations.update_one(
+            {"student_id": student_id, "exam_id": exam_id, "school_id": school_id},
+            {"$set": activation},
+            upsert=True
+        )
+        activated_count += 1
+    
+    return {
+        "success": True,
+        "activated_count": activated_count,
+        "message": f"{activated_count} students' admit cards activated"
+    }
+
+@router.post("/publish-and-notify")
+async def publish_and_notify(request: dict):
+    """Publish admit cards and send notification to relevant class students"""
+    db = get_database()
+    
+    school_id = request.get("school_id")
+    exam_id = request.get("exam_id")
+    
+    # Get exam details
+    exam = await db.exams.find_one({"id": exam_id, "school_id": school_id})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    # Update exam as published
+    await db.exams.update_one(
+        {"id": exam_id},
+        {"$set": {"status": "published", "published_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Get all students in the exam's classes
+    class_ids = exam.get("classes", [])
+    students = await db.students.find({
+        "school_id": school_id,
+        "class_id": {"$in": class_ids},
+        "is_active": True
+    }).to_list(500)
+    
+    # Create notifications for each student
+    notifications_created = 0
+    for student in students:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "user_id": student.get("id"),
+            "user_type": "student",
+            "type": "admit_card",
+            "title": f"🎫 Admit Card Ready - {exam.get('exam_name')}",
+            "message": f"आपका {exam.get('exam_name')} का admit card तैयार है। Fee status check करके download करें।",
+            "data": {
+                "exam_id": exam_id,
+                "exam_name": exam.get("exam_name"),
+                "action": "download_admit_card"
+            },
+            "is_read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.notifications.insert_one(notification)
+        notifications_created += 1
+        
+        # Also notify parent
+        if student.get("parent_id"):
+            parent_notification = {
+                **notification,
+                "id": str(uuid.uuid4()),
+                "user_id": student.get("parent_id"),
+                "user_type": "parent",
+                "title": f"🎫 {student.get('name')} का Admit Card Ready",
+                "message": f"{student.get('name')} का {exam.get('exam_name')} का admit card तैयार है।"
+            }
+            await db.notifications.insert_one(parent_notification)
+    
+    return {
+        "success": True,
+        "exam_published": True,
+        "students_notified": notifications_created,
+        "classes": class_ids,
+        "message": f"Exam published and {notifications_created} students notified!"
+    }
+
+# ============== STUDYTINO STUDENT DOWNLOAD ==============
+
+@router.get("/student/my-admit-cards/{student_id}")
+async def get_student_admit_cards(student_id: str, school_id: str):
+    """Get all available admit cards for a student (for StudyTino)"""
+    db = get_database()
+    
+    # Get student info
+    student = await db.students.find_one({"id": student_id, "school_id": school_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    class_id = student.get("class_id")
+    
+    # Get all published exams for student's class
+    exams = await db.exams.find({
+        "school_id": school_id,
+        "classes": class_id,
+        "status": {"$in": ["published", "upcoming", "ongoing"]}
+    }).sort("created_at", -1).to_list(20)
+    
+    admit_cards = []
+    for exam in exams:
+        # Check eligibility
+        eligibility = await check_admit_card_eligibility(student_id, school_id, exam["id"], db)
+        
+        admit_cards.append({
+            "exam_id": exam["id"],
+            "exam_name": exam.get("exam_name"),
+            "exam_type": exam.get("exam_type"),
+            "start_date": exam.get("start_date"),
+            "end_date": exam.get("end_date"),
+            "eligible_to_download": eligibility.get("eligible", False),
+            "eligibility_reason": eligibility.get("reason"),
+            "min_amount_required": eligibility.get("min_amount", 0),
+            "payment_options": eligibility.get("payment_options"),
+            "status": exam.get("status")
+        })
+    
+    return {
+        "success": True,
+        "student_name": student.get("name"),
+        "class": class_id,
+        "admit_cards": admit_cards
+    }
+
+@router.post("/student/pay-for-admit-card")
+async def pay_for_admit_card(request: dict):
+    """Process online payment for admit card fee (for StudyTino)"""
+    db = get_database()
+    
+    student_id = request.get("student_id")
+    school_id = request.get("school_id")
+    exam_id = request.get("exam_id")
+    amount = request.get("amount")
+    payment_method = request.get("payment_method", "online")
+    transaction_id = request.get("transaction_id")
+    
+    # Record payment
+    payment = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "student_id": student_id,
+        "exam_id": exam_id,
+        "amount": amount,
+        "payment_type": "online",
+        "payment_method": payment_method,
+        "transaction_id": transaction_id,
+        "purpose": "admit_card_fee",
+        "status": "completed",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payments.insert_one(payment)
+    
+    # Update fee records
+    await db.fee_records.update_one(
+        {
+            "student_id": student_id,
+            "school_id": school_id,
+            "academic_year": str(date.today().year)
+        },
+        {"$inc": {"paid_amount": amount}},
+        upsert=True
+    )
+    
+    # Re-check eligibility
+    eligibility = await check_admit_card_eligibility(student_id, school_id, exam_id, db)
+    
+    return {
+        "success": True,
+        "payment_id": payment["id"],
+        "amount_paid": amount,
+        "now_eligible": eligibility.get("eligible", False),
+        "message": "Payment successful! " + ("Admit card is now downloadable." if eligibility.get("eligible") else "Still need more payment.")
+    }
+
+# ============== CASH FEE ACTIVATION (for Fee Section) ==============
+
+@router.post("/activate-after-cash-payment")
+async def activate_after_cash_payment(request: dict):
+    """Activate admit card download after cash payment at school"""
+    db = get_database()
+    
+    school_id = request.get("school_id")
+    student_id = request.get("student_id")
+    exam_id = request.get("exam_id")
+    amount = request.get("amount")
+    collected_by = request.get("collected_by")
+    receipt_number = request.get("receipt_number")
+    
+    # Record cash payment
+    payment = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "student_id": student_id,
+        "exam_id": exam_id,
+        "amount": amount,
+        "payment_type": "cash",
+        "receipt_number": receipt_number,
+        "purpose": "admit_card_fee",
+        "collected_by": collected_by,
+        "status": "completed",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payments.insert_one(payment)
+    
+    # Update fee records
+    await db.fee_records.update_one(
+        {
+            "student_id": student_id,
+            "school_id": school_id,
+            "academic_year": str(date.today().year)
+        },
+        {"$inc": {"paid_amount": amount}},
+        upsert=True
+    )
+    
+    # Check if now eligible
+    eligibility = await check_admit_card_eligibility(student_id, school_id, exam_id, db)
+    
+    # If still not eligible, admin can manually activate
+    if not eligibility.get("eligible"):
+        # Create manual activation
+        activation = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "student_id": student_id,
+            "exam_id": exam_id,
+            "activated_by": collected_by,
+            "reason": f"Cash payment of ₹{amount} received (Receipt: {receipt_number})",
+            "activated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.admit_card_activations.update_one(
+            {"student_id": student_id, "exam_id": exam_id, "school_id": school_id},
+            {"$set": activation},
+            upsert=True
+        )
+    
+    return {
+        "success": True,
+        "payment_id": payment["id"],
+        "receipt_number": receipt_number,
+        "amount_paid": amount,
+        "admit_card_activated": True,
+        "message": f"✅ Cash payment of ₹{amount} received. Admit card activated!"
+    }
+
+@router.get("/pending-cash-activations/{school_id}")
+async def get_pending_cash_activations(school_id: str, exam_id: str = None):
+    """Get list of students who paid cash but need admit card activation"""
+    db = get_database()
+    
+    query = {"school_id": school_id, "payment_type": "cash", "purpose": "admit_card_fee"}
+    if exam_id:
+        query["exam_id"] = exam_id
+    
+    # Get recent cash payments
+    payments = await db.payments.find(query).sort("created_at", -1).to_list(100)
+    
+    pending_activations = []
+    for payment in payments:
+        # Check if already activated
+        activation = await db.admit_card_activations.find_one({
+            "student_id": payment["student_id"],
+            "exam_id": payment.get("exam_id"),
+            "school_id": school_id
+        })
+        
+        # Get student info
+        student = await db.students.find_one({"id": payment["student_id"]})
+        
+        pending_activations.append({
+            "payment_id": payment["id"],
+            "student_id": payment["student_id"],
+            "student_name": student.get("name") if student else "Unknown",
+            "class": student.get("class_id") if student else "",
+            "amount_paid": payment["amount"],
+            "receipt_number": payment.get("receipt_number"),
+            "payment_date": payment.get("created_at"),
+            "exam_id": payment.get("exam_id"),
+            "already_activated": activation is not None
+        })
+    
+    return {
+        "success": True,
+        "pending_activations": pending_activations,
+        "count": len(pending_activations)
+    }
+
 @router.get("/subjects")
 async def get_subjects(school_id: str):
     """Get subjects list for school"""
