@@ -359,6 +359,53 @@ export default function StudyTinoDashboard() {
     navigate('/login');
   };
 
+  // Homework submission handler
+  const handleHomeworkSubmit = async () => {
+    if (!selectedHomework || !homeworkImage) {
+      toast.error('Please select homework and upload photo');
+      return;
+    }
+
+    setUploadingHomework(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', homeworkImage);
+      formData.append('homework_id', selectedHomework.id);
+      formData.append('student_id', user?.id);
+      formData.append('school_id', profile?.school_id);
+      formData.append('class_id', profile?.class_id);
+      formData.append('subject', selectedHomework.subject);
+      
+      const res = await axios.post(`${API}/homework/submit`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      toast.success('✅ Homework submitted successfully!');
+      setShowHomeworkDialog(false);
+      setSelectedHomework(null);
+      setHomeworkImage(null);
+      
+      // Refresh homework list
+      fetchDashboardData();
+    } catch (error) {
+      toast.error('Homework submit करने में error');
+      console.error(error);
+    } finally {
+      setUploadingHomework(false);
+    }
+  };
+
+  const openHomeworkSubmission = (hw) => {
+    setSelectedHomework(hw);
+    setShowHomeworkDialog(true);
+  };
+
   const pendingHomework = homework.filter(h => h.status === 'pending').length;
   const unreadNotices = notices.filter(n => !n.is_read).length;
 
