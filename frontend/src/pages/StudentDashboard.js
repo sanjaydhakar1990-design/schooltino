@@ -1130,6 +1130,87 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Homework Submit Dialog */}
+      <Dialog open={showHomeworkDialog} onOpenChange={setShowHomeworkDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              Submit Homework
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedHomework && (
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="font-medium text-blue-800">{selectedHomework.subject}</p>
+                <p className="text-sm text-blue-600 mt-1">{selectedHomework.topic || selectedHomework.description}</p>
+                <p className="text-xs text-blue-500 mt-2">Due: {new Date(selectedHomework.due_date).toLocaleDateString('hi-IN')}</p>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">📷 Upload Homework Photo</Label>
+              <p className="text-xs text-gray-500">अपनी copy में लिखे homework की photo upload करें</p>
+              
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                {homeworkImage ? (
+                  <div className="space-y-2">
+                    <img 
+                      src={URL.createObjectURL(homeworkImage)} 
+                      alt="Homework" 
+                      className="max-h-40 mx-auto rounded"
+                    />
+                    <p className="text-sm text-green-600">✓ Photo selected</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setHomeworkImage(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => setHomeworkImage(e.target.files[0])}
+                      className="hidden"
+                    />
+                    <div className="space-y-2">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                        📷
+                      </div>
+                      <p className="text-sm text-gray-600">Click to take photo or upload</p>
+                      <p className="text-xs text-gray-400">Camera या Gallery से select करें</p>
+                    </div>
+                  </label>
+                )}
+              </div>
+            </div>
+            
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              onClick={handleHomeworkSubmit}
+              disabled={!homeworkImage || uploadingHomework}
+            >
+              {uploadingHomework ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Submit Homework
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Voice Assistant */}
       <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
