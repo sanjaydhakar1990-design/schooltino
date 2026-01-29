@@ -1112,13 +1112,18 @@ const ImprovedAdmitCardManagement = () => {
                   classes.map(cls => (
                     <label 
                       key={cls.id} 
-                      className="flex items-center gap-2 p-2 bg-white rounded hover:bg-indigo-50 cursor-pointer border"
+                      className={`flex items-center gap-2 p-2 rounded cursor-pointer border transition-all ${
+                        examForm.classes.includes(cls.id) 
+                          ? 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300' 
+                          : 'bg-white hover:bg-indigo-50'
+                      }`}
                     >
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name="class_selection"
                         checked={examForm.classes.includes(cls.id)}
                         onChange={() => toggleClassSelection(cls.id)}
-                        className="w-4 h-4"
+                        className="w-4 h-4 text-indigo-600"
                       />
                       <span className="text-sm font-medium">{cls.name}</span>
                     </label>
