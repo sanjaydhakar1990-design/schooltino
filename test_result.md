@@ -872,14 +872,14 @@ metadata:
 test_plan:
   current_focus:
     - "Admit Card Edit/Delete Operations"
-  stuck_tasks:
-    - "Admit Card Edit/Delete Operations"
+    - "Board Exam Bulk Upload Review Section"
+  stuck_tasks: []
   test_all: false
-  test_priority: "admit_card_debug"
+  test_priority: "admit_card_fix_verification"
 
 agent_communication:
   - agent: "main"
-    message: "Implemented PWA Install Prompt (shows after login, hides if installed), Setup Guide Page with CCTV/Speaker/Website/Data Import guides, Profile resume setup option, Emergent LLM integration for Tino Brain. Please test all features comprehensively."
+    message: "🔧 ADMIT CARD FIXES APPLIED! Issues: 1) Exam edit/delete showing 'Not Found' 2) Board exam bulk upload review section not opening. FIXES: 1) Added 'exam_category' to ExamCreate model 2) Updated create_exam to always set exam_category 3) Improved get_exams query to handle missing/null/empty exam_category 4) Added /migrate-exams endpoint for fixing old exams 5) Updated update_exam and delete_exam to try both 'id' and '_id' fields 6) Fixed parse-student-list with better error handling 7) Fixed BulkBoardAdmitCard.js to handle exam.id or exam._id 8) Added auto-migration call on page load. Please test: 1) Create new school exam and verify it shows up 2) Edit existing exam 3) Delete exam 4) Board exam bulk upload and verify review section opens"
   - agent: "testing"
     message: "✅ ALL TINO BRAIN APIS TESTED SUCCESSFULLY! All 7 endpoints working correctly: 1) GET /tino-brain/status ✅ 2) GET /tino-brain/class-intelligence/{school_id}/{class_id} ✅ 3) GET /tino-brain/class-comparison/{school_id} ✅ 4) POST /tino-brain/class-intelligence/from-camera ✅ 5) POST /tino-brain/query (Class condition) ✅ 6) POST /tino-brain/query (Weak students) ✅ 7) POST /tino-brain/query (Teacher performance) ✅. Database is empty so APIs return minimal data but response structures are correct. AI integration with OpenAI working. Hinglish responses working perfectly. Ready for production!"
   - agent: "testing"
