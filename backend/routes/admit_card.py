@@ -322,39 +322,108 @@ async def get_student_fee_status(student_id: str, school_id: str, db) -> Dict:
     }
 
 async def check_admit_card_eligibility(student_id: str, school_id: str, exam_id: str, db) -> Dict:
-    """Check if student is eligible for admit card download"""
+    """Check if student is eligible for admit card download - Enhanced with multiple options"""
     
     # Get admit card settings
     settings = await db.admit_card_settings.find_one({"school_id": school_id})
+    
+    # Default settings
+    fee_requirement_type = settings.get("fee_requirement_type", "percentage") if settings else "percentage"
     min_fee_percentage = settings.get("min_fee_percentage", 30) if settings else 30
     require_fee = settings.get("require_fee_clearance", True) if settings else True
+    fee_deadline = settings.get("fee_deadline") if settings else None
+    auto_activate = settings.get("auto_activate_after_deadline", False) if settings else False
     
-    if not require_fee:
-        return {"eligible": True, "reason": "Fee clearance not required", "min_amount": 0}
+    # Check if admin has manually activated this student's download
+    manual_activation = await db.admit_card_activations.find_one({
+        "student_id": student_id,
+        "exam_id": exam_id,
+        "school_id": school_id
+    })
+    
+    if manual_activation:
+        return {
+            "eligible": True,
+            "reason": f"Admin द्वारा activate किया गया: {manual_activation.get('reason', 'Manual activation')}",
+            "activated_by": manual_activation.get("activated_by"),
+            "activation_type": "manual",
+            "min_amount": 0
+        }
+    
+    # Check if deadline passed and auto-activate is enabled
+    if fee_deadline and auto_activate:
+        try:
+            deadline_date = date.fromisoformat(fee_deadline)
+            if date.today() >= deadline_date:
+                return {
+                    "eligible": True,
+                    "reason": f"Fee deadline ({fee_deadline}) के बाद auto-activated",
+                    "activation_type": "deadline",
+                    "min_amount": 0
+                }
+        except:
+            pass
+    
+    # If fee requirement is disabled
+    if not require_fee or fee_requirement_type == "no_requirement":
+        return {"eligible": True, "reason": "Fee clearance not required", "min_amount": 0, "activation_type": "no_fee_required"}
     
     # Get fee status
     fee_status = await get_student_fee_status(student_id, school_id, db)
     
-    if fee_status["paid_percentage"] >= min_fee_percentage:
-        return {
-            "eligible": True,
-            "reason": f"Fee clearance OK ({fee_status['paid_percentage']}% paid)",
-            "fee_status": fee_status,
-            "min_amount": 0
-        }
+    # Check based on fee requirement type
+    if fee_requirement_type == "all_clear":
+        # All dues must be cleared
+        if fee_status["pending_fee"] <= 0:
+            return {
+                "eligible": True,
+                "reason": "All dues cleared ✅",
+                "fee_status": fee_status,
+                "min_amount": 0,
+                "activation_type": "fee_cleared"
+            }
+        else:
+            return {
+                "eligible": False,
+                "reason": f"सभी बकाया राशि (₹{fee_status['pending_fee']}) जमा करना आवश्यक है।",
+                "fee_status": fee_status,
+                "min_amount": fee_status["pending_fee"],
+                "requirement_type": "all_clear",
+                "payment_options": {
+                    "online": True,
+                    "cash": True,
+                    "payment_link": f"/studytino/pay?student={student_id}&amount={fee_status['pending_fee']}"
+                }
+            }
     else:
-        # Calculate minimum amount needed
-        total_fee = fee_status["total_fee"]
-        required_amount = (total_fee * min_fee_percentage / 100) - fee_status["paid_fee"]
-        required_amount = max(0, required_amount)
-        
-        return {
-            "eligible": False,
-            "reason": f"Minimum {min_fee_percentage}% fee required. Currently {fee_status['paid_percentage']}% paid.",
-            "fee_status": fee_status,
-            "min_amount": round(required_amount, 2),
-            "min_percentage": min_fee_percentage
-        }
+        # Percentage based
+        if fee_status["paid_percentage"] >= min_fee_percentage:
+            return {
+                "eligible": True,
+                "reason": f"Fee clearance OK ({fee_status['paid_percentage']}% paid)",
+                "fee_status": fee_status,
+                "min_amount": 0,
+                "activation_type": "fee_percentage"
+            }
+        else:
+            # Calculate minimum amount needed
+            total_fee = fee_status["total_fee"]
+            required_amount = (total_fee * min_fee_percentage / 100) - fee_status["paid_fee"]
+            required_amount = max(0, required_amount)
+            
+            return {
+                "eligible": False,
+                "reason": f"कम से कम {min_fee_percentage}% fee जमा करें। अभी {fee_status['paid_percentage']}% paid है।",
+                "fee_status": fee_status,
+                "min_amount": round(required_amount, 2),
+                "min_percentage": min_fee_percentage,
+                "requirement_type": "percentage",
+                "payment_options": {
+                    "online": True,
+                    "cash": True,
+                    "payment_link": f"/studytino/pay?student={student_id}&amount={round(required_amount, 2)}"
+                }
+            }
 
 async def generate_admit_card_data(student_id: str, exam_id: str, school_id: str, db) -> Dict:
     """Generate admit card data for a student"""
