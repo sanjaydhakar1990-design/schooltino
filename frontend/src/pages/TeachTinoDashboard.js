@@ -527,15 +527,13 @@ export default function TeachTinoDashboard() {
         <div className="mb-6">
           <h3 className="font-semibold text-gray-800 mb-3">Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {assignedClass && (
-              <Button 
-                onClick={() => setShowAttendanceSheet(true)}
-                className="h-auto py-4 flex flex-col items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
-              >
-                <ClipboardCheck className="w-6 h-6" />
-                <span>Mark Attendance</span>
-              </Button>
-            )}
+            <Button 
+              onClick={() => setShowClassSelector(true)}
+              className="h-auto py-4 flex flex-col items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
+            >
+              <ClipboardCheck className="w-6 h-6" />
+              <span>Mark Attendance</span>
+            </Button>
             
             <Button 
               onClick={() => setShowLeaveDialog(true)}
@@ -564,16 +562,23 @@ export default function TeachTinoDashboard() {
               <span>Assign Homework</span>
             </Button>
             
-            {assignedClass && (
-              <Button 
-                onClick={() => setShowStudentLeaveDialog(true)}
-                variant="outline"
-                className="h-auto py-4 flex flex-col items-center gap-2 border-rose-300 text-rose-700 hover:bg-rose-50"
-              >
-                <UserX className="w-6 h-6" />
-                <span>Student Leave</span>
-              </Button>
-            )}
+            <Button 
+              onClick={() => { fetchHomeworkSubmissions(); setShowHomeworkList(true); }}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
+            >
+              <CheckCircle className="w-6 h-6" />
+              <span>Check Homework</span>
+            </Button>
+            
+            <Button 
+              onClick={() => setShowStudentLeaveDialog(true)}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-rose-300 text-rose-700 hover:bg-rose-50"
+            >
+              <UserX className="w-6 h-6" />
+              <span>Student Leave</span>
+            </Button>
           </div>
         </div>
 
