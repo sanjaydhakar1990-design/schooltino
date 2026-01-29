@@ -719,13 +719,44 @@ export default function TeachTinoDashboard() {
 
       {/* ============= DIALOGS ============= */}
 
+      {/* Class Selector for Attendance */}
+      <Dialog open={showClassSelector} onOpenChange={setShowClassSelector}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-emerald-600" />
+              Select Class for Attendance
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {myClasses.length > 0 ? (
+              myClasses.map((cls) => (
+                <button
+                  key={cls.id}
+                  onClick={() => openAttendanceForClass(cls)}
+                  className="w-full p-4 text-left bg-gray-50 hover:bg-emerald-50 rounded-lg border hover:border-emerald-300 transition-all flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-medium text-gray-800">{cls.name}</p>
+                    <p className="text-sm text-gray-500">{cls.section && `Section ${cls.section}`}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-8">No classes found</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Attendance Sheet Dialog */}
       <Dialog open={showAttendanceSheet} onOpenChange={setShowAttendanceSheet}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ClipboardCheck className="w-5 h-5 text-emerald-600" />
-              Mark Attendance - {assignedClass?.name}
+              Mark Attendance - {selectedClassForAttendance?.name || assignedClass?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
