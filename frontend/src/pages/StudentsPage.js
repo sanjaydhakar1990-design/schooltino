@@ -89,9 +89,6 @@ export default function StudentsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   
-  // Quick Admission Mode - minimal fields
-  const [quickAdmissionMode, setQuickAdmissionMode] = useState(true);
-  
   // Credentials sharing states
   const [showCredentialsDialog, setShowCredentialsDialog] = useState(false);
   const [credentialsStudent, setCredentialsStudent] = useState(null);
