@@ -274,14 +274,27 @@ const ImprovedAdmitCardManagement = () => {
 
   // Auto-fetch subjects and instructions when class is selected
   const fetchClassSubjectsAndInstructions = async (className) => {
+    console.log('=== fetchClassSubjectsAndInstructions called ===');
+    console.log('className:', className);
+    console.log('schoolId:', schoolId);
+    console.log('API URL:', API);
+    
     try {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
+      const subjectsUrl = `${API}/api/admit-card/class-subjects/${encodeURIComponent(className)}?school_id=${schoolId || ''}`;
+      const instructionsUrl = `${API}/api/admit-card/class-instructions/${encodeURIComponent(className)}?school_id=${schoolId || ''}`;
+      
+      console.log('Calling:', subjectsUrl);
+      
       const [subjectsRes, instructionsRes] = await Promise.all([
-        axios.get(`${API}/api/admit-card/class-subjects/${encodeURIComponent(className)}?school_id=${schoolId}`, { headers }),
-        axios.get(`${API}/api/admit-card/class-instructions/${encodeURIComponent(className)}?school_id=${schoolId}`, { headers })
+        axios.get(subjectsUrl, { headers }),
+        axios.get(instructionsUrl, { headers })
       ]);
+      
+      console.log('Subjects response:', subjectsRes.data);
+      console.log('Instructions response:', instructionsRes.data);
       
       // Format subjects with default exam schedule
       const formattedSubjects = (subjectsRes.data.subjects || []).map(sub => ({
@@ -293,12 +306,15 @@ const ImprovedAdmitCardManagement = () => {
         max_marks: 100
       }));
       
+      console.log('Formatted subjects:', formattedSubjects);
+      
       return {
         subjects: formattedSubjects,
         instructions: instructionsRes.data.instructions || []
       };
     } catch (err) {
       console.error('Error fetching class data:', err);
+      console.error('Error details:', err.response?.data || err.message);
       return null;
     }
   };
