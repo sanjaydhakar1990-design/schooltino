@@ -423,15 +423,24 @@ const ImprovedAdmitCardManagement = () => {
   const publishToStudyTino = async (examId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/api/admit-card/publish-studytino`, {
+      
+      // Call publish-and-notify which also sends notifications to class students
+      const response = await axios.post(`${API}/api/admit-card/publish-and-notify`, {
         school_id: schoolId,
         exam_id: examId
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('✅ StudyTino पर publish हो गया! Students download कर सकते हैं।');
+      
+      const result = response.data;
+      toast.success(
+        `✅ Publish हो गया! ${result.students_notified || 0} students को notification भेजा गया।`,
+        { duration: 5000 }
+      );
+      
+      fetchData(); // Refresh to show updated status
     } catch (err) {
-      toast.error('Publish failed');
+      toast.error('Publish failed: ' + (err.response?.data?.detail || err.message));
     }
   };
 
