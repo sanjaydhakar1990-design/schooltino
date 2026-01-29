@@ -306,28 +306,39 @@ const ImprovedAdmitCardManagement = () => {
   const toggleClassSelection = async (classId) => {
     const isRemoving = examForm.classes.includes(classId);
     
+    // First update the classes selection
+    const newClasses = isRemoving
+      ? examForm.classes.filter(id => id !== classId)
+      : [...examForm.classes, classId];
+    
     setExamForm(prev => ({
       ...prev,
-      classes: isRemoving
-        ? prev.classes.filter(id => id !== classId)
-        : [...prev.classes, classId]
+      classes: newClasses
     }));
     
     // If adding first class, auto-populate subjects and instructions
     if (!isRemoving && examForm.classes.length === 0) {
-      // Get class name from classes list
+      // Get class name from classes list or use classId directly
       const selectedClass = classes.find(c => c.id === classId);
-      if (selectedClass) {
-        const classData = await fetchClassSubjectsAndInstructions(selectedClass.name || classId);
-        if (classData) {
+      const className = selectedClass?.name || classId;
+      
+      console.log('Auto-populating for class:', className);
+      
+      try {
+        const classData = await fetchClassSubjectsAndInstructions(className);
+        if (classData && classData.subjects && classData.subjects.length > 0) {
           setExamForm(prev => ({
             ...prev,
             classes: [classId],
             subjects: classData.subjects,
             instructions: classData.instructions
           }));
-          toast.success(`✅ ${selectedClass.name} के subjects और instructions auto-filled!`);
+          toast.success(`✅ ${className} के ${classData.subjects.length} subjects और ${classData.instructions.length} instructions auto-filled!`);
+        } else {
+          console.log('No class data received or empty subjects');
         }
+      } catch (err) {
+        console.error('Error fetching class data:', err);
       }
     }
   };
