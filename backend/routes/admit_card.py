@@ -33,14 +33,23 @@ router = APIRouter(prefix="/admit-card", tags=["Admit Card"])
 
 class AdmitCardSettings(BaseModel):
     school_id: str
-    min_fee_percentage: float = 30.0  # Minimum 30% fee required
+    # Fee requirements
+    fee_requirement_type: str = "percentage"  # "all_clear", "percentage", "no_requirement"
+    min_fee_percentage: float = 30.0  # Minimum fee percentage if type is "percentage"
     require_fee_clearance: bool = True
+    # Display settings
     show_photo: bool = True
     show_signature: bool = True
     show_seal: bool = True
     signature_authority: str = "director"  # director, principal, class_teacher
     seal_image_url: Optional[str] = None
     signature_image_url: Optional[str] = None
+    # StudyTino integration
+    enable_studytino_download: bool = True
+    enable_online_payment: bool = True
+    # Download deadline
+    fee_deadline: Optional[str] = None  # After this date, all can download
+    auto_activate_after_deadline: bool = False
 
 class ExamCreate(BaseModel):
     school_id: str
