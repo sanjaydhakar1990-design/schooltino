@@ -1254,8 +1254,8 @@ Note: First login पर password change करें।`;
                     <h4 className="font-medium text-green-800 mb-3">📞 Contact Information (संपर्क जानकारी)</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>Primary Mobile * (for login)</Label>
-                        <Input name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="Parent's mobile for OTP" data-testid="mobile-input" />
+                        <Label>Primary Mobile (for login)</Label>
+                        <Input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Parent's mobile for OTP" data-testid="mobile-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Secondary Phone (ID Card)</Label>
