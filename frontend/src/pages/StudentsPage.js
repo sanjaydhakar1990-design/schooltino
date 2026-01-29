@@ -945,14 +945,17 @@ Note: First login पर password change करें।`;
               {/* Tab 1: Basic Info */}
               {activeFormTab === 'basic' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h3 className="font-semibold text-slate-800 border-b pb-2">📋 Basic Information (मूल जानकारी)</h3>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h3 className="font-semibold text-slate-800">📋 Basic Information (मूल जानकारी)</h3>
+                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">* = Required</span>
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label>{t('student_name')} *</Label>
+                      <Label>{t('student_name')} <span className="text-red-500">*</span></Label>
                       <Input name="name" value={formData.name} onChange={handleChange} required placeholder="Student Full Name" data-testid="student-name-input" />
                     </div>
                     <div className="space-y-2">
-                      <Label>{t('class_section')} *</Label>
+                      <Label>{t('class_section')} <span className="text-red-500">*</span></Label>
                       <select name="class_id" value={formData.class_id} onChange={handleChange} required className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="class-select">
                         <option value="">{t('select_class')}</option>
                         {classes.map(cls => (
@@ -961,20 +964,20 @@ Note: First login पर password change करें।`;
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <Label>{t('gender')} *</Label>
-                      <select name="gender" value={formData.gender} onChange={handleChange} required className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="gender-select">
+                      <Label>{t('gender')}</Label>
+                      <select name="gender" value={formData.gender} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="gender-select">
                         <option value="male">{t('male')}</option>
                         <option value="female">{t('female')}</option>
                         <option value="other">{t('other')}</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <Label>{t('dob')} *</Label>
-                      <Input name="dob" type="date" value={formData.dob} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="dob-input" />
+                      <Label>{t('dob')}</Label>
+                      <Input name="dob" type="date" value={formData.dob} onChange={handleChange} max={new Date().toISOString().split('T')[0]} data-testid="dob-input" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Admission Date *</Label>
-                      <Input name="admission_date" type="date" value={formData.admission_date} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="admission-date-input" />
+                      <Label>Admission Date</Label>
+                      <Input name="admission_date" type="date" value={formData.admission_date} onChange={handleChange} max={new Date().toISOString().split('T')[0]} data-testid="admission-date-input" />
                     </div>
                     <div className="space-y-2">
                       <Label>{t('blood_group')}</Label>
@@ -990,6 +993,20 @@ Note: First login पर password change करें।`;
                     <div className="space-y-2 col-span-2">
                       <Label>Identification Mark (पहचान चिन्ह)</Label>
                       <Input name="identification_mark" value={formData.identification_mark} onChange={handleChange} placeholder="Mole on right cheek, etc." />
+                    </div>
+                  </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <p className="text-xs text-gray-500">💡 सिर्फ Name और Class भरना जरूरी है, बाकी बाद में भर सकते हैं</p>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={() => setActiveFormTab('identity')} className="text-sm">
+                        Skip → Next Tab
+                      </Button>
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        {editingStudent ? 'Update' : 'Quick Submit ✓'}
+                      </Button>
                     </div>
                   </div>
                 </div>
