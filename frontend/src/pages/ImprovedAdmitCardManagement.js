@@ -1159,9 +1159,14 @@ const ImprovedAdmitCardManagement = () => {
                   </div>
                 ))}
                 {examForm.subjects.length === 0 && (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No subjects added yet. Click "Add Subject" to add exam schedule.
-                  </p>
+                  <div className="text-center py-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-700 mb-2">
+                      📚 Subjects auto-fill होंगे class select करने पर
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      या "Add Subject" button से manually add करें
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
