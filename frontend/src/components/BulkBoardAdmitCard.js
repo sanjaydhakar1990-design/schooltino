@@ -37,22 +37,42 @@ const BulkBoardAdmitCard = ({ boardExam, schoolId, onClose }) => {
     try {
       const token = localStorage.getItem('token');
       
+      // Ensure we have required data
+      if (!schoolId) {
+        toast.error('School ID not found. Please refresh and try again.');
+        return;
+      }
+      
+      const examId = boardExam?.id || boardExam?._id;
+      if (!examId) {
+        toast.error('Exam ID not found. Please create the board exam first.');
+        return;
+      }
+      
+      console.log('Parsing students for school:', schoolId, 'exam:', examId);
+      
       // For now, we'll fetch students from school database
       // In production, parse the actual Excel/CSV file
       const response = await axios.post(`${API}/api/admit-card/parse-student-list`, {
         school_id: schoolId,
-        exam_id: boardExam.id
+        exam_id: examId
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       console.log('Parsed students:', response.data);
+      
+      if (response.data.students?.length === 0) {
+        toast.warning(response.data.message || 'No students found. Please add students or use CSV upload.');
+      }
+      
       setStudentsList(response.data.students || []);
       setStep(2);
       toast.success(`✅ ${response.data.students?.length || 0} students loaded!`);
     } catch (err) {
       console.error('Parse error:', err);
-      toast.error('Failed to parse file: ' + (err.response?.data?.detail || err.message));
+      const errorMsg = err.response?.data?.detail || err.message || 'Unknown error';
+      toast.error('Failed to parse file: ' + errorMsg);
     }
   };
 
