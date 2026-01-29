@@ -91,15 +91,31 @@ export default function TimetableManagement() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classRes, teacherRes, subjectRes, timetableRes] = await Promise.all([
+      const [classRes, teacherRes, subjectRes, timetableRes, slotsRes, schoolRes] = await Promise.all([
         axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/staff?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
         axios.get(`${API}/subjects?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/timetables?school_id=${schoolId}`, { headers }).catch(() => ({ data: {} }))
+        axios.get(`${API}/timetables?school_id=${schoolId}`, { headers }).catch(() => ({ data: {} })),
+        axios.get(`${API}/timetable/time-slots?school_id=${schoolId}`, { headers }).catch(() => ({ data: { slots: [] } })),
+        axios.get(`${API}/schools/${schoolId}`, { headers }).catch(() => ({ data: {} }))
       ]);
       
       setClasses(classRes.data || []);
       setTeachers(teacherRes.data?.filter(t => t.role === 'teacher' || t.designation?.toLowerCase().includes('teacher')) || []);
+      
+      // Fetch time slots from backend or use school timing defaults
+      if (slotsRes.data?.slots?.length > 0) {
+        setTimeSlots(slotsRes.data.slots);
+      } else {
+        // Use school start/end time from settings
+        const schoolData = schoolRes.data;
+        const schoolStartTime = schoolData?.school_start_time || '10:00';
+        const schoolEndTime = schoolData?.school_end_time || '03:30';
+        
+        // Generate slots based on school timings
+        const generatedSlots = generateSlotsFromSchoolTime(schoolStartTime, schoolEndTime);
+        setTimeSlots(generatedSlots);
+      }
       
       // Default subjects if none exist
       const defaultSubjects = [
@@ -129,6 +145,67 @@ export default function TimetableManagement() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Generate time slots from school timing
+  const generateSlotsFromSchoolTime = (startTime, endTime) => {
+    // Parse school start time (e.g., "10:00")
+    const [startHour] = startTime.split(':').map(Number);
+    
+    const slots = [];
+    let currentHour = startHour;
+    let currentMin = 0;
+    let periodNum = 1;
+    
+    for (let i = 0; i < 8; i++) {
+      if (i === 3) {
+        // Add break after 3 periods
+        slots.push({
+          id: slots.length + 1,
+          label: 'Break',
+          start: `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`,
+          end: `${String(currentHour).padStart(2, '0')}:${String(currentMin + 15).padStart(2, '0')}`,
+          isBreak: true
+        });
+        currentMin += 15;
+      } else if (i === 6) {
+        // Add lunch after 6 periods
+        slots.push({
+          id: slots.length + 1,
+          label: 'Lunch',
+          start: `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`,
+          end: `${String(currentHour).padStart(2, '0')}:${String(currentMin + 30).padStart(2, '0')}`,
+          isBreak: true
+        });
+        currentMin += 30;
+        if (currentMin >= 60) {
+          currentHour += Math.floor(currentMin / 60);
+          currentMin = currentMin % 60;
+        }
+      } else {
+        // Regular period (45 mins)
+        const endMin = currentMin + 45;
+        const endHour = currentHour + Math.floor(endMin / 60);
+        const finalEndMin = endMin % 60;
+        
+        slots.push({
+          id: slots.length + 1,
+          label: `Period ${periodNum}`,
+          start: `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`,
+          end: `${String(endHour).padStart(2, '0')}:${String(finalEndMin).padStart(2, '0')}`,
+          isBreak: false
+        });
+        
+        periodNum++;
+        currentMin += 45;
+        if (currentMin >= 60) {
+          currentHour += Math.floor(currentMin / 60);
+          currentMin = currentMin % 60;
+        }
+      }
+    }
+    
+    return slots;
   };
 
   // Get timetable for selected class
