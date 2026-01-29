@@ -38,12 +38,16 @@ const ImprovedAdmitCardManagement = () => {
 
   const [settings, setSettings] = useState({
     min_fee_percentage: 30,
+    fee_requirement_type: 'percentage',  // 'no_requirement', 'percentage', 'all_clear'
     require_fee_clearance: true,
     show_photo: true,
     show_signature: true,
     show_seal: true,
     signature_authority: 'principal',
-    enable_studytino_download: true
+    enable_studytino_download: true,
+    enable_online_payment: true,
+    fee_deadline: null,
+    auto_activate_after_deadline: false
   });
 
   const [exams, setExams] = useState([]);
