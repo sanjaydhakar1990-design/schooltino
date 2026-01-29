@@ -2372,9 +2372,41 @@ class SchooltinoAPITester:
         return self.tests_passed == self.tests_run
 
 def main():
+    """Run comprehensive API tests"""
     tester = SchooltinoAPITester()
-    success = tester.run_all_tests()
-    return 0 if success else 1
+    
+    print("🚀 Starting Schooltino API Tests...")
+    print("=" * 50)
+    
+    # Basic tests
+    basic_tests = [
+        ("Health Check", tester.test_health_check),
+    ]
+    
+    # Run basic tests
+    for name, test_func in basic_tests:
+        print(f"\n🔍 {name}...")
+        if not test_func():
+            print(f"❌ {name} failed - stopping tests")
+            return 1
+    
+    # Run Admit Card Fixes Tests (Review Request)
+    print(f"\n🎯 RUNNING ADMIT CARD FIXES TESTS (REVIEW REQUEST)")
+    print(f"=" * 60)
+    tester.run_admit_card_fixes_comprehensive_test()
+    
+    print(f"\n📊 Test Results Summary:")
+    print(f"Total Tests: {tester.tests_run}")
+    print(f"Passed: {tester.tests_passed}")
+    print(f"Failed: {len(tester.failed_tests)}")
+    print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if tester.failed_tests:
+        print(f"\n❌ Failed Tests:")
+        for failed in tester.failed_tests:
+            print(f"  - {failed['test']}: {failed.get('error', failed.get('response', 'Unknown error'))}")
+    
+    return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
