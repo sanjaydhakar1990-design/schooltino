@@ -1031,7 +1031,33 @@ const ImprovedAdmitCardManagement = () => {
 
             {/* Class Selection */}
             <div>
-              <Label className="text-base font-semibold mb-2 block">Select Classes * (कम से कम एक)</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-base font-semibold">Select Classes * (कम से कम एक)</Label>
+                {examForm.classes.length > 0 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      const firstClassId = examForm.classes[0];
+                      const selectedClass = classes.find(c => c.id === firstClassId);
+                      const className = selectedClass?.name || firstClassId;
+                      const classData = await fetchClassSubjectsAndInstructions(className);
+                      if (classData && classData.subjects.length > 0) {
+                        setExamForm(prev => ({
+                          ...prev,
+                          subjects: classData.subjects,
+                          instructions: classData.instructions
+                        }));
+                        toast.success(`✅ ${classData.subjects.length} subjects loaded!`);
+                      }
+                    }}
+                    className="text-indigo-600 text-xs"
+                  >
+                    🔄 Load Class Subjects
+                  </Button>
+                )}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-3 border rounded-lg bg-gray-50">
                 {classes.length > 0 ? (
                   classes.map(cls => (
