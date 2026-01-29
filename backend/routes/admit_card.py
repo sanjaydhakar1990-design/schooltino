@@ -976,6 +976,48 @@ async def delete_exam(exam_id: str, school_id: str):
         "message": "Exam and admit cards deleted successfully"
     }
 
+@router.post("/migrate-exams")
+async def migrate_exams(request: dict = None):
+    """Fix existing exams without exam_category or id field"""
+    db = get_database()
+    
+    school_id = request.get("school_id") if request else None
+    
+    # Query to find exams without exam_category
+    query = {}
+    if school_id:
+        query["school_id"] = school_id
+    
+    exams = await db.exams.find(query).to_list(200)
+    
+    fixed_count = 0
+    for exam in exams:
+        updates = {}
+        
+        # Add id field if missing
+        if "id" not in exam:
+            updates["id"] = str(uuid.uuid4())
+        
+        # Add exam_category if missing
+        if "exam_category" not in exam:
+            updates["exam_category"] = "school"  # Default to school
+        
+        if updates:
+            await db.exams.update_one(
+                {"_id": exam["_id"]},
+                {"$set": updates}
+            )
+            fixed_count += 1
+    
+    print(f"Migration complete: Fixed {fixed_count} exams")
+    
+    return {
+        "success": True,
+        "fixed_count": fixed_count,
+        "total_exams": len(exams),
+        "message": f"Fixed {fixed_count} exams with missing fields"
+    }
+
 @router.post("/collect-cash-fee")
 async def collect_cash_fee(payment_data: dict):
     """Collect cash fee for admit card"""
