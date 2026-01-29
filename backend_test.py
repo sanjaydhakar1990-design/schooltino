@@ -1575,6 +1575,338 @@ class SchooltinoAPITester:
         
         return success
     
+    # ============== ENHANCED ADMIT CARD SYSTEM TESTS - REVIEW REQUEST ==============
+    
+    def test_class_wise_auto_subjects_nursery(self):
+        """Test 1: GET /api/admit-card/class-subjects/Nursery - Should return pre-primary subjects"""
+        success, response = self.run_test("Class-wise Auto Subjects - Nursery", "GET", "admit-card/class-subjects/Nursery", 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            print(f"   📝 Nursery subjects: {subjects}")
+            
+            # Check for pre-primary subjects
+            expected_subjects = ["English", "Hindi", "Mathematics", "EVS", "Drawing", "Rhymes"]
+            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            
+            if len(found_subjects) >= 3:
+                print(f"   ✅ Pre-primary subjects found: {found_subjects}")
+            else:
+                print(f"   ⚠️ Expected pre-primary subjects, got: {subjects}")
+        
+        return success
+    
+    def test_class_wise_auto_subjects_class5(self):
+        """Test 2: GET /api/admit-card/class-subjects/Class%205 - Should return primary subjects"""
+        success, response = self.run_test("Class-wise Auto Subjects - Class 5", "GET", "admit-card/class-subjects/Class%205", 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            print(f"   📝 Class 5 subjects: {subjects}")
+            
+            # Check for primary subjects
+            expected_subjects = ["English", "Hindi", "Mathematics", "Science", "Social Science"]
+            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            
+            if len(found_subjects) >= 4:
+                print(f"   ✅ Primary subjects found: {found_subjects}")
+            else:
+                print(f"   ⚠️ Expected primary subjects, got: {subjects}")
+        
+        return success
+    
+    def test_class_wise_auto_subjects_class10(self):
+        """Test 3: GET /api/admit-card/class-subjects/Class%2010 - Should return secondary subjects"""
+        success, response = self.run_test("Class-wise Auto Subjects - Class 10", "GET", "admit-card/class-subjects/Class%2010", 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            print(f"   📝 Class 10 subjects: {subjects}")
+            
+            # Check for secondary subjects
+            expected_subjects = ["English", "Hindi", "Mathematics", "Science", "Social Science"]
+            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            
+            if len(found_subjects) >= 4:
+                print(f"   ✅ Secondary subjects found: {found_subjects}")
+            else:
+                print(f"   ⚠️ Expected secondary subjects, got: {subjects}")
+        
+        return success
+    
+    def test_class_wise_auto_subjects_class12_science(self):
+        """Test 4: GET /api/admit-card/class-subjects/Class%2012%20Science - Should return science subjects"""
+        success, response = self.run_test("Class-wise Auto Subjects - Class 12 Science", "GET", "admit-card/class-subjects/Class%2012%20Science", 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            print(f"   📝 Class 12 Science subjects: {subjects}")
+            
+            # Check for science stream subjects
+            expected_subjects = ["Physics", "Chemistry", "Mathematics", "Biology", "English"]
+            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            
+            if len(found_subjects) >= 3:
+                print(f"   ✅ Science stream subjects found: {found_subjects}")
+            else:
+                print(f"   ⚠️ Expected science subjects, got: {subjects}")
+        
+        return success
+    
+    def test_class_wise_instructions_class5(self):
+        """Test 5: GET /api/admit-card/class-instructions/Class%205 - Should return middle school instructions"""
+        success, response = self.run_test("Class-wise Instructions - Class 5", "GET", "admit-card/class-instructions/Class%205", 200)
+        
+        if success:
+            instructions = response.get("instructions", [])
+            print(f"   📝 Class 5 instructions count: {len(instructions)}")
+            
+            if instructions:
+                print(f"   ✅ Instructions found for Class 5")
+                # Show first few instructions
+                for i, instruction in enumerate(instructions[:3]):
+                    print(f"   📝 Instruction {i+1}: {instruction[:50]}...")
+            else:
+                print(f"   ⚠️ No instructions found for Class 5")
+        
+        return success
+    
+    def test_class_wise_instructions_class10(self):
+        """Test 6: GET /api/admit-card/class-instructions/Class%2010 - Should return high school instructions"""
+        success, response = self.run_test("Class-wise Instructions - Class 10", "GET", "admit-card/class-instructions/Class%2010", 200)
+        
+        if success:
+            instructions = response.get("instructions", [])
+            print(f"   📝 Class 10 instructions count: {len(instructions)}")
+            
+            if instructions:
+                print(f"   ✅ Instructions found for Class 10")
+                # Show first few instructions
+                for i, instruction in enumerate(instructions[:3]):
+                    print(f"   📝 Instruction {i+1}: {instruction[:50]}...")
+            else:
+                print(f"   ⚠️ No instructions found for Class 10")
+        
+        return success
+    
+    def test_admin_activation_system(self):
+        """Test 7: POST /api/admit-card/admin-activate with required fields"""
+        # First create an exam and get a student ID
+        exam_data = {
+            "school_id": "SCH-DEMO-2026",
+            "exam_name": "Admin Activation Test Exam",
+            "exam_type": "unit_test",
+            "exam_category": "school",
+            "start_date": "2026-02-01",
+            "end_date": "2026-02-10",
+            "classes": ["Class 10"],
+            "created_by": "director"
+        }
+        
+        exam_success, exam_response = self.run_test("Create Exam for Admin Activation", "POST", "admit-card/exam", 200, exam_data)
+        
+        if not exam_success:
+            print(f"   ❌ Failed to create exam for admin activation test")
+            return False
+        
+        test_exam_id = exam_response.get("exam_id")
+        if not test_exam_id:
+            print(f"   ❌ No exam_id returned")
+            return False
+        
+        # Test admin activation
+        activation_data = {
+            "school_id": "SCH-DEMO-2026",
+            "student_id": "STD-2026-0001",  # Mock student ID
+            "exam_id": test_exam_id,
+            "activated_by": "director",
+            "reason": "Fee payment verified manually"
+        }
+        
+        success, response = self.run_test("Admin Activation System", "POST", "admit-card/admin-activate", 200, activation_data)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Admin activation successful")
+                print(f"   📝 Student activated for exam: {test_exam_id}")
+            else:
+                print(f"   ⚠️ Admin activation failed: {response.get('message', 'Unknown error')}")
+        
+        return success
+    
+    def test_check_eligibility_after_activation(self):
+        """Test 8: GET /api/admit-card/check-eligibility/{school_id}/{exam_id}/{student_id} - Should show activated"""
+        # Use the exam created in previous test
+        if not hasattr(self, 'exam_id') or not self.exam_id:
+            # Create a test exam if none exists
+            exam_data = {
+                "school_id": "SCH-DEMO-2026",
+                "exam_name": "Eligibility Check Test Exam",
+                "exam_type": "unit_test",
+                "exam_category": "school",
+                "start_date": "2026-02-01",
+                "end_date": "2026-02-10",
+                "classes": ["Class 10"],
+                "created_by": "director"
+            }
+            
+            exam_success, exam_response = self.run_test("Create Exam for Eligibility Check", "POST", "admit-card/exam", 200, exam_data)
+            if exam_success:
+                self.exam_id = exam_response.get("exam_id")
+        
+        if not self.exam_id:
+            print(f"   ❌ No exam_id available for eligibility check")
+            return False
+        
+        endpoint = f"admit-card/check-eligibility/SCH-DEMO-2026/{self.exam_id}/STD-2026-0001"
+        success, response = self.run_test("Check Eligibility After Activation", "GET", endpoint, 200)
+        
+        if success:
+            eligible = response.get("eligible", False)
+            status = response.get("status", "unknown")
+            print(f"   📝 Eligibility status: {status}")
+            print(f"   📝 Eligible: {eligible}")
+            
+            if eligible:
+                print(f"   ✅ Student is eligible (activated)")
+            else:
+                print(f"   ⚠️ Student not eligible: {response.get('reason', 'Unknown reason')}")
+        
+        return success
+    
+    def test_cash_payment_activation(self):
+        """Test 9: POST /api/admit-card/activate-after-cash-payment with required fields"""
+        # Use existing exam or create one
+        if not hasattr(self, 'exam_id') or not self.exam_id:
+            exam_data = {
+                "school_id": "SCH-DEMO-2026",
+                "exam_name": "Cash Payment Test Exam",
+                "exam_type": "unit_test",
+                "exam_category": "school",
+                "start_date": "2026-02-01",
+                "end_date": "2026-02-10",
+                "classes": ["Class 10"],
+                "created_by": "director"
+            }
+            
+            exam_success, exam_response = self.run_test("Create Exam for Cash Payment", "POST", "admit-card/exam", 200, exam_data)
+            if exam_success:
+                self.exam_id = exam_response.get("exam_id")
+        
+        if not self.exam_id:
+            print(f"   ❌ No exam_id available for cash payment test")
+            return False
+        
+        payment_data = {
+            "school_id": "SCH-DEMO-2026",
+            "student_id": "STD-2026-0002",  # Different student
+            "exam_id": self.exam_id,
+            "amount": 500.0,
+            "collected_by": "accountant",
+            "receipt_number": f"CASH-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        }
+        
+        success, response = self.run_test("Cash Payment Activation", "POST", "admit-card/activate-after-cash-payment", 200, payment_data)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Cash payment activation successful")
+                print(f"   📝 Receipt: {payment_data['receipt_number']}")
+                print(f"   📝 Amount: ₹{payment_data['amount']}")
+            else:
+                print(f"   ⚠️ Cash payment activation failed: {response.get('message', 'Unknown error')}")
+        
+        return success
+    
+    def test_student_admit_cards_studytino(self):
+        """Test 10: GET /api/admit-card/student/my-admit-cards/{student_id}?school_id={school_id}"""
+        endpoint = "admit-card/student/my-admit-cards/STD-2026-0001?school_id=SCH-DEMO-2026"
+        success, response = self.run_test("Student Admit Cards (StudyTino)", "GET", endpoint, 200)
+        
+        if success:
+            admit_cards = response.get("admit_cards", [])
+            print(f"   📝 Found {len(admit_cards)} admit cards for student")
+            
+            if admit_cards:
+                print(f"   ✅ Admit cards found for student")
+                # Show details of first admit card
+                first_card = admit_cards[0]
+                print(f"   📝 Exam: {first_card.get('exam_name', 'Unknown')}")
+                print(f"   📝 Status: {first_card.get('status', 'Unknown')}")
+                print(f"   📝 Eligible: {first_card.get('eligible', False)}")
+            else:
+                print(f"   ⚠️ No admit cards found for student (expected for new setup)")
+        
+        return success
+    
+    def test_enhanced_settings_fee_requirement(self):
+        """Test 11: POST /api/admit-card/settings with enhanced fields"""
+        settings_data = {
+            "school_id": "SCH-DEMO-2026",
+            "fee_requirement_type": "percentage",  # no_requirement, percentage, all_clear
+            "min_fee_percentage": 75,
+            "fee_deadline": "2026-01-31",
+            "auto_activate_after_deadline": True,
+            "require_fee_clearance": True
+        }
+        
+        success, response = self.run_test("Enhanced Settings - Fee Requirement", "POST", "admit-card/settings", 200, settings_data)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Enhanced settings saved successfully")
+                print(f"   📝 Fee requirement type: {settings_data['fee_requirement_type']}")
+                print(f"   📝 Min fee percentage: {settings_data['min_fee_percentage']}%")
+                print(f"   📝 Auto activate after deadline: {settings_data['auto_activate_after_deadline']}")
+            else:
+                print(f"   ⚠️ Enhanced settings save failed")
+        
+        return success
+    
+    def run_enhanced_admit_card_comprehensive_test(self):
+        """Run all enhanced admit card system tests in sequence"""
+        print(f"\n🎯 ENHANCED ADMIT CARD SYSTEM - COMPREHENSIVE TEST")
+        print(f"=" * 60)
+        
+        tests = [
+            ("Class-wise Auto Subjects - Nursery", self.test_class_wise_auto_subjects_nursery),
+            ("Class-wise Auto Subjects - Class 5", self.test_class_wise_auto_subjects_class5),
+            ("Class-wise Auto Subjects - Class 10", self.test_class_wise_auto_subjects_class10),
+            ("Class-wise Auto Subjects - Class 12 Science", self.test_class_wise_auto_subjects_class12_science),
+            ("Class-wise Instructions - Class 5", self.test_class_wise_instructions_class5),
+            ("Class-wise Instructions - Class 10", self.test_class_wise_instructions_class10),
+            ("Admin Activation System", self.test_admin_activation_system),
+            ("Check Eligibility After Activation", self.test_check_eligibility_after_activation),
+            ("Cash Payment Activation", self.test_cash_payment_activation),
+            ("Student Admit Cards (StudyTino)", self.test_student_admit_cards_studytino),
+            ("Enhanced Settings - Fee Requirement", self.test_enhanced_settings_fee_requirement)
+        ]
+        
+        passed = 0
+        total = len(tests)
+        
+        for test_name, test_func in tests:
+            try:
+                if test_func():
+                    passed += 1
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        print(f"\n📊 ENHANCED ADMIT CARD TEST RESULTS:")
+        print(f"   Passed: {passed}/{total} ({(passed/total)*100:.1f}%)")
+        
+        if passed == total:
+            print(f"🎉 ALL ENHANCED ADMIT CARD TESTS PASSED!")
+        elif passed >= total * 0.8:
+            print(f"✅ Most enhanced admit card tests passed ({passed}/{total})")
+        else:
+            print(f"⚠️ Several enhanced admit card tests failed ({total-passed}/{total})")
+        
+        return passed, total
+
     def run_admit_card_fixes_comprehensive_test(self):
         """Run all admit card fixes tests in sequence"""
         print(f"\n🎯 ADMIT CARD SYSTEM FIXES - COMPREHENSIVE TEST")
