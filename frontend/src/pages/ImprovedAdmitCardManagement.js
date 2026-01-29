@@ -305,6 +305,7 @@ const ImprovedAdmitCardManagement = () => {
 
   const toggleClassSelection = async (classId) => {
     const isRemoving = examForm.classes.includes(classId);
+    const wasEmpty = examForm.classes.length === 0;
     
     // First update the classes selection
     const newClasses = isRemoving
@@ -316,8 +317,8 @@ const ImprovedAdmitCardManagement = () => {
       classes: newClasses
     }));
     
-    // If adding first class, auto-populate subjects and instructions
-    if (!isRemoving && examForm.classes.length === 0) {
+    // If adding first class (was empty before), auto-populate subjects and instructions
+    if (!isRemoving && wasEmpty) {
       // Get class name from classes list or use classId directly
       const selectedClass = classes.find(c => c.id === classId);
       const className = selectedClass?.name || classId;
@@ -326,6 +327,8 @@ const ImprovedAdmitCardManagement = () => {
       
       try {
         const classData = await fetchClassSubjectsAndInstructions(className);
+        console.log('Received class data:', classData);
+        
         if (classData && classData.subjects && classData.subjects.length > 0) {
           setExamForm(prev => ({
             ...prev,
@@ -333,13 +336,49 @@ const ImprovedAdmitCardManagement = () => {
             subjects: classData.subjects,
             instructions: classData.instructions
           }));
-          toast.success(`✅ ${className} के ${classData.subjects.length} subjects और ${classData.instructions.length} instructions auto-filled!`);
+          toast.success(`✅ ${className} के ${classData.subjects.length} subjects auto-filled!`);
         } else {
           console.log('No class data received or empty subjects');
+          toast.info('Subjects load नहीं हुए। "Load Class Subjects" button use करें।');
         }
       } catch (err) {
         console.error('Error fetching class data:', err);
+        toast.error('Subjects load करने में error। Manual add करें।');
       }
+    }
+  };
+
+  // Manual load subjects function
+  const loadClassSubjects = async () => {
+    if (examForm.classes.length === 0) {
+      toast.error('पहले कोई class select करें');
+      return;
+    }
+    
+    const firstClassId = examForm.classes[0];
+    const selectedClass = classes.find(c => c.id === firstClassId);
+    const className = selectedClass?.name || firstClassId;
+    
+    try {
+      toast.loading('Subjects load हो रहे हैं...');
+      const classData = await fetchClassSubjectsAndInstructions(className);
+      
+      if (classData && classData.subjects && classData.subjects.length > 0) {
+        setExamForm(prev => ({
+          ...prev,
+          subjects: classData.subjects,
+          instructions: classData.instructions
+        }));
+        toast.dismiss();
+        toast.success(`✅ ${classData.subjects.length} subjects और ${classData.instructions.length} instructions loaded!`);
+      } else {
+        toast.dismiss();
+        toast.error('Subjects नहीं मिले');
+      }
+    } catch (err) {
+      toast.dismiss();
+      toast.error('Error loading subjects');
+      console.error(err);
     }
   };
 
