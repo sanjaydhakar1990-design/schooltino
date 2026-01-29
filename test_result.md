@@ -876,12 +876,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Admit Card Edit/Delete Operations"
-    - "Board Exam Bulk Upload Review Section"
+  current_focus: []
   stuck_tasks: []
   test_all: false
-  test_priority: "admit_card_fix_verification"
+  test_priority: "admit_card_fixes_completed"
 
 agent_communication:
   - agent: "main"
