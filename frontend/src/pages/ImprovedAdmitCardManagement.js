@@ -1135,8 +1135,9 @@ const ImprovedAdmitCardManagement = () => {
                 )}
               </div>
               {examForm.classes.length > 0 && (
-                <p className="text-xs text-green-600 mt-1">
-                  ✅ {examForm.classes.length} classes selected
+                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                  ✅ {classes.find(c => c.id === examForm.classes[0])?.name || examForm.classes[0]} selected
+                  {examForm.subjects.length > 0 && ` • ${examForm.subjects.length} subjects loaded`}
                 </p>
               )}
             </div>
