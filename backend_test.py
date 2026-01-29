@@ -2547,6 +2547,19 @@ class SchooltinoAPITester:
         tests = [
             ("Health Check", self.test_health_check),
             
+            # ============== ENHANCED ADMIT CARD SYSTEM TESTS - REVIEW REQUEST PRIORITY ==============
+            ("🎯 PRIORITY: Class-wise Auto Subjects - Nursery", self.test_class_wise_auto_subjects_nursery),
+            ("🎯 PRIORITY: Class-wise Auto Subjects - Class 5", self.test_class_wise_auto_subjects_class5),
+            ("🎯 PRIORITY: Class-wise Auto Subjects - Class 10", self.test_class_wise_auto_subjects_class10),
+            ("🎯 PRIORITY: Class-wise Auto Subjects - Class 12 Science", self.test_class_wise_auto_subjects_class12_science),
+            ("🎯 PRIORITY: Class-wise Instructions - Class 5", self.test_class_wise_instructions_class5),
+            ("🎯 PRIORITY: Class-wise Instructions - Class 10", self.test_class_wise_instructions_class10),
+            ("🎯 PRIORITY: Admin Activation System", self.test_admin_activation_system),
+            ("🎯 PRIORITY: Check Eligibility After Activation", self.test_check_eligibility_after_activation),
+            ("🎯 PRIORITY: Cash Payment Activation", self.test_cash_payment_activation),
+            ("🎯 PRIORITY: Student Admit Cards (StudyTino)", self.test_student_admit_cards_studytino),
+            ("🎯 PRIORITY: Enhanced Settings - Fee Requirement", self.test_enhanced_settings_fee_requirement),
+            
             # ============== ID CARD SYSTEM TESTS - REVIEW REQUEST PRIORITY ==============
             ("🎯 PRIORITY: ID Card Generate POST (Mock)", self.test_id_card_generate_post_mock),
             ("🎯 PRIORITY: ID Card Generate GET (Mock)", self.test_id_card_generate_get_mock),
