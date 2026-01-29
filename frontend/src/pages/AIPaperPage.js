@@ -145,13 +145,32 @@ export default function AIPaperPage() {
 
   useEffect(() => {
     if (formData.class_name && formData.subject) {
-      // Determine which board's chapters to use
+      // ✅ FORCE USE LATEST 2025-26 SYLLABUS WITH PROPER LANGUAGE
       let chapters = [];
       
-      // PRE-PRIMARY CLASSES - Direct lookup (Drawing etc.)
+      try {
+        // Import and use latest syllabus
+        import('../data/syllabusLatest2025').then(module => {
+          const { getChaptersByMedium } = module;
+          chapters = getChaptersByMedium(
+            formData.class_name,
+            formData.subject,
+            formData.language // Use paper language for chapter titles
+          );
+          
+          if (chapters && chapters.length > 0) {
+            setAvailableChapters(chapters.map((name, idx) => ({ id: `ch${idx+1}`, name })));
+            return;
+          }
+        }).catch(e => console.log('Latest syllabus not loaded, using fallback'));
+      } catch (e) {
+        console.log('Error loading latest syllabus:', e);
+      }
+      
+      // Fallback to old method if new syllabus not available
+      // PRE-PRIMARY CLASSES - Direct lookup
       const prePrimaryClasses = ['Nursery', 'LKG', 'UKG'];
       if (prePrimaryClasses.includes(formData.class_name)) {
-        // For pre-primary, always use getChapters which handles PRE_PRIMARY_CHAPTERS
         chapters = getChapters('CBSE', formData.class_name, formData.subject);
         if (chapters.length === 0) {
           chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
@@ -189,7 +208,7 @@ export default function AIPaperPage() {
       
       setAvailableChapters(chapters || []);
     }
-  }, [formData.class_name, formData.subject, formData.syllabus_source, schoolBoard, useNcertSyllabus]);
+  }, [formData.class_name, formData.subject, formData.syllabus_source, formData.language, schoolBoard, useNcertSyllabus]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

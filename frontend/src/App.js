@@ -12,10 +12,10 @@ import StudentsPage from './pages/StudentsPage';
 // StaffPage removed - merged into EmployeeManagementPage
 import ClassesPage from './pages/ClassesPage';
 import AttendancePage from './pages/AttendancePage';
+import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
 import FeesPage from './pages/FeesPage';
 import NoticesPage from './pages/NoticesPage';
 import AIPaperPage from './pages/AIPaperPage';
-import AIPaperGeneratorNew from './pages/AIPaperGeneratorNew';
 import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
 import UserManagementPage from './pages/UserManagementPage';
@@ -61,6 +61,8 @@ import MarketingPage from './pages/MarketingPage';
 import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
 import AdmitCardManagement from './pages/AdmitCardManagement';
+import ImprovedAdmitCardManagement from './pages/ImprovedAdmitCardManagement';
+import AdmitCardManagementFixed from './pages/AdmitCardManagementFixed';
 import PDFDownloadPage from './pages/PDFDownloadPage';
 import SetupGuidePage from './pages/SetupGuidePage';
 import SuperAdminPanel from './pages/SuperAdminPanel';
@@ -307,11 +309,10 @@ function AppRoutes() {
         <Route path="students" element={<StudentsPage />} />
         <Route path="staff" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="classes" element={<ClassesPage />} />
-        <Route path="attendance" element={<AttendancePage />} />
+        <Route path="attendance" element={<ImprovedAttendancePage />} />
         <Route path="fees" element={<FeesPage />} />
         <Route path="notices" element={<NoticesPage />} />
-        <Route path="ai-paper" element={<AIPaperGeneratorNew />} />
-        <Route path="ai-paper-old" element={<AIPaperPage />} />
+        <Route path="ai-paper" element={<AIPaperPage />} />
         <Route path="ai-content" element={<Navigate to="/app/event-designer" replace />} />
         <Route path="voice-assistant" element={<VoiceAssistant />} />
         <Route path="gallery" element={<ImageGallery />} />
@@ -348,7 +349,7 @@ function AppRoutes() {
         <Route path="tino-brain" element={<TinoBrainDashboard />} />
         <Route path="multi-year-fees" element={<MultiYearFeesPage />} />
         <Route path="salary" element={<SalaryTrackingPage />} />
-        <Route path="admit-cards" element={<AdmitCardManagement />} />
+        <Route path="admit-cards" element={<AdmitCardManagementFixed />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="school-settings" element={<Navigate to="/app/school-management" replace />} />

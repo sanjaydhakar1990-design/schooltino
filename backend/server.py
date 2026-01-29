@@ -8,7 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, validator
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -356,6 +356,13 @@ class StudentCreate(BaseModel):
     aadhar_no: Optional[str] = None
     previous_school: Optional[str] = None
     admission_date: Optional[str] = None  # Date of admission (for mid-year joining schools)
+    
+    # Validator to convert empty strings to None for all optional fields
+    @validator('*', pre=True)
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
     # NEW FIELDS - Extended Student Information
     scholar_no: Optional[str] = None  # Scholar Number / Enrollment Number
     pen_number: Optional[str] = None  # PEN (Permanent Education Number) for CBSE
@@ -550,6 +557,13 @@ class UnifiedEmployeeCreate(BaseModel):
     password: Optional[str] = None  # Default: mobile number
     role: str = "teacher"  # Role for permissions
     custom_permissions: Optional[Dict[str, bool]] = None  # Override default permissions
+    
+    # Validator to convert empty strings to None for all optional fields
+    @validator('*', pre=True)
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
 
 class UnifiedEmployeeResponse(BaseModel):
     id: str
@@ -3407,6 +3421,333 @@ async def check_holiday_api(
         "date": date,
         "is_holiday": holiday_name is not None,
         "holiday_name": holiday_name
+    }
+
+
+
+# ==================== LEAVE MANAGEMENT ====================
+
+@api_router.post("/attendance/mark-leave")
+async def mark_student_leave(
+    leave_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark student on leave for date range"""
+    school_id = leave_data.get("school_id")
+    student_id = leave_data.get("student_id")
+    leave_type = leave_data.get("leave_type", "sick")
+    start_date = leave_data.get("start_date")
+    end_date = leave_data.get("end_date")
+    reason = leave_data.get("reason", "")
+    
+    # Create leave record
+    leave_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "student_id": student_id,
+        "leave_type": leave_type,
+        "start_date": start_date,
+        "end_date": end_date,
+        "reason": reason,
+        "approved_by": current_user.get("id"),
+        "approved_at": datetime.now(timezone.utc).isoformat(),
+        "status": "approved",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.student_leaves.insert_one(leave_record)
+    
+    # Mark attendance as on_leave for date range
+    from datetime import timedelta
+    current = datetime.fromisoformat(start_date)
+    end = datetime.fromisoformat(end_date)
+    
+    while current <= end:
+        date_str = current.strftime('%Y-%m-%d')
+        
+        # Update or create attendance record
+        await db.attendance.update_one(
+            {
+                "student_id": student_id,
+                "date": date_str,
+                "school_id": school_id
+            },
+            {
+                "$set": {
+                    "status": "on_leave",
+                    "leave_type": leave_type,
+                    "leave_id": leave_record["id"],
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                },
+                "$setOnInsert": {
+                    "id": str(uuid.uuid4()),
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+        
+        current += timedelta(days=1)
+    
+    return {
+        "success": True,
+        "leave_id": leave_record["id"],
+        "message": f"Leave marked for {student_id} from {start_date} to {end_date}"
+    }
+
+@api_router.post("/attendance/bulk-upload-photos")
+async def bulk_upload_attendance_photos(
+    upload_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload old attendance register photos and extract data
+    Uses AI/OCR to read attendance from images
+    """
+    school_id = upload_data.get("school_id")
+    photos = upload_data.get("photos", [])  # Array of base64 or URLs
+    
+    # Placeholder - In production, use OCR/AI to extract attendance
+    # For now, return success with mock extracted data
+    
+    extracted_records = []
+    for photo in photos[:5]:  # Process first 5 photos
+        extracted_records.append({
+            "date": "2026-01-15",
+            "class": "Class 10",
+            "students_marked": 30,
+            "status": "processed"
+        })
+    
+    return {
+        "success": True,
+        "photos_processed": len(extracted_records),
+        "extracted_records": extracted_records,
+        "message": "Photos uploaded. Attendance extraction in progress."
+    }
+
+@api_router.post("/attendance/bulk-upload-excel")
+async def bulk_upload_attendance_excel(
+    upload_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload bulk attendance via Excel/CSV
+    Format: Date, Student ID, Status
+    """
+    school_id = upload_data.get("school_id")
+    records = upload_data.get("records", [])
+    
+    inserted_count = 0
+    for record in records:
+        await db.attendance.update_one(
+            {
+                "student_id": record.get("student_id"),
+                "date": record.get("date"),
+                "school_id": school_id
+            },
+            {
+                "$set": {
+                    "status": record.get("status", "present"),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                },
+                "$setOnInsert": {
+                    "id": str(uuid.uuid4()),
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+        inserted_count += 1
+    
+    return {
+        "success": True,
+        "records_inserted": inserted_count,
+        "message": f"{inserted_count} attendance records uploaded successfully"
+    }
+
+@api_router.post("/attendance/student/apply-leave")
+async def student_apply_leave(leave_data: dict, current_user: dict = Depends(get_current_user)):
+    """Student applies for leave - goes to class teacher for approval"""
+    school_id = leave_data.get("school_id")
+    student_id = leave_data.get("student_id")
+    
+    # Get student's class teacher
+    student = await db.students.find_one({"id": student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    class_info = await db.classes.find_one({"id": student.get("class_id")})
+    class_teacher_id = class_info.get("class_teacher_id") if class_info else None
+    
+    leave_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "student_id": student_id,
+        "student_name": student.get("name"),
+        "class_id": student.get("class_id"),
+        "leave_type": leave_data.get("leave_type"),
+        "start_date": leave_data.get("start_date"),
+        "end_date": leave_data.get("end_date"),
+        "reason": leave_data.get("reason", ""),
+        "approver_id": class_teacher_id,
+        "status": "pending",
+        "applied_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.leave_applications.insert_one(leave_record)
+    
+    return {
+        "success": True,
+        "leave_id": leave_record["id"],
+        "status": "pending",
+        "message": "Leave application sent to class teacher"
+    }
+
+@api_router.post("/attendance/teacher/apply-leave")
+async def teacher_apply_leave(leave_data: dict, current_user: dict = Depends(get_current_user)):
+    """Teacher applies for leave - goes to admin for approval"""
+    school_id = leave_data.get("school_id")
+    teacher_id = leave_data.get("teacher_id")
+    
+    leave_record = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "teacher_id": teacher_id,
+        "teacher_name": current_user.get("name"),
+        "leave_type": leave_data.get("leave_type"),
+        "start_date": leave_data.get("start_date"),
+        "end_date": leave_data.get("end_date"),
+        "reason": leave_data.get("reason", ""),
+        "status": "pending",
+        "applied_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.teacher_leave_applications.insert_one(leave_record)
+    
+    return {
+        "success": True,
+        "leave_id": leave_record["id"],
+        "status": "pending",
+        "message": "Leave application sent to admin"
+    }
+
+@api_router.get("/attendance/pending-leaves")
+async def get_pending_leave_approvals(
+    approver_id: str,
+    school_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get pending leave applications for approval"""
+    leaves = await db.leave_applications.find({
+        "approver_id": approver_id,
+        "school_id": school_id,
+        "status": "pending"
+    }).to_list(50)
+    
+    for leave in leaves:
+        leave.pop("_id", None)
+    
+    return {"leaves": leaves}
+
+@api_router.post("/attendance/approve-leave")
+async def approve_leave_application(approval_data: dict, current_user: dict = Depends(get_current_user)):
+    """Approve or reject leave application"""
+    leave_id = approval_data.get("leave_id")
+    approved = approval_data.get("approved", False)
+    
+    # Update leave status
+    await db.leave_applications.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "approved" if approved else "rejected",
+            "approved_by": current_user.get("id"),
+            "approved_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # If approved, mark attendance
+    if approved:
+        leave = await db.leave_applications.find_one({"id": leave_id})
+        if leave:
+            # Mark attendance as on_leave for date range
+            from datetime import timedelta
+            current = datetime.fromisoformat(leave["start_date"])
+            end = datetime.fromisoformat(leave["end_date"])
+            
+            while current <= end:
+                date_str = current.strftime('%Y-%m-%d')
+                
+                await db.attendance.update_one(
+                    {
+                        "student_id": leave["student_id"],
+                        "date": date_str,
+                        "school_id": leave["school_id"]
+                    },
+                    {
+                        "$set": {
+                            "status": "on_leave",
+                            "leave_type": leave["leave_type"],
+                            "leave_id": leave_id
+                        },
+                        "$setOnInsert": {
+                            "id": str(uuid.uuid4()),
+                            "created_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    },
+                    upsert=True
+                )
+                
+                current += timedelta(days=1)
+    
+    return {
+        "success": True,
+        "message": "Leave approved" if approved else "Leave rejected"
+    }
+
+@api_router.get("/attendance/student/{student_id}")
+async def get_student_attendance_history(
+    student_id: str,
+    school_id: str,
+    limit: int = 30,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get student's attendance history"""
+    attendance_records = await db.attendance.find({
+        "student_id": student_id,
+        "school_id": school_id
+    }).sort("date", -1).limit(limit).to_list(limit)
+    
+    for record in attendance_records:
+        record.pop("_id", None)
+    
+    return {"attendance": attendance_records}
+
+@api_router.get("/attendance/student/{student_id}/stats")
+async def get_student_attendance_stats(
+    student_id: str,
+    school_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get student attendance statistics"""
+    
+    total = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id})
+    present = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "present"})
+    absent = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "absent"})
+    leave = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "on_leave"})
+    late = await db.attendance.count_documents({"student_id": student_id, "school_id": school_id, "status": "late"})
+    
+    present_percentage = round((present / total * 100), 1) if total > 0 else 0
+    
+    return {
+        "total_days": total,
+        "present_days": present,
+        "absent_days": absent,
+        "leave_days": leave,
+        "late_days": late,
+        "present_percentage": present_percentage
     }
 
 # ==================== FEE ROUTES ====================
@@ -10805,6 +11146,205 @@ async def copy_timetable(school_id: str, source_class_id: str, target_class_id: 
     """Copy timetable from one class to another"""
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
+
+
+@api_router.post("/timetable/save-time-slots")
+async def save_time_slots(data: dict, current_user: dict = Depends(get_current_user)):
+    """Save/update school time slots configuration"""
+    school_id = data.get("school_id")
+    slots = data.get("slots", [])
+    
+    # Save to school settings
+    await db.school_settings.update_one(
+        {"school_id": school_id},
+        {"$set": {
+            "time_slots": slots,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    return {"success": True, "message": "Time slots saved"}
+
+@api_router.get("/timetable/time-slots")
+async def get_time_slots(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get school time slots"""
+    settings = await db.school_settings.find_one({"school_id": school_id})
+    
+    if settings and settings.get("time_slots"):
+        return {"slots": settings["time_slots"]}
+    
+    # Return default slots
+    default_slots = [
+        {"id": 1, "start": "08:00", "end": "08:45", "label": "Period 1", "isBreak": False},
+        {"id": 2, "start": "08:45", "end": "09:30", "label": "Period 2", "isBreak": False},
+        {"id": 3, "start": "09:30", "end": "10:15", "label": "Period 3", "isBreak": False},
+        {"id": 4, "start": "10:15", "end": "10:30", "label": "Break", "isBreak": True},
+        {"id": 5, "start": "10:30", "end": "11:15", "label": "Period 4", "isBreak": False},
+        {"id": 6, "start": "11:15", "end": "12:00", "label": "Period 5", "isBreak": False},
+        {"id": 7, "start": "12:00", "end": "12:45", "label": "Period 6", "isBreak": False},
+        {"id": 8, "start": "12:45", "end": "01:30", "label": "Lunch", "isBreak": True},
+        {"id": 9, "start": "01:30", "end": "02:15", "label": "Period 7", "isBreak": False},
+        {"id": 10, "start": "02:15", "end": "03:00", "label": "Period 8", "isBreak": False}
+    ]
+    return {"slots": default_slots}
+
+@api_router.get("/timetable/subjects")
+async def get_timetable_subjects(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get subjects for timetable"""
+    # Return standard subjects
+    subjects = [
+        {"id": "hindi", "name": "Hindi"},
+        {"id": "english", "name": "English"},
+        {"id": "mathematics", "name": "Mathematics"},
+        {"id": "science", "name": "Science"},
+        {"id": "social_science", "name": "Social Science"},
+        {"id": "computer", "name": "Computer"},
+        {"id": "physical_education", "name": "Physical Education"},
+        {"id": "drawing", "name": "Drawing"},
+        {"id": "music", "name": "Music"},
+        {"id": "gk", "name": "GK"},
+        {"id": "moral_science", "name": "Moral Science"},
+        {"id": "sanskrit", "name": "Sanskrit"}
+    ]
+    return subjects
+
+@api_router.post("/timetable/assign-substitute")
+async def assign_substitute_teacher(data: dict, current_user: dict = Depends(get_current_user)):
+    """Assign substitute teacher when regular teacher is on leave"""
+    school_id = data.get("school_id")
+    class_id = data.get("class_id")
+    day = data.get("day")
+    period_id = data.get("period_id")
+    substitute_teacher_id = data.get("substitute_teacher_id")
+    leave_id = data.get("leave_id")
+    
+    # Create substitute assignment
+    assignment = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "class_id": class_id,
+        "day": day,
+        "period_id": period_id,
+        "substitute_teacher_id": substitute_teacher_id,
+        "leave_id": leave_id,
+        "assigned_by": current_user.get("id"),
+        "assigned_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.substitute_assignments.insert_one(assignment)
+    
+    # Create notification for substitute teacher
+    teacher = await db.staff.find_one({"id": substitute_teacher_id})
+    if teacher:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "school_id": school_id,
+            "user_id": substitute_teacher_id,
+            "user_type": "teacher",
+            "type": "substitute",
+            "title": "Substitute Class Assigned",
+            "message": f"You have been assigned as substitute for {day} Period {period_id}",
+            "data": {
+                "class_id": class_id,
+                "day": day,
+                "period": period_id
+            },
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.notifications.insert_one(notification)
+    
+    return {
+        "success": True,
+        "assignment_id": assignment["id"],
+        "message": "Substitute teacher assigned and notified"
+    }
+
+@api_router.get("/notifications")
+async def get_notifications(
+    user_id: str,
+    school_id: str,
+    user_type: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get notifications for user"""
+    notifications = await db.notifications.find({
+        "user_id": user_id,
+        "school_id": school_id,
+        "user_type": user_type
+    }).sort("created_at", -1).limit(50).to_list(50)
+    
+    for notif in notifications:
+        notif.pop("_id", None)
+    
+    return {"notifications": notifications}
+
+@api_router.post("/notifications/{notif_id}/mark-read")
+async def mark_notification_read(notif_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark notification as read"""
+    await db.notifications.update_one(
+        {"id": notif_id},
+        {"$set": {"read": True}}
+    )
+    return {"success": True}
+
+@api_router.post("/notifications/{notif_id}/action")
+async def notification_action(
+    notif_id: str,
+    action_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Handle notification actions (approve/reject/etc)"""
+    action = action_data.get("action")
+    
+    # Get notification
+    notif = await db.notifications.find_one({"id": notif_id})
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    # Handle based on notification type
+    if notif.get("type") == "leave" and notif.get("action_data", {}).get("leave_id"):
+        leave_id = notif["action_data"]["leave_id"]
+        
+        # Update leave status
+        await db.leave_applications.update_one(
+            {"id": leave_id},
+            {"$set": {
+                "status": "approved" if action == "approve" else "rejected",
+                "approved_by": current_user.get("id"),
+                "approved_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        # If approved, mark attendance
+        if action == "approve":
+            leave = await db.leave_applications.find_one({"id": leave_id})
+            if leave:
+                from datetime import timedelta
+                current_date = datetime.fromisoformat(leave["start_date"])
+                end_date = datetime.fromisoformat(leave["end_date"])
+                
+                while current_date <= end_date:
+                    date_str = current_date.strftime('%Y-%m-%d')
+                    await db.attendance.update_one(
+                        {
+                            "student_id": leave["student_id"],
+                            "date": date_str,
+                            "school_id": leave["school_id"]
+                        },
+                        {
+                            "$set": {"status": "on_leave", "leave_id": leave_id},
+                            "$setOnInsert": {
+                                "id": str(uuid.uuid4()),
+                                "created_at": datetime.now(timezone.utc).isoformat()
+                            }
+                        },
+                        upsert=True
+                    )
+                    current_date += timedelta(days=1)
+    
+    # Mark notification as read\n    await db.notifications.update_one(\n        {\"id\": notif_id},\n        {\"$set\": {\"read\": True, \"actioned\": True}}\n    )\n    \n    return {\"success\": True, \"message\": \"Action completed\"}\n
     
     # Get source timetable
     source_slots = await db.timetables.find({

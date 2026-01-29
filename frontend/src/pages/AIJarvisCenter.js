@@ -25,28 +25,27 @@ import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Avatar images
-const AVATARS = {
-  mouse: "https://customer-assets.emergentagent.com/job_d4088fe6-03f9-44d7-9f91-cc135f9aad3b/artifacts/n5ydts5x_file_00000000791472098b8ae0c774846f1e.png",
-  male: "https://customer-assets.emergentagent.com/job_d4088fe6-03f9-44d7-9f91-cc135f9aad3b/artifacts/zun0ltqf_file_0000000025187209a5652c1654e41827.png",
-  female: "https://customer-assets.emergentagent.com/job_d4088fe6-03f9-44d7-9f91-cc135f9aad3b/artifacts/0xijk3by_file_00000000a4b87209bd803c4c7b66fdb1.png"
-};
+// ❌ AVATARS DISABLED - Text-only mode (no images, no voice)
+const AVATARS = {}; // Empty - no avatars
 
 export default function TinoAICenter() {
   const { user, schoolId } = useAuth();
   const [aiState, setAiState] = useState('idle');
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // Always muted
   const [stats, setStats] = useState(null);
-  const [avatarType, setAvatarType] = useState('mouse');
+  const [avatarType, setAvatarType] = useState('none'); // ❌ NO AVATAR
   const [showSettings, setShowSettings] = useState(false);
   
-  // Meeting Mode
+  // ❌ Meeting Mode DISABLED
   const [meetingMode, setMeetingMode] = useState(false);
   
-  // Hide Chat
+  // Chat always visible (text-only)
   const [showChat, setShowChat] = useState(true);
+  
+  // ❌ VOICE COMPLETELY DISABLED
+  const VOICE_ENABLED = false;
   
   // D-ID Video Avatar (Optional)
   const [useAnimatedAvatar, setUseAnimatedAvatar] = useState(false);

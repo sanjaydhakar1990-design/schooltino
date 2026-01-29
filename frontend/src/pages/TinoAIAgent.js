@@ -37,16 +37,17 @@ export default function TinoAIAgent() {
   const { user, schoolId } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [aiState, setAiState] = useState('idle'); // idle, listening, thinking, speaking
+  const [aiState, setAiState] = useState('idle'); // idle, thinking (NO listening, NO speaking - text only)
   const [messages, setMessages] = useState([]);
   const [currentResponse, setCurrentResponse] = useState('');
   const [inputText, setInputText] = useState('');
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false); // ❌ VOICE DISABLED
+  const [isMuted, setIsMuted] = useState(true); // ❌ ALWAYS MUTED (no audio)
   const [stats, setStats] = useState(null);
   
+  // ❌ NO voice recognition - text only
   const recognitionRef = useRef(null);
-  const synthRef = useRef(window.speechSynthesis);
+  const synthRef = useRef(null); // ❌ NO speech synthesis
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -146,62 +147,19 @@ export default function TinoAIAgent() {
   };
 
   // Voice Recognition
+  // ❌ VOICE DISABLED - Text chat only
   const startListening = useCallback(() => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast.error('Voice recognition not supported');
-      return;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = 'hi-IN';
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = true;
-
-    recognitionRef.current.onstart = () => {
-      setAiState('listening');
-    };
-
-    recognitionRef.current.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setInputText(transcript);
-      
-      if (event.results[0].isFinal) {
-        sendMessage(transcript);
-      }
-    };
-
-    recognitionRef.current.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      setAiState('idle');
-    };
-
-    recognitionRef.current.onend = () => {
-      if (aiState === 'listening') {
-        setAiState('idle');
-      }
-    };
-
-    recognitionRef.current.start();
-  }, [aiState]);
+    toast.info('🔇 Voice disabled. Please type your message.');
+    return;
+  }, []);
 
   const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
     setAiState('idle');
   };
 
-  // Text to Speech
   const speakText = (text) => {
-    if ('speechSynthesis' in window) {
-      const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').replace(/\*\*/g, '');
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'hi-IN';
-      utterance.rate = 0.9;
-      utterance.onend = () => setAiState('idle');
-      synthRef.current.speak(utterance);
-    }
+    // No voice output - text only
+    setAiState('idle');
   };
 
   const handleKeyPress = (e) => {
@@ -357,25 +315,14 @@ export default function TinoAIAgent() {
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </Button>
 
-                {/* Main Voice Button */}
-                <button
-                  onClick={aiState === 'listening' ? stopListening : startListening}
-                  disabled={aiState === 'thinking' || aiState === 'speaking'}
-                  className={`relative w-16 h-16 rounded-full transition-all duration-300 ${
-                    aiState === 'listening'
-                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 scale-110 shadow-lg shadow-pink-500/30'
-                      : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-105 shadow-lg shadow-indigo-500/30'
-                  } ${(aiState === 'thinking' || aiState === 'speaking') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {aiState === 'listening' ? (
-                    <MicOff className="w-6 h-6 text-white mx-auto" />
-                  ) : (
-                    <Mic className="w-6 h-6 text-white mx-auto" />
-                  )}
-                  {aiState === 'listening' && (
-                    <span className="absolute inset-0 rounded-full bg-pink-500/30 animate-ping" />
-                  )}
-                </button>
+                {/* ❌ MICROPHONE DISABLED - Text-only mode
+                <button className="hidden">Voice Disabled</button>
+                */}
+                
+                {/* Text-only notice */}
+                <div className="text-center text-sm text-slate-500 mb-2">
+                  📝 Text Chat Only (Voice Disabled)
+                </div>
 
                 <Button
                   variant="outline"

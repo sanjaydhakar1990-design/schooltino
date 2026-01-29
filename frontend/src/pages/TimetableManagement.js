@@ -91,15 +91,31 @@ export default function TimetableManagement() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classRes, teacherRes, subjectRes, timetableRes] = await Promise.all([
+      const [classRes, teacherRes, subjectRes, timetableRes, slotsRes, schoolRes] = await Promise.all([
         axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/staff?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
         axios.get(`${API}/subjects?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/timetables?school_id=${schoolId}`, { headers }).catch(() => ({ data: {} }))
+        axios.get(`${API}/timetables?school_id=${schoolId}`, { headers }).catch(() => ({ data: {} })),
+        axios.get(`${API}/timetable/time-slots?school_id=${schoolId}`, { headers }).catch(() => ({ data: { slots: [] } })),
+        axios.get(`${API}/schools/${schoolId}`, { headers }).catch(() => ({ data: {} }))
       ]);
       
       setClasses(classRes.data || []);
       setTeachers(teacherRes.data?.filter(t => t.role === 'teacher' || t.designation?.toLowerCase().includes('teacher')) || []);
+      
+      // Fetch time slots from backend or use school timing defaults
+      if (slotsRes.data?.slots?.length > 0) {
+        setTimeSlots(slotsRes.data.slots);
+      } else {
+        // Use school start/end time from settings
+        const schoolData = schoolRes.data;
+        const schoolStartTime = schoolData?.school_start_time || '10:00';
+        const schoolEndTime = schoolData?.school_end_time || '03:30';
+        
+        // Generate slots based on school timings
+        const generatedSlots = generateSlotsFromSchoolTime(schoolStartTime, schoolEndTime);
+        setTimeSlots(generatedSlots);
+      }
       
       // Default subjects if none exist
       const defaultSubjects = [
@@ -129,6 +145,67 @@ export default function TimetableManagement() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Generate time slots from school timing
+  const generateSlotsFromSchoolTime = (startTime, endTime) => {
+    // Parse school start time (e.g., "10:00")
+    const [startHour] = startTime.split(':').map(Number);
+    
+    const slots = [];
+    let currentHour = startHour;
+    let currentMin = 0;
+    let periodNum = 1;
+    
+    for (let i = 0; i < 8; i++) {
+      if (i === 3) {
+        // Add break after 3 periods
+        slots.push({
+          id: slots.length + 1,
+          label: 'Break',
+          start: `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`,
+          end: `${String(currentHour).padStart(2, '0')}:${String(currentMin + 15).padStart(2, '0')}`,
+          isBreak: true
+        });
+        currentMin += 15;
+      } else if (i === 6) {
+        // Add lunch after 6 periods
+        slots.push({
+          id: slots.length + 1,
+          label: 'Lunch',
+          start: `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`,
+          end: `${String(currentHour).padStart(2, '0')}:${String(currentMin + 30).padStart(2, '0')}`,
+          isBreak: true
+        });
+        currentMin += 30;
+        if (currentMin >= 60) {
+          currentHour += Math.floor(currentMin / 60);
+          currentMin = currentMin % 60;
+        }
+      } else {
+        // Regular period (45 mins)
+        const endMin = currentMin + 45;
+        const endHour = currentHour + Math.floor(endMin / 60);
+        const finalEndMin = endMin % 60;
+        
+        slots.push({
+          id: slots.length + 1,
+          label: `Period ${periodNum}`,
+          start: `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`,
+          end: `${String(endHour).padStart(2, '0')}:${String(finalEndMin).padStart(2, '0')}`,
+          isBreak: false
+        });
+        
+        periodNum++;
+        currentMin += 45;
+        if (currentMin >= 60) {
+          currentHour += Math.floor(currentMin / 60);
+          currentMin = currentMin % 60;
+        }
+      }
+    }
+    
+    return slots;
   };
 
   // Get timetable for selected class
@@ -683,6 +760,146 @@ export default function TimetableManagement() {
                   Save
                 </Button>
               </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Time Slots Settings Dialog */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-6 h-6 text-indigo-600" />
+              Edit Time Slots
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                \ud83d\udccc School timing se default slots set honge. Aap inhe edit kar sakte hain.
+              </p>
+            </div>
+
+            {timeSlots.map((slot, idx) => (
+              <div key={idx} className="grid grid-cols-5 gap-3 p-3 border rounded-lg bg-gray-50">
+                <div>
+                  <label className="text-xs font-medium text-gray-700">Label</label>
+                  <Input
+                    value={slot.label}
+                    onChange={(e) => {
+                      const newSlots = [...timeSlots];
+                      newSlots[idx].label = e.target.value;
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-sm mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-700">Start Time</label>
+                  <Input
+                    type="time"
+                    value={slot.start}
+                    onChange={(e) => {
+                      const newSlots = [...timeSlots];
+                      newSlots[idx].start = e.target.value;
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-sm mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-700">End Time</label>
+                  <Input
+                    type="time"
+                    value={slot.end}
+                    onChange={(e) => {
+                      const newSlots = [...timeSlots];
+                      newSlots[idx].end = e.target.value;
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-sm mt-1"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={slot.isBreak || false}
+                      onChange={(e) => {
+                        const newSlots = [...timeSlots];
+                        newSlots[idx].isBreak = e.target.checked;
+                        setTimeSlots(newSlots);
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-xs">Break</span>
+                  </label>
+                </div>
+                <div className="flex items-end justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newSlots = timeSlots.filter((_, i) => i !== idx);
+                      setTimeSlots(newSlots);
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            
+            <Button
+              variant="outline"
+              onClick={() => {
+                setTimeSlots([...timeSlots, {
+                  id: timeSlots.length + 1,
+                  label: `Period ${timeSlots.filter(s => !s.isBreak).length + 1}`,
+                  start: '09:00',
+                  end: '09:45',
+                  isBreak: false
+                }]);
+              }}
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Slot
+            </Button>
+
+            <div className="flex gap-3 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSettingsDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem('token');
+                    await axios.post(`${API}/timetable/save-time-slots`, {
+                      school_id: schoolId,
+                      slots: timeSlots
+                    }, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    toast.success('\u2705 Time slots saved!');
+                    setShowSettingsDialog(false);
+                    fetchAllData();
+                  } catch (err) {
+                    toast.error('Save failed');
+                  }
+                }}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Time Slots
+              </Button>
             </div>
           </div>
         </DialogContent>

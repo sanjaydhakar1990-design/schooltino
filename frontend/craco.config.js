@@ -101,11 +101,6 @@ webpackConfig.devServer = (devServerConfig) => {
     };
   }
 
-  // Set host/port AFTER other plugins to ensure they're not overwritten
-  devServerConfig.host = '0.0.0.0';
-  devServerConfig.port = 5000;
-  devServerConfig.allowedHosts = 'all';
-
   return devServerConfig;
 };
 

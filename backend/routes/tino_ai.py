@@ -40,14 +40,41 @@ class TinoResponse(BaseModel):
     action_taken: Optional[str] = None
     suggestions: Optional[List[str]] = None
 
-# System prompt for Tino AI
-TINO_SYSTEM_PROMPT = """You are Tino, an intelligent AI assistant for Schooltino - a school management platform. 
-You help school administrators, principals, teachers, and staff manage their school efficiently.
+# System prompt for Tino AI - TEXT ONLY VERSION (2025-26)
+TINO_SYSTEM_PROMPT = """You are AI Tino, a helpful text-only assistant for SchoolTino ERP system.
 
-🎓 Your Capabilities:
-1. Answer questions about school data (students, attendance, fees, classes)
-2. Provide reports and analytics summaries
-3. Help with administrative tasks
+🔒 STRICT RULES:
+1. You are a TEXT-ONLY assistant - no voice, no actions, no system control
+2. You CANNOT open forms, update data, or perform system actions
+3. You can ONLY provide information, answer questions, and give suggestions
+4. Always respond in the SAME language as the user's query
+   - Hindi query → Pure Hindi response
+   - English query → Pure English response
+   - Hinglish → Hinglish response
+
+🎓 What You Can Do:
+1. Answer questions about SchoolTino features
+2. Provide guidance on how to use the system
+3. Give suggestions and recommendations
+4. Generate text content (like announcements, notices)
+5. Explain school management concepts
+
+❌ What You CANNOT Do:
+1. Open any forms or dashboards
+2. Update, delete, or modify any data
+3. Execute system commands
+4. Control the application
+5. Make changes to records
+
+📋 Response Format:
+- Keep responses concise and helpful
+- If user asks you to perform an action, politely tell them to use the dashboard manually
+- Example: "Admission form dashboard mein manually open karen" instead of opening it
+
+🌐 Language Handling:
+- Detect user's language from their message
+- Respond in the SAME language naturally
+- No translation unless asked
 4. Give suggestions for school management
 
 📋 Guidelines:
@@ -214,7 +241,95 @@ async def get_specific_data(school_id: str, query_type: str, params: dict = None
 
 @router.post("/chat", response_model=TinoResponse)
 async def chat_with_tino(request: TinoMessage):
-    """Main chat endpoint for Tino AI"""
+    """
+    TEXT-ONLY Chat with AI Tino using SARVAM API EXCLUSIVELY
+    No OpenAI, No Emergent LLM - Only Sarvam
+    """
+    try:
+        # Check for system control commands and BLOCK them
+        blocked_keywords = [
+            'form kholo', 'open form', 'admission kholo', 'kholo', 'open',
+            'data update', 'update karo', 'form fill', 'fill karo',
+            'record update', 'delete karo', 'add karo', 'remove karo',
+            'student add', 'staff add', 'create', 'banao'
+        ]
+        
+        message_lower = request.message.lower()
+        if any(keyword in message_lower for keyword in blocked_keywords):
+            # Polite blocking message
+            if request.language == 'hi' or any(c in request.message for c in 'अआइईउऊएऐओऔ'):
+                return TinoResponse(
+                    response="🙏 नमस्ते! मैं अब सिर्फ text assistant हूँ। Forms open करने या data update करने के लिए कृपया dashboard में manually जाएं। मैं आपको जानकारी और सुझाव दे सकता हूँ।",
+                    action_taken="blocked_system_command"
+                )
+            else:
+                return TinoResponse(
+                    response="👋 Hello! I'm a text-only assistant now. For forms or data updates, please use the dashboard manually. I can provide information and suggestions.",
+                    action_taken="blocked_system_command"
+                )
+        
+        # ✅ SARVAM API EXCLUSIVELY - No other LLM
+        sarvam_api_key = os.environ.get("SARVAM_API_KEY")
+        
+        if not sarvam_api_key:
+            return TinoResponse(
+                response="❌ AI service unavailable – please try again later" if request.language == 'en' else "❌ AI सेवा उपलब्ध नहीं है – कृपया बाद में try करें",
+                action_taken="error"
+            )
+        
+        # Call Sarvam API
+        import httpx
+        
+        # Sarvam API system prompt
+        system_prompt = """You are AI Tino, a text assistant for SchoolTino. 
+Respond in pure Hindi for Hindi queries, pure English for English queries.
+Keep responses helpful, accurate, and concise.
+You cannot perform actions like opening forms or updating data - only provide information."""
+        
+        # Detect language from message
+        is_hindi = request.language == 'hi' or any(c in request.message for c in 'अआइईउऊएऐओऔ')
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.sarvam.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {sarvam_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "sarvam-m",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": request.message}
+                    ],
+                    "max_tokens": 3000,
+                    "temperature": 0.7
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                # Fallback error message
+                return TinoResponse(
+                    response="❌ AI service unavailable" if request.language == 'en' else "❌ AI सेवा उपलब्ध नहीं",
+                    action_taken="error"
+                )
+            
+            data = response.json()
+            ai_response = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            
+            return TinoResponse(
+                response=ai_response,
+                action_taken="sarvam_text_response"
+            )
+        
+    except Exception as e:
+        # Friendly error
+        error_msg = "❌ Technical issue - try again" if request.language == 'en' else "❌ Technical समस्या - फिर try करें"
+        return TinoResponse(
+            response=error_msg,
+            action_taken="error"
+        )
     try:
         if not EMERGENT_LLM_KEY:
             print("ERROR: EMERGENT_LLM_KEY is not configured!")
