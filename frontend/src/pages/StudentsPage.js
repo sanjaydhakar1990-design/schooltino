@@ -1475,6 +1475,19 @@ Note: First login पर password change करें।`;
                       ))}
                     </div>
                   </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <Button type="button" variant="ghost" onClick={() => setActiveFormTab('other')} className="text-sm text-gray-500">
+                      ← Back
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        {editingStudent ? 'Update Student' : 'Submit Admission ✓'}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
 
