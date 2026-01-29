@@ -1266,8 +1266,8 @@ Note: First login पर password change करें।`;
                         <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Optional" />
                       </div>
                       <div className="space-y-2 col-span-2 md:col-span-3">
-                        <Label>{t('address')} *</Label>
-                        <Input name="address" value={formData.address} onChange={handleChange} required placeholder="Full Address" data-testid="address-input" />
+                        <Label>{t('address')}</Label>
+                        <Input name="address" value={formData.address} onChange={handleChange} placeholder="Full Address" data-testid="address-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Emergency Contact Name</Label>
