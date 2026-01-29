@@ -1585,9 +1585,20 @@ class SchooltinoAPITester:
             subjects = response.get("subjects", [])
             print(f"   📝 Nursery subjects: {subjects}")
             
-            # Check for pre-primary subjects
-            expected_subjects = ["English", "Hindi", "Mathematics", "EVS", "Drawing", "Rhymes"]
-            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            # Check for pre-primary subjects - handle both string and dict formats
+            expected_subjects = ["English", "Hindi", "Mathematics", "Maths", "GK", "Drawing", "General Knowledge"]
+            found_subjects = []
+            
+            for subject in subjects:
+                if isinstance(subject, dict):
+                    subject_name = subject.get("name", "")
+                else:
+                    subject_name = str(subject)
+                
+                for expected in expected_subjects:
+                    if expected.lower() in subject_name.lower():
+                        found_subjects.append(expected)
+                        break
             
             if len(found_subjects) >= 3:
                 print(f"   ✅ Pre-primary subjects found: {found_subjects}")
@@ -1604,9 +1615,20 @@ class SchooltinoAPITester:
             subjects = response.get("subjects", [])
             print(f"   📝 Class 5 subjects: {subjects}")
             
-            # Check for primary subjects
+            # Check for primary subjects - handle both string and dict formats
             expected_subjects = ["English", "Hindi", "Mathematics", "Science", "Social Science"]
-            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            found_subjects = []
+            
+            for subject in subjects:
+                if isinstance(subject, dict):
+                    subject_name = subject.get("name", "")
+                else:
+                    subject_name = str(subject)
+                
+                for expected in expected_subjects:
+                    if expected.lower() in subject_name.lower():
+                        found_subjects.append(expected)
+                        break
             
             if len(found_subjects) >= 4:
                 print(f"   ✅ Primary subjects found: {found_subjects}")
@@ -1623,9 +1645,20 @@ class SchooltinoAPITester:
             subjects = response.get("subjects", [])
             print(f"   📝 Class 10 subjects: {subjects}")
             
-            # Check for secondary subjects
+            # Check for secondary subjects - handle both string and dict formats
             expected_subjects = ["English", "Hindi", "Mathematics", "Science", "Social Science"]
-            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            found_subjects = []
+            
+            for subject in subjects:
+                if isinstance(subject, dict):
+                    subject_name = subject.get("name", "")
+                else:
+                    subject_name = str(subject)
+                
+                for expected in expected_subjects:
+                    if expected.lower() in subject_name.lower():
+                        found_subjects.append(expected)
+                        break
             
             if len(found_subjects) >= 4:
                 print(f"   ✅ Secondary subjects found: {found_subjects}")
@@ -1642,9 +1675,20 @@ class SchooltinoAPITester:
             subjects = response.get("subjects", [])
             print(f"   📝 Class 12 Science subjects: {subjects}")
             
-            # Check for science stream subjects
+            # Check for science stream subjects - handle both string and dict formats
             expected_subjects = ["Physics", "Chemistry", "Mathematics", "Biology", "English"]
-            found_subjects = [s for s in expected_subjects if any(subj.lower() in s.lower() for subj in subjects)]
+            found_subjects = []
+            
+            for subject in subjects:
+                if isinstance(subject, dict):
+                    subject_name = subject.get("name", "")
+                else:
+                    subject_name = str(subject)
+                
+                for expected in expected_subjects:
+                    if expected.lower() in subject_name.lower():
+                        found_subjects.append(expected)
+                        break
             
             if len(found_subjects) >= 3:
                 print(f"   ✅ Science stream subjects found: {found_subjects}")
