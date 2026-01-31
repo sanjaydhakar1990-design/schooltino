@@ -954,6 +954,32 @@ async def log_audit(user_id: str, action: str, module: str, details: dict, ip_ad
     }
     await db.audit_logs.insert_one(audit_log)
 
+async def create_notification(
+    school_id: str,
+    title: str,
+    message: str,
+    notification_type: str,
+    target_user_id: Optional[str] = None,
+    target_roles: Optional[List[str]] = None,
+    class_id: Optional[str] = None,
+    data: Optional[Dict[str, Any]] = None
+):
+    notification = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "title": title,
+        "message": message,
+        "type": notification_type,
+        "target_user_id": target_user_id,
+        "target_roles": target_roles or [],
+        "class_id": class_id,
+        "data": data or {},
+        "read_by": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
+    return notification
+
 async def check_if_holiday(school_id: str, date_str: str) -> str:
     """Check if given date is a holiday for the school. Returns holiday name if true, None otherwise."""
     if not school_id or not date_str:
