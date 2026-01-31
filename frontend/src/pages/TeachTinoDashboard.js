@@ -1112,6 +1112,75 @@ export default function TeachTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Syllabus Update Dialog */}
+      <Dialog open={showSyllabusUpdate} onOpenChange={setShowSyllabusUpdate}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5 text-indigo-600" />
+              Update Chapter Progress
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Status</label>
+              <select
+                value={syllabusUpdateForm.status}
+                onChange={(e) => setSyllabusUpdateForm((prev) => ({ ...prev, status: e.target.value }))}
+                className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1"
+                data-testid="syllabus-update-status"
+              >
+                <option value="not_started">Not Started</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Topics Covered</label>
+              <Input
+                placeholder="Comma separated topics"
+                value={syllabusUpdateForm.topics}
+                onChange={(e) => setSyllabusUpdateForm((prev) => ({ ...prev, topics: e.target.value }))}
+                data-testid="syllabus-update-topics"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Teaching Notes</label>
+              <Textarea
+                placeholder="Class notes या teaching points लिखें"
+                value={syllabusUpdateForm.notes}
+                onChange={(e) => setSyllabusUpdateForm((prev) => ({ ...prev, notes: e.target.value }))}
+                data-testid="syllabus-update-notes"
+              />
+            </div>
+            <Button onClick={handleSyllabusUpdate} className="w-full bg-indigo-600 hover:bg-indigo-700" data-testid="syllabus-update-submit">
+              Save Progress
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lesson Summary Dialog */}
+      <Dialog open={showLessonDialog} onOpenChange={setShowLessonDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+              Lesson Summary
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {lessonLoading ? (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" /> Generating summary...
+              </div>
+            ) : (
+              <p className="text-sm text-gray-700 whitespace-pre-line">{lessonSummary || 'Summary will appear here.'}</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Attendance Sheet Dialog - Enhanced with more options */}
       <Dialog open={showAttendanceSheet} onOpenChange={setShowAttendanceSheet}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
