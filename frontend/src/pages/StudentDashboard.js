@@ -191,6 +191,7 @@ export default function StudyTinoDashboard() {
         const data = dashboardRes.value.data;
         setProfile(data.profile);
         if (data.profile?.status === 'blocked') setIsBlocked(true);
+        await fetchStudentExtras(data.profile);
       }
       
       // Use API data or fallback to mock
@@ -204,13 +205,12 @@ export default function StudyTinoDashboard() {
         { id: '2', subject: 'English', topic: 'Essay Writing', due_date: '2026-01-05', status: 'pending' }
       ]);
 
-      // Mock syllabus and attendance
-      setSyllabus([
-        { subject: 'Mathematics', completed: 60, current: 'Quadratic Equations' },
-        { subject: 'Science', completed: 55, current: 'Light Reflection' },
-        { subject: 'Hindi', completed: 70, current: 'नेताजी का चश्मा' },
-        { subject: 'English', completed: 50, current: 'The Hundred Dresses' }
-      ]);
+      if (syllabus.length === 0) {
+        setSyllabus([
+          { subject: 'Mathematics', completed: 0, current: 'Not started' },
+          { subject: 'Science', completed: 0, current: 'Not started' }
+        ]);
+      }
       setAttendance({ present: 85, total: 100 });
 
     } catch (error) {
