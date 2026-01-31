@@ -5945,6 +5945,15 @@ async def apply_staff_leave(leave_data: StaffLeaveRequest, current_user: dict = 
         leave_doc["staff_name"] = staff.get("name", "Unknown")
     
     await db.staff_leaves.insert_one(leave_doc)
+
+    await create_notification(
+        school_id=leave_data.school_id,
+        title="📝 New Leave आवेदन",
+        message=f"{leave_doc.get('staff_name', 'Staff')} ne {leave_data.leave_type} leave apply ki hai ({leave_data.from_date} से {leave_data.to_date}).",
+        notification_type="leave_request",
+        target_roles=["director", "principal"],
+        data={"leave_id": leave_doc["id"], "staff_id": leave_data.staff_id}
+    )
     
     return {"success": True, "message": "Leave application submitted", "leave_id": leave_doc["id"]}
 
