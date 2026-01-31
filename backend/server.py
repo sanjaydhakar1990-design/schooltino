@@ -1899,6 +1899,30 @@ async def assign_teacher_to_class(teacher_id: str, assignment: dict, current_use
         "subject": subject,
         "is_class_teacher": is_class_teacher
     })
+
+    class_info = await db.classes.find_one({"id": class_id}, {"_id": 0, "name": 1}) if class_id else None
+    class_name = class_info.get("name") if class_info else class_id
+
+    if subject:
+        await create_notification(
+            school_id=teacher.get("school_id") or current_user.get("school_id"),
+            title=f"📘 Subject Assigned: {subject}",
+            message=f"Aapko {class_name} ke liye {subject} assign kiya gaya hai.",
+            notification_type="subject_assignment",
+            target_user_id=teacher_id,
+            class_id=class_id,
+            data={"subject": subject, "class_id": class_id}
+        )
+
+    if is_class_teacher and class_id:
+        await create_notification(
+            school_id=teacher.get("school_id") or current_user.get("school_id"),
+            title="👩‍🏫 Class Teacher Assignment",
+            message=f"Aapko {class_name} ka class teacher assign kiya gaya hai.",
+            notification_type="class_teacher_assignment",
+            target_user_id=teacher_id,
+            class_id=class_id
+        )
     
     return {"message": f"Teacher {teacher['name']} assigned successfully"}
 
