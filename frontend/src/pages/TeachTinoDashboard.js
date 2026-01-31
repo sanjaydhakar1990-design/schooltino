@@ -473,33 +473,143 @@ export default function TeachTinoDashboard() {
   };
 
   // ============= SYLLABUS TRACKING =============
-  const fetchSyllabus = async (subjectId, classId) => {
+  const loadSyllabusForSubject = async (subjectItem, rangeOverride = syllabusRange) => {
+    if (!subjectItem?.class_id || !subjectItem?.subject) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/syllabus?subject_id=${subjectId}&class_id=${classId}&school_id=${user?.school_id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const headers = { Authorization: `Bearer ${token}` };
+      const classNum = subjectItem.class_number || extractClassNumber(subjectItem.class_name);
+      const board = (subjectItem.board || 'NCERT').toUpperCase();
+
+      const syllabusRes = await axios.get(
+        `${API}/syllabus/${board}/syllabus/${classNum}?subject=${encodeURIComponent(subjectItem.subject)}`,
+        { headers }
+      );
+      const chapters = syllabusRes.data?.data?.chapters || [];
+      setSyllabusChapters(chapters);
+
+      const progressRes = await axios.get(
+        `${API}/syllabus-progress/class/${user?.school_id}/${subjectItem.class_id}?subject=${encodeURIComponent(subjectItem.subject)}`,
+        { headers }
+      );
+      const progressRecords = progressRes.data?.subjects?.[0]?.chapters || [];
+      const progressMap = {};
+      progressRecords.forEach((record) => {
+        progressMap[record.chapter_number] = record;
       });
-      setSyllabus(res.data || []);
-    } catch (e) {
-      setSyllabus([]);
+      setSyllabusProgressMap(progressMap);
+
+      const analyticsRes = await axios.get(
+        `${API}/syllabus-progress/analytics/${user?.school_id}/${subjectItem.class_id}?subject=${encodeURIComponent(subjectItem.subject)}&range=${rangeOverride}`,
+        { headers }
+      );
+      setSyllabusAnalytics(analyticsRes.data);
+    } catch (error) {
+      setSyllabusChapters([]);
+      setSyllabusProgressMap({});
+      setSyllabusAnalytics(null);
     }
   };
 
-  const markTopicComplete = async (topicId) => {
+  const handleSelectSyllabusSubject = (subjectItem) => {
+    setSelectedSubjectForSyllabus(subjectItem);
+    loadSyllabusForSubject(subjectItem, syllabusRange);
+  };
+
+  const handleSyllabusRangeChange = (rangeValue) => {
+    setSyllabusRange(rangeValue);
+    if (selectedSubjectForSyllabus) {
+      loadSyllabusForSubject(selectedSubjectForSyllabus, rangeValue);
+    }
+  };
+
+  const openSyllabusUpdateDialog = (chapter) => {
+    const existing = syllabusProgressMap[chapter.number];
+    setSelectedChapter(chapter);
+    setSyllabusUpdateForm({
+      status: existing?.status || 'in_progress',
+      topics: existing?.topics_covered?.join(', ') || '',
+      notes: existing?.notes || ''
+    });
+    setShowSyllabusUpdate(true);
+  };
+
+  const handleSyllabusUpdate = async () => {
+    if (!selectedSubjectForSyllabus || !selectedChapter) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/syllabus/mark-complete`, {
-        topic_id: topicId,
-        teacher_id: user?.id,
-        completed_date: today
-      }, { headers: { Authorization: `Bearer ${token}` }});
-      
-      toast.success('Topic marked as complete! ✅');
-      if (selectedSubjectForSyllabus) {
-        fetchSyllabus(selectedSubjectForSyllabus.subject_id, selectedSubjectForSyllabus.class_id);
+      const classNum = selectedSubjectForSyllabus.class_number || extractClassNumber(selectedSubjectForSyllabus.class_name);
+      const board = (selectedSubjectForSyllabus.board || 'NCERT').toUpperCase();
+      const topicsArray = syllabusUpdateForm.topics
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      await axios.post(
+        `${API}/syllabus-progress/update`,
+        {
+          school_id: user?.school_id,
+          class_id: selectedSubjectForSyllabus.class_id,
+          class_name: selectedSubjectForSyllabus.class_name,
+          subject: selectedSubjectForSyllabus.subject,
+          board,
+          chapter_number: selectedChapter.number,
+          chapter_name: selectedChapter.name,
+          status: syllabusUpdateForm.status,
+          topics_covered: topicsArray,
+          notes: syllabusUpdateForm.notes
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success('Syllabus progress updated ✅');
+      setShowSyllabusUpdate(false);
+      loadSyllabusForSubject(selectedSubjectForSyllabus, syllabusRange);
+    } catch (error) {
+      toast.error('Syllabus update में error');
+    }
+  };
+
+  const openLessonSummary = async (chapter) => {
+    if (!selectedSubjectForSyllabus) return;
+    setSelectedChapter(chapter);
+    setShowLessonDialog(true);
+    setLessonLoading(true);
+    setLessonSummary('');
+    try {
+      const token = localStorage.getItem('token');
+      const classNum = selectedSubjectForSyllabus.class_number || extractClassNumber(selectedSubjectForSyllabus.class_name);
+      const board = (selectedSubjectForSyllabus.board || 'NCERT').toUpperCase();
+      const subjectEncoded = encodeURIComponent(selectedSubjectForSyllabus.subject);
+
+      const cached = await axios.get(
+        `${API}/syllabus-progress/ai/summary/${board}/${classNum}/${subjectEncoded}/${chapter.number}?language=hinglish`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (cached.data?.success) {
+        setLessonSummary(cached.data.summary);
+      } else {
+        const generated = await axios.post(
+          `${API}/syllabus-progress/ai/summarize-chapter`,
+          {
+            board,
+            class_num: classNum,
+            subject: selectedSubjectForSyllabus.subject,
+            chapter_number: chapter.number,
+            chapter_name: chapter.name,
+            language: 'hinglish',
+            include_formulas: true,
+            include_key_points: true
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setLessonSummary(generated.data?.summary || 'Summary not available');
       }
     } catch (error) {
-      toast.error('Error marking topic');
+      toast.error('Lesson summary load nahi ho paaya');
+      setLessonSummary('Summary not available');
+    } finally {
+      setLessonLoading(false);
     }
   };
 
