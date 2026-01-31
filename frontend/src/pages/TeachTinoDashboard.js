@@ -718,10 +718,39 @@ export default function TeachTinoDashboard() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setShowTinoAI(true)} className="text-emerald-600">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowNotifications(true)}
+                className="text-slate-600 relative"
+                data-testid="notifications-button"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadNotifications > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] rounded-full px-1"
+                    data-testid="notifications-unread-count"
+                  >
+                    {unreadNotifications}
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTinoAI(true)}
+                className="text-emerald-600"
+                data-testid="tino-ai-open-button"
+              >
                 <Brain className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-rose-600">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-rose-600"
+                data-testid="logout-button"
+              >
                 <LogOut className="w-5 h-5" />
               </Button>
             </div>
