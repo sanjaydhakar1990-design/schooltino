@@ -722,6 +722,48 @@ export default function StudyTinoDashboard() {
           </CardContent>
         </Card>
 
+        {/* My Queries */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-emerald-500" />
+                My Queries
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowQueryDialog(true)}
+                className="text-emerald-600 text-xs"
+                data-testid="open-student-query-dialog"
+              >
+                Ask New <ChevronRight className="w-3 h-3 ml-1" />
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {studentQueries.slice(0, 3).map((query) => (
+                <div key={query.id} className="p-3 rounded-lg border bg-slate-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{query.subject}</p>
+                      <p className="text-xs text-slate-500 line-clamp-1">{query.question}</p>
+                    </div>
+                    <Badge className={query.status === 'answered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                      {query.status === 'answered' ? 'Answered' : 'Pending'}
+                    </Badge>
+                  </div>
+                  {query.answer && (
+                    <p className="text-xs text-emerald-700 mt-2">उत्तर: {query.answer}</p>
+                  )}
+                </div>
+              ))}
+              {studentQueries.length === 0 && (
+                <p className="text-center text-slate-400 py-4 text-sm">No queries yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Online Exam CTA */}
         <Card 
           className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 cursor-pointer hover:shadow-lg transition-all"
