@@ -2325,14 +2325,54 @@ async def get_teacher_classes(current_user: dict = Depends(get_current_user)):
                 teacher_classes.append(cls)
                 seen_class_ids.add(cls.get("id"))
     
-    # Method 3: Name-based matching (fallback for legacy systems)
+    # Method 3: Name-based matching (case-insensitive, partial match)
     if teacher_name:
         for cls in all_classes:
             class_teacher_name = cls.get("class_teacher_name", "")
-            if class_teacher_name and teacher_name.lower() in class_teacher_name.lower():
-                if cls.get("id") not in seen_class_ids:
-                    teacher_classes.append(cls)
-                    seen_class_ids.add(cls.get("id"))
+            # Try both exact and partial name matching
+            if class_teacher_name:
+                # Check if full name matches
+                if teacher_name.lower() == class_teacher_name.lower():
+                    if cls.get("id") not in seen_class_ids:
+                        teacher_classes.append(cls)
+                        seen_class_ids.add(cls.get("id"))
+                # Check if any part of the name matches (first name or last name)
+                elif any(part.lower() in class_teacher_name.lower() for part in teacher_name.split()):
+                    if cls.get("id") not in seen_class_ids:
+                        teacher_classes.append(cls)
+                        seen_class_ids.add(cls.get("id"))
+    
+    # Method 4: Check timetable/subject allocations
+    # If teacher has subjects assigned to a class, they should see that class
+    subject_allocations = await db.subject_allocations.find(
+        {"teacher_id": teacher_id, "school_id": school_id},
+        {"_id": 0, "class_id": 1}
+    ).to_list(200)
+    
+    if subject_allocations:
+        allocated_class_ids = list(set([alloc.get("class_id") for alloc in subject_allocations if alloc.get("class_id")]))
+        for cls in all_classes:
+            if cls.get("id") in allocated_class_ids and cls.get("id") not in seen_class_ids:
+                teacher_classes.append(cls)
+                seen_class_ids.add(cls.get("id"))
+    
+    # Method 5: Check timetable collection directly (if exists)
+    try:
+        timetable_entries = await db.timetable.find(
+            {"teacher_name": {"$regex": teacher_name, "$options": "i"}},
+            {"_id": 0, "class_name": 1}
+        ).to_list(100)
+        
+        if timetable_entries:
+            timetable_class_names = list(set([entry.get("class_name") for entry in timetable_entries if entry.get("class_name")]))
+            for cls in all_classes:
+                class_name = cls.get("name") or cls.get("class_name")
+                if class_name and class_name in timetable_class_names:
+                    if cls.get("id") not in seen_class_ids:
+                        teacher_classes.append(cls)
+                        seen_class_ids.add(cls.get("id"))
+    except Exception as e:
+        print(f"Timetable check error: {e}")
     
     return {
         "classes": teacher_classes,
