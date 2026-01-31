@@ -889,6 +889,67 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Student Query Dialog */}
+      <Dialog open={showQueryDialog} onOpenChange={setShowQueryDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Ask Teacher</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="student-query-subject">Subject</Label>
+              <Input
+                id="student-query-subject"
+                value={queryForm.subject}
+                onChange={(e) => setQueryForm((prev) => ({ ...prev, subject: e.target.value }))}
+                placeholder="जैसे: Mathematics"
+                data-testid="student-query-subject-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="student-query-question">Question</Label>
+              <Textarea
+                id="student-query-question"
+                value={queryForm.question}
+                onChange={(e) => setQueryForm((prev) => ({ ...prev, question: e.target.value }))}
+                placeholder="अपना सवाल लिखें..."
+                data-testid="student-query-question-input"
+              />
+            </div>
+            <Button
+              onClick={handleSubmitQuery}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+              disabled={querySubmitting}
+              data-testid="student-query-submit-button"
+            >
+              {querySubmitting ? 'Sending...' : 'Send Query'}
+            </Button>
+
+            <div className="pt-2">
+              <h4 className="text-sm font-semibold text-slate-700 mb-2">My Recent Queries</h4>
+              <div className="space-y-2 max-h-56 overflow-y-auto">
+                {studentQueries.length > 0 ? (
+                  studentQueries.map((query) => (
+                    <div key={query.id} className="p-3 rounded-lg border bg-slate-50">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-slate-800">{query.subject}</p>
+                        <Badge className={query.status === 'answered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                          {query.status === 'answered' ? 'Answered' : 'Pending'}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">{query.question}</p>
+                      {query.answer && <p className="text-xs text-emerald-700 mt-2">उत्तर: {query.answer}</p>}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400">No queries yet</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Profile Dialog */}
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
         <DialogContent>
