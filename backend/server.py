@@ -3952,6 +3952,17 @@ async def create_notice(notice: NoticeCreate, current_user: dict = Depends(get_c
     }
     await db.notices.insert_one(notice_data)
     await log_audit(current_user["id"], "create", "notices", {"notice_id": notice_data["id"], "title": notice.title})
+
+    target_audience = notice.target_audience or []
+    if "all" in target_audience or "teachers" in target_audience:
+        await create_notification(
+            school_id=notice.school_id,
+            title=f"📢 Notice: {notice.title}",
+            message=notice.content[:140] + ("..." if len(notice.content) > 140 else ""),
+            notification_type="notice",
+            target_roles=["teacher", "principal", "vice_principal", "director"],
+            data={"notice_id": notice_data["id"], "priority": notice.priority}
+        )
     
     # Get creator name
     notice_data["created_by_name"] = current_user["name"]
