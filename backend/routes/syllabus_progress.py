@@ -19,14 +19,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 # Database connection
 mongo_url = os.environ.get('MONGO_URL')
-db_name = os.environ.get('DB_NAME', 'test_database')
+db_name = os.environ.get('DB_NAME')
 client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
 # Emergent LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
 router = APIRouter(prefix="/syllabus-progress", tags=["Syllabus Progress"])
 
@@ -69,7 +69,7 @@ class BulkProgressUpdate(BaseModel):
 async def get_current_user_from_token(token: str):
     """Extract user from JWT token"""
     import jwt
-    JWT_SECRET = os.environ.get('JWT_SECRET', 'schooltino-secret-key-2024')
+    JWT_SECRET = os.environ.get('JWT_SECRET')
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         user_id = payload.get("sub")
