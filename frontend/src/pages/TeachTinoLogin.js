@@ -60,14 +60,17 @@ export default function TeachTinoLogin() {
   }, []);
 
   useEffect(() => {
-    // Redirect if already logged in - all staff go to Unified Portal
+    // Redirect if already logged in - teachers go to TeachTino Dashboard
     if (user) {
       if (user.role === 'student') {
         navigate('/student-dashboard');
       } else if (user.role === 'director') {
         navigate('/app/dashboard');
+      } else if (user.role === 'teacher' || user.role === 'principal' || user.role === 'vice_principal') {
+        // Teachers go to TeachTino Dashboard with enhanced features
+        navigate('/teacher-dashboard');
       } else {
-        // All staff (teacher, admin, accountant, etc.) go to Unified Portal
+        // Other staff go to Unified Portal
         navigate('/portal');
       }
     }
@@ -82,10 +85,14 @@ export default function TeachTinoLogin() {
       const allowedRoles = ['teacher', 'principal', 'vice_principal', 'co_director', 'admin_staff', 'accountant', 'admission_staff', 'clerk'];
       if (allowedRoles.includes(loggedUser.role) || loggedUser.role === 'director') {
         toast.success(`Welcome, ${loggedUser.name}! 🎓`);
-        // Director goes to admin, others go to Unified Portal
+        // Director goes to admin dashboard
         if (loggedUser.role === 'director') {
           navigate('/app/dashboard');
+        } else if (loggedUser.role === 'teacher' || loggedUser.role === 'principal' || loggedUser.role === 'vice_principal') {
+          // Teachers go to TeachTino Dashboard with enhanced features
+          navigate('/teacher-dashboard');
         } else {
+          // Other staff go to Unified Portal
           navigate('/portal');
         }
       } else if (loggedUser.role === 'student') {
