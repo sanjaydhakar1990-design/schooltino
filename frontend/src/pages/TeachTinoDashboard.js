@@ -227,6 +227,36 @@ export default function TeachTinoDashboard() {
     }
   };
 
+  const handleMarkNotificationRead = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API}/notifications/${notificationId}/read`,
+        { user_id: user?.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) => prev.map((note) => note.id === notificationId ? { ...note, is_read: true } : note));
+      setUnreadNotifications((prev) => Math.max(prev - 1, 0));
+    } catch (error) {
+      toast.error('Notification read mark करने में error');
+    }
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API}/notifications/mark-all-read`,
+        { user_id: user?.id, school_id: user?.school_id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) => prev.map((note) => ({ ...note, is_read: true })));
+      setUnreadNotifications(0);
+    } catch (error) {
+      toast.error('Notifications update नहीं हो पाए');
+    }
+  };
+
   const fetchClassStudents = async (classId) => {
     try {
       const token = localStorage.getItem('token');
