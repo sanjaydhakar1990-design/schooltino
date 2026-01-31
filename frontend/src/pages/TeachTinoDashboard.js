@@ -60,6 +60,24 @@ export default function TeachTinoDashboard() {
   const [todayStats, setTodayStats] = useState({ present: 0, absent: 0, late: 0, leave: 0, total: 0 });
   const [syllabus, setSyllabus] = useState([]);
   const [studentQueries, setStudentQueries] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [syllabusChapters, setSyllabusChapters] = useState([]);
+  const [syllabusProgressMap, setSyllabusProgressMap] = useState({});
+  const [syllabusAnalytics, setSyllabusAnalytics] = useState(null);
+  const [syllabusRange, setSyllabusRange] = useState('month');
+  const [showSyllabusUpdate, setShowSyllabusUpdate] = useState(false);
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [syllabusUpdateForm, setSyllabusUpdateForm] = useState({
+    status: 'in_progress',
+    topics: '',
+    notes: ''
+  });
+  const [lessonSummary, setLessonSummary] = useState('');
+  const [showLessonDialog, setShowLessonDialog] = useState(false);
+  const [lessonLoading, setLessonLoading] = useState(false);
+  const [queryAnswerDrafts, setQueryAnswerDrafts] = useState({});
   
   // Dialogs
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
