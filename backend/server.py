@@ -6039,6 +6039,93 @@ async def reject_leave(leave_id: str, data: dict, current_user: dict = Depends(g
         )
     return {"success": True, "message": "Leave rejected"}
 
+
+# ==================== STUDENT QUERY SYSTEM ====================
+
+@api_router.post("/student/queries")
+async def create_student_query(query: StudentQueryCreate, current_user: dict = Depends(get_current_user)):
+    class_info = await db.classes.find_one({"id": query.class_id}, {"_id": 0, "class_teacher_id": 1, "class_teacher_name": 1})
+    teacher_id = class_info.get("class_teacher_id") if class_info else None
+    teacher_name = class_info.get("class_teacher_name") if class_info else None
+
+    query_doc = {
+        "id": str(uuid.uuid4()),
+        **query.model_dump(),
+        "teacher_id": teacher_id,
+        "teacher_name": teacher_name,
+        "status": "pending",
+        "answer": None,
+        "answered_by": None,
+        "answered_at": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.student_queries.insert_one(query_doc)
+
+    if teacher_id:
+        await create_notification(
+            school_id=query.school_id,
+            title="❓ New Student Query",
+            message=f"{query.student_name} ({query.class_name}) ne {query.subject} ka question bheja hai.",
+            notification_type="student_query",
+            target_user_id=teacher_id,
+            class_id=query.class_id,
+            data={"query_id": query_doc["id"], "student_id": query.student_id}
+        )
+
+    return {"success": True, "query_id": query_doc["id"]}
+
+
+@api_router.get("/student/queries")
+async def get_student_queries(student_id: str, school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    query = {"student_id": student_id}
+    if school_id:
+        query["school_id"] = school_id
+    queries = await db.student_queries.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return queries
+
+
+@api_router.get("/teacher/queries")
+async def get_teacher_queries(teacher_id: str, school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    query = {"teacher_id": teacher_id}
+    if school_id:
+        query["school_id"] = school_id
+    queries = await db.student_queries.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return queries
+
+
+@api_router.post("/teacher/queries/{query_id}/answer")
+async def answer_student_query(query_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    answer = data.get("answer")
+    answered_by = data.get("answered_by")
+    if not answer:
+        raise HTTPException(status_code=400, detail="Answer required")
+
+    result = await db.student_queries.update_one(
+        {"id": query_id},
+        {"$set": {
+            "answer": answer,
+            "status": "answered",
+            "answered_by": answered_by,
+            "answered_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Query not found")
+
+    query_doc = await db.student_queries.find_one({"id": query_id}, {"_id": 0})
+    if query_doc:
+        await create_notification(
+            school_id=query_doc.get("school_id"),
+            title="✅ Your Question Answered",
+            message=f"{query_doc.get('subject')} ka aapka question answer ho gaya hai.",
+            notification_type="query_answered",
+            target_user_id=query_doc.get("student_id"),
+            class_id=query_doc.get("class_id"),
+            data={"query_id": query_id}
+        )
+
+    return {"success": True, "message": "Answer submitted"}
+
 # ==================== HOMEWORK MANAGEMENT ====================
 
 class HomeworkCreate(BaseModel):
