@@ -748,8 +748,8 @@ export default function StudyTinoDashboard() {
                       <p className="text-sm font-medium text-slate-800">{query.subject}</p>
                       <p className="text-xs text-slate-500 line-clamp-1">{query.question}</p>
                     </div>
-                    <Badge className={query.status === 'answered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
-                      {query.status === 'answered' ? 'Answered' : 'Pending'}
+                    <Badge className={(query.status === 'answered' || query.answer) ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                      {(query.status === 'answered' || query.answer) ? 'Answered' : 'Pending'}
                     </Badge>
                   </div>
                   {query.answer && (
@@ -933,8 +933,8 @@ export default function StudyTinoDashboard() {
                     <div key={query.id} className="p-3 rounded-lg border bg-slate-50">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-slate-800">{query.subject}</p>
-                        <Badge className={query.status === 'answered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
-                          {query.status === 'answered' ? 'Answered' : 'Pending'}
+                        <Badge className={(query.status === 'answered' || query.answer) ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                          {(query.status === 'answered' || query.answer) ? 'Answered' : 'Pending'}
                         </Badge>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">{query.question}</p>
