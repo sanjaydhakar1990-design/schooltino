@@ -144,9 +144,12 @@ async def add_subject_allocation(allocation: SubjectAllocation, school_id: str):
                 "periods_per_week": allocation.periods_per_week
             }}
         )
+        await create_notification(db, school_id, allocation.teacher_id, allocation.subject, allocation.class_id, "updated")
         return {"success": True, "message": "Allocation updated"}
     
     await db.subject_allocations.insert_one(allocation_doc)
+
+    await create_notification(db, school_id, allocation.teacher_id, allocation.subject, allocation.class_id, "assigned")
     
     return {
         "success": True,
