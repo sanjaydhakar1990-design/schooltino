@@ -1,8 +1,40 @@
 # Schooltino - AI-Powered School Management Platform
 
-## Last Updated: January 24, 2026 (Session 15 - Part 5)
+## Last Updated: January 31, 2026 (Session 16)
 
 ---
+
+## ✅ Current Focus (Jan 31, 2026)
+- TeachTino notifications + syllabus tracking (subject > chapter > topic)
+- Student queries (StudyTino → TeachTino) + answer flow
+- StudyTino syllabus progress connected to TeachTino
+
+## 🧱 Architecture
+- Frontend: React + Tailwind
+- Backend: FastAPI + MongoDB
+- API base: `/api`
+
+## ✅ Implemented This Session
+- Notifications: bell icon + notifications APIs + assignment/notice/leave triggers
+- Syllabus tracker: chapter progress, topics/notes, week/month/year analytics
+- Lesson summary dialog (AI syllabus summary)
+- Student query system (submit + answer + notifications)
+- StudyTino syllabus progress now pulls real data
+
+## 🧪 Testing
+- Iteration 56: Core syllabus APIs pass; auth-protected endpoints need valid credentials for full e2e
+
+## ⚠️ Known Issues / Pending
+- **P0:** Student admission form 401 (current `get_current_user` workaround is **MOCKED**)
+- **P0:** Board Exam upload review screen not opening
+- **P1:** Admit Card create exam auto-fill inconsistent
+- **P1:** TeachTino attendance restriction + extra statuses
+- **P1:** Remove mic from Tino AI (if still present)
+- **P2:** Homework-syllabus linking, credit system, AI homework checking
+
+---
+
+## 🗂️ Archived (Jan 24, 2026)
 
 ## ✅ COMPLETED TODAY (January 24, 2026)
 
