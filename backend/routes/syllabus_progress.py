@@ -9,7 +9,7 @@ Syllabus Progress Tracking & AI Chapter Summary
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List, Dict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 import os
 import sys
