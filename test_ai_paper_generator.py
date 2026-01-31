@@ -11,7 +11,7 @@ import requests
 import json
 import sys
 
-BASE_URL = "https://learnportal-132.preview.emergentagent.com/api"
+BASE_URL = "https://edutracker-165.preview.emergentagent.com/api"
 
 # Test credentials from review request
 TEST_EMAIL = "director@test.com"

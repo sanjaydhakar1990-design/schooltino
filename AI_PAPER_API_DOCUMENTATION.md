@@ -2,7 +2,7 @@
 
 ## 🔑 API Endpoint
 
-**Base URL:** `https://learnportal-132.preview.emergentagent.com`  
+**Base URL:** `https://edutracker-165.preview.emergentagent.com`  
 **Endpoint:** `POST /api/ai/generate-paper`  
 **Authentication:** Bearer Token (JWT)
 
@@ -12,7 +12,7 @@
 
 ### Request:
 ```bash
-curl -X POST "https://learnportal-132.preview.emergentagent.com/api/auth/login" \
+curl -X POST "https://edutracker-165.preview.emergentagent.com/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "director@test.com",
@@ -41,7 +41,7 @@ curl -X POST "https://learnportal-132.preview.emergentagent.com/api/auth/login" 
 ### Request Format:
 
 ```bash
-curl -X POST "https://learnportal-132.preview.emergentagent.com/api/ai/generate-paper" \
+curl -X POST "https://edutracker-165.preview.emergentagent.com/api/ai/generate-paper" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -d '{
@@ -116,7 +116,7 @@ curl -X POST "https://learnportal-132.preview.emergentagent.com/api/ai/generate-
 
 ### Node 1: HTTP Request (Login)
 - **Method:** POST
-- **URL:** `https://learnportal-132.preview.emergentagent.com/api/auth/login`
+- **URL:** `https://edutracker-165.preview.emergentagent.com/api/auth/login`
 - **Body:**
 ```json
 {
@@ -128,7 +128,7 @@ curl -X POST "https://learnportal-132.preview.emergentagent.com/api/ai/generate-
 
 ### Node 2: HTTP Request (Generate Paper)
 - **Method:** POST
-- **URL:** `https://learnportal-132.preview.emergentagent.com/api/ai/generate-paper`
+- **URL:** `https://edutracker-165.preview.emergentagent.com/api/ai/generate-paper`
 - **Headers:**
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer {{ $node["Login"].json.token }}`
@@ -175,7 +175,7 @@ curl -X POST "https://learnportal-132.preview.emergentagent.com/api/ai/generate-
   "nodes": [
     {
       "parameters": {
-        "url": "https://learnportal-132.preview.emergentagent.com/api/auth/login",
+        "url": "https://edutracker-165.preview.emergentagent.com/api/auth/login",
         "method": "POST",
         "jsonParameters": true,
         "options": {},
@@ -186,7 +186,7 @@ curl -X POST "https://learnportal-132.preview.emergentagent.com/api/ai/generate-
     },
     {
       "parameters": {
-        "url": "https://learnportal-132.preview.emergentagent.com/api/ai/generate-paper",
+        "url": "https://edutracker-165.preview.emergentagent.com/api/ai/generate-paper",
         "method": "POST",
         "jsonParameters": true,
         "headerParametersJson": "{\n  \"Authorization\": \"Bearer {{ $json.token }}\"\n}",
@@ -205,7 +205,7 @@ curl -X POST "https://learnportal-132.preview.emergentagent.com/api/ai/generate-
 
 ```bash
 # Step 1: Get Token
-TOKEN=$(curl -s -X POST "https://learnportal-132.preview.emergentagent.com/api/auth/login" \
+TOKEN=$(curl -s -X POST "https://edutracker-165.preview.emergentagent.com/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"email":"director@test.com","password":"test1234"}' \
   | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
@@ -213,7 +213,7 @@ TOKEN=$(curl -s -X POST "https://learnportal-132.preview.emergentagent.com/api/a
 echo "Token: $TOKEN"
 
 # Step 2: Generate Paper
-curl -X POST "https://learnportal-132.preview.emergentagent.com/api/ai/generate-paper" \
+curl -X POST "https://edutracker-165.preview.emergentagent.com/api/ai/generate-paper" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{

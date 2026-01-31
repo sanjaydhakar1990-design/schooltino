@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import uuid
 
 class SchooltinoAPITester:
-    def __init__(self, base_url="https://learnportal-132.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://edutracker-165.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.user_data = None
@@ -936,7 +936,7 @@ class SchooltinoAPITester:
         
         try:
             # Check marketing page
-            response = requests.get("https://learnportal-132.preview.emergentagent.com/marketing", timeout=10)
+            response = requests.get("https://edutracker-165.preview.emergentagent.com/marketing", timeout=10)
             
             if response.status_code == 200:
                 content = response.text

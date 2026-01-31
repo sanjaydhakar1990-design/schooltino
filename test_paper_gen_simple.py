@@ -6,7 +6,7 @@ Simple Paper Generation Test
 import requests
 import json
 
-BASE_URL = "https://learnportal-132.preview.emergentagent.com/api"
+BASE_URL = "https://edutracker-165.preview.emergentagent.com/api"
 TEST_EMAIL = "director@test.com"
 TEST_PASSWORD = "test1234"
 
