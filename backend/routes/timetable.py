@@ -33,6 +33,24 @@ def get_database():
         db = get_db()
     return db
 
+async def create_notification(db, school_id: str, teacher_id: str, subject: str, class_id: str, action: str):
+    title = "📘 Subject Assigned" if action == "assigned" else "🔁 Subject Updated"
+    message = f"Aapko class {class_id} ke liye {subject} assign/update किया गया है."
+    notification = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "title": title,
+        "message": message,
+        "type": "subject_assignment",
+        "target_user_id": teacher_id,
+        "target_roles": [],
+        "class_id": class_id,
+        "data": {"subject": subject, "class_id": class_id},
+        "read_by": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
+
 # Models
 class TimetableConfig(BaseModel):
     class_id: str
