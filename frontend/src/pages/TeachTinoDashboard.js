@@ -487,6 +487,11 @@ export default function TeachTinoDashboard() {
       const classNum = subjectItem.class_number || extractClassNumber(subjectItem.class_name);
       const board = (subjectItem.board || 'NCERT').toUpperCase();
 
+      if (!classNum) {
+        toast.error('Class number missing in subject assignment');
+        return;
+      }
+
       const syllabusRes = await axios.get(
         `${API}/syllabus/${board}/syllabus/${classNum}?subject=${encodeURIComponent(subjectItem.subject)}`,
         { headers }
