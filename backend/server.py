@@ -5929,6 +5929,15 @@ class StaffLeaveRequest(BaseModel):
     to_date: str
     reason: str
 
+class StudentQueryCreate(BaseModel):
+    student_id: str
+    student_name: str
+    class_id: str
+    class_name: str
+    school_id: str
+    subject: str
+    question: str
+
 @api_router.post("/staff/leaves/apply")
 async def apply_staff_leave(leave_data: StaffLeaveRequest, current_user: dict = Depends(get_current_user)):
     """Staff apply for leave"""
