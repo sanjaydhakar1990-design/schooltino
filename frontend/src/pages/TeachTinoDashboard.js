@@ -1547,7 +1547,7 @@ export default function TeachTinoDashboard() {
 
       {/* Syllabus Tracker Dialog */}
       <Dialog open={showSyllabusTracker} onOpenChange={setShowSyllabusTracker}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BookMarked className="w-5 h-5 text-indigo-600" />
@@ -1556,38 +1556,167 @@ export default function TeachTinoDashboard() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-gray-500">
-              यहां आप अपने assigned subjects का syllabus track कर सकते हैं।
+              Subject-wise syllabus tracking, chapter progress, aur week/month/year analytics yahan milेंगे।
             </p>
-            
-            {/* Subject list will be shown here */}
-            <div className="space-y-3">
-              {mySubjects.length > 0 ? (
-                mySubjects.map((sub, idx) => (
-                  <div key={idx} className="p-4 bg-gray-50 rounded-lg border">
-                    <div className="flex items-center justify-between">
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">Assigned Subjects</h4>
+                {mySubjects.length > 0 ? (
+                  mySubjects.map((sub, idx) => (
+                    <button
+                      key={`${sub.class_id}-${sub.subject}-${idx}`}
+                      onClick={() => handleSelectSyllabusSubject(sub)}
+                      className={`w-full text-left p-3 rounded-lg border transition-all ${
+                        selectedSubjectForSyllabus?.subject === sub.subject && selectedSubjectForSyllabus?.class_id === sub.class_id
+                          ? 'border-indigo-400 bg-indigo-50'
+                          : 'bg-white hover:bg-slate-50'
+                      }`}
+                      data-testid={`syllabus-subject-${idx}`}
+                    >
+                      <p className="font-medium text-gray-800">{sub.subject}</p>
+                      <p className="text-xs text-gray-500">{sub.class_name || 'Class'}</p>
+                      <p className="text-[11px] text-gray-400 mt-1">Board: {sub.board || 'NCERT'}</p>
+                    </button>
+                  ))
+                ) : (
+                  <div className="text-center py-6 border rounded-lg bg-slate-50">
+                    <BookMarked className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+                    <p className="text-gray-500">No subjects assigned yet</p>
+                    <p className="text-sm text-gray-400">Admin से subject assign करवाएं</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 space-y-4">
+                {selectedSubjectForSyllabus ? (
+                  <>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                       <div>
-                        <p className="font-medium text-gray-800">{sub.subject_name}</p>
-                        <p className="text-sm text-gray-500">{sub.class_name}</p>
+                        <p className="text-sm text-gray-500">{selectedSubjectForSyllabus.class_name}</p>
+                        <h3 className="text-lg font-semibold text-gray-900">{selectedSubjectForSyllabus.subject}</h3>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-indigo-600">{sub.completed || 0}% Complete</p>
-                        <div className="w-24 h-2 bg-gray-200 rounded-full mt-1">
-                          <div 
-                            className="h-full bg-indigo-600 rounded-full" 
-                            style={{ width: `${sub.completed || 0}%` }}
-                          />
-                        </div>
+                      <div className="flex gap-2">
+                        {['week', 'month', 'year'].map((rangeValue) => (
+                          <Button
+                            key={rangeValue}
+                            size="sm"
+                            variant={syllabusRange === rangeValue ? 'default' : 'outline'}
+                            onClick={() => handleSyllabusRangeChange(rangeValue)}
+                            data-testid={`syllabus-range-${rangeValue}`}
+                          >
+                            {rangeValue === 'week' ? 'Week' : rangeValue === 'month' ? 'Month' : 'Year'}
+                          </Button>
+                        ))}
                       </div>
                     </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {(() => {
+                        const totalChapters = syllabusChapters.length || syllabusAnalytics?.summary?.total_chapters || 0;
+                        const completed = syllabusAnalytics?.summary?.completed || 0;
+                        const inProgress = syllabusAnalytics?.summary?.in_progress || 0;
+                        const remaining = Math.max(totalChapters - completed - inProgress, 0);
+                        return (
+                          <>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">Total Chapters</p>
+                                <p className="text-lg font-bold text-gray-900">{totalChapters}</p>
+                              </CardContent>
+                            </Card>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">Completed</p>
+                                <p className="text-lg font-bold text-emerald-600">{completed}</p>
+                              </CardContent>
+                            </Card>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">In Progress</p>
+                                <p className="text-lg font-bold text-amber-600">{inProgress}</p>
+                              </CardContent>
+                            </Card>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">Remaining</p>
+                                <p className="text-lg font-bold text-slate-600">{remaining}</p>
+                              </CardContent>
+                            </Card>
+                          </>
+                        );
+                      })()}
+                    </div>
+
+                    {syllabusAnalytics && (
+                      <div className="text-xs text-gray-500">
+                        इस {syllabusRange} में {syllabusAnalytics.range_stats?.completed_in_range || 0} chapters complete हुए • {syllabusAnalytics.range_stats?.updated_in_range || 0} updates
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {syllabusChapters.length > 0 ? (
+                        syllabusChapters.map((chapter) => {
+                          const progress = syllabusProgressMap[chapter.number] || {};
+                          const status = progress.status || 'not_started';
+                          const statusStyles = status === 'completed'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : status === 'in_progress'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-slate-100 text-slate-600';
+                          return (
+                            <div key={chapter.number} className="p-4 rounded-lg border bg-white">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-semibold text-gray-900">Chapter {chapter.number}: {chapter.name}</p>
+                                  {chapter.topics?.length > 0 && (
+                                    <p className="text-xs text-gray-500 mt-1">Topics: {chapter.topics.slice(0, 5).join(', ')}</p>
+                                  )}
+                                </div>
+                                <Badge className={statusStyles} data-testid={`syllabus-status-${chapter.number}`}>
+                                  {status === 'completed' ? 'Completed' : status === 'in_progress' ? 'In Progress' : 'Not Started'}
+                                </Badge>
+                              </div>
+                              {progress.topics_covered?.length > 0 && (
+                                <p className="text-xs text-slate-500 mt-2">Covered: {progress.topics_covered.join(', ')}</p>
+                              )}
+                              {progress.notes && (
+                                <p className="text-xs text-slate-500 mt-1">Notes: {progress.notes}</p>
+                              )}
+                              <div className="flex flex-wrap gap-2 mt-3">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openSyllabusUpdateDialog(chapter)}
+                                  data-testid={`syllabus-update-${chapter.number}`}
+                                >
+                                  Update Status
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => openLessonSummary(chapter)}
+                                  data-testid={`syllabus-lesson-${chapter.number}`}
+                                >
+                                  Open Lesson
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-10 text-gray-500">
+                          No chapters found for this subject.
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-full flex items-center justify-center border rounded-lg bg-slate-50 text-gray-500">
+                    Subject select karke syllabus tracking start karein.
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <BookMarked className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500">No subjects assigned yet</p>
-                  <p className="text-sm text-gray-400">Admin से subject assign करवाएं</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </DialogContent>
