@@ -1545,8 +1545,9 @@ export default function TeachTinoDashboard() {
                 onChange={(e) => setAiInput(e.target.value)}
                 placeholder="Type your question..."
                 onKeyPress={(e) => e.key === 'Enter' && handleAIChat()}
+                data-testid="tino-ai-input"
               />
-              <Button onClick={handleAIChat} disabled={aiLoading || !aiInput.trim()}>
+              <Button onClick={handleAIChat} disabled={aiLoading || !aiInput.trim()} data-testid="tino-ai-send-button">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
