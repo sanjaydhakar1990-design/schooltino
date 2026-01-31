@@ -841,6 +841,7 @@ export default function TeachTinoDashboard() {
               <Button 
                 onClick={() => setShowClassSelector(true)}
                 className="h-auto py-4 flex flex-col items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
+                data-testid="quick-action-mark-attendance"
               >
                 <ClipboardCheck className="w-6 h-6" />
                 <span>Mark Attendance</span>
@@ -851,6 +852,7 @@ export default function TeachTinoDashboard() {
               onClick={() => setShowLeaveDialog(true)}
               variant="outline"
               className="h-auto py-4 flex flex-col items-center gap-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+              data-testid="quick-action-apply-leave"
             >
               <CalendarDays className="w-6 h-6" />
               <span>Apply Leave</span>
@@ -860,6 +862,7 @@ export default function TeachTinoDashboard() {
               onClick={() => setShowNoticeDialog(true)}
               variant="outline"
               className="h-auto py-4 flex flex-col items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+              data-testid="quick-action-send-notice"
             >
               <Bell className="w-6 h-6" />
               <span>Send Notice</span>
@@ -869,6 +872,7 @@ export default function TeachTinoDashboard() {
               onClick={() => setShowHomeworkDialog(true)}
               variant="outline"
               className="h-auto py-4 flex flex-col items-center gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+              data-testid="quick-action-assign-homework"
             >
               <FileEdit className="w-6 h-6" />
               <span>Assign Homework</span>
@@ -878,6 +882,7 @@ export default function TeachTinoDashboard() {
               onClick={() => { fetchHomeworkSubmissions(); setShowHomeworkList(true); }}
               variant="outline"
               className="h-auto py-4 flex flex-col items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
+              data-testid="quick-action-check-homework"
             >
               <CheckCircle className="w-6 h-6" />
               <span>Check Homework</span>
@@ -887,6 +892,7 @@ export default function TeachTinoDashboard() {
               onClick={() => setShowSyllabusTracker(true)}
               variant="outline"
               className="h-auto py-4 flex flex-col items-center gap-2 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+              data-testid="quick-action-syllabus-tracker"
             >
               <BookMarked className="w-6 h-6" />
               <span>Syllabus Tracker</span>
@@ -896,6 +902,7 @@ export default function TeachTinoDashboard() {
               onClick={() => setShowQueriesDialog(true)}
               variant="outline"
               className="h-auto py-4 flex flex-col items-center gap-2 border-pink-300 text-pink-700 hover:bg-pink-50"
+              data-testid="quick-action-student-queries"
             >
               <MessageCircle className="w-6 h-6" />
               <span>Student Queries</span>
@@ -911,6 +918,7 @@ export default function TeachTinoDashboard() {
                 onClick={() => setShowStudentLeaveDialog(true)}
                 variant="outline"
                 className="h-auto py-4 flex flex-col items-center gap-2 border-rose-300 text-rose-700 hover:bg-rose-50"
+                data-testid="quick-action-student-leave"
               >
                 <UserX className="w-6 h-6" />
                 <span>Student Leave</span>
