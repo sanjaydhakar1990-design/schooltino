@@ -59,6 +59,7 @@ export default function StudyTinoDashboard() {
   const [homework, setHomework] = useState([]);
   const [syllabus, setSyllabus] = useState([]);
   const [attendance, setAttendance] = useState({ present: 0, total: 0 });
+  const [studentQueries, setStudentQueries] = useState([]);
   
   // Dialogs
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -71,11 +72,17 @@ export default function StudyTinoDashboard() {
   const [showActivitiesDialog, setShowActivitiesDialog] = useState(false);
   const [showAdmitCardDialog, setShowAdmitCardDialog] = useState(false);
   const [showHomeworkDialog, setShowHomeworkDialog] = useState(false);
+  const [showQueryDialog, setShowQueryDialog] = useState(false);
   const [selectedHomework, setSelectedHomework] = useState(null);
   const [homeworkImage, setHomeworkImage] = useState(null);
   const [uploadingHomework, setUploadingHomework] = useState(false);
+  const [querySubmitting, setQuerySubmitting] = useState(false);
   
   const [selectedNotice, setSelectedNotice] = useState(null);
+  const [queryForm, setQueryForm] = useState({
+    subject: '',
+    question: ''
+  });
   
   // Chat State
   const [chatMessages, setChatMessages] = useState([]);
