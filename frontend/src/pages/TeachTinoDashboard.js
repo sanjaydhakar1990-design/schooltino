@@ -623,6 +623,7 @@ export default function TeachTinoDashboard() {
       }, { headers: { Authorization: `Bearer ${token}` }});
       
       toast.success('Answer sent! ✅');
+      setQueryAnswerDrafts((prev) => ({ ...prev, [queryId]: '' }));
       fetchData();
     } catch (error) {
       toast.error('Error sending answer');
