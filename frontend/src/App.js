@@ -142,7 +142,7 @@ const RoleProtectedRoute = ({ children, allowedRoles, redirectTo = "/login" }) =
     if (user?.role === 'student') {
       return <Navigate to="/student-dashboard" replace />;
     } else if (user?.role === 'teacher') {
-      return <Navigate to="/portal" replace />;
+      return <Navigate to="/teacher-dashboard" replace />;
     } else {
       return <Navigate to={redirectTo} replace />;
     }
@@ -198,9 +198,9 @@ const AdminOnlyRoute = ({ children }) => {
     if (user?.role === 'student') {
       return <Navigate to="/student-dashboard" replace />;
     } else if (user?.role === 'teacher') {
-      return <Navigate to="/portal" replace />;
+      return <Navigate to="/teacher-dashboard" replace />;
     }
-    return <Navigate to="/portal" replace />;
+    return <Navigate to="/teacher-dashboard" replace />;
   }
   
   return children;
