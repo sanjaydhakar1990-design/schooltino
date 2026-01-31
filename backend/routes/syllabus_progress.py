@@ -258,6 +258,68 @@ async def get_student_syllabus_progress(school_id: str, class_id: str):
     return progress_data
 
 
+@router.get("/analytics/{school_id}/{class_id}")
+async def get_syllabus_analytics(
+    school_id: str,
+    class_id: str,
+    subject: Optional[str] = None,
+    range: str = "month"
+):
+    """Get syllabus analytics for week/month/year"""
+    query = {"school_id": school_id, "class_id": class_id}
+    if subject:
+        query["subject"] = subject
+
+    records = await db.syllabus_progress.find(query, {"_id": 0}).to_list(500)
+
+    total = len(records)
+    completed = len([r for r in records if r.get("status") == "completed"])
+    in_progress = len([r for r in records if r.get("status") == "in_progress"])
+    not_started = max(total - completed - in_progress, 0)
+
+    now = datetime.now(timezone.utc)
+    days = 30
+    if range == "week":
+        days = 7
+    elif range == "year":
+        days = 365
+    range_start = now - timedelta(days=days)
+
+    completed_in_range = 0
+    updated_in_range = 0
+    for record in records:
+        updated_at = record.get("updated_at")
+        if updated_at:
+            try:
+                updated_dt = datetime.fromisoformat(updated_at)
+                if updated_dt >= range_start:
+                    updated_in_range += 1
+                    if record.get("status") == "completed":
+                        completed_in_range += 1
+            except Exception:
+                pass
+
+    completion_percentage = round((completed / total) * 100, 1) if total else 0
+
+    return {
+        "school_id": school_id,
+        "class_id": class_id,
+        "subject": subject,
+        "range": range,
+        "summary": {
+            "total_chapters": total,
+            "completed": completed,
+            "in_progress": in_progress,
+            "not_started": not_started,
+            "completion_percentage": completion_percentage
+        },
+        "range_stats": {
+            "updated_in_range": updated_in_range,
+            "completed_in_range": completed_in_range
+        }
+    }
+
+
 # ==================== AI CHAPTER SUMMARY ====================
 
 @router.post("/ai/summarize-chapter")
