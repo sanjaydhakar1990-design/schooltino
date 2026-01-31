@@ -2339,6 +2339,95 @@ async def get_classes(school_id: Optional[str] = None, current_user: dict = Depe
     classes = await db.classes.find(query, {"_id": 0}).to_list(100)
     return [ClassResponse(**c) for c in classes]
 
+@api_router.post("/syllabus/load-latest")
+async def load_latest_syllabus(
+    school_id: str,
+    board: Optional[str] = "CBSE",
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Load latest 2025-26 syllabus for all classes and subjects
+    Automatically populates topic counts in subject_allocations
+    """
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get all subject allocations for school
+    allocations = await db.subject_allocations.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    updated_count = 0
+    
+    for alloc in allocations:
+        class_name = alloc.get("class_name")
+        subject = alloc.get("subject") or alloc.get("subject_name")
+        
+        if not class_name or not subject:
+            continue
+        
+        # Get syllabus data from our latest 2025-26 data
+        syllabus_data = get_syllabus_for_class_subject(board, class_name, subject)
+        
+        if syllabus_data and "chapters" in syllabus_data:
+            book_name = syllabus_data.get("book", f"{subject} - {class_name}")
+            chapters = syllabus_data["chapters"]
+            
+            # Count total topics
+            total_topics = sum(len(chapter.get("topics", [])) for chapter in chapters)
+            
+            # Update allocation with book and topic info
+            update_result = await db.subject_allocations.update_one(
+                {
+                    "teacher_id": alloc.get("teacher_id"),
+                    "class_id": alloc.get("class_id"),
+                    "subject": subject
+                },
+                {"$set": {
+                    "book_name": book_name,
+                    "total_topics": total_topics,
+                    "chapters": chapters,
+                    "board": board,
+                    "academic_year": "2025-26",
+                    "syllabus_loaded": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            if update_result.modified_count > 0:
+                updated_count += 1
+    
+    return {
+        "message": f"Latest {board} 2025-26 syllabus loaded",
+        "updated_allocations": updated_count,
+        "total_allocations": len(allocations)
+    }
+
+@api_router.get("/syllabus/{class_name}/{subject}")
+async def get_syllabus(
+    class_name: str,
+    subject: str,
+    board: Optional[str] = "CBSE",
+    current_user: dict = Depends(get_current_user)
+):
+    """Get full syllabus details for a class and subject"""
+    syllabus_data = get_syllabus_for_class_subject(board, class_name, subject)
+    
+    if not syllabus_data:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Syllabus not found for {class_name} - {subject} ({board})"
+        )
+    
+    return {
+        "class": class_name,
+        "subject": subject,
+        "board": board,
+        "academic_year": "2025-26",
+        **syllabus_data
+    }
+
 @api_router.post("/timetable/sync-allocations")
 async def sync_timetable_to_allocations(school_id: str, current_user: dict = Depends(get_current_user)):
     """
