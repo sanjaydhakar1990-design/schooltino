@@ -6,7 +6,7 @@ Complete Admit Card Edit/Delete Test
 import requests
 import json
 
-BASE_URL = "https://exam-fix-1.preview.emergentagent.com/api"
+BASE_URL = "https://learnportal-132.preview.emergentagent.com/api"
 
 def main():
     print("=" * 80)
