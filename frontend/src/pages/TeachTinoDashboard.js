@@ -831,7 +831,7 @@ export default function TeachTinoDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-gray-500">Student Queries</p>
-                  <p className="text-2xl font-bold text-purple-600">{studentQueries.filter(q => !q.answered).length}</p>
+                  <p className="text-2xl font-bold text-purple-600">{studentQueries.filter(q => q.status !== 'answered' && !q.answer).length}</p>
                 </div>
                 <MessageCircle className="w-8 h-8 text-purple-500" />
               </div>
@@ -914,7 +914,7 @@ export default function TeachTinoDashboard() {
               <span>Student Queries</span>
               {studentQueries.filter(q => !q.answered).length > 0 && (
                 <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs">
-                  {studentQueries.filter(q => !q.answered).length}
+                  {studentQueries.filter(q => q.status !== 'answered' && !q.answer).length}
                 </Badge>
               )}
             </Button>
