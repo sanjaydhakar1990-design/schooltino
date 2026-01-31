@@ -148,6 +148,12 @@ export default function TeachTinoDashboard() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [aiMessages]);
 
+  useEffect(() => {
+    if (showSyllabusTracker && mySubjects.length > 0 && !selectedSubjectForSyllabus) {
+      handleSelectSyllabusSubject(mySubjects[0]);
+    }
+  }, [showSyllabusTracker, mySubjects]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
