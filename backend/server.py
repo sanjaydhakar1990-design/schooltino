@@ -6048,6 +6048,18 @@ async def create_student_query(query: StudentQueryCreate, current_user: dict = D
     teacher_id = class_info.get("class_teacher_id") if class_info else None
     teacher_name = class_info.get("class_teacher_name") if class_info else None
 
+    subject_allocation = await db.subject_allocations.find_one({
+        "class_id": query.class_id,
+        "subject": query.subject,
+        "school_id": query.school_id
+    }, {"_id": 0})
+    if subject_allocation:
+        teacher_id = subject_allocation.get("teacher_id") or teacher_id
+        if teacher_id:
+          teacher_user = await db.users.find_one({"id": teacher_id}, {"_id": 0, "name": 1})
+          if teacher_user:
+              teacher_name = teacher_user.get("name")
+
     query_doc = {
         "id": str(uuid.uuid4()),
         **query.model_dump(),
