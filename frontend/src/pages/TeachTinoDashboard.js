@@ -214,7 +214,7 @@ export default function TeachTinoDashboard() {
 
       // Fetch student queries
       try {
-        const queriesRes = await axios.get(`${API}/teacher/queries?teacher_id=${user?.id}`, { headers });
+        const queriesRes = await axios.get(`${API}/teacher/queries?teacher_id=${user?.id}&school_id=${user?.school_id}`, { headers });
         setStudentQueries(queriesRes.data || []);
       } catch (e) {
         console.log('No queries');
