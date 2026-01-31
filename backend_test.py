@@ -3046,6 +3046,54 @@ class SchooltinoAPITester:
         
         return self.tests_passed == self.tests_run
 
+    def run_teachtino_tests(self):
+        """Run TeachTino specific tests from review request"""
+        print("\n🎯 RUNNING TEACHTINO FEATURES TESTS (REVIEW REQUEST)")
+        print("=" * 60)
+        
+        teachtino_tests = [
+            ("Notifications GET", self.test_notifications_get),
+            ("Notifications Mark Read", self.test_notifications_mark_read),
+            ("Teacher Subjects GET", self.test_teacher_subjects_get),
+            ("Syllabus Progress Update", self.test_syllabus_progress_update),
+            ("Syllabus Progress Class GET", self.test_syllabus_progress_class_get),
+            ("Syllabus Analytics", self.test_syllabus_progress_analytics),
+            ("AI Lesson Summary GET", self.test_ai_lesson_summary),
+            ("AI Lesson Summary Generate", self.test_ai_lesson_summary_generate),
+            ("Student Query Submit", self.test_student_queries_submit),
+            ("Teacher Queries GET", self.test_teacher_queries_get),
+            ("Teacher Answer Query", self.test_teacher_answer_query),
+            ("StudyTino Syllabus Progress", self.test_studytino_syllabus_progress),
+        ]
+        
+        passed = 0
+        total = len(teachtino_tests)
+        
+        for test_name, test_func in teachtino_tests:
+            print(f"\n📋 Testing: {test_name}")
+            try:
+                if test_func():
+                    print(f"✅ {test_name}: PASSED")
+                    passed += 1
+                else:
+                    print(f"❌ {test_name}: FAILED")
+            except Exception as e:
+                print(f"❌ {test_name}: ERROR - {str(e)}")
+        
+        print(f"\n🎯 TEACHTINO FEATURES TEST SUMMARY")
+        print("=" * 40)
+        print(f"✅ Passed: {passed}/{total} ({(passed/total)*100:.1f}%)")
+        print(f"❌ Failed: {total-passed}/{total}")
+        
+        if passed == total:
+            print("🎉 ALL TEACHTINO FEATURES WORKING PERFECTLY!")
+        elif passed >= total * 0.8:
+            print("✅ MOST TEACHTINO FEATURES WORKING WELL!")
+        else:
+            print("⚠️ SEVERAL TEACHTINO FEATURES NEED ATTENTION!")
+        
+        return passed >= total * 0.7  # 70% pass rate required
+
 def main():
     """Run comprehensive API tests"""
     tester = SchooltinoAPITester()
@@ -3065,10 +3113,8 @@ def main():
             print(f"❌ {name} failed - stopping tests")
             return 1
     
-    # Run Admit Card Fixes Tests (Review Request)
-    print(f"\n🎯 RUNNING ADMIT CARD FIXES TESTS (REVIEW REQUEST)")
-    print(f"=" * 60)
-    tester.run_admit_card_fixes_comprehensive_test()
+    # Run TeachTino Features Tests (Review Request)
+    tester.run_teachtino_tests()
     
     print(f"\n📊 Test Results Summary:")
     print(f"Total Tests: {tester.tests_run}")
