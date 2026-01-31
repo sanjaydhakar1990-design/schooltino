@@ -5991,6 +5991,17 @@ async def approve_leave(leave_id: str, data: dict, current_user: dict = Depends(
     )
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Leave not found")
+
+    leave = await db.staff_leaves.find_one({"id": leave_id}, {"_id": 0})
+    if leave:
+        await create_notification(
+            school_id=leave.get("school_id"),
+            title="✅ Leave Approved",
+            message=f"Aapki leave {leave.get('from_date')} se {leave.get('to_date')} approve ho gayi hai.",
+            notification_type="leave_approved",
+            target_user_id=leave.get("staff_id"),
+            data={"leave_id": leave_id}
+        )
     return {"success": True, "message": "Leave approved"}
 
 @api_router.post("/staff/leaves/{leave_id}/reject")
@@ -6006,6 +6017,17 @@ async def reject_leave(leave_id: str, data: dict, current_user: dict = Depends(g
     )
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Leave not found")
+
+    leave = await db.staff_leaves.find_one({"id": leave_id}, {"_id": 0})
+    if leave:
+        await create_notification(
+            school_id=leave.get("school_id"),
+            title="❌ Leave Rejected",
+            message=f"Aapki leave {leave.get('from_date')} se {leave.get('to_date')} reject ho gayi hai.",
+            notification_type="leave_rejected",
+            target_user_id=leave.get("staff_id"),
+            data={"leave_id": leave_id}
+        )
     return {"success": True, "message": "Leave rejected"}
 
 # ==================== HOMEWORK MANAGEMENT ====================
