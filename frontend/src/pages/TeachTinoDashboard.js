@@ -132,6 +132,12 @@ export default function TeachTinoDashboard() {
   const canApproveLeave = isPrincipal || user?.role === 'director';
   const today = new Date().toISOString().split('T')[0];
 
+  const extractClassNumber = (className) => {
+    if (!className) return null;
+    const match = className.match(/\d+/);
+    return match ? match[0] : null;
+  };
+
   useEffect(() => {
     if (user?.school_id) {
       fetchData();
