@@ -832,6 +832,18 @@ export default function TeachTinoDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="bg-white border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">My Subjects</p>
+                  <p className="text-2xl font-bold text-gray-900">{mySubjects.length}</p>
+                </div>
+                <FileText className="w-8 h-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
           
           <Card className="bg-white border shadow-sm">
             <CardContent className="p-4">
