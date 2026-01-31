@@ -1956,10 +1956,12 @@ async def get_teacher_subjects(
     school_id: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get teacher's assigned subjects with class info"""
+    """Get teacher's assigned subjects with class info and timetable"""
     resolved_teacher_id = teacher_id or current_user.get("id")
     resolved_school_id = school_id or current_user.get("school_id")
+    teacher_name = current_user.get("name", "")
 
+    # Method 1: Get from subject_allocations
     allocations = await db.subject_allocations.find(
         {"teacher_id": resolved_teacher_id, "school_id": resolved_school_id},
         {"_id": 0}
@@ -1968,7 +1970,7 @@ async def get_teacher_subjects(
     class_ids = list({a.get("class_id") for a in allocations if a.get("class_id")})
     class_records = await db.classes.find(
         {"id": {"$in": class_ids}},
-        {"_id": 0, "id": 1, "name": 1}
+        {"_id": 0, "id": 1, "name": 1, "class_name": 1}
     ).to_list(200)
     class_map = {c["id"]: c for c in class_records}
 
@@ -1976,18 +1978,58 @@ async def get_teacher_subjects(
     board = (school or {}).get("board") or (school or {}).get("board_type") or "NCERT"
 
     subjects = []
+    seen_combinations = set()
+    
     for alloc in allocations:
         class_info = class_map.get(alloc.get("class_id"), {})
-        class_name = class_info.get("name")
-        subjects.append({
-            "class_id": alloc.get("class_id"),
-            "class_name": class_name or alloc.get("class_id"),
-            "class_number": extract_class_number(class_name),
-            "subject": alloc.get("subject"),
-            "teacher_id": resolved_teacher_id,
-            "periods_per_week": alloc.get("periods_per_week"),
-            "board": board
-        })
+        class_name = class_info.get("name") or class_info.get("class_name")
+        subject_name = alloc.get("subject") or alloc.get("subject_name")
+        
+        combination_key = f"{class_name}_{subject_name}"
+        if combination_key not in seen_combinations:
+            subjects.append({
+                "class_id": alloc.get("class_id"),
+                "class_name": class_name or alloc.get("class_id"),
+                "class_number": extract_class_number(class_name),
+                "subject_name": subject_name,
+                "subject": subject_name,
+                "teacher_id": resolved_teacher_id,
+                "periods_per_week": alloc.get("periods_per_week", 0),
+                "board": board,
+                "topics_covered": alloc.get("topics_covered", 0),
+                "total_topics": alloc.get("total_topics", 0)
+            })
+            seen_combinations.add(combination_key)
+
+    # Method 2: Fallback to timetable if subject_allocations is empty
+    if len(subjects) == 0:
+        try:
+            # Try to get from timetable collection
+            timetable_entries = await db.timetable.find(
+                {"teacher_name": {"$regex": teacher_name, "$options": "i"}},
+                {"_id": 0, "class_name": 1, "subject": 1, "subject_name": 1}
+            ).to_list(100)
+            
+            for entry in timetable_entries:
+                class_name = entry.get("class_name")
+                subject_name = entry.get("subject") or entry.get("subject_name")
+                
+                combination_key = f"{class_name}_{subject_name}"
+                if combination_key not in seen_combinations:
+                    subjects.append({
+                        "class_id": None,
+                        "class_name": class_name,
+                        "class_number": extract_class_number(class_name),
+                        "subject_name": subject_name,
+                        "subject": subject_name,
+                        "teacher_id": resolved_teacher_id,
+                        "periods_per_week": 0,
+                        "board": board,
+                        "source": "timetable"
+                    })
+                    seen_combinations.add(combination_key)
+        except Exception as e:
+            print(f"Timetable lookup error: {e}")
 
     return {
         "teacher_id": resolved_teacher_id,
