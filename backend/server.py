@@ -1828,6 +1828,20 @@ async def assign_classes_to_user(user_id: str, class_data: dict, current_user: d
         "class_ids": class_ids,
         "count": len(class_ids)
     })
+
+    class_records = await db.classes.find(
+        {"id": {"$in": class_ids}},
+        {"_id": 0, "name": 1}
+    ).to_list(100)
+    class_names = [c.get("name") for c in class_records if c.get("name")]
+    await create_notification(
+        school_id=user.get("school_id") or current_user.get("school_id"),
+        title="🏫 Class Assignment Updated",
+        message=f"Aapko {len(class_ids)} class assign ki gayi hain: {', '.join(class_names) if class_names else 'Assigned classes'}",
+        notification_type="class_assignment",
+        target_user_id=user_id,
+        data={"class_ids": class_ids}
+    )
     
     return {
         "success": True,
