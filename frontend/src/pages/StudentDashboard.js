@@ -143,6 +143,41 @@ export default function StudyTinoDashboard() {
     }
   }, []);
 
+  const fetchStudentExtras = async (profileData) => {
+    if (!profileData?.class_id || !profileData?.school_id) return;
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const [progressRes, queriesRes] = await Promise.allSettled([
+        axios.get(`${API}/syllabus-progress/student/${profileData.school_id}/${profileData.class_id}`, { headers }),
+        axios.get(`${API}/student/queries?student_id=${profileData.id}&school_id=${profileData.school_id}`, { headers })
+      ]);
+
+      if (progressRes.status === 'fulfilled') {
+        const progressData = progressRes.value.data;
+        const subjects = progressData?.subjects || [];
+        const mapped = subjects.map((sub) => {
+          const inProgress = sub.chapters?.find((ch) => ch.status === 'in_progress');
+          const lastCompleted = sub.chapters?.filter((ch) => ch.status === 'completed').slice(-1)[0];
+          return {
+            subject: sub.subject,
+            completed: sub.completion_percentage || 0,
+            current: inProgress?.chapter_name || lastCompleted?.chapter_name || 'Not started'
+          };
+        });
+        if (mapped.length > 0) {
+          setSyllabus(mapped);
+        }
+      }
+
+      if (queriesRes.status === 'fulfilled') {
+        setStudentQueries(queriesRes.value.data || []);
+      }
+    } catch (error) {
+      console.error('Student extras error:', error);
+    }
+  };
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
