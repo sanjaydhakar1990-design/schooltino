@@ -150,7 +150,7 @@ export default function StudyTinoDashboard() {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const [progressRes, queriesRes] = await Promise.allSettled([
         axios.get(`${API}/syllabus-progress/student/${profileData.school_id}/${profileData.class_id}`, { headers }),
-        axios.get(`${API}/student/queries?student_id=${profileData.id}&school_id=${profileData.school_id}`, { headers })
+        axios.get(`${API}/student/queries?student_id=${profileData.id || profileData.student_id}&school_id=${profileData.school_id}`, { headers })
       ]);
 
       if (progressRes.status === 'fulfilled') {
