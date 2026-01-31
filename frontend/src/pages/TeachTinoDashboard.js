@@ -154,10 +154,11 @@ export default function TeachTinoDashboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classesRes, noticesRes, subjectsRes] = await Promise.allSettled([
+      const [classesRes, noticesRes, subjectsRes, notificationsRes] = await Promise.allSettled([
         axios.get(`${API}/classes?school_id=${user?.school_id}`, { headers }),
         axios.get(`${API}/notices?school_id=${user?.school_id}&limit=5`, { headers }),
-        axios.get(`${API}/teacher/subjects?teacher_id=${user?.id}`, { headers }).catch(() => ({ data: [] }))
+        axios.get(`${API}/teacher/subjects?teacher_id=${user?.id}`, { headers }).catch(() => ({ data: { subjects: [] } })),
+        axios.get(`${API}/notifications?school_id=${user?.school_id}&user_id=${user?.id}&role=${user?.role}`, { headers })
       ]);
 
       if (classesRes.status === 'fulfilled') {
@@ -184,7 +185,13 @@ export default function TeachTinoDashboard() {
       }
 
       if (subjectsRes.status === 'fulfilled') {
-        setMySubjects(subjectsRes.value.data || []);
+        setMySubjects(subjectsRes.value.data?.subjects || []);
+      }
+
+      if (notificationsRes.status === 'fulfilled') {
+        const notes = notificationsRes.value.data?.notifications || [];
+        setNotifications(notes);
+        setUnreadNotifications(notes.filter(n => !n.is_read).length);
       }
 
       // Fetch my leaves
