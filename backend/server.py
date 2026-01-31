@@ -907,7 +907,11 @@ def verify_jwt_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    payload = verify_jwt_token(credentials.credentials)
+    try:
+        payload = verify_jwt_token(credentials.credentials)
+    except Exception as e:
+        print(f"JWT verification failed: {e}")
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
     
     # Check if it's a student login
     if payload.get("role") == "student":
@@ -921,6 +925,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     # Regular user (admin, teacher, staff)
     user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0})
     if not user:
+        print(f"User not found for id: {payload.get('sub')}")
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
