@@ -2296,6 +2296,153 @@ async def get_classes(school_id: Optional[str] = None, current_user: dict = Depe
     classes = await db.classes.find(query, {"_id": 0}).to_list(100)
     return [ClassResponse(**c) for c in classes]
 
+@api_router.get("/teacher/debug-classes")
+async def debug_teacher_classes(current_user: dict = Depends(get_current_user)):
+    """Debug endpoint to see why classes are not showing for teacher"""
+    teacher_id = current_user.get("id")
+    school_id = current_user.get("school_id")
+    teacher_name = current_user.get("name", "")
+    
+    debug_info = {
+        "teacher_info": {
+            "id": teacher_id,
+            "name": teacher_name,
+            "email": current_user.get("email"),
+            "school_id": school_id
+        },
+        "detection_methods": {},
+        "found_classes": [],
+        "raw_data": {}
+    }
+    
+    # Fetch all classes for the school
+    all_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(100)
+    debug_info["raw_data"]["total_classes_in_school"] = len(all_classes)
+    debug_info["raw_data"]["sample_classes"] = all_classes[:3] if all_classes else []
+    
+    seen_class_ids = set()
+    
+    # Method 1: class_teacher_id match
+    method1_classes = [cls for cls in all_classes if cls.get("class_teacher_id") == teacher_id]
+    debug_info["detection_methods"]["method1_class_teacher_id"] = {
+        "count": len(method1_classes),
+        "classes": [c.get("name") or c.get("class_name") for c in method1_classes]
+    }
+    for cls in method1_classes:
+        if cls.get("id") not in seen_class_ids:
+            debug_info["found_classes"].append(cls)
+            seen_class_ids.add(cls.get("id"))
+    
+    # Method 2: Check user's assigned_classes field
+    user = await db.users.find_one({"id": teacher_id}, {"_id": 0, "assigned_classes": 1})
+    assigned_class_ids = user.get("assigned_classes", []) if user else []
+    debug_info["raw_data"]["user_assigned_classes"] = assigned_class_ids
+    
+    method2_classes = [cls for cls in all_classes if cls.get("id") in assigned_class_ids]
+    debug_info["detection_methods"]["method2_assigned_classes"] = {
+        "count": len(method2_classes),
+        "classes": [c.get("name") or c.get("class_name") for c in method2_classes]
+    }
+    for cls in method2_classes:
+        if cls.get("id") not in seen_class_ids:
+            debug_info["found_classes"].append(cls)
+            seen_class_ids.add(cls.get("id"))
+    
+    # Method 3: Name-based matching
+    method3_classes = []
+    if teacher_name:
+        for cls in all_classes:
+            class_teacher_name = cls.get("class_teacher_name", "")
+            if class_teacher_name:
+                # Exact match
+                if teacher_name.lower() == class_teacher_name.lower():
+                    method3_classes.append(cls)
+                    if cls.get("id") not in seen_class_ids:
+                        debug_info["found_classes"].append(cls)
+                        seen_class_ids.add(cls.get("id"))
+                # Partial match
+                elif any(part.lower() in class_teacher_name.lower() for part in teacher_name.split()):
+                    method3_classes.append(cls)
+                    if cls.get("id") not in seen_class_ids:
+                        debug_info["found_classes"].append(cls)
+                        seen_class_ids.add(cls.get("id"))
+    
+    debug_info["detection_methods"]["method3_name_matching"] = {
+        "count": len(method3_classes),
+        "classes": [c.get("name") or c.get("class_name") for c in method3_classes],
+        "sample_class_teacher_names": [c.get("class_teacher_name") for c in all_classes[:5]]
+    }
+    
+    # Method 4: subject_allocations
+    subject_allocations = await db.subject_allocations.find(
+        {"teacher_id": teacher_id, "school_id": school_id},
+        {"_id": 0}
+    ).to_list(200)
+    debug_info["raw_data"]["subject_allocations_count"] = len(subject_allocations)
+    debug_info["raw_data"]["subject_allocations_sample"] = subject_allocations[:3] if subject_allocations else []
+    
+    if subject_allocations:
+        allocated_class_ids = list(set([alloc.get("class_id") for alloc in subject_allocations if alloc.get("class_id")]))
+        method4_classes = [cls for cls in all_classes if cls.get("id") in allocated_class_ids]
+        debug_info["detection_methods"]["method4_subject_allocations"] = {
+            "count": len(method4_classes),
+            "classes": [c.get("name") or c.get("class_name") for c in method4_classes]
+        }
+        for cls in method4_classes:
+            if cls.get("id") not in seen_class_ids:
+                debug_info["found_classes"].append(cls)
+                seen_class_ids.add(cls.get("id"))
+    else:
+        debug_info["detection_methods"]["method4_subject_allocations"] = {
+            "count": 0,
+            "classes": [],
+            "note": "No subject allocations found"
+        }
+    
+    # Method 5: timetable
+    try:
+        timetable_entries = await db.timetable.find(
+            {"teacher_name": {"$regex": teacher_name, "$options": "i"}},
+            {"_id": 0, "class_name": 1, "subject": 1}
+        ).to_list(100)
+        debug_info["raw_data"]["timetable_entries_count"] = len(timetable_entries)
+        debug_info["raw_data"]["timetable_entries_sample"] = timetable_entries[:3] if timetable_entries else []
+        
+        if timetable_entries:
+            timetable_class_names = list(set([entry.get("class_name") for entry in timetable_entries if entry.get("class_name")]))
+            method5_classes = []
+            for cls in all_classes:
+                class_name = cls.get("name") or cls.get("class_name")
+                if class_name and class_name in timetable_class_names:
+                    method5_classes.append(cls)
+                    if cls.get("id") not in seen_class_ids:
+                        debug_info["found_classes"].append(cls)
+                        seen_class_ids.add(cls.get("id"))
+            
+            debug_info["detection_methods"]["method5_timetable"] = {
+                "count": len(method5_classes),
+                "classes": [c.get("name") or c.get("class_name") for c in method5_classes],
+                "timetable_class_names": timetable_class_names
+            }
+        else:
+            debug_info["detection_methods"]["method5_timetable"] = {
+                "count": 0,
+                "classes": [],
+                "note": "No timetable entries found"
+            }
+    except Exception as e:
+        debug_info["detection_methods"]["method5_timetable"] = {
+            "error": str(e),
+            "note": "Timetable collection may not exist"
+        }
+    
+    debug_info["summary"] = {
+        "total_classes_found": len(debug_info["found_classes"]),
+        "working_methods": [k for k, v in debug_info["detection_methods"].items() if isinstance(v, dict) and v.get("count", 0) > 0]
+    }
+    
+    return debug_info
+
 @api_router.get("/teacher/my-classes")
 async def get_teacher_classes(current_user: dict = Depends(get_current_user)):
     """Get all classes assigned to the current teacher (multiple methods)"""
