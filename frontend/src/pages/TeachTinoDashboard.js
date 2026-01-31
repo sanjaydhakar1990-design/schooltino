@@ -159,19 +159,26 @@ export default function TeachTinoDashboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classesRes, noticesRes, subjectsRes, notificationsRes, assignedClassesRes] = await Promise.allSettled([
+      const [classesRes, noticesRes, subjectsRes, notificationsRes, myClassesRes] = await Promise.allSettled([
         axios.get(`${API}/classes?school_id=${user?.school_id}`, { headers }),
         axios.get(`${API}/notices?school_id=${user?.school_id}&limit=5`, { headers }),
         axios.get(`${API}/teacher/subjects?teacher_id=${user?.id}`, { headers }).catch(() => ({ data: { subjects: [] } })),
         axios.get(`${API}/notifications?school_id=${user?.school_id}&user_id=${user?.id}&role=${user?.role}`, { headers }),
-        axios.get(`${API}/users/${user?.id}/assigned-classes`, { headers }).catch(() => ({ data: { classes: [] } }))
+        axios.get(`${API}/teacher/my-classes`, { headers }).catch(() => ({ data: { classes: [] } }))
       ]);
 
-      if (classesRes.status === 'fulfilled') {
+      // Use the dedicated my-classes endpoint first
+      if (myClassesRes.status === 'fulfilled' && myClassesRes.value.data?.classes?.length > 0) {
+        const teacherClasses = myClassesRes.value.data.classes;
+        setMyClasses(teacherClasses);
+        setAssignedClass(teacherClasses[0]);
+        fetchClassStudents(teacherClasses[0].id);
+      } else if (classesRes.status === 'fulfilled') {
+        // Fallback to manual filtering if needed
         const allClasses = classesRes.value.data || [];
         let teacherClasses = [];
         
-        // Method 1: Find class where this teacher is class teacher (class_teacher_id field)
+        // Find class where this teacher is class teacher
         const myClass = allClasses.find(c => c.class_teacher_id === user?.id);
         if (myClass) {
           setAssignedClass(myClass);
@@ -179,22 +186,7 @@ export default function TeachTinoDashboard() {
           fetchClassStudents(myClass.id);
         }
         
-        // Method 2: Check assigned_classes field from user profile
-        if (assignedClassesRes.status === 'fulfilled') {
-          const assignedClassIds = assignedClassesRes.value.data?.classes || [];
-          const assignedClasses = allClasses.filter(c => assignedClassIds.includes(c.id));
-          assignedClasses.forEach(cls => {
-            if (!teacherClasses.find(tc => tc.id === cls.id)) {
-              teacherClasses.push(cls);
-              if (!myClass) {
-                setAssignedClass(cls);
-                fetchClassStudents(cls.id);
-              }
-            }
-          });
-        }
-        
-        // Method 3: Check if teacher name matches (fallback for legacy data)
+        // Check if teacher name matches (fallback for legacy data)
         const teacherNameMatch = allClasses.filter(c => 
           c.class_teacher_name && 
           user?.name && 
@@ -203,7 +195,7 @@ export default function TeachTinoDashboard() {
         teacherNameMatch.forEach(cls => {
           if (!teacherClasses.find(tc => tc.id === cls.id)) {
             teacherClasses.push(cls);
-            if (!myClass && !assignedClassesRes.value?.data?.classes?.length) {
+            if (!myClass) {
               setAssignedClass(cls);
               fetchClassStudents(cls.id);
             }
