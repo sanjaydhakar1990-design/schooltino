@@ -344,12 +344,13 @@ class StudentCreate(BaseModel):
     name: str
     class_id: str
     school_id: str
-    father_name: str
-    mother_name: str
-    dob: str
-    gender: str
-    address: str
-    mobile: str  # Parent mobile for OTP
+    # Made optional for quick admission
+    father_name: Optional[str] = None
+    mother_name: Optional[str] = None
+    dob: Optional[str] = None
+    gender: Optional[str] = "male"
+    address: Optional[str] = None
+    mobile: Optional[str] = None  # Parent mobile for OTP
     email: Optional[EmailStr] = None
     blood_group: Optional[str] = None
     photo_url: Optional[str] = None
