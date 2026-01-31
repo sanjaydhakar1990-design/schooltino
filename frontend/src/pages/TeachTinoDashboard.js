@@ -159,23 +159,58 @@ export default function TeachTinoDashboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classesRes, noticesRes, subjectsRes, notificationsRes] = await Promise.allSettled([
+      const [classesRes, noticesRes, subjectsRes, notificationsRes, assignedClassesRes] = await Promise.allSettled([
         axios.get(`${API}/classes?school_id=${user?.school_id}`, { headers }),
         axios.get(`${API}/notices?school_id=${user?.school_id}&limit=5`, { headers }),
         axios.get(`${API}/teacher/subjects?teacher_id=${user?.id}`, { headers }).catch(() => ({ data: { subjects: [] } })),
-        axios.get(`${API}/notifications?school_id=${user?.school_id}&user_id=${user?.id}&role=${user?.role}`, { headers })
+        axios.get(`${API}/notifications?school_id=${user?.school_id}&user_id=${user?.id}&role=${user?.role}`, { headers }),
+        axios.get(`${API}/users/${user?.id}/assigned-classes`, { headers }).catch(() => ({ data: { classes: [] } }))
       ]);
 
       if (classesRes.status === 'fulfilled') {
         const allClasses = classesRes.value.data || [];
+        let teacherClasses = [];
         
-        // Find class where this teacher is class teacher
+        // Method 1: Find class where this teacher is class teacher (class_teacher_id field)
         const myClass = allClasses.find(c => c.class_teacher_id === user?.id);
         if (myClass) {
           setAssignedClass(myClass);
-          setMyClasses([myClass]);
+          teacherClasses.push(myClass);
           fetchClassStudents(myClass.id);
         }
+        
+        // Method 2: Check assigned_classes field from user profile
+        if (assignedClassesRes.status === 'fulfilled') {
+          const assignedClassIds = assignedClassesRes.value.data?.classes || [];
+          const assignedClasses = allClasses.filter(c => assignedClassIds.includes(c.id));
+          assignedClasses.forEach(cls => {
+            if (!teacherClasses.find(tc => tc.id === cls.id)) {
+              teacherClasses.push(cls);
+              if (!myClass) {
+                setAssignedClass(cls);
+                fetchClassStudents(cls.id);
+              }
+            }
+          });
+        }
+        
+        // Method 3: Check if teacher name matches (fallback for legacy data)
+        const teacherNameMatch = allClasses.filter(c => 
+          c.class_teacher_name && 
+          user?.name && 
+          c.class_teacher_name.toLowerCase().includes(user.name.toLowerCase())
+        );
+        teacherNameMatch.forEach(cls => {
+          if (!teacherClasses.find(tc => tc.id === cls.id)) {
+            teacherClasses.push(cls);
+            if (!myClass && !assignedClassesRes.value?.data?.classes?.length) {
+              setAssignedClass(cls);
+              fetchClassStudents(cls.id);
+            }
+          }
+        });
+        
+        setMyClasses(teacherClasses);
         
         // Find temporarily assigned classes
         const tempClasses = allClasses.filter(c => 
