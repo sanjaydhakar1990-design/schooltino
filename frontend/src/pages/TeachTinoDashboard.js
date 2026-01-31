@@ -58,7 +58,6 @@ export default function TeachTinoDashboard() {
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
   const [todayStats, setTodayStats] = useState({ present: 0, absent: 0, late: 0, leave: 0, total: 0 });
-  const [syllabus, setSyllabus] = useState([]);
   const [studentQueries, setStudentQueries] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
