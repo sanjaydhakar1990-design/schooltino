@@ -4127,6 +4127,56 @@ async def mark_notice_as_read(notice_id: str, user_id: str):
     return {"success": True, "message": "Notice marked as read"}
 
 
+# ==================== NOTIFICATIONS ====================
+
+@api_router.get("/notifications")
+async def get_notifications(
+    school_id: str,
+    user_id: str,
+    role: Optional[str] = None,
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user)
+):
+    target_role = role or current_user.get("role")
+    query = {
+        "school_id": school_id,
+        "$or": [
+            {"target_user_id": user_id},
+            {"target_roles": {"$in": [target_role]}},
+            {"target_roles": []}
+        ]
+    }
+    notifications = await db.notifications.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    for note in notifications:
+        note["is_read"] = user_id in note.get("read_by", [])
+    return {"notifications": notifications, "total": len(notifications)}
+
+
+@api_router.post("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    user_id = data.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id required")
+    await db.notifications.update_one(
+        {"id": notification_id},
+        {"$addToSet": {"read_by": user_id}}
+    )
+    return {"success": True}
+
+
+@api_router.post("/notifications/mark-all-read")
+async def mark_all_notifications_read(data: dict, current_user: dict = Depends(get_current_user)):
+    user_id = data.get("user_id")
+    school_id = data.get("school_id")
+    if not user_id or not school_id:
+        raise HTTPException(status_code=400, detail="user_id and school_id required")
+    await db.notifications.update_many(
+        {"school_id": school_id},
+        {"$addToSet": {"read_by": user_id}}
+    )
+    return {"success": True}
+
+
 # ==================== AUDIT LOG ROUTES ====================
 
 @api_router.get("/audit-logs", response_model=List[AuditLogResponse])
