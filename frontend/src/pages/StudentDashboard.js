@@ -247,7 +247,7 @@ export default function StudyTinoDashboard() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(`${API}/student/queries`, {
-        student_id: profile.id,
+        student_id: profile.id || profile.student_id,
         student_name: profile.name,
         class_id: profile.class_id,
         class_name: profile.class_name || profile.class || 'Class',
