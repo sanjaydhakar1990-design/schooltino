@@ -977,6 +977,75 @@ export default function TeachTinoDashboard() {
         </div>
 
         {/* No Classes Warning */}
+        {/* My Subjects & Timetable Section */}
+        {mySubjects.length > 0 && (
+          <Card className="mb-6 bg-gradient-to-br from-purple-50 to-white border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-900">
+                <BookOpen className="w-5 h-5" />
+                My Subjects & Timetable
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mySubjects.map((subject, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-lg border border-purple-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{subject.subject_name || subject.name}</h4>
+                        <p className="text-sm text-gray-600">Class: {subject.class_name || subject.class}</p>
+                      </div>
+                      <Badge className="bg-purple-100 text-purple-700 text-xs">
+                        {subject.periods_per_week || 0} periods/week
+                      </Badge>
+                    </div>
+                    {subject.topics_covered !== undefined && (
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Progress</span>
+                          <span>{subject.topics_covered}/{subject.total_topics || 0}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-purple-600 h-2 rounded-full" 
+                            style={{width: `${subject.total_topics ? (subject.topics_covered / subject.total_topics * 100) : 0}%`}}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={() => {
+                          setSelectedSubjectForSyllabus(subject);
+                          setShowSyllabusTracker(true);
+                        }}
+                      >
+                        <BookOpen className="w-3 h-3 mr-1" />
+                        Syllabus
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={() => {
+                          setSelectedClass(availableClasses.find(c => c.name === subject.class_name || c.class_name === subject.class_name));
+                          setShowHomework(true);
+                        }}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Homework
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {availableClasses.length === 0 && (
           <Card className="mb-6 border-amber-200 bg-amber-50">
             <CardContent className="p-4 flex items-center gap-3">
