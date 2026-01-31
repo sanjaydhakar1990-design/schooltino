@@ -2338,6 +2338,95 @@ async def get_classes(school_id: Optional[str] = None, current_user: dict = Depe
     classes = await db.classes.find(query, {"_id": 0}).to_list(100)
     return [ClassResponse(**c) for c in classes]
 
+@api_router.post("/timetable/sync-allocations")
+async def sync_timetable_to_allocations(school_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Automatically sync timetable entries to subject_allocations
+    Admin jab timetable set karta hai, yeh endpoint call hoga aur automatically subjects allocate ho jayenge
+    """
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get all timetable entries for school
+    timetable_entries = await db.timetable.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    if not timetable_entries:
+        return {"message": "No timetable entries found", "synced": 0}
+    
+    # Group by teacher + class + subject
+    allocations_map = {}
+    
+    for entry in timetable_entries:
+        teacher_id = entry.get("teacher_id")
+        teacher_name = entry.get("teacher_name")
+        class_id = entry.get("class_id")
+        class_name = entry.get("class_name")
+        subject = entry.get("subject") or entry.get("subject_name")
+        
+        if not teacher_id or not subject:
+            continue
+        
+        key = f"{teacher_id}_{class_id}_{subject}"
+        
+        if key not in allocations_map:
+            allocations_map[key] = {
+                "teacher_id": teacher_id,
+                "teacher_name": teacher_name,
+                "class_id": class_id,
+                "class_name": class_name,
+                "subject": subject,
+                "subject_name": subject,
+                "periods": []
+            }
+        
+        # Count periods per week
+        allocations_map[key]["periods"].append(entry.get("day"))
+    
+    # Now create/update subject_allocations
+    synced_count = 0
+    for key, alloc_data in allocations_map.items():
+        periods_per_week = len(alloc_data["periods"])
+        
+        allocation = {
+            "id": str(uuid4()),
+            "teacher_id": alloc_data["teacher_id"],
+            "teacher_name": alloc_data["teacher_name"],
+            "class_id": alloc_data["class_id"],
+            "class_name": alloc_data["class_name"],
+            "subject": alloc_data["subject"],
+            "subject_name": alloc_data["subject_name"],
+            "school_id": school_id,
+            "periods_per_week": periods_per_week,
+            "topics_covered": 0,
+            "total_topics": 0,  # Will be set when syllabus is loaded
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "source": "timetable_sync"
+        }
+        
+        # Upsert (update if exists, insert if not)
+        result = await db.subject_allocations.update_one(
+            {
+                "teacher_id": alloc_data["teacher_id"],
+                "class_id": alloc_data["class_id"],
+                "subject": alloc_data["subject"]
+            },
+            {"$set": allocation},
+            upsert=True
+        )
+        
+        if result.upserted_id or result.modified_count > 0:
+            synced_count += 1
+    
+    return {
+        "message": "Timetable synced to subject allocations",
+        "synced": synced_count,
+        "total_entries": len(timetable_entries)
+    }
+
 @api_router.get("/teacher/debug-classes")
 async def debug_teacher_classes(current_user: dict = Depends(get_current_user)):
     """Debug endpoint to see why classes are not showing for teacher"""
