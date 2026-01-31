@@ -2481,7 +2481,7 @@ async def sync_timetable_to_allocations(school_id: str, current_user: dict = Dep
         periods_per_week = len(alloc_data["periods"])
         
         allocation = {
-            "id": str(uuid4()),
+            "id": str(uuid.uuid4()),
             "teacher_id": alloc_data["teacher_id"],
             "teacher_name": alloc_data["teacher_name"],
             "class_id": alloc_data["class_id"],
