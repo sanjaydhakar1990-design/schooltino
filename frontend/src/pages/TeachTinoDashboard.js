@@ -1,7 +1,6 @@
 /**
- * TeachTino Dashboard - Clean & Simple
- * For Teachers, Principals, VPs, and Staff
- * Features: Attendance, Leave, Notices, Homework, Syllabus, Tino AI
+ * TeachTino Dashboard - Enhanced Version
+ * Features: Attendance, Syllabus Tracking, Homework, Leave, Notices, Student Queries
  */
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -25,11 +24,22 @@ import {
   Send, User, CalendarDays, Loader2, Brain,
   BarChart3, Zap, Home, PlusCircle, Edit,
   ChevronRight, AlertTriangle, BookMarked, 
-  FileEdit, UserCheck, UserX, Check, X, RefreshCw
+  FileEdit, UserCheck, UserX, Check, X, RefreshCw,
+  Play, Pause, ChevronDown, MessageCircle, Award,
+  TrendingUp, Target, Book, Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Attendance Status Options
+const ATTENDANCE_OPTIONS = [
+  { value: 'present', label: 'Present (उपस्थित)', color: 'bg-green-500', icon: '✓' },
+  { value: 'absent', label: 'Absent (अनुपस्थित)', color: 'bg-red-500', icon: '✗' },
+  { value: 'late', label: 'Late (देर से)', color: 'bg-yellow-500', icon: '⏰' },
+  { value: 'half_day', label: 'Half Day (आधा दिन)', color: 'bg-orange-500', icon: '½' },
+  { value: 'leave', label: 'On Leave (छुट्टी)', color: 'bg-blue-500', icon: '📝' },
+];
 
 export default function TeachTinoDashboard() {
   const navigate = useNavigate();
@@ -40,12 +50,16 @@ export default function TeachTinoDashboard() {
   // Data states
   const [myClasses, setMyClasses] = useState([]);
   const [assignedClass, setAssignedClass] = useState(null);
+  const [tempAssignedClasses, setTempAssignedClasses] = useState([]);
+  const [mySubjects, setMySubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [recentNotices, setRecentNotices] = useState([]);
   const [myLeaves, setMyLeaves] = useState([]);
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
-  const [todayStats, setTodayStats] = useState({ present: 0, absent: 0, total: 0 });
+  const [todayStats, setTodayStats] = useState({ present: 0, absent: 0, late: 0, leave: 0, total: 0 });
+  const [syllabus, setSyllabus] = useState([]);
+  const [studentQueries, setStudentQueries] = useState([]);
   
   // Dialogs
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -58,6 +72,9 @@ export default function TeachTinoDashboard() {
   const [selectedClassForAttendance, setSelectedClassForAttendance] = useState(null);
   const [showHomeworkList, setShowHomeworkList] = useState(false);
   const [homeworkSubmissions, setHomeworkSubmissions] = useState([]);
+  const [showSyllabusTracker, setShowSyllabusTracker] = useState(false);
+  const [showQueriesDialog, setShowQueriesDialog] = useState(false);
+  const [selectedSubjectForSyllabus, setSelectedSubjectForSyllabus] = useState(null);
   
   // Forms
   const [leaveForm, setLeaveForm] = useState({
@@ -74,6 +91,8 @@ export default function TeachTinoDashboard() {
   const [homeworkForm, setHomeworkForm] = useState({
     subject: '',
     class_id: '',
+    chapter: '',
+    topic: '',
     description: '',
     due_date: ''
   });
@@ -111,27 +130,37 @@ export default function TeachTinoDashboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classesRes, noticesRes, staffRes] = await Promise.allSettled([
+      const [classesRes, noticesRes, subjectsRes] = await Promise.allSettled([
         axios.get(`${API}/classes?school_id=${user?.school_id}`, { headers }),
         axios.get(`${API}/notices?school_id=${user?.school_id}&limit=5`, { headers }),
-        axios.get(`${API}/staff/${user?.id}`, { headers }).catch(() => ({ data: null }))
+        axios.get(`${API}/teacher/subjects?teacher_id=${user?.id}`, { headers }).catch(() => ({ data: [] }))
       ]);
 
       if (classesRes.status === 'fulfilled') {
         const allClasses = classesRes.value.data || [];
-        setMyClasses(allClasses);
         
         // Find class where this teacher is class teacher
         const myClass = allClasses.find(c => c.class_teacher_id === user?.id);
         if (myClass) {
           setAssignedClass(myClass);
-          // Fetch students of this class
+          setMyClasses([myClass]);
           fetchClassStudents(myClass.id);
         }
+        
+        // Find temporarily assigned classes
+        const tempClasses = allClasses.filter(c => 
+          c.temp_teacher_id === user?.id || 
+          c.substitute_teacher_id === user?.id
+        );
+        setTempAssignedClasses(tempClasses);
       }
       
       if (noticesRes.status === 'fulfilled') {
         setRecentNotices(noticesRes.value.data?.slice(0, 5) || []);
+      }
+
+      if (subjectsRes.status === 'fulfilled') {
+        setMySubjects(subjectsRes.value.data || []);
       }
 
       // Fetch my leaves
@@ -151,6 +180,15 @@ export default function TeachTinoDashboard() {
           console.log('No pending leaves');
         }
       }
+
+      // Fetch student queries
+      try {
+        const queriesRes = await axios.get(`${API}/teacher/queries?teacher_id=${user?.id}`, { headers });
+        setStudentQueries(queriesRes.data || []);
+      } catch (e) {
+        console.log('No queries');
+      }
+
     } catch (error) {
       console.error('Fetch error:', error);
     } finally {
@@ -166,7 +204,7 @@ export default function TeachTinoDashboard() {
       });
       setStudents(res.data || []);
       
-      // Initialize attendance data
+      // Initialize attendance data with 'present' as default
       const initialAttendance = {};
       (res.data || []).forEach(s => {
         initialAttendance[s.id] = 'present';
@@ -177,6 +215,8 @@ export default function TeachTinoDashboard() {
       setTodayStats({
         present: res.data?.length || 0,
         absent: 0,
+        late: 0,
+        leave: 0,
         total: res.data?.length || 0
       });
     } catch (e) {
@@ -184,7 +224,18 @@ export default function TeachTinoDashboard() {
     }
   };
 
-  // Open attendance for a specific class
+  // Get available classes for attendance (assigned + temp assigned)
+  const getAvailableClasses = () => {
+    const classes = [];
+    if (assignedClass) {
+      classes.push({ ...assignedClass, type: 'Class Teacher' });
+    }
+    tempAssignedClasses.forEach(c => {
+      classes.push({ ...c, type: 'Temporary' });
+    });
+    return classes;
+  };
+
   const openAttendanceForClass = async (cls) => {
     setSelectedClassForAttendance(cls);
     await fetchClassStudents(cls.id);
@@ -192,40 +243,57 @@ export default function TeachTinoDashboard() {
     setShowAttendanceSheet(true);
   };
 
-  // Fetch homework submissions for teacher
-  const fetchHomeworkSubmissions = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/homework/submissions?school_id=${user?.school_id}&teacher_id=${user?.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setHomeworkSubmissions(res.data || []);
-    } catch (e) {
-      console.log('No submissions found');
-      setHomeworkSubmissions([]);
-    }
-  };
-
-  // Approve/Reject homework
-  const handleHomeworkReview = async (submissionId, status, feedback = '') => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API}/homework/submissions/${submissionId}/review`, {
-        status,
-        feedback,
-        reviewed_by: user?.id
-      }, { headers: { Authorization: `Bearer ${token}` }});
-      
-      toast.success(`Homework ${status === 'approved' ? 'approved ✅' : 'needs revision 📝'}`);
-      fetchHomeworkSubmissions();
-    } catch (error) {
-      toast.error('Review submit करने में error');
-    }
-  };
-
   const handleLogout = () => {
     logout();
     navigate('/teachtino');
+  };
+
+  // ============= ATTENDANCE =============
+  const markAttendance = (studentId, status) => {
+    setAttendanceData(prev => ({
+      ...prev,
+      [studentId]: status
+    }));
+    
+    // Update stats
+    const newData = { ...attendanceData, [studentId]: status };
+    const present = Object.values(newData).filter(s => s === 'present').length;
+    const absent = Object.values(newData).filter(s => s === 'absent').length;
+    const late = Object.values(newData).filter(s => s === 'late').length;
+    const leave = Object.values(newData).filter(s => s === 'leave' || s === 'half_day').length;
+    setTodayStats({ present, absent, late, leave, total: students.length });
+  };
+
+  const submitAttendance = async () => {
+    const targetClass = selectedClassForAttendance || assignedClass;
+    if (!targetClass) {
+      toast.error('No class selected');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const attendanceRecords = Object.entries(attendanceData).map(([studentId, status]) => ({
+        student_id: studentId,
+        status,
+        date: today,
+        class_id: targetClass.id,
+        school_id: user?.school_id,
+        marked_by: user?.id
+      }));
+      
+      await axios.post(`${API}/attendance/bulk`, {
+        school_id: user?.school_id,
+        class_id: targetClass.id,
+        date: today,
+        records: attendanceRecords
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success(`✅ Attendance submitted! P:${todayStats.present} A:${todayStats.absent} L:${todayStats.late}`);
+      setShowAttendanceSheet(false);
+    } catch (error) {
+      toast.error('Attendance submit करने में error');
+    }
   };
 
   // ============= LEAVE MANAGEMENT =============
@@ -262,51 +330,6 @@ export default function TeachTinoDashboard() {
       fetchData();
     } catch (error) {
       toast.error('Action failed');
-    }
-  };
-
-  // ============= ATTENDANCE =============
-  const markAttendance = (studentId, status) => {
-    setAttendanceData(prev => ({
-      ...prev,
-      [studentId]: status
-    }));
-    
-    // Update stats
-    const newData = { ...attendanceData, [studentId]: status };
-    const present = Object.values(newData).filter(s => s === 'present').length;
-    const absent = Object.values(newData).filter(s => s === 'absent').length;
-    setTodayStats({ present, absent, total: students.length });
-  };
-
-  const submitAttendance = async () => {
-    if (!assignedClass) {
-      toast.error('No class assigned');
-      return;
-    }
-    
-    try {
-      const token = localStorage.getItem('token');
-      const attendanceRecords = Object.entries(attendanceData).map(([studentId, status]) => ({
-        student_id: studentId,
-        status,
-        date: today,
-        class_id: assignedClass.id,
-        school_id: user?.school_id,
-        marked_by: user?.id
-      }));
-      
-      await axios.post(`${API}/attendance/bulk`, {
-        school_id: user?.school_id,
-        class_id: assignedClass.id,
-        date: today,
-        records: attendanceRecords
-      }, { headers: { Authorization: `Bearer ${token}` }});
-      
-      toast.success(`✅ Attendance submitted! Present: ${todayStats.present}, Absent: ${todayStats.absent}`);
-      setShowAttendanceSheet(false);
-    } catch (error) {
-      toast.error('Attendance submit करने में error');
     }
   };
 
@@ -352,9 +375,86 @@ export default function TeachTinoDashboard() {
       
       toast.success('Homework assigned! ✅');
       setShowHomeworkDialog(false);
-      setHomeworkForm({ subject: '', class_id: '', description: '', due_date: '' });
+      setHomeworkForm({ subject: '', class_id: '', chapter: '', topic: '', description: '', due_date: '' });
     } catch (error) {
       toast.error('Homework assign करने में error');
+    }
+  };
+
+  // Fetch homework submissions for teacher
+  const fetchHomeworkSubmissions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/homework/submissions?school_id=${user?.school_id}&teacher_id=${user?.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setHomeworkSubmissions(res.data || []);
+    } catch (e) {
+      setHomeworkSubmissions([]);
+    }
+  };
+
+  // Approve/Reject homework
+  const handleHomeworkReview = async (submissionId, status, feedback = '') => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/homework/submissions/${submissionId}/review`, {
+        status,
+        feedback,
+        reviewed_by: user?.id
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success(`Homework ${status === 'approved' ? 'approved ✅' : 'needs revision 📝'}`);
+      fetchHomeworkSubmissions();
+    } catch (error) {
+      toast.error('Review submit करने में error');
+    }
+  };
+
+  // ============= SYLLABUS TRACKING =============
+  const fetchSyllabus = async (subjectId, classId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/syllabus?subject_id=${subjectId}&class_id=${classId}&school_id=${user?.school_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSyllabus(res.data || []);
+    } catch (e) {
+      setSyllabus([]);
+    }
+  };
+
+  const markTopicComplete = async (topicId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/syllabus/mark-complete`, {
+        topic_id: topicId,
+        teacher_id: user?.id,
+        completed_date: today
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success('Topic marked as complete! ✅');
+      if (selectedSubjectForSyllabus) {
+        fetchSyllabus(selectedSubjectForSyllabus.subject_id, selectedSubjectForSyllabus.class_id);
+      }
+    } catch (error) {
+      toast.error('Error marking topic');
+    }
+  };
+
+  // ============= STUDENT QUERIES =============
+  const handleAnswerQuery = async (queryId, answer) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/teacher/queries/${queryId}/answer`, {
+        answer,
+        answered_by: user?.id
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success('Answer sent! ✅');
+      fetchData();
+    } catch (error) {
+      toast.error('Error sending answer');
     }
   };
 
@@ -427,8 +527,10 @@ export default function TeachTinoDashboard() {
     );
   }
 
+  const availableClasses = getAvailableClasses();
+
   return (
-    <div className="min-h-screen bg-white" data-testid="teachtino-dashboard">
+    <div className="min-h-screen bg-gray-50" data-testid="teachtino-dashboard">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
@@ -465,11 +567,18 @@ export default function TeachTinoDashboard() {
           <p className="text-gray-500">
             {new Date().toLocaleDateString('hi-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          {assignedClass && (
-            <Badge className="mt-2 bg-emerald-100 text-emerald-700">
-              Class Teacher: {assignedClass.name}
-            </Badge>
-          )}
+          <div className="flex gap-2 mt-2">
+            {assignedClass && (
+              <Badge className="bg-emerald-100 text-emerald-700">
+                Class Teacher: {assignedClass.name}
+              </Badge>
+            )}
+            {tempAssignedClasses.length > 0 && (
+              <Badge className="bg-amber-100 text-amber-700">
+                +{tempAssignedClasses.length} Temp Classes
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Quick Stats */}
@@ -479,7 +588,7 @@ export default function TeachTinoDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-gray-500">My Classes</p>
-                  <p className="text-2xl font-bold text-gray-900">{myClasses.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{availableClasses.length}</p>
                 </div>
                 <BookOpen className="w-8 h-8 text-indigo-500" />
               </div>
@@ -514,10 +623,10 @@ export default function TeachTinoDashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500">Students</p>
-                  <p className="text-2xl font-bold text-gray-900">{students.length}</p>
+                  <p className="text-xs text-gray-500">Student Queries</p>
+                  <p className="text-2xl font-bold text-purple-600">{studentQueries.filter(q => !q.answered).length}</p>
                 </div>
-                <Users className="w-8 h-8 text-blue-500" />
+                <MessageCircle className="w-8 h-8 text-purple-500" />
               </div>
             </CardContent>
           </Card>
@@ -527,13 +636,15 @@ export default function TeachTinoDashboard() {
         <div className="mb-6">
           <h3 className="font-semibold text-gray-800 mb-3">Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Button 
-              onClick={() => setShowClassSelector(true)}
-              className="h-auto py-4 flex flex-col items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
-            >
-              <ClipboardCheck className="w-6 h-6" />
-              <span>Mark Attendance</span>
-            </Button>
+            {availableClasses.length > 0 && (
+              <Button 
+                onClick={() => setShowClassSelector(true)}
+                className="h-auto py-4 flex flex-col items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
+              >
+                <ClipboardCheck className="w-6 h-6" />
+                <span>Mark Attendance</span>
+              </Button>
+            )}
             
             <Button 
               onClick={() => setShowLeaveDialog(true)}
@@ -572,15 +683,53 @@ export default function TeachTinoDashboard() {
             </Button>
             
             <Button 
-              onClick={() => setShowStudentLeaveDialog(true)}
+              onClick={() => setShowSyllabusTracker(true)}
               variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2 border-rose-300 text-rose-700 hover:bg-rose-50"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
             >
-              <UserX className="w-6 h-6" />
-              <span>Student Leave</span>
+              <BookMarked className="w-6 h-6" />
+              <span>Syllabus Tracker</span>
             </Button>
+            
+            <Button 
+              onClick={() => setShowQueriesDialog(true)}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-pink-300 text-pink-700 hover:bg-pink-50"
+            >
+              <MessageCircle className="w-6 h-6" />
+              <span>Student Queries</span>
+              {studentQueries.filter(q => !q.answered).length > 0 && (
+                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs">
+                  {studentQueries.filter(q => !q.answered).length}
+                </Badge>
+              )}
+            </Button>
+            
+            {assignedClass && (
+              <Button 
+                onClick={() => setShowStudentLeaveDialog(true)}
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2 border-rose-300 text-rose-700 hover:bg-rose-50"
+              >
+                <UserX className="w-6 h-6" />
+                <span>Student Leave</span>
+              </Button>
+            )}
           </div>
         </div>
+
+        {/* No Classes Warning */}
+        {availableClasses.length === 0 && (
+          <Card className="mb-6 border-amber-200 bg-amber-50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <AlertTriangle className="w-6 h-6 text-amber-600" />
+              <div>
+                <p className="font-medium text-amber-800">No Class Assigned</p>
+                <p className="text-sm text-amber-600">आपको कोई class assign नहीं है। Principal से संपर्क करें।</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recent Notices */}
         <Card className="mb-6 border shadow-sm">
@@ -687,18 +836,18 @@ export default function TeachTinoDashboard() {
             <span className="text-xs">Home</span>
           </button>
           <button 
-            onClick={() => setShowClassSelector(true)}
-            className="flex flex-col items-center gap-1 p-2 text-gray-500"
+            onClick={() => availableClasses.length > 0 && setShowClassSelector(true)}
+            className={`flex flex-col items-center gap-1 p-2 ${availableClasses.length > 0 ? 'text-gray-500' : 'text-gray-300'}`}
           >
             <ClipboardCheck className="w-5 h-5" />
             <span className="text-xs">Attendance</span>
           </button>
           <button 
-            onClick={() => setShowLeaveDialog(true)}
+            onClick={() => setShowSyllabusTracker(true)}
             className="flex flex-col items-center gap-1 p-2 text-gray-500"
           >
-            <CalendarDays className="w-5 h-5" />
-            <span className="text-xs">Leave</span>
+            <BookMarked className="w-5 h-5" />
+            <span className="text-xs">Syllabus</span>
           </button>
           <button 
             onClick={() => { fetchHomeworkSubmissions(); setShowHomeworkList(true); }}
@@ -729,8 +878,8 @@ export default function TeachTinoDashboard() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2 max-h-80 overflow-y-auto">
-            {myClasses.length > 0 ? (
-              myClasses.map((cls) => (
+            {availableClasses.length > 0 ? (
+              availableClasses.map((cls) => (
                 <button
                   key={cls.id}
                   onClick={() => openAttendanceForClass(cls)}
@@ -738,19 +887,23 @@ export default function TeachTinoDashboard() {
                 >
                   <div>
                     <p className="font-medium text-gray-800">{cls.name}</p>
-                    <p className="text-sm text-gray-500">{cls.section && `Section ${cls.section}`}</p>
+                    <p className="text-sm text-gray-500">{cls.type}</p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400" />
                 </button>
               ))
             ) : (
-              <p className="text-center text-gray-500 py-8">No classes found</p>
+              <div className="text-center py-8">
+                <AlertTriangle className="w-12 h-12 mx-auto text-amber-400 mb-3" />
+                <p className="text-gray-500">No classes assigned</p>
+                <p className="text-sm text-gray-400">आपको कोई class assign नहीं है</p>
+              </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Attendance Sheet Dialog */}
+      {/* Attendance Sheet Dialog - Enhanced with more options */}
       <Dialog open={showAttendanceSheet} onOpenChange={setShowAttendanceSheet}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -762,10 +915,22 @@ export default function TeachTinoDashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="font-medium">Date: {today}</span>
-              <div className="flex gap-4 text-sm">
-                <span className="text-emerald-600">Present: {todayStats.present}</span>
-                <span className="text-rose-600">Absent: {todayStats.absent}</span>
+              <div className="flex gap-3 text-sm">
+                <span className="text-emerald-600">P: {todayStats.present}</span>
+                <span className="text-rose-600">A: {todayStats.absent}</span>
+                <span className="text-yellow-600">L: {todayStats.late}</span>
+                <span className="text-blue-600">Leave: {todayStats.leave}</span>
               </div>
+            </div>
+            
+            {/* Legend */}
+            <div className="flex flex-wrap gap-2 p-2 bg-gray-100 rounded-lg">
+              {ATTENDANCE_OPTIONS.map(opt => (
+                <div key={opt.value} className="flex items-center gap-1 text-xs">
+                  <span className={`w-3 h-3 rounded ${opt.color}`}></span>
+                  <span>{opt.label}</span>
+                </div>
+              ))}
             </div>
             
             <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -778,22 +943,21 @@ export default function TeachTinoDashboard() {
                       <p className="text-xs text-gray-500">Roll: {student.roll_no || idx + 1}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant={attendanceData[student.id] === 'present' ? 'default' : 'outline'}
-                      className={attendanceData[student.id] === 'present' ? 'bg-emerald-600' : ''}
-                      onClick={() => markAttendance(student.id, 'present')}
-                    >
-                      <Check className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={attendanceData[student.id] === 'absent' ? 'destructive' : 'outline'}
-                      onClick={() => markAttendance(student.id, 'absent')}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                  <div className="flex gap-1">
+                    {ATTENDANCE_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => markAttendance(student.id, opt.value)}
+                        className={`w-8 h-8 rounded flex items-center justify-center text-white text-sm transition-all ${
+                          attendanceData[student.id] === opt.value 
+                            ? opt.color + ' ring-2 ring-offset-1 ring-gray-400' 
+                            : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+                        }`}
+                        title={opt.label}
+                      >
+                        {opt.icon}
+                      </button>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -877,7 +1041,7 @@ export default function TeachTinoDashboard() {
                 className="w-full mt-1 p-2 border rounded-lg"
               >
                 <option value="">All Classes</option>
-                {myClasses.map(cls => (
+                {availableClasses.map(cls => (
                   <option key={cls.id} value={cls.id}>{cls.name}</option>
                 ))}
               </select>
@@ -907,33 +1071,53 @@ export default function TeachTinoDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Homework Dialog */}
+      {/* Homework Dialog - Enhanced with Chapter/Topic */}
       <Dialog open={showHomeworkDialog} onOpenChange={setShowHomeworkDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Assign Homework</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Class</label>
-              <select
-                value={homeworkForm.class_id}
-                onChange={(e) => setHomeworkForm({ ...homeworkForm, class_id: e.target.value })}
-                className="w-full mt-1 p-2 border rounded-lg"
-              >
-                <option value="">Select Class</option>
-                {myClasses.map(cls => (
-                  <option key={cls.id} value={cls.id}>{cls.name}</option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Class</label>
+                <select
+                  value={homeworkForm.class_id}
+                  onChange={(e) => setHomeworkForm({ ...homeworkForm, class_id: e.target.value })}
+                  className="w-full mt-1 p-2 border rounded-lg"
+                >
+                  <option value="">Select Class</option>
+                  {availableClasses.map(cls => (
+                    <option key={cls.id} value={cls.id}>{cls.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Subject</label>
+                <Input
+                  value={homeworkForm.subject}
+                  onChange={(e) => setHomeworkForm({ ...homeworkForm, subject: e.target.value })}
+                  placeholder="e.g., Mathematics"
+                />
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium">Subject</label>
-              <Input
-                value={homeworkForm.subject}
-                onChange={(e) => setHomeworkForm({ ...homeworkForm, subject: e.target.value })}
-                placeholder="Subject name..."
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Chapter</label>
+                <Input
+                  value={homeworkForm.chapter}
+                  onChange={(e) => setHomeworkForm({ ...homeworkForm, chapter: e.target.value })}
+                  placeholder="e.g., Chapter 5"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Topic</label>
+                <Input
+                  value={homeworkForm.topic}
+                  onChange={(e) => setHomeworkForm({ ...homeworkForm, topic: e.target.value })}
+                  placeholder="e.g., Quadratic Equations"
+                />
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium">Due Date</label>
@@ -1037,7 +1221,6 @@ export default function TeachTinoDashboard() {
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col h-96">
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-2">
               {aiMessages.length === 0 && (
                 <div className="text-center text-gray-500 py-8">
@@ -1067,7 +1250,6 @@ export default function TeachTinoDashboard() {
               <div ref={chatEndRef} />
             </div>
             
-            {/* Input */}
             <div className="flex gap-2">
               <Input
                 value={aiInput}
@@ -1148,6 +1330,113 @@ export default function TeachTinoDashboard() {
                 <FileEdit className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                 <p className="text-gray-500">No homework submissions yet</p>
                 <p className="text-sm text-gray-400">Students will appear here when they submit homework</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Syllabus Tracker Dialog */}
+      <Dialog open={showSyllabusTracker} onOpenChange={setShowSyllabusTracker}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookMarked className="w-5 h-5 text-indigo-600" />
+              Syllabus Tracker
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              यहां आप अपने assigned subjects का syllabus track कर सकते हैं।
+            </p>
+            
+            {/* Subject list will be shown here */}
+            <div className="space-y-3">
+              {mySubjects.length > 0 ? (
+                mySubjects.map((sub, idx) => (
+                  <div key={idx} className="p-4 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-800">{sub.subject_name}</p>
+                        <p className="text-sm text-gray-500">{sub.class_name}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-indigo-600">{sub.completed || 0}% Complete</p>
+                        <div className="w-24 h-2 bg-gray-200 rounded-full mt-1">
+                          <div 
+                            className="h-full bg-indigo-600 rounded-full" 
+                            style={{ width: `${sub.completed || 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <BookMarked className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500">No subjects assigned yet</p>
+                  <p className="text-sm text-gray-400">Admin से subject assign करवाएं</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Queries Dialog */}
+      <Dialog open={showQueriesDialog} onOpenChange={setShowQueriesDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-pink-600" />
+              Student Queries
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {studentQueries.length > 0 ? (
+              studentQueries.map((query, idx) => (
+                <div key={idx} className={`p-4 rounded-lg border ${query.answered ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{query.student_name}</p>
+                      <p className="text-sm text-gray-500">{query.subject} • {query.class_name}</p>
+                    </div>
+                    <Badge className={query.answered ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}>
+                      {query.answered ? 'Answered' : 'Pending'}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-gray-700 p-2 bg-white rounded">{query.question}</p>
+                  
+                  {query.answered ? (
+                    <div className="mt-2 p-2 bg-green-100 rounded">
+                      <p className="text-sm text-green-800">{query.answer}</p>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <Textarea 
+                        placeholder="Answer this query..."
+                        className="mb-2"
+                        id={`answer-${query.id}`}
+                      />
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          const answer = document.getElementById(`answer-${query.id}`)?.value;
+                          if (answer) handleAnswerQuery(query.id, answer);
+                        }}
+                      >
+                        <Send className="w-4 h-4 mr-1" /> Send Answer
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <MessageCircle className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500">No student queries</p>
+                <p className="text-sm text-gray-400">Students can ask questions via StudyTino</p>
               </div>
             )}
           </div>
