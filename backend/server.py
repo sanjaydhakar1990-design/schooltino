@@ -1949,6 +1949,53 @@ async def get_teacher_assignments(teacher_id: str, current_user: dict = Depends(
         "class_teacher_of": teacher.get("class_teacher_of")
     }
 
+
+@api_router.get("/teacher/subjects")
+async def get_teacher_subjects(
+    teacher_id: Optional[str] = None,
+    school_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get teacher's assigned subjects with class info"""
+    resolved_teacher_id = teacher_id or current_user.get("id")
+    resolved_school_id = school_id or current_user.get("school_id")
+
+    allocations = await db.subject_allocations.find(
+        {"teacher_id": resolved_teacher_id, "school_id": resolved_school_id},
+        {"_id": 0}
+    ).to_list(200)
+
+    class_ids = list({a.get("class_id") for a in allocations if a.get("class_id")})
+    class_records = await db.classes.find(
+        {"id": {"$in": class_ids}},
+        {"_id": 0, "id": 1, "name": 1}
+    ).to_list(200)
+    class_map = {c["id"]: c for c in class_records}
+
+    school = await db.schools.find_one({"id": resolved_school_id}, {"_id": 0, "board": 1, "board_type": 1})
+    board = (school or {}).get("board") or (school or {}).get("board_type") or "NCERT"
+
+    subjects = []
+    for alloc in allocations:
+        class_info = class_map.get(alloc.get("class_id"), {})
+        class_name = class_info.get("name")
+        subjects.append({
+            "class_id": alloc.get("class_id"),
+            "class_name": class_name or alloc.get("class_id"),
+            "class_number": extract_class_number(class_name),
+            "subject": alloc.get("subject"),
+            "teacher_id": resolved_teacher_id,
+            "periods_per_week": alloc.get("periods_per_week"),
+            "board": board
+        })
+
+    return {
+        "teacher_id": resolved_teacher_id,
+        "school_id": resolved_school_id,
+        "subjects": subjects,
+        "total": len(subjects)
+    }
+
 @api_router.delete("/teachers/{teacher_id}/remove-assignment/{class_id}")
 async def remove_teacher_from_class(teacher_id: str, class_id: str, current_user: dict = Depends(get_current_user)):
     """Principal removes teacher from a class"""
