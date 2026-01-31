@@ -1803,19 +1803,19 @@ export default function TeachTinoDashboard() {
           <div className="space-y-4">
             {studentQueries.length > 0 ? (
               studentQueries.map((query, idx) => (
-                <div key={idx} className={`p-4 rounded-lg border ${query.answered ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                <div key={idx} className={`p-4 rounded-lg border ${(query.status === 'answered' || query.answer) ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-medium text-gray-800">{query.student_name}</p>
                       <p className="text-sm text-gray-500">{query.subject} • {query.class_name}</p>
                     </div>
-                    <Badge className={query.answered ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}>
-                      {query.answered ? 'Answered' : 'Pending'}
+                    <Badge className={(query.status === 'answered' || query.answer) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}>
+                      {(query.status === 'answered' || query.answer) ? 'Answered' : 'Pending'}
                     </Badge>
                   </div>
                   <p className="mt-2 text-gray-700 p-2 bg-white rounded">{query.question}</p>
                   
-                  {query.answered ? (
+                  {(query.status === 'answered' || query.answer) ? (
                     <div className="mt-2 p-2 bg-green-100 rounded">
                       <p className="text-sm text-green-800">{query.answer}</p>
                     </div>
@@ -1824,14 +1824,17 @@ export default function TeachTinoDashboard() {
                       <Textarea 
                         placeholder="Answer this query..."
                         className="mb-2"
-                        id={`answer-${query.id}`}
+                        value={queryAnswerDrafts[query.id] || ''}
+                        onChange={(e) => setQueryAnswerDrafts((prev) => ({ ...prev, [query.id]: e.target.value }))}
+                        data-testid={`query-answer-input-${query.id}`}
                       />
                       <Button 
                         size="sm"
                         onClick={() => {
-                          const answer = document.getElementById(`answer-${query.id}`)?.value;
+                          const answer = queryAnswerDrafts[query.id];
                           if (answer) handleAnswerQuery(query.id, answer);
                         }}
+                        data-testid={`query-answer-submit-${query.id}`}
                       >
                         <Send className="w-4 h-4 mr-1" /> Send Answer
                       </Button>
