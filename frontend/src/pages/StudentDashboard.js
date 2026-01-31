@@ -573,6 +573,7 @@ export default function StudyTinoDashboard() {
             { icon: Award, label: 'Admit Card', color: 'bg-indigo-600', action: () => setShowAdmitCardDialog(true) },
             { icon: Wallet, label: 'Pay Fees', color: 'bg-green-500', action: () => setShowPaymentDialog(true) },
             { icon: MessageCircle, label: 'Class Chat', color: 'bg-blue-500', action: () => openClassChat() },
+          { icon: Send, label: 'Ask Teacher', color: 'bg-emerald-500', action: () => setShowQueryDialog(true) },
             { icon: AlertOctagon, label: 'Complaint', color: 'bg-rose-500', action: () => setShowComplaintDialog(true) },
             { icon: Trophy, label: 'Activities', color: 'bg-amber-500', action: () => openActivities() },
             { icon: CalendarDays, label: 'Leave', color: 'bg-purple-500', action: () => setShowLeaveDialog(true) },
