@@ -981,6 +981,12 @@ async def create_notification(
     await db.notifications.insert_one(notification)
     return notification
 
+def extract_class_number(class_name: Optional[str]) -> Optional[str]:
+    if not class_name:
+        return None
+    match = re.search(r"\d+", class_name)
+    return match.group(0) if match else None
+
 async def check_if_holiday(school_id: str, date_str: str) -> str:
     """Check if given date is a holiday for the school. Returns holiday name if true, None otherwise."""
     if not school_id or not date_str:
