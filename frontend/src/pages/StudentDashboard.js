@@ -234,6 +234,38 @@ export default function StudyTinoDashboard() {
     }
   };
 
+  const handleSubmitQuery = async () => {
+    if (!queryForm.subject || !queryForm.question.trim()) {
+      toast.error('Subject aur question dono भरें');
+      return;
+    }
+    if (!profile?.id || !profile?.class_id) {
+      toast.error('Profile data missing');
+      return;
+    }
+    setQuerySubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/student/queries`, {
+        student_id: profile.id,
+        student_name: profile.name,
+        class_id: profile.class_id,
+        class_name: profile.class_name || profile.class || 'Class',
+        school_id: profile.school_id,
+        subject: queryForm.subject,
+        question: queryForm.question
+      }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+
+      toast.success('Query भेज दिया गया ✅');
+      setQueryForm({ subject: '', question: '' });
+      await fetchStudentExtras(profile);
+    } catch (error) {
+      toast.error('Query भेजने में error');
+    } finally {
+      setQuerySubmitting(false);
+    }
+  };
+
   // Open Class Chat
   const openClassChat = async () => {
     try {
