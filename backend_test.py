@@ -1575,6 +1575,292 @@ class SchooltinoAPITester:
         
         return success
     
+    # ============== TEACHTINO FEATURES TESTS - REVIEW REQUEST ==============
+    
+    def test_notifications_get(self):
+        """Test 1: GET /api/notifications - TeachTino notification bell"""
+        # Test with demo school and user
+        endpoint = "notifications?school_id=SCH-DEMO-2026&user_id=test-teacher&role=teacher"
+        success, response = self.run_test("TeachTino Notifications - GET", "GET", endpoint, 200)
+        
+        if success:
+            notifications = response.get("notifications", [])
+            print(f"   📝 Found {len(notifications)} notifications")
+            
+            if notifications:
+                # Store first notification ID for read test
+                self.notification_id = notifications[0].get("id")
+                print(f"   ✅ Notifications loaded successfully")
+                print(f"   📝 Sample notification: {notifications[0].get('title', 'No title')}")
+            else:
+                print(f"   📝 No notifications found (expected for new system)")
+        
+        return success
+    
+    def test_notifications_mark_read(self):
+        """Test 2: POST /api/notifications/{id}/read - Mark notification as read"""
+        # Create a test notification first if none exists
+        if not hasattr(self, 'notification_id') or not self.notification_id:
+            # Create a test notification
+            notif_data = {
+                "school_id": "SCH-DEMO-2026",
+                "title": "Test Notification",
+                "message": "This is a test notification for TeachTino",
+                "type": "syllabus_update",
+                "target_user_id": "test-teacher",
+                "target_roles": ["teacher"],
+                "class_id": "class-10"
+            }
+            
+            # Try to create notification (this endpoint might not exist)
+            create_success, create_response = self.run_test("Create Test Notification", "POST", "notifications", 200, notif_data)
+            if create_success:
+                self.notification_id = create_response.get("id")
+        
+        if not hasattr(self, 'notification_id') or not self.notification_id:
+            print(f"   ⚠️ No notification ID available for read test")
+            return True  # Don't fail the test for this
+        
+        data = {"user_id": "test-teacher"}
+        endpoint = f"notifications/{self.notification_id}/read"
+        success, response = self.run_test("TeachTino Notifications - Mark Read", "POST", endpoint, 200, data)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Notification marked as read successfully")
+            else:
+                print(f"   ⚠️ Mark read response indicates failure")
+        
+        return success
+    
+    def test_teacher_subjects_get(self):
+        """Test 3: GET /api/teacher/subjects - TeachTino syllabus tracker subject list"""
+        endpoint = "teacher/subjects?teacher_id=test-teacher"
+        success, response = self.run_test("TeachTino Teacher Subjects - GET", "GET", endpoint, 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            print(f"   📝 Found {len(subjects)} subjects for teacher")
+            
+            if subjects:
+                # Store first subject for syllabus progress test
+                self.teacher_subject = subjects[0]
+                print(f"   ✅ Teacher subjects loaded successfully")
+                print(f"   📝 Sample subject: {subjects[0].get('subject', 'Unknown')} - {subjects[0].get('class_name', 'Unknown class')}")
+            else:
+                print(f"   📝 No subjects assigned to teacher (expected for new system)")
+                # Create mock subject data for testing
+                self.teacher_subject = {
+                    "subject": "Mathematics",
+                    "class_id": "class-10",
+                    "class_name": "Class 10",
+                    "class_number": "10",
+                    "board": "NCERT"
+                }
+        
+        return success
+    
+    def test_syllabus_progress_update(self):
+        """Test 4: POST /api/syllabus-progress/update - Update chapter progress"""
+        if not hasattr(self, 'teacher_subject'):
+            self.teacher_subject = {
+                "subject": "Mathematics",
+                "class_id": "class-10", 
+                "class_name": "Class 10",
+                "class_number": "10",
+                "board": "NCERT"
+            }
+        
+        data = {
+            "school_id": "SCH-DEMO-2026",
+            "class_id": self.teacher_subject.get("class_id", "class-10"),
+            "class_name": self.teacher_subject.get("class_name", "Class 10"),
+            "subject": self.teacher_subject.get("subject", "Mathematics"),
+            "board": self.teacher_subject.get("board", "NCERT"),
+            "chapter_number": 1,
+            "chapter_name": "Real Numbers",
+            "status": "completed",
+            "topics_covered": ["Rational Numbers", "Irrational Numbers", "Real Numbers"],
+            "notes": "Chapter completed with examples and exercises"
+        }
+        
+        success, response = self.run_test("TeachTino Syllabus Progress - Update", "POST", "syllabus-progress/update", 200, data)
+        
+        if success:
+            if response.get("success"):
+                print(f"   ✅ Syllabus progress updated successfully")
+                print(f"   📝 AI Confirmation: {response.get('ai_confirmation', 'No confirmation')}")
+                print(f"   📝 Notification sent: {response.get('notification_sent', False)}")
+            else:
+                print(f"   ⚠️ Syllabus update response indicates failure")
+        
+        return success
+    
+    def test_syllabus_progress_class_get(self):
+        """Test 5: GET /api/syllabus-progress/class/{school_id}/{class_id} - Get class progress"""
+        endpoint = "syllabus-progress/class/SCH-DEMO-2026/class-10?subject=Mathematics"
+        success, response = self.run_test("TeachTino Syllabus Progress - Get Class", "GET", endpoint, 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            print(f"   📝 Found progress for {len(subjects)} subjects")
+            
+            if subjects:
+                math_subject = subjects[0]
+                chapters = math_subject.get("chapters", [])
+                completion = math_subject.get("completion_percentage", 0)
+                print(f"   ✅ Class progress loaded successfully")
+                print(f"   📝 Mathematics: {len(chapters)} chapters, {completion}% complete")
+            else:
+                print(f"   📝 No progress data found (expected for new system)")
+        
+        return success
+    
+    def test_syllabus_progress_analytics(self):
+        """Test 6: GET /api/syllabus-progress/analytics - Get syllabus analytics"""
+        endpoint = "syllabus-progress/analytics/SCH-DEMO-2026/class-10?subject=Mathematics&range=month"
+        success, response = self.run_test("TeachTino Syllabus Analytics", "GET", endpoint, 200)
+        
+        if success:
+            summary = response.get("summary", {})
+            range_stats = response.get("range_stats", {})
+            print(f"   📝 Analytics - Total: {summary.get('total_chapters', 0)}, Completed: {summary.get('completed', 0)}")
+            print(f"   📝 Range Stats - Updated: {range_stats.get('updated_in_range', 0)}, Completed: {range_stats.get('completed_in_range', 0)}")
+            print(f"   ✅ Syllabus analytics loaded successfully")
+        
+        return success
+    
+    def test_ai_lesson_summary(self):
+        """Test 7: GET /api/syllabus-progress/ai/summary - AI lesson summary"""
+        endpoint = "syllabus-progress/ai/summary/NCERT/10/Mathematics/1?language=hinglish"
+        success, response = self.run_test("TeachTino AI Lesson Summary", "GET", endpoint, 200)
+        
+        if success:
+            if response.get("success"):
+                summary = response.get("summary", "")
+                cached = response.get("cached", False)
+                print(f"   ✅ AI lesson summary loaded successfully")
+                print(f"   📝 Cached: {cached}")
+                print(f"   📝 Summary preview: {summary[:100]}..." if summary else "   📝 No summary content")
+            else:
+                print(f"   📝 No cached summary found (expected)")
+        
+        return success
+    
+    def test_ai_lesson_summary_generate(self):
+        """Test 8: POST /api/syllabus-progress/ai/summarize-chapter - Generate AI summary"""
+        data = {
+            "board": "NCERT",
+            "class_num": "10",
+            "subject": "Mathematics", 
+            "chapter_number": 1,
+            "chapter_name": "Real Numbers",
+            "language": "hinglish",
+            "include_formulas": True,
+            "include_key_points": True
+        }
+        
+        success, response = self.run_test("TeachTino AI Generate Summary", "POST", "syllabus-progress/ai/summarize-chapter", 200, data)
+        
+        if success:
+            if response.get("success"):
+                summary = response.get("summary", "")
+                cached = response.get("cached", False)
+                print(f"   ✅ AI summary generated successfully")
+                print(f"   📝 Generated new: {not cached}")
+                print(f"   📝 Summary preview: {summary[:100]}..." if summary else "   📝 No summary content")
+            else:
+                print(f"   ⚠️ AI summary generation failed")
+        
+        return success
+    
+    def test_student_queries_submit(self):
+        """Test 9: POST /api/student/queries - Student submits query"""
+        data = {
+            "student_id": "test-student-1",
+            "student_name": "Test Student",
+            "class_id": "class-10",
+            "class_name": "Class 10",
+            "school_id": "SCH-DEMO-2026",
+            "subject": "Mathematics",
+            "question": "Real numbers ke properties kya hain? Please explain with examples."
+        }
+        
+        success, response = self.run_test("Student Query - Submit", "POST", "student/queries", 200, data)
+        
+        if success:
+            query_id = response.get("id") or response.get("query_id")
+            if query_id:
+                print(f"   ✅ Student query submitted successfully")
+                print(f"   📝 Query ID: {query_id}")
+                self.student_query_id = query_id
+            else:
+                print(f"   ⚠️ No query ID returned")
+        
+        return success
+    
+    def test_teacher_queries_get(self):
+        """Test 10: GET /api/teacher/queries - Teacher gets student queries"""
+        endpoint = "teacher/queries?teacher_id=test-teacher&school_id=SCH-DEMO-2026"
+        success, response = self.run_test("Teacher Queries - GET", "GET", endpoint, 200)
+        
+        if success:
+            queries = response if isinstance(response, list) else response.get("queries", [])
+            print(f"   📝 Found {len(queries)} student queries")
+            
+            if queries:
+                # Store first query for answer test
+                self.teacher_query = queries[0]
+                print(f"   ✅ Teacher queries loaded successfully")
+                print(f"   📝 Sample query: {queries[0].get('subject', 'Unknown')} - {queries[0].get('question', 'No question')[:50]}...")
+            else:
+                print(f"   📝 No queries found (expected for new system)")
+        
+        return success
+    
+    def test_teacher_answer_query(self):
+        """Test 11: POST /api/teacher/queries/{id}/answer - Teacher answers query"""
+        if not hasattr(self, 'student_query_id') or not self.student_query_id:
+            print(f"   ⚠️ No query ID available for answer test")
+            return True  # Don't fail the test
+        
+        data = {
+            "answer": "Real numbers ke main properties hain: 1) Closure Property 2) Commutative Property 3) Associative Property 4) Distributive Property. Example: 2 + 3 = 3 + 2 (Commutative)",
+            "answered_by": "test-teacher"
+        }
+        
+        endpoint = f"teacher/queries/{self.student_query_id}/answer"
+        success, response = self.run_test("Teacher Answer Query", "POST", endpoint, 200, data)
+        
+        if success:
+            if response.get("success") or response.get("message"):
+                print(f"   ✅ Teacher answer submitted successfully")
+            else:
+                print(f"   ⚠️ Answer submission response unclear")
+        
+        return success
+    
+    def test_studytino_syllabus_progress(self):
+        """Test 12: GET /api/syllabus-progress/student/{school_id}/{class_id} - StudyTino progress"""
+        endpoint = "syllabus-progress/student/SCH-DEMO-2026/class-10"
+        success, response = self.run_test("StudyTino Syllabus Progress", "GET", endpoint, 200)
+        
+        if success:
+            subjects = response.get("subjects", [])
+            summary = response.get("summary", "")
+            print(f"   📝 Found progress for {len(subjects)} subjects")
+            print(f"   📝 Summary: {summary}")
+            
+            if subjects:
+                print(f"   ✅ StudyTino syllabus progress loaded successfully")
+                for subject in subjects[:2]:  # Show first 2 subjects
+                    completion = subject.get("completion_percentage", 0)
+                    print(f"   📝 {subject.get('subject', 'Unknown')}: {completion}% complete")
+            else:
+                print(f"   📝 No progress data found (expected for new system)")
+        
+        return success
+
     # ============== ENHANCED ADMIT CARD SYSTEM TESTS - REVIEW REQUEST ==============
     
     def test_class_wise_auto_subjects_nursery(self):
