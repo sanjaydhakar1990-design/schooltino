@@ -1614,6 +1614,56 @@ export default function TeachTinoDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Notifications Dialog */}
+      <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-slate-600" />
+              Notifications
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">Total: {notifications.length}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleMarkAllNotificationsRead}
+                data-testid="notifications-mark-all"
+              >
+                Mark all read
+              </Button>
+            </div>
+            {notifications.length > 0 ? (
+              notifications.map((note) => (
+                <button
+                  key={note.id}
+                  onClick={() => handleMarkNotificationRead(note.id)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${note.is_read ? 'bg-white' : 'bg-amber-50 border-amber-200'}`}
+                  data-testid={`notification-item-${note.id}`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{note.title}</p>
+                      <p className="text-xs text-gray-500 mt-1">{note.message}</p>
+                    </div>
+                    {!note.is_read && (
+                      <span className="w-2 h-2 rounded-full bg-amber-500 mt-2" />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-2">
+                    {note.created_at ? new Date(note.created_at).toLocaleString('hi-IN') : ''}
+                  </p>
+                </button>
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-8">No notifications yet</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Syllabus Tracker Dialog */}
       <Dialog open={showSyllabusTracker} onOpenChange={setShowSyllabusTracker}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
