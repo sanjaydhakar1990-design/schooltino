@@ -2296,6 +2296,49 @@ async def get_classes(school_id: Optional[str] = None, current_user: dict = Depe
     classes = await db.classes.find(query, {"_id": 0}).to_list(100)
     return [ClassResponse(**c) for c in classes]
 
+@api_router.get("/teacher/my-classes")
+async def get_teacher_classes(current_user: dict = Depends(get_current_user)):
+    """Get all classes assigned to the current teacher (multiple methods)"""
+    teacher_id = current_user.get("id")
+    school_id = current_user.get("school_id")
+    teacher_name = current_user.get("name", "")
+    
+    # Fetch all classes for the school
+    all_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(100)
+    
+    teacher_classes = []
+    seen_class_ids = set()
+    
+    # Method 1: class_teacher_id match
+    for cls in all_classes:
+        if cls.get("class_teacher_id") == teacher_id:
+            if cls.get("id") not in seen_class_ids:
+                teacher_classes.append(cls)
+                seen_class_ids.add(cls.get("id"))
+    
+    # Method 2: Check user's assigned_classes field
+    user = await db.users.find_one({"id": teacher_id}, {"_id": 0, "assigned_classes": 1})
+    if user and user.get("assigned_classes"):
+        assigned_class_ids = user.get("assigned_classes", [])
+        for cls in all_classes:
+            if cls.get("id") in assigned_class_ids and cls.get("id") not in seen_class_ids:
+                teacher_classes.append(cls)
+                seen_class_ids.add(cls.get("id"))
+    
+    # Method 3: Name-based matching (fallback for legacy systems)
+    if teacher_name:
+        for cls in all_classes:
+            class_teacher_name = cls.get("class_teacher_name", "")
+            if class_teacher_name and teacher_name.lower() in class_teacher_name.lower():
+                if cls.get("id") not in seen_class_ids:
+                    teacher_classes.append(cls)
+                    seen_class_ids.add(cls.get("id"))
+    
+    return {
+        "classes": teacher_classes,
+        "count": len(teacher_classes)
+    }
+
 @api_router.get("/classes/{class_id}", response_model=ClassResponse)
 async def get_class(class_id: str, current_user: dict = Depends(get_current_user)):
     class_doc = await db.classes.find_one({"id": class_id}, {"_id": 0})
