@@ -673,7 +673,7 @@ export default function StudyTinoDashboard() {
                       <p className="text-[10px] text-slate-400">
                         Due: {new Date(hw.due_date).toLocaleDateString('hi-IN')}
                       </p>
-                      {(hw.status === 'pending' || hw.status === 'revision') && (
+                      {(hw.status === 'pending' || hw.status === 'active' || hw.status === 'revision') && (
                         <Button 
                           size="sm" 
                           className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
