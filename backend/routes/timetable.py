@@ -357,6 +357,13 @@ async def get_teacher_timetable(teacher_id: str, school_id: str):
     # Get timetables for all assigned classes
     class_ids = list(set([a["class_id"] for a in allocations]))
     
+    # [FIX] Fetch class names to include in schedule
+    class_docs = await db.classes.find(
+        {"id": {"$in": class_ids}},
+        {"_id": 0, "id": 1, "name": 1}
+    ).to_list(length=50)
+    class_name_map = {c["id"]: c.get("name", c["id"]) for c in class_docs}
+    
     teacher_schedule = {day: [] for day in DAYS}
     
     for class_id in class_ids:
@@ -371,6 +378,7 @@ async def get_teacher_timetable(teacher_id: str, school_id: str):
                         teacher_schedule[day].append({
                             "period": period.get("period"),
                             "class_id": class_id,
+                            "class_name": class_name_map.get(class_id, class_id),  # [FIX] added class_name
                             "subject": period.get("subject")
                         })
     
