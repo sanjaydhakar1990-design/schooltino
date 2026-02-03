@@ -7180,6 +7180,8 @@ class HomeworkCreate(BaseModel):
     class_id: str
     subject: str
     description: str
+    chapter: Optional[str] = None  # [FIX] Added chapter field
+    topic: Optional[str] = None    # [FIX] Added topic field
     due_date: Optional[str] = None
     assigned_by: str
     assigned_date: Optional[str] = None
@@ -7190,7 +7192,7 @@ async def create_homework(homework: HomeworkCreate, current_user: dict = Depends
     homework_doc = {
         "id": str(uuid.uuid4()),
         **homework.model_dump(),
-        "status": "active",
+        "status": "pending",  # [FIX] Changed from "active" to "pending"
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
