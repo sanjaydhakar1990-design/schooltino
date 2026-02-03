@@ -13110,7 +13110,7 @@ async def root():
 
 # Health check endpoint for Kubernetes/Docker
 @app.get("/health")
-async def health_check():
+async def app_health_check():
     """Health check endpoint for deployment platforms"""
     return {
         "status": "healthy",
@@ -13120,7 +13120,7 @@ async def health_check():
 
 # Readiness probe endpoint
 @app.get("/ready")
-async def readiness_check():
+async def app_readiness_check():
     """Readiness probe - checks if app can serve traffic"""
     try:
         # Test database connection
