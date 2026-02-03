@@ -2830,7 +2830,7 @@ async def assign_subjects_to_class(class_id: str, body: dict, current_user: dict
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
     
-    cls = await db.classes.find_one({"id": class_id}, {"_id": 0, "name": 1, "class_name": 1, "school_id": 1})
+    cls = await db.classes.find_one({"id": class_id}, {"_id": 0, "name": 1, "school_id": 1})
     if not cls:
         raise HTTPException(status_code=404, detail="Class not found")
     
@@ -2846,11 +2846,7 @@ async def assign_subjects_to_class(class_id: str, body: dict, current_user: dict
             if existing.get("teacher_id") != teacher_id:
                 await db.subject_allocations.update_one(
                     {"_id": existing["_id"]},
-                    {"$set": {
-                        "teacher_id": teacher_id,
-                        "teacher_name": teacher.get("name"),
-                        "updated_at": datetime.now(timezone.utc).isoformat()
-                    }}
+                    {"$set": {"teacher_id": teacher_id, "updated_at": datetime.now(timezone.utc).isoformat()}}
                 )
                 updated += 1
         else:
@@ -2858,14 +2854,9 @@ async def assign_subjects_to_class(class_id: str, body: dict, current_user: dict
                 "id": str(uuid.uuid4()),
                 "school_id": school_id,
                 "class_id": class_id,
-                "class_name": cls.get("name") or cls.get("class_name"),
                 "subject": subject,
-                "subject_name": subject,
                 "teacher_id": teacher_id,
-                "teacher_name": teacher.get("name"),
                 "periods_per_week": 4,
-                "topics_covered": 0,
-                "total_topics": 0,
                 "created_at": datetime.now(timezone.utc).isoformat()
             })
             created += 1
@@ -2882,9 +2873,67 @@ async def assign_subjects_to_class(class_id: str, body: dict, current_user: dict
     })
     
     return {
-        "message": f"{created} subjects assigned, {updated} updated for {teacher.get('name')} in {cls.get('name') or cls.get('class_name')}",
+        "message": f"{created} subjects assigned, {updated} updated for {teacher.get('name')} in {cls.get('name')}",
         "created": created, "updated": updated,
         "class_id": class_id, "teacher_id": teacher_id, "subjects": subjects
+    }
+
+@api_router.post("/classes/migrate-teacher-ids")
+async def migrate_class_teacher_ids(current_user: dict = Depends(get_current_user)):
+    """
+    One-time migration: fix class_teacher_id from staff.id → users.id.
+    Old ClassesPage was calling /api/staff fallback which returned staff.id,
+    but TeachTino JWT uses users.id. This endpoint corrects existing data.
+    """
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Only Director/Admin can run migration")
+
+    school_id = current_user.get("school_id")
+    all_classes = await db.classes.find({"school_id": school_id, "class_teacher_id": {"$ne": None}}, {"_id": 0}).to_list(100)
+
+    fixed = []
+    skipped = []
+
+    for cls in all_classes:
+        old_teacher_id = cls.get("class_teacher_id")
+        if not old_teacher_id:
+            continue
+
+        # Check if this ID already points to a valid user (users.id) — if yes, skip
+        user_match = await db.users.find_one({"id": old_teacher_id}, {"_id": 0, "id": 1, "name": 1})
+        if user_match:
+            skipped.append({"class": cls.get("name"), "reason": "Already correct users.id", "teacher": user_match.get("name")})
+            continue
+
+        # It's a staff.id — look up staff record to get user_id
+        staff_match = await db.staff.find_one({"id": old_teacher_id}, {"_id": 0, "id": 1, "name": 1, "user_id": 1})
+        if staff_match and staff_match.get("user_id"):
+            correct_user_id = staff_match["user_id"]
+            # Update class with correct users.id
+            await db.classes.update_one(
+                {"id": cls["id"]},
+                {"$set": {"class_teacher_id": correct_user_id, "class_teacher_name": staff_match.get("name", "")}}
+            )
+            # Also sync assigned_classes on the user
+            await db.users.update_one(
+                {"id": correct_user_id},
+                {"$addToSet": {"assigned_classes": cls["id"]}}
+            )
+            fixed.append({
+                "class": cls.get("name"),
+                "old_id": old_teacher_id,
+                "new_id": correct_user_id,
+                "teacher": staff_match.get("name")
+            })
+        else:
+            skipped.append({"class": cls.get("name"), "reason": "Staff has no user_id (no login)", "old_id": old_teacher_id})
+
+    await log_audit(current_user["id"], "migrate", "classes", {"fixed": len(fixed), "skipped": len(skipped), "details": {"fixed": fixed, "skipped": skipped}})
+
+    return {
+        "message": f"Migration complete: {len(fixed)} fixed, {len(skipped)} skipped",
+        "fixed": fixed,
+        "skipped": skipped
     }
 
 @api_router.delete("/classes/{class_id}")
