@@ -369,14 +369,23 @@ def get_syllabus_for_class_subject(board: str, class_name: str, subject: str):
     """Get syllabus data for specific class and subject"""
     board = board.upper()
     
-    if "CBSE" in board or "NCERT" in board:
+    # MP Board + NCERT (Madhya Pradesh)
+    if "MP" in board or "MADHYA PRADESH" in board or "MP BOARD" in board:
+        syllabus_data = MP_BOARD_NCERT_SYLLABUS_2025_26
+    # RBSC + NCERT (Rajasthan Board)
+    elif "RBSC" in board or "RAJASTHAN" in board or "RBSE" in board:
+        syllabus_data = RBSC_NCERT_SYLLABUS_2025_26
+    # CBSE/NCERT
+    elif "CBSE" in board or "NCERT" in board:
         syllabus_data = CBSE_SYLLABUS_2025_26
+    # ICSE
     elif "ICSE" in board:
         syllabus_data = ICSE_SYLLABUS_2025_26
+    # State Board (Generic)
     elif "STATE" in board:
         syllabus_data = STATE_BOARD_SYLLABUS_2025_26
     else:
-        # Default to CBSE
+        # Default to CBSE if board not specified
         syllabus_data = CBSE_SYLLABUS_2025_26
     
     class_data = syllabus_data.get(class_name, {})
