@@ -19,7 +19,7 @@ import qrcode
 from io import BytesIO
 import base64
 import aiofiles
-from syllabus_data_2025_26 import get_syllabus_for_class_subject, CBSE_SYLLABUS_2025_26
+# Removed: from syllabus_data_2025_26 import get_syllabus_for_class_subject, CBSE_SYLLABUS_2025_26
 
 ROOT_DIR = Path(__file__).parent
 UPLOAD_DIR = ROOT_DIR / "uploads"
