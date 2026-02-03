@@ -227,6 +227,144 @@ ICSE_SYLLABUS_2025_26 = {
     "UKG": CBSE_SYLLABUS_2025_26["UKG"]
 }
 
+# MP Board + NCERT Syllabus 2025-26 (Madhya Pradesh)
+# MP Board follows NCERT curriculum with state-specific additions
+MP_BOARD_NCERT_SYLLABUS_2025_26 = {
+    "Nursery": CBSE_SYLLABUS_2025_26["Nursery"],  # Same as NCERT for pre-primary
+    "LKG": CBSE_SYLLABUS_2025_26["LKG"],
+    "UKG": CBSE_SYLLABUS_2025_26["UKG"],
+    "Class 1": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT) + MP Board Supplement",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + MP Board हिंदी पाठ्यपुस्तक",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Hindi"]["chapters"] + [
+                {"name": "पाठ 9: मध्यप्रदेश की कहानी", "topics": ["राज्य परिचय", "संस्कृति"]},
+                {"name": "पाठ 10: हमारा राज्य", "topics": ["भूगोल", "नदियाँ", "पर्वत"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + MP Environment Studies",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["EVS"]["chapters"] + [
+                {"name": "Chapter 10: मध्यप्रदेश का पर्यावरण", "topics": ["जंगल", "वन्यजीव", "नर्मदा नदी"]}
+            ]
+        }
+    },
+    "Class 2": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + MP Board हिंदी",
+            "chapters": [
+                {"name": "पाठ 1: ऊँट चला", "topics": ["कविता", "पशु"]},
+                {"name": "पाठ 2: भालू ने खेली फुटबॉल", "topics": ["कहानी", "खेल"]},
+                {"name": "पाठ 3: म्याऊँ, म्याऊँ!!", "topics": ["जानवर", "आवाजें"]},
+                {"name": "पाठ 4: अधिक बलवान कौन?", "topics": ["बल", "तुलना"]},
+                {"name": "पाठ 5: दोस्त की मदद", "topics": ["मित्रता", "सहायता"]},
+                {"name": "पाठ 6: बहुत हुआ", "topics": ["निर्णय", "साहस"]},
+                {"name": "पाठ 7: मेरी किताब", "topics": ["पढ़ाई", "ज्ञान"]},
+                {"name": "पाठ 8: तितली और कली", "topics": ["प्रकृति", "फूल"]},
+                {"name": "पाठ 9: MP की विशेषताएं", "topics": ["संस्कृति", "इतिहास"]},
+                {"name": "पाठ 10: हमारी नदियाँ", "topics": ["नर्मदा", "बेतवा", "चंबल"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + MP पर्यावरण अध्ययन",
+            "chapters": [
+                {"name": "Chapter 1: मेरा परिवार", "topics": ["रिश्ते", "जिम्मेदारी"]},
+                {"name": "Chapter 2: हमारा घर", "topics": ["घर के प्रकार", "कमरे"]},
+                {"name": "Chapter 3: भोजन", "topics": ["स्वस्थ भोजन", "MP के व्यंजन"]},
+                {"name": "Chapter 4: जानवर", "topics": ["पालतू", "जंगली", "MP के वन्यजीव"]},
+                {"name": "Chapter 5: पौधे", "topics": ["सागौन", "महुआ", "तेंदू"]},
+                {"name": "Chapter 6: जल", "topics": ["जल स्रोत", "नर्मदा", "जल संरक्षण"]},
+                {"name": "Chapter 7: मध्यप्रदेश का भूगोल", "topics": ["पर्वत", "नदियाँ", "जंगल"]},
+                {"name": "Chapter 8: हमारे त्योहार", "topics": ["होली", "दिवाली", "नवरात्रि"]}
+            ]
+        }
+    }
+}
+
+# RBSC + NCERT Syllabus 2025-26 (Rajasthan Board)
+# Rajasthan Board follows NCERT with Rajasthan-specific content
+RBSC_NCERT_SYLLABUS_2025_26 = {
+    "Nursery": CBSE_SYLLABUS_2025_26["Nursery"],
+    "LKG": CBSE_SYLLABUS_2025_26["LKG"],
+    "UKG": CBSE_SYLLABUS_2025_26["UKG"],
+    "Class 1": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + राजस्थान हिंदी पुस्तक",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Hindi"]["chapters"] + [
+                {"name": "पाठ 9: राजस्थान की धरती", "topics": ["रेगिस्तान", "संस्कृति"]},
+                {"name": "पाठ 10: हमारा राज्य", "topics": ["जयपुर", "जोधपुर", "उदयपुर"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + राजस्थान पर्यावरण",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["EVS"]["chapters"] + [
+                {"name": "Chapter 10: थार मरुस्थल", "topics": ["रेत के टीले", "ऊँट", "रेगिस्तानी पौधे"]}
+            ]
+        }
+    },
+    "Class 2": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + राजस्थान बोर्ड हिंदी",
+            "chapters": [
+                {"name": "पाठ 1: ऊँट चला", "topics": ["कविता", "राजस्थान का राज्य पशु"]},
+                {"name": "पाठ 2: भालू ने खेली फुटबॉल", "topics": ["कहानी", "खेल"]},
+                {"name": "पाठ 3: म्याऊँ, म्याऊँ!!", "topics": ["जानवर", "ध्वनि"]},
+                {"name": "पाठ 4: अधिक बलवान कौन?", "topics": ["बल", "तुलना"]},
+                {"name": "पाठ 5: दोस्त की मदद", "topics": ["मित्रता", "सहयोग"]},
+                {"name": "पाठ 6: बहुत हुआ", "topics": ["निर्णय", "साहस"]},
+                {"name": "पाठ 7: मेरी किताब", "topics": ["शिक्षा", "ज्ञान"]},
+                {"name": "पाठ 8: तितली और कली", "topics": ["प्रकृति", "फूल"]},
+                {"name": "पाठ 9: राजस्थान की वीरता", "topics": ["इतिहास", "राजपूत"]},
+                {"name": "पाठ 10: रेगिस्तान का जीवन", "topics": ["जल संरक्षण", "खेजड़ी"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + राजस्थान पर्यावरण",
+            "chapters": [
+                {"name": "Chapter 1: मेरा परिवार", "topics": ["संयुक्त परिवार", "रिश्ते"]},
+                {"name": "Chapter 2: राजस्थानी घर", "topics": ["हवेली", "मिट्टी के घर", "झोपड़ी"]},
+                {"name": "Chapter 3: राजस्थानी भोजन", "topics": ["दाल-बाटी-चूरमा", "घी", "बाजरा"]},
+                {"name": "Chapter 4: जानवर", "topics": ["ऊँट", "चिंकारा", "मोर"]},
+                {"name": "Chapter 5: पौधे", "topics": ["खेजड़ी", "बबूल", "रोहिड़ा"]},
+                {"name": "Chapter 6: जल", "topics": ["कुएं", "बावड़ी", "जल संचयन"]},
+                {"name": "Chapter 7: थार का रेगिस्तान", "topics": ["रेत", "गर्मी", "अनुकूलन"]},
+                {"name": "Chapter 8: त्योहार", "topics": ["गणगौर", "तीज", "होली"]}
+            ]
+        }
+    }
+}
+
 def get_syllabus_for_class_subject(board: str, class_name: str, subject: str):
     """Get syllabus data for specific class and subject"""
     board = board.upper()
