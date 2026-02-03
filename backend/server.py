@@ -13583,6 +13583,48 @@ api_router.include_router(bulk_import_router)
 
 app.include_router(api_router)
 
+# Root & Health Endpoints (must be after app.include_router)
+@app.get("/")
+async def root():
+    return {
+        "status": "ok",
+        "message": "Schooltino Backend API is running", 
+        "version": "1.0",
+        "endpoints": {
+            "health": "/health",
+            "healthz": "/healthz",
+            "ready": "/ready",
+            "api": "/api"
+        }
+    }
+
+@app.get("/health")
+async def app_health_check():
+    """Health check endpoint for deployment platforms"""
+    return {
+        "status": "healthy",
+        "service": "schooltino-backend",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+@app.get("/healthz")
+async def liveness():
+    """Kubernetes liveness probe - simple check"""
+    return {"status": "ok"}
+
+@app.get("/ready")
+async def readiness_check():
+    """Readiness probe - checks if app can serve traffic"""
+    try:
+        await db.command("ping")
+        return {
+            "status": "ready",
+            "database": "connected",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database not ready: {str(e)}")
+
 # Mount static files for uploads and marketing materials
 app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 app.mount("/api/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="static")
