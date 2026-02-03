@@ -13155,7 +13155,17 @@ api_router.include_router(bulk_import_router)
 # Root API route (for testing)
 @app.get("/")
 async def root():
-    return {"status": "ok", "message": "Schooltino Backend API is running"}
+    return {
+        "status": "ok", 
+        "message": "Schooltino Backend API is running",
+        "version": "1.0",
+        "endpoints": {
+            "health": "/health",
+            "healthz": "/healthz",
+            "ready": "/ready",
+            "api": "/api"
+        }
+    }
 
 # Health check endpoint for Kubernetes/Docker
 @app.get("/health")
@@ -13166,6 +13176,12 @@ async def app_health_check():
         "service": "schooltino-backend",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+# Liveness probe (simpler version)
+@app.get("/healthz")
+async def liveness():
+    """Kubernetes liveness probe - simple check"""
+    return {"status": "ok"}
 
 # Readiness probe endpoint
 @app.get("/ready")
