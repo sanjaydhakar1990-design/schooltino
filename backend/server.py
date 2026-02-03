@@ -13103,6 +13103,36 @@ api_router.include_router(did_avatar_router)
 api_router.include_router(documents_router)
 api_router.include_router(bulk_import_router)
 
+# Root API route (for testing)
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "Schooltino Backend API is running"}
+
+# Health check endpoint for Kubernetes/Docker
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for deployment platforms"""
+    return {
+        "status": "healthy",
+        "service": "schooltino-backend",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+# Readiness probe endpoint
+@app.get("/ready")
+async def readiness_check():
+    """Readiness probe - checks if app can serve traffic"""
+    try:
+        # Test database connection
+        await db.command("ping")
+        return {
+            "status": "ready",
+            "database": "connected",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database not ready: {str(e)}")
+
 app.include_router(api_router)
 
 # Mount static files for uploads and marketing materials
