@@ -89,23 +89,39 @@ export default function ClassesPage() {
 
   const fetchStaff = async () => {
     try {
-      const response = await axios.get(`${API}/users?school_id=${schoolId}`, {
+      // CORRECT endpoint: /users/school/{school_id} — returns users.id which matches JWT token
+      const response = await axios.get(`${API}/users/school/${schoolId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const teachers = response.data.filter(u => 
-        u.role === 'teacher' || 
-        u.role === 'principal' || 
-        u.role === 'vice_principal' ||
-        u.designation?.toLowerCase().includes('teacher')
+      const teachers = response.data.filter(u =>
+        u.role === 'teacher' ||
+        u.role === 'principal' ||
+        u.role === 'vice_principal'
       );
-      setStaff(teachers);
+      if (teachers.length > 0) {
+        setStaff(teachers);
+        return;
+      }
+      throw new Error('No teachers in users');
     } catch (error) {
-      console.error('Failed to fetch staff:', error);
+      console.error('Users endpoint issue, trying employees fallback:', error);
       try {
-        const response = await axios.get(`${API}/staff?school_id=${schoolId}`);
-        setStaff(response.data);
+        // Fallback: employees endpoint — MUST map user_id → id
+        // staff.id ≠ users.id — only user_id links to correct users.id
+        const response = await axios.get(`${API}/employees?school_id=${schoolId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const teachers = response.data
+          .filter(e => e.user_id && (
+            e.role === 'teacher' ||
+            e.role === 'principal' ||
+            e.role === 'vice_principal' ||
+            (e.designation && e.designation.toLowerCase().includes('teacher'))
+          ))
+          .map(e => ({ ...e, id: e.user_id }));
+        setStaff(teachers);
       } catch (e) {
-        console.error('Staff fallback failed');
+        console.error('Employees fallback also failed');
       }
     }
   };

@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function StaffDirectory() {
-  const { user, token } = useAuth();
+  const { user, token, schoolId } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [staff, setStaff] = useState([]);
@@ -33,7 +33,6 @@ export default function StaffDirectory() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const schoolId = user?.school_id || 'school1';
 
       // Fetch school details
       try {
@@ -60,7 +59,7 @@ export default function StaffDirectory() {
           }
         } catch (e) {
           // Try users endpoint
-          const usersRes = await fetch(`${API}/api/users?school_id=${schoolId}`, {
+          const usersRes = await fetch(`${API}/api/users/school/${schoolId}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
           if (usersRes.ok) {
