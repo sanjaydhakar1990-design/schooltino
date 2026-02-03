@@ -1490,11 +1490,25 @@ export default function TeachTinoDashboard() {
               </div>
               <div>
                 <label className="text-sm font-medium">Subject</label>
-                <Input
+                <select
                   value={homeworkForm.subject}
-                  onChange={(e) => setHomeworkForm({ ...homeworkForm, subject: e.target.value })}
-                  placeholder="e.g., Mathematics"
-                />
+                  onChange={(e) => {
+                    const selectedSubject = e.target.value;
+                    const subjectData = mySubjects.find(s => s.subject === selectedSubject || s.subject_name === selectedSubject);
+                    setHomeworkForm({ 
+                      ...homeworkForm, 
+                      subject: selectedSubject,
+                      // Auto-fill class if only one class for this subject
+                      class_id: subjectData && mySubjects.filter(s => s.subject === selectedSubject || s.subject_name === selectedSubject).length === 1 ? subjectData.class_id : homeworkForm.class_id
+                    });
+                  }}
+                  className="w-full mt-1 p-2 border rounded-lg"
+                >
+                  <option value="">Select Subject</option>
+                  {Array.from(new Set(mySubjects.map(s => s.subject || s.subject_name))).map((subject, idx) => (
+                    <option key={idx} value={subject}>{subject}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
