@@ -2759,6 +2759,14 @@ async def update_class(class_id: str, class_data: ClassCreate, current_user: dic
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Fetch old class to detect class_teacher_id change
+    old_class = await db.classes.find_one({"id": class_id}, {"_id": 0})
+    if not old_class:
+        raise HTTPException(status_code=404, detail="Class not found")
+    
+    old_teacher_id = old_class.get("class_teacher_id")
+    new_teacher_id = class_data.class_teacher_id
+    
     result = await db.classes.update_one(
         {"id": class_id},
         {"$set": class_data.model_dump()}
@@ -2766,9 +2774,118 @@ async def update_class(class_id: str, class_data: ClassCreate, current_user: dic
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Class not found")
     
-    await log_audit(current_user["id"], "update", "classes", {"class_id": class_id})
+    # --- Sync teacher records when class_teacher_id changes ---
+    if new_teacher_id and new_teacher_id != old_teacher_id:
+        # Add class to NEW teacher's assigned_classes
+        await db.users.update_one(
+            {"id": new_teacher_id},
+            {"$addToSet": {"assigned_classes": class_id}}
+        )
+        # Set class_teacher_name on class for name-based fallback
+        new_teacher = await db.users.find_one({"id": new_teacher_id}, {"_id": 0, "name": 1})
+        if new_teacher:
+            await db.classes.update_one(
+                {"id": class_id},
+                {"$set": {"class_teacher_name": new_teacher.get("name", "")}}
+            )
+        # Remove class from OLD teacher's assigned_classes
+        if old_teacher_id:
+            await db.users.update_one(
+                {"id": old_teacher_id},
+                {"$pull": {"assigned_classes": class_id}}
+            )
+    elif not new_teacher_id and old_teacher_id:
+        # Teacher was removed entirely
+        await db.users.update_one(
+            {"id": old_teacher_id},
+            {"$pull": {"assigned_classes": class_id}}
+        )
+        await db.classes.update_one(
+            {"id": class_id},
+            {"$unset": {"class_teacher_name": ""}}
+        )
+    
+    await log_audit(current_user["id"], "update", "classes", {"class_id": class_id, "class_teacher_changed": new_teacher_id != old_teacher_id})
     updated = await db.classes.find_one({"id": class_id}, {"_id": 0})
     return ClassResponse(**updated)
+
+@api_router.post("/classes/{class_id}/assign-subjects")
+async def assign_subjects_to_class(class_id: str, body: dict, current_user: dict = Depends(get_current_user)):
+    """
+    Bulk-assign subjects to a teacher for a class.
+    Creates subject_allocations records so teacher dashboard shows subjects.
+    Body: { "teacher_id": "...", "subjects": ["Mathematics", "English", ...] }
+    """
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    teacher_id = body.get("teacher_id")
+    subjects = body.get("subjects", [])
+    school_id = current_user.get("school_id")
+    
+    if not teacher_id or not subjects:
+        raise HTTPException(status_code=400, detail="teacher_id and subjects are required")
+    
+    teacher = await db.users.find_one({"id": teacher_id}, {"_id": 0, "name": 1})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    cls = await db.classes.find_one({"id": class_id}, {"_id": 0, "name": 1, "class_name": 1, "school_id": 1})
+    if not cls:
+        raise HTTPException(status_code=404, detail="Class not found")
+    
+    created = 0
+    updated = 0
+    for subject in subjects:
+        existing = await db.subject_allocations.find_one({
+            "class_id": class_id,
+            "subject": subject,
+            "school_id": school_id
+        })
+        if existing:
+            if existing.get("teacher_id") != teacher_id:
+                await db.subject_allocations.update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": {
+                        "teacher_id": teacher_id,
+                        "teacher_name": teacher.get("name"),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                updated += 1
+        else:
+            await db.subject_allocations.insert_one({
+                "id": str(uuid.uuid4()),
+                "school_id": school_id,
+                "class_id": class_id,
+                "class_name": cls.get("name") or cls.get("class_name"),
+                "subject": subject,
+                "subject_name": subject,
+                "teacher_id": teacher_id,
+                "teacher_name": teacher.get("name"),
+                "periods_per_week": 4,
+                "topics_covered": 0,
+                "total_topics": 0,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            created += 1
+    
+    # Ensure teacher has this class in assigned_classes
+    await db.users.update_one(
+        {"id": teacher_id},
+        {"$addToSet": {"assigned_classes": class_id}}
+    )
+    
+    await log_audit(current_user["id"], "assign_subjects", "subject_allocations", {
+        "class_id": class_id, "teacher_id": teacher_id,
+        "subjects": subjects, "created": created, "updated": updated
+    })
+    
+    return {
+        "message": f"{created} subjects assigned, {updated} updated for {teacher.get('name')} in {cls.get('name') or cls.get('class_name')}",
+        "created": created, "updated": updated,
+        "class_id": class_id, "teacher_id": teacher_id, "subjects": subjects
+    }
 
 @api_router.delete("/classes/{class_id}")
 async def delete_class(class_id: str, current_user: dict = Depends(get_current_user)):
