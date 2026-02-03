@@ -7,7 +7,7 @@ Testing the specific issue reported in review request
 import requests
 import json
 
-BASE_URL = "https://edutracker-165.preview.emergentagent.com/api"
+BASE_URL = "https://teachfixed.preview.emergentagent.com/api"
 
 def test_admit_card_edit_delete():
     """Test admit card edit/delete operations"""

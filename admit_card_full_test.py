@@ -6,7 +6,7 @@ Complete Admit Card Edit/Delete Test
 import requests
 import json
 
-BASE_URL = "https://edutracker-165.preview.emergentagent.com/api"
+BASE_URL = "https://teachfixed.preview.emergentagent.com/api"
 
 def main():
     print("=" * 80)
