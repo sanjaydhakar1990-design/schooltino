@@ -335,6 +335,22 @@ async def get_teacher_timetable(teacher_id: str, school_id: str):
         {"_id": 0}
     ).to_list(length=50)
     
+    # [FIX] staff.id cross-reference — same as Method 1b in server.py
+    if not allocations:
+        staff_rec = await db.staff.find_one({"user_id": teacher_id}, {"_id": 0, "id": 1})
+        if staff_rec:
+            allocations = await db.subject_allocations.find(
+                {"teacher_id": staff_rec["id"], "school_id": school_id},
+                {"_id": 0}
+            ).to_list(length=50)
+            # Auto-fix: correct teacher_id in allocations
+            if allocations:
+                await db.subject_allocations.update_many(
+                    {"teacher_id": staff_rec["id"], "school_id": school_id},
+                    {"$set": {"teacher_id": teacher_id}}
+                )
+                print(f"[TIMETABLE AUTO-FIX] teacher_id corrected: {staff_rec['id']} → {teacher_id}")
+    
     if not allocations:
         return {"exists": False, "message": "No classes assigned to this teacher"}
     
