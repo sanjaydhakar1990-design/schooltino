@@ -752,6 +752,21 @@ backend:
         comment: "✅ BOARD EXAM BULK UPLOAD REVIEW SECTION VERIFIED WORKING! POST /api/admit-card/parse-student-list with school_id: SCH-DEMO-2026 and exam_id returns 200 OK ✅ Response includes proper structure with students array, count, and helpful message ✅ Backend logs show 'Parsing student list for school: SCH-DEMO-2026' and 'Found 0 students' (expected for new school) ✅ API handles empty student database gracefully with message 'No students found. Please add students first or upload CSV file.' ✅ All error handling and validation working correctly. Review section API is fully functional."
 
 frontend:
+  - task: "TeachTino Dashboard Subject Visibility Issue"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/TeachTinoDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "user"
+        comment: "User reported that subjects are not showing on teacher dashboard (showing 0), but backend API is returning 1 subject (Mathematics for Nursery class). Login credentials: dee1993aj@gmail.com / 9691087708"
+      - working: true
+        agent: "testing"
+        comment: "✅ TEACHTINO DASHBOARD SUBJECT VISIBILITY ISSUE RESOLVED! Test Results: 1) Login successful with credentials dee1993aj@gmail.com / 9691087708 ✅ 2) My Subjects count shows '1' (CORRECT, not 0 as reported) ✅ 3) My Subjects & Timetable section is VISIBLE and shows Mathematics for Class: Nursery with 4 periods/week ✅ 4) Homework dialog opens successfully and Subject dropdown contains 'Mathematics' option ✅ 5) Backend API calls working: GET /api/teacher/subjects?teacher_id=427917e3-0380-408d-866d-48faded211c1 returns 200 OK ✅ 6) Teacher info shows 'DEEPIKA SHARMA • teacher' and 'Class Teacher: Nursery' ✅. CONCLUSION: The reported issue is NOT REPRODUCIBLE. All subject visibility features are working correctly. The dashboard properly displays 1 subject (Mathematics) and the timetable section shows the subject details as expected."
+
   - task: "PWA Install Prompt"
     implemented: true
     working: false
