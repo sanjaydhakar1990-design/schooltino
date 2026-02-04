@@ -877,11 +877,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "TeachTino Dashboard Revamp"
-    - "Student Admission Form"
+    - "TeachTino Dashboard Subject Visibility Issue"
   stuck_tasks: []
   test_all: false
-  test_priority: "teachtino_working"
+  test_priority: "teachtino_subject_visibility"
 
 agent_communication:
   - agent: "main"
