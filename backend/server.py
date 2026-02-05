@@ -13650,6 +13650,7 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup_auto_migrate():
     """Auto-migrate class_teacher_id & subject_allocations: staff.id → users.id.
+       Also auto-syncs timetable to subject_allocations on startup.
        Runs silently on every startup; skips if already correct. Safe to run multiple times."""
     try:
         # Give DB a moment to connect
@@ -13710,6 +13711,93 @@ async def startup_auto_migrate():
             print(f"[STARTUP-MIGRATE] Done: {len(classes_to_fix)} classes + {len(allocs_to_fix)} allocations fixed")
         else:
             print("[STARTUP-MIGRATE] All IDs already correct — nothing to do")
+
+        # [NEW] Auto-sync timetable to subject_allocations
+        print("[STARTUP-SYNC] Auto-syncing timetable to subject_allocations...")
+        try:
+            all_schools = await db.schools.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+            total_synced = 0
+            
+            for school in all_schools:
+                school_id = school["id"]
+                
+                # Get timetable entries for this school
+                timetable_entries = await db.timetable.find(
+                    {"school_id": school_id},
+                    {"_id": 0}
+                ).to_list(1000)
+                
+                if not timetable_entries:
+                    continue
+                
+                # Group by teacher + class + subject
+                allocations_map = {}
+                
+                for entry in timetable_entries:
+                    teacher_id = entry.get("teacher_id")
+                    teacher_name = entry.get("teacher_name")
+                    class_id = entry.get("class_id")
+                    class_name = entry.get("class_name")
+                    subject = entry.get("subject") or entry.get("subject_name")
+                    
+                    if not teacher_id or not subject:
+                        continue
+                    
+                    # Check if teacher_id is actually staff.id (needs migration)
+                    if teacher_id in staff_to_user:
+                        teacher_id = staff_to_user[teacher_id]
+                    
+                    key = f"{teacher_id}_{class_id}_{subject}"
+                    
+                    if key not in allocations_map:
+                        allocations_map[key] = {
+                            "teacher_id": teacher_id,
+                            "teacher_name": teacher_name,
+                            "class_id": class_id,
+                            "class_name": class_name,
+                            "subject": subject,
+                            "periods": []
+                        }
+                    
+                    allocations_map[key]["periods"].append(entry.get("day"))
+                
+                # Create/update subject_allocations
+                for key, alloc_data in allocations_map.items():
+                    periods_per_week = len(alloc_data["periods"])
+                    
+                    allocation = {
+                        "id": str(uuid.uuid4()),
+                        "teacher_id": alloc_data["teacher_id"],
+                        "teacher_name": alloc_data["teacher_name"],
+                        "class_id": alloc_data["class_id"],
+                        "class_name": alloc_data["class_name"],
+                        "subject": alloc_data["subject"],
+                        "subject_name": alloc_data["subject"],
+                        "school_id": school_id,
+                        "periods_per_week": periods_per_week,
+                        "topics_covered": 0,
+                        "total_topics": 0,
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                        "source": "timetable_auto_sync"
+                    }
+                    
+                    result = await db.subject_allocations.update_one(
+                        {
+                            "teacher_id": alloc_data["teacher_id"],
+                            "class_id": alloc_data["class_id"],
+                            "subject": alloc_data["subject"]
+                        },
+                        {"$set": allocation},
+                        upsert=True
+                    )
+                    
+                    if result.upserted_id or result.modified_count > 0:
+                        total_synced += 1
+            
+            print(f"[STARTUP-SYNC] Timetable sync complete: {total_synced} allocations synced across {len(all_schools)} schools")
+        except Exception as sync_err:
+            print(f"[STARTUP-SYNC] Timetable sync error (non-fatal): {sync_err}")
 
     except Exception as e:
         print(f"[STARTUP-MIGRATE] Error (non-fatal): {e}")
