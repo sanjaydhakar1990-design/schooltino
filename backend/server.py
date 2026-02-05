@@ -473,6 +473,7 @@ from routes.complaints import router as complaints_router
 from routes.sports_activities import router as activities_router
 from routes.razorpay_payment import router as razorpay_router
 from routes.admit_card import router as admit_card_router
+from routes.dual_credits import router as dual_credits_router
 from routes.ai_auto_config import router as ai_auto_config_router
 from routes.school_gallery import router as gallery_router
 from routes.govt_exam_docs import router as govt_exam_router
