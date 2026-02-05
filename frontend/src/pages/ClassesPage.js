@@ -89,50 +89,39 @@ export default function ClassesPage() {
 
   const fetchStaff = async () => {
     try {
-      // [FIX] Unified approach: Get users with teacher role
-      const response = await axios.get(`${API}/users/school/${schoolId}`, {
+      // [NEW] Use unified team API - single source of truth
+      const response = await axios.get(`${API}/team/teachers?school_id=${schoolId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const teachers = response.data.filter(u =>
-        u.role === 'teacher' ||
-        u.role === 'principal' ||
-        u.role === 'vice_principal'
-      );
-      
-      console.log('[ClassesPage] Fetched teachers:', teachers.length, teachers);
+      const teachers = response.data.teachers || [];
+      console.log('[ClassesPage] Unified API - Fetched teachers:', teachers.length, teachers);
       
       if (teachers.length > 0) {
         setStaff(teachers);
         return;
       }
       
-      throw new Error('No teachers in users');
+      throw new Error('No teachers found');
     } catch (error) {
-      console.error('[ClassesPage] Users endpoint failed, trying employees fallback:', error);
+      console.error('[ClassesPage] Unified API failed, trying fallback:', error);
+      
+      // Fallback to old users endpoint
       try {
-        // Fallback: employees endpoint with user_id mapping
-        const response = await axios.get(`${API}/employees?school_id=${schoolId}`, {
+        const response = await axios.get(`${API}/users/school/${schoolId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        const teachers = response.data
-          .filter(e => e.user_id && (
-            e.role === 'teacher' ||
-            e.role === 'principal' ||
-            e.role === 'vice_principal' ||
-            (e.designation && e.designation.toLowerCase().includes('teacher'))
-          ))
-          .map(e => ({
-            ...e,
-            id: e.user_id,  // Map user_id to id for consistency
-            name: e.name || e.full_name || e.email
-          }));
-          
-        console.log('[ClassesPage] Fetched from employees (mapped):', teachers.length, teachers);
+        const teachers = response.data.filter(u =>
+          u.role === 'teacher' ||
+          u.role === 'principal' ||
+          u.role === 'vice_principal'
+        );
+        
+        console.log('[ClassesPage] Fallback - Fetched teachers:', teachers.length);
         setStaff(teachers);
       } catch (e) {
-        console.error('[ClassesPage] Employees fallback also failed:', e);
+        console.error('[ClassesPage] All methods failed:', e);
         toast.error('Failed to fetch teachers. Please refresh.');
       }
     }
