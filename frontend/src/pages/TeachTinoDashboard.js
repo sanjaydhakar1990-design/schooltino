@@ -47,6 +47,9 @@ export default function TeachTinoDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   
+  // [NEW] School branding
+  const [schoolInfo, setSchoolInfo] = useState(null);
+  
   // Data states
   const [myClasses, setMyClasses] = useState([]);
   const [assignedClass, setAssignedClass] = useState(null);
