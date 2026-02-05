@@ -897,11 +897,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "TeachTino Dashboard Subject Visibility Issue"
+  current_focus: []
   stuck_tasks: []
   test_all: false
-  test_priority: "teachtino_subject_visibility"
+  test_priority: "completed"
 
 agent_communication:
   - agent: "main"
