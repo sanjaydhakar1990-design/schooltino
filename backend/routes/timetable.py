@@ -297,6 +297,69 @@ async def generate_timetable(class_id: str, school_id: str):
     await db.timetables.delete_many({"class_id": class_id, "school_id": school_id})
     await db.timetables.insert_one(timetable_doc)
     
+    # [AUTO-SYNC] Automatically sync timetable to subject_allocations
+    print(f"[AUTO-SYNC] Syncing timetable to subject_allocations for class {class_id}...")
+    try:
+        sync_count = 0
+        allocations_map = {}
+        
+        for day, periods in timetable.items():
+            for period in periods:
+                if period.get("type") != "class":
+                    continue
+                    
+                teacher_id = period.get("teacher_id")
+                subject = period.get("subject")
+                
+                if not teacher_id or not subject:
+                    continue
+                
+                key = f"{teacher_id}_{class_id}_{subject}"
+                if key not in allocations_map:
+                    allocations_map[key] = {
+                        "teacher_id": teacher_id,
+                        "teacher_name": period.get("teacher_name", ""),
+                        "subject": subject,
+                        "periods": []
+                    }
+                allocations_map[key]["periods"].append(day)
+        
+        # Upsert subject_allocations
+        for key, data in allocations_map.items():
+            allocation = {
+                "id": str(uuid.uuid4()),
+                "teacher_id": data["teacher_id"],
+                "teacher_name": data["teacher_name"],
+                "class_id": class_id,
+                "class_name": class_name,
+                "subject": data["subject"],
+                "subject_name": data["subject"],
+                "school_id": school_id,
+                "periods_per_week": len(data["periods"]),
+                "topics_covered": 0,
+                "total_topics": 0,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "source": "timetable_auto_sync"
+            }
+            
+            result = await db.subject_allocations.update_one(
+                {
+                    "teacher_id": data["teacher_id"],
+                    "class_id": class_id,
+                    "subject": data["subject"]
+                },
+                {"$set": allocation},
+                upsert=True
+            )
+            
+            if result.upserted_id or result.modified_count > 0:
+                sync_count += 1
+        
+        print(f"[AUTO-SYNC] ✓ Synced {sync_count} subject allocations for class {class_id}")
+    except Exception as sync_err:
+        print(f"[AUTO-SYNC] Error (non-fatal): {sync_err}")
+    
     return {
         "success": True,
         "message": "Timetable generated successfully!",
