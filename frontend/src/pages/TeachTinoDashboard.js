@@ -749,16 +749,33 @@ export default function TeachTinoDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="teachtino-dashboard">
-      {/* Header */}
+      {/* Header with School Branding */}
       <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
+              {/* School Logo or Default Icon */}
+              {schoolInfo?.logo ? (
+                <img 
+                  src={schoolInfo.logo} 
+                  alt={schoolInfo.name} 
+                  className="w-10 h-10 rounded-xl object-cover border"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-white" />
+                </div>
+              )}
               <div>
-                <h1 className="font-bold text-gray-900">TeachTino</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-bold text-gray-900">TeachTino</h1>
+                  {schoolInfo?.name && (
+                    <>
+                      <span className="text-gray-300">•</span>
+                      <span className="text-sm font-medium text-emerald-600">{schoolInfo.name}</span>
+                    </>
+                  )}
+                </div>
                 <p className="text-xs text-gray-500">{user?.name} • {user?.role}</p>
               </div>
             </div>
