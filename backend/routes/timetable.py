@@ -283,6 +283,17 @@ async def generate_timetable(class_id: str, school_id: str):
                 })
                 continue
             
+            # [NEW] First period = Class Teacher (for attendance)
+            if period_num == 1 and class_teacher_subject:
+                timetable[day].append({
+                    "period": period_num,
+                    "type": "class",
+                    "subject": class_teacher_subject["subject"],
+                    "teacher_id": class_teacher_subject["teacher_id"],
+                    "teacher_name": class_teacher_subject["teacher_name"]
+                })
+                continue
+            
             # Assign subject
             if period_idx < len(subject_periods):
                 entry = subject_periods[period_idx]
@@ -301,6 +312,7 @@ async def generate_timetable(class_id: str, school_id: str):
                     "type": "free",
                     "subject": random.choice(["Library", "Sports", "Activity", "Self Study"])
                 })
+    
     
     # Save generated timetable
     timetable_doc = {
