@@ -368,23 +368,20 @@ export default function TeachTinoDashboard() {
       const token = localStorage.getItem('token');
       const attendanceRecords = Object.entries(attendanceData).map(([studentId, status]) => ({
         student_id: studentId,
-        status,
-        date: today,
-        class_id: targetClass.id,
-        school_id: user?.school_id,
-        marked_by: user?.id
+        status
       }));
       
       await axios.post(`${API}/attendance/bulk`, {
         school_id: user?.school_id,
         class_id: targetClass.id,
         date: today,
-        records: attendanceRecords
+        attendance: attendanceRecords  // [FIX] Changed from 'records' to 'attendance'
       }, { headers: { Authorization: `Bearer ${token}` }});
       
       toast.success(`✅ Attendance submitted! P:${todayStats.present} A:${todayStats.absent} L:${todayStats.late}`);
       setShowAttendanceSheet(false);
     } catch (error) {
+      console.error('Attendance error:', error);
       toast.error('Attendance submit करने में error');
     }
   };
