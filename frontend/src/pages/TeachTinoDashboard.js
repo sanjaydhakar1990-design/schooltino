@@ -162,13 +162,22 @@ export default function TeachTinoDashboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classesRes, noticesRes, subjectsRes, notificationsRes, myClassesRes] = await Promise.allSettled([
+      // [NEW] Fetch school info for branding
+      const schoolInfoPromise = axios.get(`${API}/schools/${user?.school_id}`, { headers }).catch(() => null);
+      
+      const [classesRes, noticesRes, subjectsRes, notificationsRes, myClassesRes, schoolRes] = await Promise.allSettled([
         axios.get(`${API}/classes?school_id=${user?.school_id}`, { headers }),
         axios.get(`${API}/notices?school_id=${user?.school_id}&limit=5`, { headers }),
         axios.get(`${API}/teacher/subjects?teacher_id=${user?.id}`, { headers }).catch(() => ({ data: { subjects: [] } })),
         axios.get(`${API}/notifications?school_id=${user?.school_id}&user_id=${user?.id}&role=${user?.role}`, { headers }),
-        axios.get(`${API}/teacher/my-classes`, { headers }).catch(() => ({ data: { classes: [] } }))
+        axios.get(`${API}/teacher/my-classes`, { headers }).catch(() => ({ data: { classes: [] } })),
+        schoolInfoPromise
       ]);
+
+      // [NEW] Set school info for branding
+      if (schoolRes.status === 'fulfilled' && schoolRes.value) {
+        setSchoolInfo(schoolRes.value.data);
+      }
 
       // Use the dedicated my-classes endpoint first
       if (myClassesRes.status === 'fulfilled' && myClassesRes.value.data?.classes?.length > 0) {
