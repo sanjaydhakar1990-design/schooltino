@@ -214,6 +214,13 @@ async def generate_timetable(class_id: str, school_id: str):
     if not allocations:
         raise HTTPException(status_code=400, detail="No subject allocations found. Please add subjects first.")
     
+    # [NEW] Get class teacher info for first period priority
+    class_info = await db.classes.find_one(
+        {"id": class_id, "school_id": school_id},
+        {"_id": 0, "class_teacher_id": 1, "name": 1}
+    )
+    class_teacher_id = class_info.get("class_teacher_id") if class_info else None
+    
     # Get teacher names
     teacher_ids = [a["teacher_id"] for a in allocations]
     teachers = await db.users.find(
@@ -227,6 +234,18 @@ async def generate_timetable(class_id: str, school_id: str):
     working_days = config.get("working_days", DAYS[:6])
     periods_per_day = config.get("periods_per_day", 8)
     
+    # [NEW] Find class teacher's subject for first period
+    class_teacher_subject = None
+    if class_teacher_id:
+        for alloc in allocations:
+            if alloc["teacher_id"] == class_teacher_id:
+                class_teacher_subject = {
+                    "subject": alloc["subject"],
+                    "teacher_id": alloc["teacher_id"],
+                    "teacher_name": teacher_map.get(alloc["teacher_id"], "TBA")
+                }
+                break
+    
     # Create period distribution for each subject
     subject_periods = []
     for alloc in allocations:
@@ -237,7 +256,7 @@ async def generate_timetable(class_id: str, school_id: str):
                 "teacher_name": teacher_map.get(alloc["teacher_id"], "TBA")
             })
     
-    # Shuffle for randomness
+    # Shuffle for randomness (but keep class teacher subject separate for first period)
     random.shuffle(subject_periods)
     
     # Distribute across days
