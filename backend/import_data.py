@@ -1,6 +1,7 @@
 import json
 import os
 import asyncio
+import certifi
 from motor.motor_asyncio import AsyncIOMotorClient
 import bcrypt
 
@@ -13,7 +14,7 @@ async def import_data():
         return
     
     print(f"Connecting to MongoDB: {db_name}...")
-    client = AsyncIOMotorClient(mongo_url)
+    client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
     db = client[db_name]
     
     try:

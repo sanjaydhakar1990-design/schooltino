@@ -68,3 +68,4 @@ run = ["bash", "-c", "cd backend && uvicorn server:app --host 0.0.0.0 --port 500
 
 [userenv.shared]
 REACT_APP_BACKEND_URL = ""
+DB_NAME = "schooltino"
