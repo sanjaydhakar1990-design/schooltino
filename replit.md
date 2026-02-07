@@ -1,7 +1,7 @@
 # Schooltino - Smart School Management System
 
 ## Overview
-Schooltino is a comprehensive school management platform with AI-powered features, CCTV integration, and mobile apps. It provides complete automation for managing students, staff, fees, and attendance.
+Schooltino is a comprehensive school management platform with AI-powered features, CCTV integration, and mobile apps. It provides complete automation for managing students, staff, fees, and attendance. Source: https://github.com/sanjaydhakar1990-design/schooltino
 
 ## Project Architecture
 
@@ -11,12 +11,18 @@ Schooltino is a comprehensive school management platform with AI-powered feature
 - **Styling**: Tailwind CSS
 - **UI Components**: Radix UI, Shadcn/ui patterns
 - **Port**: 5000 (development)
+- **Webpack alias**: `@` maps to `src/`
 
 ### Backend (Python FastAPI)
 - **Location**: `/backend`
 - **Framework**: FastAPI
 - **Database**: MongoDB (Motor async driver)
 - **Authentication**: JWT-based
+- **Port**: 8000
+
+### API Proxy
+- Frontend dev server proxies `/api` requests to `http://localhost:8000`
+- Configured via `frontend/src/setupProxy.js`
 
 ## Environment Variables
 
@@ -25,20 +31,19 @@ Schooltino is a comprehensive school management platform with AI-powered feature
 - `DB_NAME` - Database name
 
 ### Frontend Environment
-- `REACT_APP_BACKEND_URL` - Backend API URL (leave empty for same-origin requests)
-- `GENERATE_SOURCEMAP` - Set to false to disable source maps
+- `REACT_APP_BACKEND_URL` - Backend API URL (set to empty for proxy-based same-origin requests)
+- `GENERATE_SOURCEMAP` - Set to false to disable source maps (set in workflow command)
 
 ## Running the Application
 
-### Development
-The frontend runs on port 5000:
+### Frontend (port 5000)
 ```bash
-cd frontend && PORT=5000 HOST=0.0.0.0 npm start
+cd frontend && PORT=5000 HOST=0.0.0.0 GENERATE_SOURCEMAP=false BROWSER=none npm start
 ```
 
-### Backend (if needed separately)
+### Backend (port 8000)
 ```bash
-cd backend && uvicorn server:app --host localhost --port 8000
+cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ## Key Features
@@ -51,26 +56,44 @@ cd backend && uvicorn server:app --host localhost --port 8000
 - SMS center
 - Multi-language support (i18n)
 - PWA support
+- Transport management
+- Timetable management
+- Visitor gate pass
+- Biometric integration
+
+## Known Limitations
+- `emergentintegrations` is a private package - stub implementations provided in `backend/emergentintegrations/` for LlmChat, OpenAIChat, SpeechToText, TextToSpeech classes
+- AI voice/avatar features are limited without the real package
+- Core school management features work fully
 
 ## Recent Changes
+- 2026-02-07: Fresh clone from GitHub, fixed all dependency issues
+- 2026-02-07: Simplified craco.config.js for Replit compatibility (removed visual-edits/health-check plugins)
+- 2026-02-07: Added setupProxy.js for frontend-to-backend API proxying
+- 2026-02-07: Fixed ajv dependency conflict (installed ajv@8.17.1)
+- 2026-02-07: Restored original package.json with all Radix UI, recharts, react-razorpay dependencies
+- 2026-01-29: Fixed hardcoded /app/backend paths to relative paths
 - 2026-01-28: Initial Replit environment setup
-- Configured frontend to run on port 5000 with all hosts allowed
-- Added MongoDB secrets configuration
 
 ## Project Structure
 ```
 /
-├── backend/          # FastAPI Python backend
-│   ├── routes/       # API route modules
-│   ├── services/     # Business logic services
-│   ├── core/         # Core utilities (auth, database)
-│   └── server.py     # Main FastAPI application
-├── frontend/         # React frontend
+├── backend/                    # FastAPI Python backend
+│   ├── routes/                 # API route modules
+│   ├── services/               # Business logic services
+│   ├── core/                   # Core utilities (auth, database)
+│   ├── emergentintegrations/   # Stub for private AI package
+│   └── server.py               # Main FastAPI application
+├── frontend/                   # React frontend
 │   ├── src/
-│   │   ├── components/  # Reusable UI components
-│   │   ├── pages/       # Page components
-│   │   ├── context/     # React contexts
-│   │   └── hooks/       # Custom hooks
-│   └── public/          # Static assets
-└── marketing_materials/ # Marketing assets
+│   │   ├── components/         # Reusable UI components
+│   │   ├── pages/              # Page components
+│   │   ├── context/            # React contexts (AuthContext)
+│   │   ├── hooks/              # Custom hooks
+│   │   ├── lib/                # Utility functions
+│   │   └── setupProxy.js       # API proxy config
+│   ├── plugins/                # Webpack plugins (visual-edits, health-check)
+│   ├── craco.config.js         # CRACO webpack configuration
+│   └── public/                 # Static assets
+└── replit.md                   # Project documentation
 ```
