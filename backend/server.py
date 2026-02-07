@@ -29,7 +29,12 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
+import urllib.parse
 mongo_url = os.environ['MONGO_URL']
+mongo_password = os.environ.get('MONGO_PASSWORD', '')
+if mongo_password and '<db_password>' in mongo_url:
+    encoded_password = urllib.parse.quote(mongo_password, safe='')
+    mongo_url = mongo_url.replace('<db_password>', encoded_password)
 client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
 db = client[os.environ['DB_NAME']]
 
