@@ -3,7 +3,6 @@ import os
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 import bcrypt
-from datetime import datetime
 
 async def import_data():
     mongo_url = os.environ.get('MONGO_URL')
@@ -16,6 +15,13 @@ async def import_data():
     print(f"Connecting to MongoDB: {db_name}...")
     client = AsyncIOMotorClient(mongo_url)
     db = client[db_name]
+    
+    try:
+        await client.admin.command('ping')
+        print("Connected successfully!")
+    except Exception as e:
+        print(f"Connection failed: {e}")
+        return
     
     with open('school_data_export.json', 'r') as f:
         data = json.load(f)
@@ -58,6 +64,42 @@ async def import_data():
         await db.timetable.insert_one(tt)
         print(f"Imported timetable: {tt.get('class_name', '')} - {tt.get('day', '')} Period {tt.get('period', '')}")
     
+    staff = data.get('staff', [])
+    for s in staff:
+        await db.staff.delete_many({"id": s["id"]})
+        await db.staff.insert_one(s)
+        print(f"Imported staff: {s.get('name', '')}")
+    
+    employees = data.get('employees', [])
+    for emp in employees:
+        await db.employees.delete_many({"id": emp["id"]})
+        await db.employees.insert_one(emp)
+        print(f"Imported employee: {emp.get('name', '')}")
+    
+    attendance = data.get('attendance_sample', [])
+    for att in attendance:
+        att_id = att.get('id', att.get('_id', ''))
+        if att_id:
+            await db.attendance.delete_many({"id": att_id})
+        await db.attendance.insert_one(att)
+        print(f"Imported attendance record")
+    
+    homework = data.get('homework', [])
+    for hw in homework:
+        hw_id = hw.get('id', hw.get('_id', ''))
+        if hw_id:
+            await db.homework.delete_many({"id": hw_id})
+        await db.homework.insert_one(hw)
+        print(f"Imported homework: {hw.get('title', hw.get('subject', ''))}")
+    
+    notices = data.get('notices', [])
+    for notice in notices:
+        n_id = notice.get('id', notice.get('_id', ''))
+        if n_id:
+            await db.notices.delete_many({"id": n_id})
+        await db.notices.insert_one(notice)
+        print(f"Imported notice: {notice.get('title', '')}")
+    
     print("\n=== IMPORT COMPLETE ===")
     print(f"School: {school.get('name', 'N/A')}")
     print(f"Users: {len(users)}")
@@ -65,8 +107,13 @@ async def import_data():
     print(f"Students: {len(students)}")
     print(f"Subject Allocations: {len(subject_allocations)}")
     print(f"Timetables: {len(timetables)}")
+    print(f"Staff: {len(staff)}")
+    print(f"Employees: {len(employees)}")
+    print(f"Attendance: {len(attendance)}")
+    print(f"Homework: {len(homework)}")
+    print(f"Notices: {len(notices)}")
     print("\n=== LOGIN CREDENTIALS ===")
-    print("All users password has been set to: Test@123")
+    print("All users password: Test@123")
     for user in users:
         print(f"  {user['role']}: {user['email']} / Test@123")
     
