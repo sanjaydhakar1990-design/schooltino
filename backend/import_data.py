@@ -2,16 +2,22 @@ import json
 import os
 import asyncio
 import certifi
+import urllib.parse
 from motor.motor_asyncio import AsyncIOMotorClient
 import bcrypt
 
 async def import_data():
     mongo_url = os.environ.get('MONGO_URL')
+    mongo_password = os.environ.get('MONGO_PASSWORD')
     db_name = os.environ.get('DB_NAME', 'schooltino')
     
     if not mongo_url:
         print("ERROR: MONGO_URL not set")
         return
+    
+    if mongo_password and '<db_password>' in mongo_url:
+        encoded_password = urllib.parse.quote(mongo_password, safe='')
+        mongo_url = mongo_url.replace('<db_password>', encoded_password)
     
     print(f"Connecting to MongoDB: {db_name}...")
     client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
