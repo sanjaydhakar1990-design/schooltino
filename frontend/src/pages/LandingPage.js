@@ -157,7 +157,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-18 py-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
                 <School className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">Schooltino</span>
@@ -170,19 +170,19 @@ export default function LandingPage() {
               <button onClick={() => scrollToSection('pricing')} className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors">
                 Pricing
               </button>
-              <a href="/teachtino" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors">
+              <a href="/teachtino" className="text-blue-500 hover:text-blue-600 text-sm font-medium transition-colors">
                 TeachTino
               </a>
-              <a href="/studytino" className="text-amber-600 hover:text-amber-700 text-sm font-medium transition-colors">
+              <a href="/studytino" className="text-blue-500 hover:text-blue-600 text-sm font-medium transition-colors">
                 StudyTino
               </a>
             </div>
             
             <div className="flex items-center gap-3">
-              <PWAInstallButton className="hidden sm:flex bg-blue-600 hover:bg-blue-700 text-white" />
+              <PWAInstallButton className="hidden sm:flex bg-blue-500 hover:bg-blue-600 text-white" />
               <Button 
                 onClick={() => scrollToSection('register')} 
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-500 hover:bg-blue-600 text-white"
               >
                 Get Started
               </Button>
@@ -202,7 +202,7 @@ export default function LandingPage() {
               
               <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
                 Smart School
-                <span className="block text-blue-600 mt-2">Management System</span>
+                <span className="block text-blue-500 mt-2">Management System</span>
               </h1>
               
               <p className="text-lg text-gray-500 mb-10 leading-relaxed">
@@ -219,7 +219,7 @@ export default function LandingPage() {
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-3.5 bg-white rounded-lg border border-gray-200">
                     <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
-                      <item.icon className="w-4 h-4 text-blue-600" />
+                      <item.icon className="w-4 h-4 text-blue-500" />
                     </div>
                     <span className="text-sm font-medium text-gray-700">{item.text}</span>
                   </div>
@@ -230,7 +230,7 @@ export default function LandingPage() {
                 <Button 
                   size="lg"
                   onClick={() => scrollToSection('register')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-8"
                 >
                   Start Free Trial
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -254,7 +254,7 @@ export default function LandingPage() {
                     <button
                       onClick={() => setActiveTab('login')}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                        activeTab === 'login' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
+                        activeTab === 'login' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-600'
                       }`}
                     >
                       Login
@@ -262,7 +262,7 @@ export default function LandingPage() {
                     <button
                       onClick={() => setActiveTab('register')}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                        activeTab === 'register' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
+                        activeTab === 'register' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-600'
                       }`}
                     >
                       Register
@@ -298,13 +298,13 @@ export default function LandingPage() {
                           </button>
                         </div>
                       </div>
-                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                      <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
                       </Button>
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
-                        className="text-sm text-blue-600 hover:text-blue-700 w-full text-center"
+                        className="text-sm text-blue-500 hover:text-blue-600 w-full text-center"
                       >
                         Forgot Password?
                       </button>
@@ -344,7 +344,7 @@ export default function LandingPage() {
                           onChange={(e) => setRegForm(f => ({ ...f, mobile: e.target.value }))}
                         />
                       </div>
-                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                      <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Start Free Trial'}
                       </Button>
                       <p className="text-xs text-gray-500 text-center">
@@ -358,14 +358,14 @@ export default function LandingPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <a 
                         href="/teachtino" 
-                        className="flex items-center justify-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
+                        className="flex items-center justify-center gap-2 p-3 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
                       >
                         <GraduationCap className="w-4 h-4" />
                         <span className="text-sm font-medium">TeachTino</span>
                       </a>
                       <a 
                         href="/studytino" 
-                        className="flex items-center justify-center gap-2 p-3 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors"
+                        className="flex items-center justify-center gap-2 p-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
                       >
                         <BookOpen className="w-4 h-4" />
                         <span className="text-sm font-medium">StudyTino</span>
@@ -392,7 +392,7 @@ export default function LandingPage() {
             {whyChooseItems.map((item, idx) => (
               <div key={idx} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
-                  <item.icon className="w-6 h-6 text-blue-600" />
+                  <item.icon className="w-6 h-6 text-blue-500" />
                 </div>
                 <h3 className="font-semibold text-gray-900 text-lg mb-2">{item.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
@@ -427,7 +427,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700 text-white">
+      <section className="py-20 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -463,7 +463,7 @@ export default function LandingPage() {
               <div className="bg-white/10 rounded-2xl p-8 border border-white/10">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
-                    <Brain className="w-6 h-6 text-blue-600" />
+                    <Brain className="w-6 h-6 text-blue-500" />
                   </div>
                   <div>
                     <p className="font-semibold">Tino AI</p>
@@ -491,16 +491,16 @@ export default function LandingPage() {
             <p className="text-slate-600 mb-6">50% cheaper than competitors with 3x more features</p>
             
             <div className="flex items-center justify-center gap-4 mb-8">
-              <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-indigo-600' : 'text-slate-500'}`}>
+              <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-blue-500' : 'text-gray-400'}`}>
                 Monthly
               </span>
               <button
                 onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-                className={`relative w-14 h-7 rounded-full transition-colors ${billingCycle === 'yearly' ? 'bg-indigo-600' : 'bg-slate-300'}`}
+                className={`relative w-14 h-7 rounded-full transition-colors ${billingCycle === 'yearly' ? 'bg-blue-500' : 'bg-gray-300'}`}
               >
                 <span className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${billingCycle === 'yearly' ? 'translate-x-8' : 'translate-x-1'}`} />
               </button>
-              <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-indigo-600' : 'text-slate-500'}`}>
+              <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-blue-500' : 'text-gray-400'}`}>
                 Yearly
               </span>
               {billingCycle === 'yearly' && (

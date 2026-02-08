@@ -213,7 +213,7 @@ export default function LoginPage() {
           className="absolute inset-0 w-full h-full object-cover"
         />
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/90 via-purple-900/80 to-indigo-900/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-800/90 via-blue-700/85 to-blue-800/90"></div>
         {/* Pattern Overlay */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
         
@@ -235,7 +235,7 @@ export default function LoginPage() {
           {/* Portal Highlights */}
           <div className="space-y-4">
             <div className="flex items-center gap-4 text-white/90">
-              <div className="w-10 h-10 bg-indigo-600/30 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-500/30 rounded-lg flex items-center justify-center">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
@@ -244,7 +244,7 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="flex items-center gap-4 text-white/90">
-              <div className="w-10 h-10 bg-emerald-600/30 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-400/30 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5" />
               </div>
               <div>
@@ -253,7 +253,7 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="flex items-center gap-4 text-white/90">
-              <div className="w-10 h-10 bg-amber-600/30 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-300/30 rounded-lg flex items-center justify-center">
                 <GraduationCap className="w-5 h-5" />
               </div>
               <div>
@@ -266,11 +266,11 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Login Forms */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-gradient-to-b from-slate-50 to-white">
+      <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
         <div className="w-full max-w-md">
           {/* Mobile Logo - SECRET: Click 5 times */}
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center cursor-pointer" onClick={handleSecretClick}>
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
               <School className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-2xl font-bold font-heading">Schooltino</h1>
@@ -327,11 +327,11 @@ export default function LoginPage() {
           {setupRequired ? (
             <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-indigo-600" />
+                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                  <Shield className="w-8 h-8 text-blue-500" />
                 </div>
-                <h2 className="text-2xl font-bold font-heading text-slate-900">Initial Setup</h2>
-                <p className="text-slate-500 mt-2">Create your Director account to get started</p>
+                <h2 className="text-2xl font-bold font-heading text-gray-800">Initial Setup</h2>
+                <p className="text-gray-400 mt-2">Create your Director account to get started</p>
               </div>
 
               {error && (
@@ -402,23 +402,23 @@ export default function LoginPage() {
             </div>
           ) : (
             /* Login Forms */
-            <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold font-heading text-slate-900">Welcome Back</h2>
-                <p className="text-slate-500 mt-1">Select your portal and login</p>
+                <h2 className="text-xl font-bold text-gray-800">Welcome Back</h2>
+                <p className="text-gray-400 text-sm mt-1">Select your portal and login</p>
               </div>
 
               <Tabs value={activePortal} onValueChange={setActivePortal} className="space-y-6">
-                <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-slate-100">
-                  <TabsTrigger value="admin" className="py-3 data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-gray-100 rounded-lg">
+                  <TabsTrigger value="admin" className="py-2.5 rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
                     <Shield className="w-4 h-4 mr-1.5" />
                     Admin
                   </TabsTrigger>
-                  <TabsTrigger value="teacher" className="py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+                  <TabsTrigger value="teacher" className="py-2.5 rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
                     <Users className="w-4 h-4 mr-1.5" />
                     Teacher
                   </TabsTrigger>
-                  <TabsTrigger value="student" className="py-3 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+                  <TabsTrigger value="student" className="py-2.5 rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
                     <GraduationCap className="w-4 h-4 mr-1.5" />
                     Student
                   </TabsTrigger>
@@ -468,7 +468,7 @@ export default function LoginPage() {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full h-12 bg-indigo-600 hover:bg-indigo-700" disabled={loading} data-testid="admin-login-btn">
+                    <Button type="submit" className="w-full h-12 bg-blue-500 hover:bg-blue-600" disabled={loading} data-testid="admin-login-btn">
                       {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
                       Login to Schooltino
                       <ChevronRight className="w-5 h-5 ml-2" />
@@ -513,7 +513,7 @@ export default function LoginPage() {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full h-12 bg-emerald-600 hover:bg-emerald-700" disabled={loading} data-testid="teacher-login-btn">
+                    <Button type="submit" className="w-full h-12 bg-blue-500 hover:bg-blue-600" disabled={loading} data-testid="teacher-login-btn">
                       {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
                       Login to TeachTino
                       <ChevronRight className="w-5 h-5 ml-2" />
@@ -523,12 +523,12 @@ export default function LoginPage() {
 
                 <TabsContent value="student" className="space-y-5">
                   {/* Student Login Method Toggle */}
-                  <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
+                  <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
                     <button
                       type="button"
                       onClick={() => setStudentLoginMethod('id')}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                        studentLoginMethod === 'id' ? 'bg-white shadow text-amber-700' : 'text-slate-600'
+                        studentLoginMethod === 'id' ? 'bg-white shadow text-blue-600' : 'text-gray-500'
                       }`}
                     >
                       Student ID + Password
@@ -537,7 +537,7 @@ export default function LoginPage() {
                       type="button"
                       onClick={() => setStudentLoginMethod('mobile')}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                        studentLoginMethod === 'mobile' ? 'bg-white shadow text-amber-700' : 'text-slate-600'
+                        studentLoginMethod === 'mobile' ? 'bg-white shadow text-blue-600' : 'text-gray-500'
                       }`}
                     >
                       Mobile + DOB
@@ -610,7 +610,7 @@ export default function LoginPage() {
                         </div>
                       </>
                     )}
-                    <Button type="submit" className="w-full h-12 bg-amber-600 hover:bg-amber-700" disabled={loading} data-testid="student-login-btn">
+                    <Button type="submit" className="w-full h-12 bg-blue-500 hover:bg-blue-600" disabled={loading} data-testid="student-login-btn">
                       {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
                       Login to StudyTino
                       <ChevronRight className="w-5 h-5 ml-2" />
@@ -620,8 +620,8 @@ export default function LoginPage() {
               </Tabs>
 
               {/* Info Box */}
-              <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                <p className="text-xs text-slate-600">
+              <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <p className="text-xs text-gray-500">
                   {activePortal === 'admin' && 'Director, Principal, Vice Principal - Login here'}
                   {activePortal === 'teacher' && 'Teachers & Staff - Get credentials from your school admin'}
                   {activePortal === 'student' && 'Students - Use credentials provided during admission'}
