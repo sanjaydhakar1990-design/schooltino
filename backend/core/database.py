@@ -3,37 +3,61 @@
 
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import re
 import urllib.parse
 import certifi
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# MongoDB connection
+logger = logging.getLogger(__name__)
+
 MONGO_URL = os.environ.get('MONGO_URL')
 MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD')
 DB_NAME = os.environ.get('DB_NAME', 'test_database')
 
-import re
-
-def build_mongo_url(url, password):
+def create_mongo_client(url, password):
     if not url:
-        return url
-    if password and '<db_password>' in url:
-        return url.replace('<db_password>', urllib.parse.quote_plus(password))
+        raise ValueError("MONGO_URL environment variable is not set")
+
     if password:
-        encoded_pass = urllib.parse.quote_plus(password)
-        raw_pass_in_url = url.find(password)
-        if raw_pass_in_url != -1:
-            return url.replace(password, encoded_pass, 1)
-        match = re.match(r'^(mongodb(?:\+srv)?://)([^:]+):(.+?)@(.+)$', url)
+        if '<db_password>' in url:
+            url = url.replace('<db_password>', urllib.parse.quote_plus(password))
+            return AsyncIOMotorClient(url, tlsCAFile=certifi.where())
+
+        match = re.match(r'^(mongodb(?:\+srv)?://)([^:]*):.*?@(.+)$', url)
         if match:
-            scheme, user, _, hostpath = match.groups()
-            encoded_user = urllib.parse.quote_plus(user)
-            return f"{scheme}{encoded_user}:{encoded_pass}@{hostpath}"
-    return url
+            scheme = match.group(1)
+            username = match.group(2)
+            hostpath = match.group(3)
+            encoded_user = urllib.parse.quote_plus(username)
+            encoded_pass = urllib.parse.quote_plus(password)
+            clean_url = f"{scheme}{encoded_user}:{encoded_pass}@{hostpath}"
+            return AsyncIOMotorClient(clean_url, tlsCAFile=certifi.where())
 
-MONGO_URL = build_mongo_url(MONGO_URL, MONGO_PASSWORD)
+        try:
+            match_no_pass = re.match(r'^(mongodb(?:\+srv)?://)(.+)$', url)
+            if match_no_pass:
+                scheme = match_no_pass.group(1)
+                rest = match_no_pass.group(2)
+                if '@' in rest:
+                    at_idx = rest.rfind('@')
+                    hostpath = rest[at_idx + 1:]
+                    userinfo = rest[:at_idx]
+                    colon_idx = userinfo.find(':')
+                    if colon_idx != -1:
+                        username = userinfo[:colon_idx]
+                    else:
+                        username = userinfo
+                    encoded_user = urllib.parse.quote_plus(username)
+                    encoded_pass = urllib.parse.quote_plus(password)
+                    clean_url = f"{scheme}{encoded_user}:{encoded_pass}@{hostpath}"
+                    return AsyncIOMotorClient(clean_url, tlsCAFile=certifi.where())
+        except Exception as e:
+            logger.warning(f"Failed to parse MONGO_URL: {e}")
 
-client = AsyncIOMotorClient(MONGO_URL, tlsCAFile=certifi.where())
+    return AsyncIOMotorClient(url, tlsCAFile=certifi.where())
+
+client = create_mongo_client(MONGO_URL, MONGO_PASSWORD)
 db = client[DB_NAME]
