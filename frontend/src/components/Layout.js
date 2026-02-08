@@ -196,7 +196,7 @@ export const Layout = () => {
       </div>
 
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        <header className="sticky top-0 h-16 bg-white border-b border-gray-200 shadow-sm z-30 flex items-center justify-between px-5" data-testid="app-header">
+        <header className="sticky top-0 h-16 bg-white border-b border-gray-100 shadow-sm z-30 flex items-center justify-between px-5" data-testid="app-header">
           <div className="flex items-center gap-4 flex-1">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -273,7 +273,7 @@ export const Layout = () => {
             
             <button
               onClick={() => navigate('/app/tino-ai')}
-              className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm font-medium"
+              className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all text-sm font-medium shadow-sm shadow-blue-500/20"
               data-testid="ask-tino-btn"
             >
               <Mic className="w-4 h-4" />
@@ -285,7 +285,7 @@ export const Layout = () => {
               onClick={() => navigate('/app/profile')}
               className="flex items-center gap-2 p-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-medium text-sm">
                   {user?.name?.charAt(0) || 'U'}
                 </span>

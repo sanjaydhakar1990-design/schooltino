@@ -120,14 +120,14 @@ export default function TeachTinoDashboard() {
   }
 
   const statCards = [
-    { label: 'My Classes', value: myClasses.length, icon: BookOpen, subtext: 'Assigned class sections' },
-    { label: 'Present Today', value: todayAttendance.present, icon: CheckCircle, subtext: 'Students present today' },
-    { label: 'Absent Today', value: todayAttendance.absent, icon: XCircle, subtext: 'Students absent today' },
-    { label: 'Total Students', value: todayAttendance.total, icon: Users, subtext: 'Across all your classes' },
-    { label: 'Pending Leaves', value: pendingLeaves.length, icon: Calendar, subtext: 'Awaiting your approval' },
-    { label: 'Notices', value: recentNotices.length, icon: Bell, subtext: 'Published announcements' },
-    { label: 'Exams Scheduled', value: 0, icon: FileText, subtext: 'Upcoming examinations' },
-    { label: 'Attendance Rate', value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3, subtext: 'Overall attendance percentage' },
+    { label: 'My Classes', value: myClasses.length, icon: BookOpen, subtext: 'Assigned class sections', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
+    { label: 'Present Today', value: todayAttendance.present, icon: CheckCircle, subtext: 'Students present today', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
+    { label: 'Absent Today', value: todayAttendance.absent, icon: XCircle, subtext: 'Students absent today', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
+    { label: 'Total Students', value: todayAttendance.total, icon: Users, subtext: 'Across all your classes', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-500' },
+    { label: 'Pending Leaves', value: pendingLeaves.length, icon: Calendar, subtext: 'Awaiting your approval', bgColor: 'bg-amber-50', iconColor: 'text-amber-500' },
+    { label: 'Notices', value: recentNotices.length, icon: Bell, subtext: 'Published announcements', bgColor: 'bg-cyan-50', iconColor: 'text-cyan-500' },
+    { label: 'Exams Scheduled', value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
+    { label: 'Attendance Rate', value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3, subtext: 'Overall attendance percentage', bgColor: 'bg-emerald-50', iconColor: 'text-emerald-500' },
   ];
 
   const teacherModuleCards = [
@@ -172,12 +172,13 @@ export default function TeachTinoDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="teachtino-dashboard">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-white sticky top-0 z-40 shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-blue-600" />
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="font-bold text-gray-800">TeachTino</h1>
@@ -198,7 +199,7 @@ export default function TeachTinoDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-5 pb-24 space-y-6">
         <div className="flex items-center gap-2 text-sm">
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors shadow-sm">
+          <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors shadow-sm">
             <Home className="w-3.5 h-3.5" />
             Home
           </button>
@@ -206,13 +207,18 @@ export default function TeachTinoDashboard() {
           <span className="text-gray-500 text-xs">Teacher Dashboard</span>
         </div>
 
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
+          <h2 className="text-xl font-bold text-gray-800">Welcome back, {user?.name || 'Teacher'}!</h2>
+          <p className="text-sm text-gray-500 mt-1">Teacher Dashboard</p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {statCards.map((card, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <div key={idx} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-sm text-slate-500 font-medium">{card.label}</span>
-                <div className="w-8 h-8 bg-blue-50 rounded-md flex items-center justify-center">
-                  <card.icon className="w-4 h-4 text-blue-500" />
+                <div className={`w-8 h-8 ${card.bgColor} rounded-lg flex items-center justify-center`}>
+                  <card.icon className={`w-4 h-4 ${card.iconColor}`} />
                 </div>
               </div>
               <div className="text-2xl font-bold text-slate-800 mb-1">{card.value}</div>
@@ -231,25 +237,19 @@ export default function TeachTinoDashboard() {
               <div
                 key={card.id}
                 onClick={card.action}
-                className="group cursor-pointer bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+                className="group cursor-pointer bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300"
               >
-                <div className={`relative bg-gradient-to-br ${card.gradient} p-3 flex items-center justify-center`} style={{minHeight: '120px'}}>
-                  {card.image ? (
-                    <img src={card.image} alt={card.name} className="w-full h-24 object-contain group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <card.icon className="w-14 h-14 text-white/80" />
-                  )}
+                <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3`}>
+                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
                 </div>
-                <div className="p-3">
-                  <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
-                </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <div className="px-5 pt-5 pb-4">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
@@ -304,7 +304,7 @@ export default function TeachTinoDashboard() {
         </div>
 
         {canApproveLeave && pendingLeaves.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-5 pt-5 pb-4">
               <h2 className="text-xl font-bold text-gray-900">Pending Leave Approvals</h2>
               <p className="text-sm text-gray-500 mt-1">Staff leave requests awaiting your approval.</p>
@@ -340,7 +340,7 @@ export default function TeachTinoDashboard() {
         )}
 
         {recentNotices.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-5 pt-5 pb-4">
               <h2 className="text-xl font-bold text-gray-900">Recent Notices</h2>
               <p className="text-sm text-gray-500 mt-1">Latest announcements and notices.</p>
@@ -367,7 +367,7 @@ export default function TeachTinoDashboard() {
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
           {[
             { icon: Home, label: 'Home', active: true, action: () => {} },

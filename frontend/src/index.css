@@ -93,11 +93,11 @@
 
 /* EduNova Stat Card */
 .stat-card {
-    @apply bg-white border border-blue-100 rounded-xl p-6 hover:shadow-sm transition-all duration-200;
+    @apply bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-200;
 }
 
 .stat-card:hover {
-    @apply border-blue-200;
+    @apply border-blue-200 shadow-md;
 }
 
 /* EduNova Data Table */
@@ -127,7 +127,7 @@
 
 /* EduNova Button styles */
 .btn-primary {
-    @apply bg-blue-500 hover:bg-blue-600 text-white shadow-sm rounded-lg px-5 py-2 font-medium transition-all text-sm;
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm shadow-blue-500/20 rounded-xl px-5 py-2 font-medium transition-all text-sm;
 }
 
 .btn-secondary {
@@ -206,7 +206,7 @@ input:focus, select:focus, textarea:focus {
 
 /* EduNova Module Card */
 .module-card {
-    @apply flex flex-col items-center justify-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all cursor-pointer;
+    @apply flex flex-col items-center justify-center p-4 rounded-xl bg-white border border-gray-200 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer;
 }
 
 /* EduNova Form styles */

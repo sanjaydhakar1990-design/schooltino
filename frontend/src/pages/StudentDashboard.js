@@ -204,14 +204,14 @@ export default function StudyTinoDashboard() {
   }
 
   const statCards = [
-    { label: 'Attendance', value: `${attendance.present}%`, icon: CheckCircle, subtext: 'Your attendance percentage' },
-    { label: 'Pending Homework', value: pendingHomework, icon: BookOpen, subtext: 'Assignments due' },
-    { label: 'Notices', value: notices.length, icon: Bell, subtext: 'School announcements' },
-    { label: 'Subjects', value: syllabus.length, icon: ClipboardList, subtext: 'Enrolled subjects' },
-    { label: 'Syllabus Completed', value: `${Math.round(syllabus.reduce((a, b) => a + b.completed, 0) / (syllabus.length || 1))}%`, icon: Award, subtext: 'Overall syllabus progress' },
-    { label: 'Fee Status', value: '₹0', icon: Wallet, subtext: 'Pending fee balance' },
-    { label: 'Activities', value: 0, icon: Trophy, subtext: 'Extra-curricular activities' },
-    { label: 'Exams', value: 0, icon: FileText, subtext: 'Upcoming examinations' },
+    { label: 'Attendance', value: `${attendance.present}%`, icon: CheckCircle, subtext: 'Your attendance percentage', bgColor: 'bg-green-50', textColor: 'text-green-500' },
+    { label: 'Pending Homework', value: pendingHomework, icon: BookOpen, subtext: 'Assignments due', bgColor: 'bg-amber-50', textColor: 'text-amber-500' },
+    { label: 'Notices', value: notices.length, icon: Bell, subtext: 'School announcements', bgColor: 'bg-blue-50', textColor: 'text-blue-500' },
+    { label: 'Subjects', value: syllabus.length, icon: ClipboardList, subtext: 'Enrolled subjects', bgColor: 'bg-indigo-50', textColor: 'text-indigo-500' },
+    { label: 'Syllabus Completed', value: `${Math.round(syllabus.reduce((a, b) => a + b.completed, 0) / (syllabus.length || 1))}%`, icon: Award, subtext: 'Overall syllabus progress', bgColor: 'bg-purple-50', textColor: 'text-purple-500' },
+    { label: 'Fee Status', value: '₹0', icon: Wallet, subtext: 'Pending fee balance', bgColor: 'bg-red-50', textColor: 'text-red-500' },
+    { label: 'Activities', value: 0, icon: Trophy, subtext: 'Extra-curricular activities', bgColor: 'bg-orange-50', textColor: 'text-orange-500' },
+    { label: 'Exams', value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-cyan-50', textColor: 'text-cyan-500' },
   ];
 
   const studentModuleCards = [
@@ -257,47 +257,52 @@ export default function StudyTinoDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="studytino-dashboard">
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                <School className="w-6 h-6 text-blue-500" />
+                <School className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h1 className="font-bold text-gray-800 text-base">{profile?.name || 'Student'}</h1>
-                <p className="text-xs text-gray-400">{profile?.class_name || 'Class'} - {profile?.school_name || 'School'}</p>
+                <h1 className="font-semibold text-gray-800 text-sm">{profile?.school_name || 'Schooltino'}</h1>
+                <p className="text-xs text-gray-400">{profile?.class_name || 'Class'}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={() => setVoiceModalOpen(true)} className="text-blue-500"><Mic className="w-5 h-5" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => setShowProfileDialog(true)}><Settings className="w-5 h-5 text-gray-500" /></Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-400"><LogOut className="w-5 h-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setVoiceModalOpen(true)} className="text-blue-500 hover:bg-blue-50 rounded-xl"><Mic className="w-5 h-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setShowProfileDialog(true)} className="hover:bg-gray-50 rounded-xl"><Settings className="w-5 h-5 text-gray-400" /></Button>
+              <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-400 hover:bg-gray-50 rounded-xl"><LogOut className="w-5 h-5" /></Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-5 space-y-6 pb-20">
+      <main className="max-w-5xl mx-auto px-4 py-5 space-y-6 pb-24">
         <div className="flex items-center gap-2 text-sm">
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors shadow-sm">
+          <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors">
             <Home className="w-3.5 h-3.5" /> Home
           </button>
-          <span className="text-gray-400">›</span>
+          <span className="text-gray-300">›</span>
           <span className="text-gray-500 text-xs">Student Dashboard</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="text-xl font-bold text-gray-900">Welcome, {profile?.name || 'Student'}!</h2>
+          <p className="text-sm text-gray-500 mt-1">{profile?.class_name || 'Class'} • {profile?.school_name || 'School'}</p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {statCards.map((card, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <div key={idx} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-all">
               <div className="flex justify-between items-start mb-3">
-                <span className="text-sm text-slate-500 font-medium">{card.label}</span>
-                <div className="w-8 h-8 bg-blue-50 rounded-md flex items-center justify-center">
-                  <card.icon className="w-4 h-4 text-blue-500" />
+                <span className="text-xs text-gray-500 font-medium">{card.label}</span>
+                <div className={`w-9 h-9 ${card.bgColor} rounded-xl flex items-center justify-center`}>
+                  <card.icon className={`w-4 h-4 ${card.textColor}`} />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-slate-800 mb-1">{card.value}</div>
-              <div className="text-xs text-slate-400">{card.subtext}</div>
+              <div className="text-2xl font-bold text-gray-800 mb-0.5">{card.value}</div>
+              <div className="text-xs text-gray-400">{card.subtext}</div>
             </div>
           ))}
         </div>
@@ -307,30 +312,24 @@ export default function StudyTinoDashboard() {
             <h2 className="text-xl font-bold text-gray-900">Key Features</h2>
             <p className="text-sm text-gray-500 mt-1">Powerful tools crafted to enhance your learning experience.</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {studentModuleCards.map((card) => (
               <div
                 key={card.id}
                 onClick={card.action}
-                className="group cursor-pointer bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+                className="group cursor-pointer bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
               >
-                <div className={`relative bg-gradient-to-br ${card.gradient} p-3 flex items-center justify-center`} style={{minHeight: '120px'}}>
-                  {card.image ? (
-                    <img src={card.image} alt={card.name} className="w-full h-24 object-contain group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <card.icon className="w-14 h-14 text-white/80" />
-                  )}
+                <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3`}>
+                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
                 </div>
-                <div className="p-3">
-                  <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
-                </div>
+                <h3 className="font-semibold text-gray-900 text-sm mb-1">{card.name}</h3>
+                <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{card.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <div className="px-5 pt-5 pb-4">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
@@ -385,7 +384,7 @@ export default function StudyTinoDashboard() {
         </div>
 
         {homework.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-5 pt-5 pb-4">
               <h2 className="text-xl font-bold text-gray-900">Homework</h2>
               <p className="text-sm text-gray-500 mt-1">Pending and completed homework assignments.</p>
@@ -419,7 +418,7 @@ export default function StudyTinoDashboard() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg border border-gray-200">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <div className="px-5 pt-5 pb-4">
             <h2 className="text-xl font-bold text-gray-900">Syllabus Progress</h2>
             <p className="text-sm text-gray-500 mt-1">Subject-wise syllabus completion status.</p>
@@ -454,7 +453,7 @@ export default function StudyTinoDashboard() {
         </div>
 
         {notices.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-5 pt-5 pb-4">
               <h2 className="text-xl font-bold text-gray-900">Notices</h2>
               <p className="text-sm text-gray-500 mt-1">Latest school announcements.</p>
@@ -489,7 +488,7 @@ export default function StudyTinoDashboard() {
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50" style={{boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'}}>
         <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
           {[
             { icon: Home, label: 'Home', active: true },
@@ -498,9 +497,9 @@ export default function StudyTinoDashboard() {
             { icon: Wallet, label: 'Fees', action: () => setShowPaymentDialog(true) },
             { icon: Brain, label: 'AI', action: () => setVoiceModalOpen(true) },
           ].map((item, idx) => (
-            <button key={idx} onClick={item.action || undefined} className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${item.active ? 'text-blue-500 bg-blue-50' : 'text-gray-500'}`}>
+            <button key={idx} onClick={item.action || undefined} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${item.active ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-gray-600'}`}>
               <item.icon className="w-5 h-5" />
-              <span className="text-xs">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </button>
           ))}
         </div>

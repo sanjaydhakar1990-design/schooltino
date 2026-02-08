@@ -210,12 +210,13 @@ export const Sidebar = ({ isOpen, onClose }) => {
       <aside
         className={`fixed lg:relative top-0 left-0 h-screen w-[260px] z-50 lg:z-auto transform transition-transform duration-300 ease-in-out shrink-0 overflow-hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } flex flex-col bg-white border-r border-gray-200`}
+        } flex flex-col bg-white border-r border-gray-100`}
         data-testid="sidebar"
       >
+        <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 flex-shrink-0"></div>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 lg:hidden"
+          className="absolute top-5 right-4 p-2 rounded-lg hover:bg-gray-100 lg:hidden"
         >
           <X className="w-5 h-5 text-gray-500" />
         </button>
@@ -227,7 +228,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
                 <img src={schoolLogo} alt="School Logo" className="w-full h-full object-contain" />
               </div>
             ) : (
-              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
             )}
@@ -235,7 +236,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <h1 className="font-bold text-gray-800 text-sm leading-tight truncate">
                 {schoolData?.name || 'School'}
               </h1>
-              <p className="text-xs text-blue-500 capitalize truncate">{user?.role || 'Admin'} Panel</p>
+              <p className="text-xs text-indigo-500 capitalize truncate">{user?.role || 'Admin'} Panel</p>
             </div>
           </div>
         </div>
@@ -313,7 +314,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             className="flex items-center gap-3 px-3 py-2 mb-1.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             data-testid="user-profile-link"
           >
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
               <span className="text-white font-medium text-sm">
                 {user?.name?.charAt(0) || 'U'}
               </span>
