@@ -29,15 +29,16 @@ export default function SchoolAnalytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     const schoolId = user?.school_id || localStorage.getItem('school_id');
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
     
     try {
-      // Fetch real data from APIs
       const [studentsRes, staffRes, classesRes, attendanceRes, feesRes] = await Promise.allSettled([
-        axios.get(`${API}/students?school_id=${schoolId}`),
-        axios.get(`${API}/employees?school_id=${schoolId}`),
-        axios.get(`${API}/classes?school_id=${schoolId}`),
-        axios.get(`${API}/attendance/summary?school_id=${schoolId}`),
-        axios.get(`${API}/fee-payment/summary/${schoolId}`)
+        axios.get(`${API}/students?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/employees?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/attendance/summary?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/fee-payment/summary/${schoolId}`, { headers })
       ]);
 
       // Extract real counts
@@ -59,8 +60,7 @@ export default function SchoolAnalytics() {
         weak_students_count: 0
       });
 
-      // Fetch teacher analytics
-      const teacherAnalyticsRes = await axios.get(`${API}/analytics/teachers?school_id=${schoolId}`).catch(() => null);
+      const teacherAnalyticsRes = await axios.get(`${API}/analytics/teachers?school_id=${schoolId}`, { headers }).catch(() => null);
       if (teacherAnalyticsRes?.data) {
         setTeachers(teacherAnalyticsRes.data);
       } else {
@@ -81,8 +81,7 @@ export default function SchoolAnalytics() {
         setTeachers(teachersList.length > 0 ? teachersList : []);
       }
 
-      // Fetch class-wise syllabus data
-      const syllabusRes = await axios.get(`${API}/analytics/syllabus-progress?school_id=${schoolId}`).catch(() => null);
+      const syllabusRes = await axios.get(`${API}/analytics/syllabus-progress?school_id=${schoolId}`, { headers }).catch(() => null);
       if (syllabusRes?.data) {
         setSyllabusData(syllabusRes.data);
       } else {
@@ -99,8 +98,7 @@ export default function SchoolAnalytics() {
         setSyllabusData(syllabusList);
       }
 
-      // Fetch weak students
-      const weakRes = await axios.get(`${API}/tino-brain/class-intelligence/${schoolId}/all`).catch(() => null);
+      const weakRes = await axios.get(`${API}/tino-brain/class-intelligence/${schoolId}/all`, { headers }).catch(() => null);
       if (weakRes?.data?.weak_students) {
         setWeakStudents(weakRes.data.weak_students.slice(0, 10));
         setAnalytics(prev => ({ ...prev, weak_students_count: weakRes.data.weak_students.length }));
@@ -108,8 +106,7 @@ export default function SchoolAnalytics() {
         setWeakStudents([]);
       }
 
-      // Fetch class performance
-      const classPerformanceRes = await axios.get(`${API}/analytics/class-performance?school_id=${schoolId}`).catch(() => null);
+      const classPerformanceRes = await axios.get(`${API}/analytics/class-performance?school_id=${schoolId}`, { headers }).catch(() => null);
       if (classPerformanceRes?.data) {
         setClassPerformance(classPerformanceRes.data);
       } else {

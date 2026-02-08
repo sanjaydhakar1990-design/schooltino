@@ -306,12 +306,19 @@ export default function SchoolManagementPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API}/api/schools/${schoolId}`, school, {
+      const payload = { ...school };
+      if (payload.established_year === '' || payload.established_year === null) {
+        payload.established_year = null;
+      } else if (typeof payload.established_year === 'string') {
+        payload.established_year = parseInt(payload.established_year) || null;
+      }
+      await axios.put(`${API}/api/schools/${schoolId}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('School profile saved!');
     } catch (error) {
-      toast.error('Profile save करने में समस्या');
+      console.error('Save error:', error?.response?.data || error);
+      toast.error(error?.response?.data?.detail || 'Profile save करने में समस्या');
     } finally {
       setSaving(false);
     }

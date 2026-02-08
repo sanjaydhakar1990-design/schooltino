@@ -231,50 +231,62 @@ DEFAULT_PERMISSIONS = {
 
 # School Models - Comprehensive School Registration
 class SchoolCreate(BaseModel):
-    # Basic Info
-    name: str
-    address: str
-    board_type: str  # CBSE, ICSE, State Board, IB
-    city: str
-    state: str
+    model_config = {"extra": "ignore"}
+
+    name: str = ""
+    address: str = ""
+    board_type: str = "CBSE"
+    city: str = ""
+    state: str = ""
     pincode: Optional[str] = None
     phone: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     
-    # Extended Info for AI
-    registration_number: Optional[str] = None  # School registration/affiliation number
-    established_year: Optional[int] = None  # Year school was established
-    website_url: Optional[str] = None  # School website
-    logo_url: Optional[str] = None  # School logo
-    school_photo_url: Optional[str] = None  # Main school building photo
+    registration_number: Optional[str] = None
+    established_year: Optional[int] = None
+    website_url: Optional[str] = None
+    logo_url: Optional[str] = None
+    school_photo_url: Optional[str] = None
     
-    # School Details for AI Context
-    school_type: Optional[str] = None  # Primary, Secondary, Senior Secondary, K-12
-    medium: Optional[str] = None  # Hindi, English, Regional
-    shift: Optional[str] = None  # Morning, Day, Both
-    total_capacity: Optional[int] = None  # Max student capacity
+    school_type: Optional[str] = None
+    medium: Optional[str] = None
+    shift: Optional[str] = None
+    total_capacity: Optional[int] = None
     
-    # About School (for AI context)
-    motto: Optional[str] = None  # School motto
+    motto: Optional[str] = None
     principal_name: Optional[str] = None
     principal_message: Optional[str] = None
-    about_school: Optional[str] = None  # Brief description
+    about_school: Optional[str] = None
     vision: Optional[str] = None
     mission: Optional[str] = None
-    achievements: Optional[str] = None  # Notable achievements
-    facilities: Optional[List[str]] = None  # Labs, Library, Sports, etc.
+    achievements: Optional[str] = None
+    facilities: Optional[List[str]] = None
     
-    # Social & Contact
     facebook_url: Optional[str] = None
     instagram_url: Optional[str] = None
     youtube_url: Optional[str] = None
     whatsapp_number: Optional[str] = None
     
-    # App Customization
-    app_requirements: Optional[str] = None  # What features school needs most
-    ai_assistant_name: Optional[str] = None  # Custom AI assistant name for this school
+    app_requirements: Optional[str] = None
+    ai_assistant_name: Optional[str] = None
+
+    signature_url: Optional[str] = None
+    seal_url: Optional[str] = None
+    watermark_enabled: Optional[bool] = None
+    watermark_opacity: Optional[float] = None
+    watermark_size: Optional[str] = None
+    watermark_position: Optional[str] = None
+    watermark_apply: Optional[dict] = None
+
+    @validator('established_year', 'total_capacity', pre=True, always=True)
+    def empty_str_to_none(cls, v):
+        if v == '' or v == 'null':
+            return None
+        return v
 
 class SchoolResponse(BaseModel):
+    model_config = {"extra": "allow"}
+
     id: str
     name: str
     address: Optional[str] = None
@@ -285,20 +297,17 @@ class SchoolResponse(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     
-    # Extended Info
     registration_number: Optional[str] = None
     established_year: Optional[int] = None
     website_url: Optional[str] = None
     logo_url: Optional[str] = None
     school_photo_url: Optional[str] = None
     
-    # School Details
     school_type: Optional[str] = None
     medium: Optional[str] = None
     shift: Optional[str] = None
     total_capacity: Optional[int] = None
     
-    # About School
     motto: Optional[str] = None
     principal_name: Optional[str] = None
     principal_message: Optional[str] = None
@@ -308,18 +317,24 @@ class SchoolResponse(BaseModel):
     achievements: Optional[str] = None
     facilities: Optional[List[str]] = None
     
-    # Social
     facebook_url: Optional[str] = None
     instagram_url: Optional[str] = None
     youtube_url: Optional[str] = None
     whatsapp_number: Optional[str] = None
     
-    # App Settings
     app_requirements: Optional[str] = None
     ai_assistant_name: Optional[str] = None
+
+    signature_url: Optional[str] = None
+    seal_url: Optional[str] = None
+    watermark_enabled: Optional[bool] = None
+    watermark_opacity: Optional[float] = None
+    watermark_size: Optional[str] = None
+    watermark_position: Optional[str] = None
+    watermark_apply: Optional[dict] = None
     
-    created_at: str
-    is_active: bool = True
+    created_at: Optional[str] = None
+    is_active: Optional[bool] = True
 
 # Class Models
 class ClassCreate(BaseModel):
@@ -9532,6 +9547,106 @@ async def save_school_settings(settings: SchoolSettingsModel, current_user: dict
     await log_audit(current_user["id"], "update", "school_settings", {"school_id": settings.school_id})
     
     return {"message": "Settings saved successfully", "settings": settings_dict}
+
+# ==================== ANALYTICS ENDPOINTS ====================
+
+@api_router.get("/attendance/summary")
+async def get_attendance_summary(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get attendance summary for analytics page"""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    total_records = await db.attendance.count_documents({"school_id": school_id})
+    present_records = await db.attendance.count_documents({"school_id": school_id, "status": "present"})
+    
+    avg_attendance = round((present_records / total_records * 100), 1) if total_records > 0 else 0
+    
+    return {
+        "school_id": school_id,
+        "avg_attendance": avg_attendance,
+        "total_records": total_records,
+        "present_records": present_records,
+        "avg_performance": 0
+    }
+
+@api_router.get("/fee-payment/summary/{school_id}")
+async def get_fee_payment_summary(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get fee payment summary for analytics page"""
+    total_fees = await db.fee_payments.find({"school_id": school_id}).to_list(None)
+    
+    total_amount = sum(f.get("amount", 0) for f in total_fees)
+    paid_amount = sum(f.get("amount", 0) for f in total_fees if f.get("status") == "paid")
+    pending_amount = total_amount - paid_amount
+    
+    return {
+        "school_id": school_id,
+        "total_amount": total_amount,
+        "paid_amount": paid_amount,
+        "pending_amount": pending_amount,
+        "total_transactions": len(total_fees)
+    }
+
+@api_router.get("/analytics/teachers")
+async def get_teacher_analytics(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get teacher analytics for school analytics page"""
+    teachers = await db.users.find(
+        {"school_id": school_id, "role": {"$in": ["teacher", "staff"]}, "is_active": True},
+        {"_id": 0, "password": 0}
+    ).to_list(100)
+    
+    result = []
+    for t in teachers:
+        result.append({
+            "id": t.get("id", ""),
+            "name": t.get("name", "Unknown"),
+            "subject": t.get("subject", t.get("department", "General")),
+            "classes": t.get("classes_count", 2),
+            "syllabus_progress": t.get("syllabus_progress", 0),
+            "avg_result": t.get("avg_result", 0),
+            "weak_students": t.get("weak_students_count", 0)
+        })
+    
+    return result
+
+@api_router.get("/analytics/syllabus-progress")
+async def get_syllabus_progress(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get class-wise syllabus progress"""
+    classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
+    
+    result = []
+    for c in classes:
+        syllabus = await db.syllabus_progress.find_one(
+            {"school_id": school_id, "class_id": c.get("id")},
+            {"_id": 0}
+        )
+        result.append({
+            "class": c.get("name", c.get("class_name", "Class")),
+            "total": 100,
+            "completed": syllabus.get("completed", 0) if syllabus else 0,
+            "subjects": syllabus.get("subjects", {"math": 0, "science": 0, "english": 0, "hindi": 0}) if syllabus else {"math": 0, "science": 0, "english": 0, "hindi": 0}
+        })
+    
+    return result
+
+@api_router.get("/analytics/class-performance")
+async def get_class_performance(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get class-wise performance overview"""
+    classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
+    
+    result = []
+    for c in classes:
+        class_id = c.get("id")
+        student_count = await db.students.count_documents({"school_id": school_id, "class_id": class_id, "status": "active"})
+        
+        result.append({
+            "class": c.get("name", c.get("class_name", "Class")),
+            "students": student_count,
+            "avg_score": c.get("avg_score", 0),
+            "attendance": c.get("avg_attendance", 0),
+            "top_score": c.get("top_score", 0),
+            "lowest_score": c.get("lowest_score", 0)
+        })
+    
+    return result
 
 # ==================== PAYMENT SETTINGS & PARENT PAYMENT PORTAL ====================
 
