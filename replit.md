@@ -67,6 +67,8 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - Core school management features work fully
 
 ## Recent Changes
+- 2026-02-08: Fixed Analytics page not opening - added auth headers to all API calls in SchoolAnalytics.js, added missing backend endpoints (attendance/summary, fee-payment/summary, analytics/teachers, analytics/syllabus-progress, analytics/class-performance)
+- 2026-02-08: Fixed School data not saving - updated SchoolCreate model to accept extra fields (signature_url, seal_url, watermark settings), added validator for empty string to None conversion on int fields (established_year, total_capacity), updated SchoolResponse with extra="allow", fixed frontend to clean payload before sending
 - 2026-02-08: Full EduNova Corporate Clean theme applied across entire application:
   - Global CSS (index.css): EduNova theme variables, Tailwind overrides, consistent typography
   - UI Components (card, table, tabs, button): gray-200 borders, white backgrounds, rounded-xl
