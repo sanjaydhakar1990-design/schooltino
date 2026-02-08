@@ -78,6 +78,7 @@ from routes.tino_voice import router as tino_voice_router
 from routes.did_avatar import router as did_avatar_router
 from routes.documents import router as documents_router
 from routes.bulk_import import router as bulk_import_router
+from routes.dual_credits import router as dual_credits_router
 
 # ==================== MODELS ====================
 
@@ -5615,9 +5616,32 @@ async def mark_notice_read(notice_id: str, current_user: dict = Depends(get_curr
     )
     return {"message": "Notice marked as read"}
 
+class HomeworkCreate(BaseModel):
+    school_id: str
+    class_id: str
+    subject: str
+    description: str
+    due_date: Optional[str] = None
+    assigned_by: str
+    assigned_date: Optional[str] = None
+    chapter: Optional[str] = None
+    topic: Optional[str] = None
+
+@api_router.post("/homework")
+async def create_homework(homework: HomeworkCreate, current_user: dict = Depends(get_current_user)):
+    """Create homework (teacher only)"""
+    homework_doc = {
+        "id": str(uuid.uuid4()),
+        **homework.model_dump(),
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.homework.insert_one(homework_doc)
+    return {"success": True, "message": "Homework assigned", "homework_id": homework_doc["id"]}
+
 @api_router.get("/student/homework")
 async def get_student_homework(current_user: dict = Depends(get_current_user)):
-    """Get homework for student's class"""
+    """Get homework for student's class (pending and active status)"""
     student = await db.students.find_one(
         {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
         {"_id": 0}
@@ -5628,10 +5652,40 @@ async def get_student_homework(current_user: dict = Depends(get_current_user)):
     
     homework = await db.homework.find({
         "class_id": student["class_id"],
-        "school_id": student["school_id"]
+        "school_id": student["school_id"],
+        "status": {"$in": ["pending", "active"]}
     }, {"_id": 0}).sort("due_date", 1).to_list(20)
     
     return homework
+
+@api_router.get("/homework")
+async def get_homework(school_id: str, class_id: str = None, current_user: dict = Depends(get_current_user)):
+    """Get homework for teacher (by school and optional class filter)"""
+    query = {"school_id": school_id}
+    if class_id:
+        query["class_id"] = class_id
+    homework = await db.homework.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return homework
+
+@api_router.post("/student/homework/{homework_id}/submit")
+async def submit_homework(homework_id: str, current_user: dict = Depends(get_current_user)):
+    """Submit homework (student)"""
+    student = await db.students.find_one(
+        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
+        {"_id": 0}
+    )
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    await db.homework_submissions.insert_one({
+        "id": str(uuid.uuid4()),
+        "homework_id": homework_id,
+        "student_id": student.get("id") or student.get("student_id"),
+        "school_id": student["school_id"],
+        "status": "submitted",
+        "submitted_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"success": True, "message": "Homework submitted"}
 
 @api_router.get("/student/leaves")
 async def get_student_leaves(current_user: dict = Depends(get_current_user)):
@@ -11952,6 +12006,7 @@ api_router.include_router(tino_voice_router)
 api_router.include_router(did_avatar_router)
 api_router.include_router(documents_router)
 api_router.include_router(bulk_import_router)
+api_router.include_router(dual_credits_router)
 
 app.include_router(api_router)
 

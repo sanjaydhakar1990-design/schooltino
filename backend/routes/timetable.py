@@ -305,11 +305,34 @@ async def get_teacher_timetable(teacher_id: str, school_id: str):
         {"_id": 0}
     ).to_list(length=50)
     
+    # [FIX] staff.id cross-reference
+    if not allocations:
+        staff_rec = await db.staff.find_one({"user_id": teacher_id}, {"_id": 0, "id": 1})
+        if staff_rec:
+            allocations = await db.subject_allocations.find(
+                {"teacher_id": staff_rec["id"], "school_id": school_id},
+                {"_id": 0}
+            ).to_list(length=50)
+            # Auto-fix: correct teacher_id in allocations
+            if allocations:
+                await db.subject_allocations.update_many(
+                    {"teacher_id": staff_rec["id"], "school_id": school_id},
+                    {"$set": {"teacher_id": teacher_id}}
+                )
+                print(f"[TIMETABLE AUTO-FIX] teacher_id corrected: {staff_rec['id']} → {teacher_id}")
+    
     if not allocations:
         return {"exists": False, "message": "No classes assigned to this teacher"}
     
     # Get timetables for all assigned classes
     class_ids = list(set([a["class_id"] for a in allocations]))
+    
+    # [FIX] Fetch class names to include in schedule
+    class_docs = await db.classes.find(
+        {"id": {"$in": class_ids}},
+        {"_id": 0, "id": 1, "name": 1}
+    ).to_list(length=50)
+    class_name_map = {c["id"]: c.get("name", c["id"]) for c in class_docs}
     
     teacher_schedule = {day: [] for day in DAYS}
     
@@ -325,6 +348,7 @@ async def get_teacher_timetable(teacher_id: str, school_id: str):
                         teacher_schedule[day].append({
                             "period": period.get("period"),
                             "class_id": class_id,
+                            "class_name": class_name_map.get(class_id, class_id),  # [FIX] added class_name
                             "subject": period.get("subject")
                         })
     
