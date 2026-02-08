@@ -20,13 +20,22 @@ import {
   FileText, CalendarDays, AlertTriangle, Loader2, Brain, 
   Send, CreditCard, Wallet, Mic, Phone, Lock, Home,
   Eye, Paperclip, Star, ClipboardList, MessageCircle, Users,
-  Trophy, Activity, AlertOctagon, Award, Zap
+  Trophy, Activity, AlertOctagon, Award, Zap,
+  ChevronLeft, ChevronFirst, ChevronLast
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
 import AdmitCardSection from '../components/AdmitCardSection';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const ITEMS_PER_PAGE = 5;
+
+const SortIcon = () => (
+  <span className="inline-flex flex-col ml-1 -space-y-1 opacity-40">
+    <span className="text-[8px] leading-none">&#9650;</span>
+    <span className="text-[8px] leading-none">&#9660;</span>
+  </span>
+);
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -44,6 +53,7 @@ export default function StudyTinoDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   
   const [profile, setProfile] = useState(null);
   const [notices, setNotices] = useState([]);
@@ -77,13 +87,6 @@ export default function StudyTinoDashboard() {
   
   const [leaveForm, setLeaveForm] = useState({ leave_type: 'sick', from_date: '', to_date: '', reason: '' });
   const [isBlocked, setIsBlocked] = useState(false);
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
 
   useEffect(() => { fetchDashboardData(); }, []);
 
@@ -182,7 +185,6 @@ export default function StudyTinoDashboard() {
   const handleLogout = () => { logout(); navigate('/login'); };
 
   const pendingHomework = homework.filter(h => h.status === 'pending').length;
-  const unreadNotices = notices.filter(n => !n.is_read).length;
 
   if (loading) {
     return (<div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-blue-500" /></div>);
@@ -201,11 +203,12 @@ export default function StudyTinoDashboard() {
     );
   }
 
-  const statCards = [
+  const statCardsRow1 = [
     { label: 'Attendance', value: `${attendance.present}%`, icon: CheckCircle },
     { label: 'Pending Homework', value: pendingHomework, icon: BookOpen },
     { label: 'Notices', value: notices.length, icon: Bell },
     { label: 'Subjects', value: syllabus.length, icon: ClipboardList },
+    { label: 'Syllabus Completed', value: `${Math.round(syllabus.reduce((a, b) => a + b.completed, 0) / (syllabus.length || 1))}%`, icon: Award },
   ];
 
   const quickModules = [
@@ -225,6 +228,20 @@ export default function StudyTinoDashboard() {
     const q = searchQuery.toLowerCase();
     return m.label.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q);
   });
+
+  const totalPages = Math.ceil(filteredModules.length / ITEMS_PER_PAGE);
+  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedModules = filteredModules.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="studytino-dashboard">
@@ -249,96 +266,105 @@ export default function StudyTinoDashboard() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-5 space-y-5 pb-20">
+      <main className="max-w-5xl mx-auto px-4 py-5 space-y-6 pb-20">
         <div className="flex items-center gap-2 text-sm">
-          <button className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md text-xs font-medium hover:bg-blue-600 transition-colors">
+          <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors shadow-sm">
             <Home className="w-3.5 h-3.5" /> Home
           </button>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+          <span className="text-gray-400">›</span>
           <span className="text-gray-500 text-xs">Student Dashboard</span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {statCards.map((card, idx) => (
-            <div key={idx} className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <card.icon className="w-4 h-4 text-gray-400" />
-                <span className="text-xs text-gray-500 font-medium">{card.label}</span>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {statCardsRow1.map((card, idx) => (
+            <div key={idx} className="bg-white rounded-lg border border-gray-200 px-4 py-4">
+              <div className="flex items-center gap-1.5 mb-3">
+                <card.icon className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-[11px] text-gray-500 font-medium leading-tight">{card.label}</span>
               </div>
-              <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+              <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
             </div>
           ))}
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="px-5 pt-5 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-gray-800">Quick Actions</h2>
-                <p className="text-xs text-gray-500 mt-0.5">All available actions. Use the "Open" button to navigate.</p>
+                <h2 className="text-xl font-bold text-gray-900">Quick Actions</h2>
+                <p className="text-sm text-gray-500 mt-1">All available actions. Use the "Open" button to navigate.</p>
               </div>
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input type="text" placeholder="Search keyword" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 w-full sm:w-64 text-gray-700" />
+                <input type="text" placeholder="Search keyword" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 w-full sm:w-56 text-gray-700 bg-white" />
               </div>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Module Name</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Description</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                <tr className="border-t border-b border-gray-200 bg-gray-50/80">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Module Name <SortIcon /></th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Description <SortIcon /></th>
+                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredModules.map((module, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
-                    <td className="px-4 py-3">
+                {paginatedModules.map((module, idx) => (
+                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
+                    <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <module.icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm font-medium text-gray-800">{module.label}</span>
+                        <span className="text-sm text-gray-800">{module.label}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 hidden sm:table-cell"><span className="text-sm text-gray-500">{module.desc}</span></td>
-                    <td className="px-4 py-3 text-right">
-                      <button onClick={module.action} className="px-4 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors">Open</button>
+                    <td className="px-5 py-3.5 hidden sm:table-cell"><span className="text-sm text-gray-500">{module.desc}</span></td>
+                    <td className="px-5 py-3.5 text-right">
+                      <button onClick={module.action} className="px-5 py-1.5 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 transition-colors">Open</button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="p-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">Showing {filteredModules.length} of {quickModules.length} actions</p>
+          <div className="px-5 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-sm text-gray-500">Showing {startIdx + 1} to {Math.min(startIdx + ITEMS_PER_PAGE, filteredModules.length)} of {filteredModules.length}</p>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronFirst className="w-4 h-4" /></button>
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="w-4 h-4" /></button>
+              {getPageNumbers().map(page => (
+                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${currentPage === page ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>{page}</button>
+              ))}
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLast className="w-4 h-4" /></button>
+            </div>
           </div>
         </div>
 
         {homework.length > 0 && (
           <div className="bg-white rounded-lg border border-gray-200">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-800">Homework</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Pending and completed homework assignments.</p>
+            <div className="px-5 pt-5 pb-4">
+              <h2 className="text-xl font-bold text-gray-900">Homework</h2>
+              <p className="text-sm text-gray-500 mt-1">Pending and completed homework assignments.</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Subject</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Topic</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Due Date</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Subject <SortIcon /></th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Topic <SortIcon /></th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Due Date <SortIcon /></th>
+                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {homework.map((hw) => (
-                    <tr key={hw.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-800">{hw.subject}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500 hidden sm:table-cell">{hw.topic}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{new Date(hw.due_date).toLocaleDateString('hi-IN')}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${hw.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
+                    <tr key={hw.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
+                      <td className="px-5 py-3.5 text-sm text-gray-800">{hw.subject}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell">{hw.topic}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500">{new Date(hw.due_date).toLocaleDateString('hi-IN')}</td>
+                      <td className="px-5 py-3.5 text-right">
+                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${hw.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
                           {hw.status === 'pending' ? 'Pending' : 'Done'}
                         </span>
                       </td>
@@ -351,25 +377,25 @@ export default function StudyTinoDashboard() {
         )}
 
         <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-bold text-gray-800">Syllabus Progress</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Subject-wise syllabus completion status.</p>
+          <div className="px-5 pt-5 pb-4">
+            <h2 className="text-xl font-bold text-gray-900">Syllabus Progress</h2>
+            <p className="text-sm text-gray-500 mt-1">Subject-wise syllabus completion status.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Subject</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Current Topic</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Progress</th>
+                <tr className="border-t border-b border-gray-200 bg-gray-50/80">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Subject <SortIcon /></th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Current Topic <SortIcon /></th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Progress <SortIcon /></th>
                 </tr>
               </thead>
               <tbody>
                 {syllabus.map((subject, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-800">{subject.subject}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500 hidden sm:table-cell">{subject.current}</td>
-                    <td className="px-4 py-3">
+                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
+                    <td className="px-5 py-3.5 text-sm text-gray-800">{subject.subject}</td>
+                    <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell">{subject.current}</td>
+                    <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="flex-1 bg-gray-100 rounded-full h-2 max-w-[120px]">
                           <div className={`h-2 rounded-full ${idx === 0 ? 'bg-blue-500' : idx === 1 ? 'bg-green-500' : idx === 2 ? 'bg-purple-500' : 'bg-amber-500'}`} style={{ width: `${subject.completed}%` }} />
@@ -386,29 +412,29 @@ export default function StudyTinoDashboard() {
 
         {notices.length > 0 && (
           <div className="bg-white rounded-lg border border-gray-200">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-800">Notices</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Latest school announcements.</p>
+            <div className="px-5 pt-5 pb-4">
+              <h2 className="text-xl font-bold text-gray-900">Notices</h2>
+              <p className="text-sm text-gray-500 mt-1">Latest school announcements.</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Content</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
+                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Title <SortIcon /></th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Content <SortIcon /></th>
+                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Priority</th>
                   </tr>
                 </thead>
                 <tbody>
                   {notices.map((notice) => (
-                    <tr key={notice.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors cursor-pointer" onClick={() => { setSelectedNotice(notice); setShowNoticeDialog(true); }}>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-800">{notice.title}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500 hidden sm:table-cell line-clamp-1">{notice.content}</td>
-                      <td className="px-4 py-3 text-right">
+                    <tr key={notice.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors cursor-pointer" onClick={() => { setSelectedNotice(notice); setShowNoticeDialog(true); }}>
+                      <td className="px-5 py-3.5 text-sm text-gray-800">{notice.title}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell line-clamp-1">{notice.content}</td>
+                      <td className="px-5 py-3.5 text-right">
                         {notice.priority === 'high' ? (
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-50 text-red-600 border border-red-200">Important</span>
+                          <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-red-50 text-red-600 border border-red-200">Important</span>
                         ) : (
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-50 text-gray-600 border border-gray-200">Normal</span>
+                          <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-50 text-gray-600 border border-gray-200">Normal</span>
                         )}
                       </td>
                     </tr>

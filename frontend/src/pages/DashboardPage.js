@@ -14,11 +14,21 @@ import {
   Globe, Heart, Music, Calculator, Wrench,
   Building, Award, FileText, CreditCard, Cpu,
   Megaphone, Briefcase, DollarSign, Home,
-  ChevronLeft
+  ChevronLeft, ChevronLast, ChevronFirst,
+  ArrowUpDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const ITEMS_PER_PAGE = 5;
+
+const SortIcon = () => (
+  <span className="inline-flex flex-col ml-1 -space-y-1 opacity-40">
+    <span className="text-[8px] leading-none">&#9650;</span>
+    <span className="text-[8px] leading-none">&#9660;</span>
+  </span>
+);
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -27,6 +37,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (schoolId) {
@@ -68,13 +79,19 @@ export default function DashboardPage() {
     );
   }
 
-  const statCards = [
+  const statCardsRow1 = [
     { label: 'Total Students', value: stats?.total_students || 0, icon: Users },
     { label: 'Total Staff', value: stats?.total_staff || 0, icon: UserCog },
-    { label: 'Fee Collected (Month)', value: `₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee },
-    { label: 'Pending Fees', value: `₹${((stats?.pending_fees || 0) / 1000).toFixed(0)}K`, icon: Wallet },
+    { label: 'Fee Collected', value: `₹${((stats?.fee_collection_month || 0)).toLocaleString()}`, icon: IndianRupee },
+    { label: 'Pending Fees', value: `₹${((stats?.pending_fees || 0)).toLocaleString()}`, icon: Wallet },
     { label: 'Attendance Today', value: `${stats?.attendance_today?.present || 0}%`, icon: CalendarCheck },
+  ];
+
+  const statCardsRow2 = [
     { label: 'Total Classes', value: stats?.total_classes || 0, icon: GraduationCap },
+    { label: 'Active Modules', value: 34, icon: Cpu },
+    { label: 'Notices', value: stats?.total_notices || 0, icon: Bell },
+    { label: 'Transport Routes', value: stats?.transport_routes || 0, icon: Bus },
   ];
 
   const modules = [
@@ -120,44 +137,70 @@ export default function DashboardPage() {
     return m.label.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q) || m.category.toLowerCase().includes(q);
   });
 
+  const totalPages = Math.ceil(filteredModules.length / ITEMS_PER_PAGE);
+  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedModules = filteredModules.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
+
   return (
-    <div className="space-y-5 pb-10" data-testid="dashboard-page">
+    <div className="space-y-6 pb-10" data-testid="dashboard-page">
       <div className="flex items-center gap-2 text-sm">
-        <button onClick={() => navigate('/app/dashboard')} className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md text-xs font-medium hover:bg-blue-600 transition-colors">
+        <button onClick={() => navigate('/app/dashboard')} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors shadow-sm">
           <Home className="w-3.5 h-3.5" />
           Home
         </button>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+        <span className="text-gray-400">›</span>
         <span className="text-gray-500 text-xs">{schoolData?.name || 'Dashboard'}</span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {statCards.map((card, idx) => (
-          <div key={idx} className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <card.icon className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-500 font-medium">{card.label}</span>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        {statCardsRow1.map((card, idx) => (
+          <div key={idx} className="bg-white rounded-lg border border-gray-200 px-4 py-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <card.icon className="w-3.5 h-3.5 text-gray-400" />
+              <span className="text-[11px] text-gray-500 font-medium leading-tight">{card.label}</span>
             </div>
-            <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+            <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {statCardsRow2.map((card, idx) => (
+          <div key={idx} className="bg-white rounded-lg border border-gray-200 px-4 py-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <card.icon className="w-3.5 h-3.5 text-gray-400" />
+              <span className="text-[11px] text-gray-500 font-medium leading-tight">{card.label}</span>
+            </div>
+            <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
           </div>
         ))}
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="px-5 pt-5 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">All Modules</h2>
-              <p className="text-xs text-gray-500 mt-0.5">List of all available modules. Use the "Open" action to navigate.</p>
+              <h2 className="text-xl font-bold text-gray-900">All Modules</h2>
+              <p className="text-sm text-gray-500 mt-1">List of all available modules. Use the "Open" action to navigate.</p>
             </div>
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search keyword"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 w-full sm:w-64 text-gray-700"
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 w-full sm:w-56 text-gray-700 bg-white"
               />
             </div>
           </div>
@@ -166,32 +209,40 @@ export default function DashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Module Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Description</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Category</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+              <tr className="border-t border-b border-gray-200 bg-gray-50/80">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">
+                  Module Name <SortIcon />
+                </th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">
+                  Description <SortIcon />
+                </th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden md:table-cell whitespace-nowrap">
+                  Category <SortIcon />
+                </th>
+                <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredModules.map((module, idx) => (
-                <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
-                  <td className="px-4 py-3">
+              {paginatedModules.map((module, idx) => (
+                <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
+                  <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <module.icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <span className="text-sm font-medium text-gray-800">{module.label}</span>
+                      <span className="text-sm text-gray-800">{module.label}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
+                  <td className="px-5 py-3.5 hidden sm:table-cell">
                     <span className="text-sm text-gray-500">{module.desc}</span>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{module.category}</span>
+                  <td className="px-5 py-3.5 hidden md:table-cell">
+                    <span className="text-sm text-gray-500">{module.category}</span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-5 py-3.5 text-right">
                     <button
                       onClick={() => navigate(module.path)}
-                      className="px-4 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors"
+                      className="px-5 py-1.5 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 transition-colors"
                     >
                       Open
                     </button>
@@ -202,10 +253,52 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-          <p className="text-xs text-gray-500">Showing {filteredModules.length} of {modules.length} modules</p>
+        <div className="px-5 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-sm text-gray-500">
+            Showing {startIdx + 1} to {Math.min(startIdx + ITEMS_PER_PAGE, filteredModules.length)} of {filteredModules.length}
+          </p>
           <div className="flex items-center gap-1">
-            <button className="w-8 h-8 flex items-center justify-center rounded bg-blue-500 text-white text-xs font-medium">1</button>
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
+            >
+              <ChevronFirst className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            {getPageNumbers().map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${
+                  currentPage === page
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
+            >
+              <ChevronLast className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
