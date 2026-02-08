@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'schooltino-v3';
-const STATIC_CACHE = 'schooltino-static-v3';
+const CACHE_NAME = 'schooltino-v5';
+const STATIC_CACHE = 'schooltino-static-v5';
 
 // Assets to cache immediately
 const PRECACHE_ASSETS = [
@@ -16,7 +16,7 @@ const PRECACHE_ASSETS = [
 
 // Install event - cache critical assets
 self.addEventListener('install', event => {
-  console.log('[SW] Installing service worker v3...');
+  console.log('[SW] Installing service worker v5...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
@@ -35,7 +35,7 @@ self.addEventListener('install', event => {
 
 // Activate event - clean old caches and take control immediately
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating service worker v3...');
+  console.log('[SW] Activating service worker v5...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -159,4 +159,4 @@ self.addEventListener('notificationclick', event => {
   );
 });
 
-console.log('[SW] Service worker v3 loaded');
+console.log('[SW] Service worker v5 loaded');
