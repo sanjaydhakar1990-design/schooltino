@@ -9,7 +9,11 @@ import {
   CalendarCheck, Bell, Sparkles, Settings, Brain,
   BookOpen, Bus, Shield, Image, Calendar,
   Loader2, IndianRupee, UserPlus, Receipt,
-  ClipboardList
+  ClipboardList, ChevronDown, ChevronRight, Wallet,
+  BarChart3, Fingerprint, Video, MessageSquare,
+  Globe, Heart, Music, Calculator, Wrench,
+  Building, Award, FileText, CreditCard, Cpu,
+  Megaphone, Briefcase, DollarSign, Radio
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { toast } from 'sonner';
@@ -24,6 +28,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState('');
   const [recentActivities, setRecentActivities] = useState([]);
+  const [expandedTabs, setExpandedTabs] = useState(['quick_actions']);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -70,6 +75,14 @@ export default function DashboardPage() {
     return `${Math.floor(diff / 86400)} days ago`;
   };
 
+  const toggleTab = (tabId) => {
+    setExpandedTabs(prev =>
+      prev.includes(tabId)
+        ? prev.filter(t => t !== tabId)
+        : [...prev, tabId]
+    );
+  };
+
   const attendanceData = stats ? [
     { name: 'Present', value: stats.attendance_today?.present || 0, color: '#10B981' },
     { name: 'Absent', value: stats.attendance_today?.absent || 0, color: '#EF4444' },
@@ -105,65 +118,6 @@ export default function DashboardPage() {
     );
   }
 
-  const statsCards = [
-    { 
-      title: 'Total Students', 
-      value: stats?.total_students || 0, 
-      icon: Users, 
-      color: '#3B82F6',
-      desc: 'Active enrolled students',
-      path: '/app/students'
-    },
-    { 
-      title: 'Total Staff', 
-      value: stats?.total_staff || 0, 
-      icon: UserCog,
-      color: '#10B981',
-      desc: 'Teaching & non-teaching staff',
-      path: '/app/employee-management'
-    },
-    { 
-      title: 'Fee Collection', 
-      value: `₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`, 
-      icon: IndianRupee,
-      color: '#F59E0B',
-      desc: 'This month collection',
-      path: '/app/fee-management'
-    },
-    { 
-      title: 'Attendance Today', 
-      value: `${stats?.attendance_today?.present || 0}%`, 
-      icon: CalendarCheck,
-      color: '#8B5CF6',
-      desc: 'Present today',
-      path: '/app/attendance'
-    },
-  ];
-
-  const quickActions = [
-    { icon: UserPlus, label: 'New Admission', path: '/app/students', color: '#3B82F6' },
-    { icon: CalendarCheck, label: 'Mark Attendance', path: '/app/attendance', color: '#10B981' },
-    { icon: Receipt, label: 'Collect Fee', path: '/app/fee-management', color: '#F59E0B' },
-    { icon: Brain, label: 'Ask Tino AI', path: '/app/tino-ai', color: '#8B5CF6' },
-    { icon: Bell, label: 'Send Notice', path: '/app/notices', color: '#EF4444' },
-    { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: '#EC4899' },
-  ];
-
-  const modules = [
-    { icon: Users, label: 'Students', path: '/app/students', color: '#3B82F6' },
-    { icon: UserCog, label: 'Staff', path: '/app/employee-management', color: '#10B981' },
-    { icon: CalendarCheck, label: 'Attendance', path: '/app/attendance', color: '#F59E0B' },
-    { icon: Wallet, label: 'Fees', path: '/app/fee-management', color: '#8B5CF6' },
-    { icon: ClipboardList, label: 'Exams', path: '/app/exam-report', color: '#EF4444' },
-    { icon: BookOpen, label: 'Library', path: '/app/library', color: '#F97316' },
-    { icon: Clock, label: 'Timetable', path: '/app/timetable-management', color: '#06B6D4' },
-    { icon: Bus, label: 'Transport', path: '/app/transport', color: '#14B8A6' },
-    { icon: Shield, label: 'Visitor Pass', path: '/app/visitor-pass', color: '#64748B' },
-    { icon: Image, label: 'Gallery', path: '/app/gallery', color: '#EC4899' },
-    { icon: Bell, label: 'Notices', path: '/app/notices', color: '#6366F1' },
-    { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: '#0EA5E9' },
-  ];
-
   const formatDateBadge = () => {
     const date = new Date();
     const day = date.getDate();
@@ -172,83 +126,29 @@ export default function DashboardPage() {
     return `${day} ${month} ${year}`;
   };
 
-  return (
-    <div className="space-y-6 pb-10" data-testid="dashboard-page">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <p className="text-gray-400 text-sm">{greeting},</p>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-            {schoolData?.name || 'Schooltino Dashboard'}
-          </h1>
-        </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="bg-gray-100 px-4 py-2 rounded-full">
-            <p className="text-xs font-medium text-gray-600">{formatDateBadge()}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => navigate('/app/tino-ai')}
-              variant="outline"
-              size="sm"
-              className="border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
-              data-testid="ask-tino-btn"
-            >
-              <Brain className="w-3.5 h-3.5 mr-1.5" /> Ask Tino AI
-            </Button>
-            <Button 
-              onClick={() => navigate('/app/students')}
-              size="sm"
-              className="bg-blue-500 hover:bg-blue-600 text-white text-xs"
-              data-testid="new-admission-btn"
-            >
-              <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Admission
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((card, idx) => (
-          <div 
-            key={idx}
-            className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all group"
-            data-testid={`stat-card-${idx}`}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-sm text-gray-500 font-medium">{card.title}</p>
-              <div 
-                className="w-9 h-9 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: `${card.color}12` }}
-              >
-                <card.icon className="w-5 h-5" style={{ color: card.color }} />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-gray-800 mb-1">{card.value}</p>
-            <p className="text-xs text-gray-400 mb-4">{card.desc}</p>
-            <button
-              onClick={() => navigate(card.path)}
-              className="text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1"
-            >
-              View Details <span className="text-xs">›</span>
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-800">Quick Actions</h2>
-          <span className="text-xs text-gray-400">त्वरित कार्य</span>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-4">
-          {quickActions.map((action, idx) => (
+  const tabSections = [
+    {
+      id: 'quick_actions',
+      label: 'Quick Actions',
+      icon: Sparkles,
+      color: '#3B82F6',
+      badge: null,
+      content: (
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 p-4">
+          {[
+            { icon: UserPlus, label: 'New Admission', path: '/app/students', color: '#3B82F6' },
+            { icon: CalendarCheck, label: 'Mark Attendance', path: '/app/attendance', color: '#10B981' },
+            { icon: Receipt, label: 'Collect Fee', path: '/app/fee-management', color: '#F59E0B' },
+            { icon: Brain, label: 'Ask Tino AI', path: '/app/tino-ai', color: '#8B5CF6' },
+            { icon: Bell, label: 'Send Notice', path: '/app/notices', color: '#EF4444' },
+            { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: '#EC4899' },
+          ].map((action, idx) => (
             <button
               key={idx}
               onClick={() => navigate(action.path)}
               className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all group"
-              data-testid={`quick-action-${idx}`}
             >
-              <div 
+              <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
                 style={{ backgroundColor: `${action.color}12` }}
               >
@@ -258,96 +158,240 @@ export default function DashboardPage() {
             </button>
           ))}
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-5">
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-gray-800">Fee Collection Overview</h3>
-                <p className="text-xs text-gray-400 mt-0.5">फीस संग्रह विवरण</p>
+      )
+    },
+    {
+      id: 'overview',
+      label: 'Overview Stats',
+      icon: BarChart3,
+      color: '#10B981',
+      badge: null,
+      content: (
+        <div className="p-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { title: 'Total Students', value: stats?.total_students || 0, icon: Users, color: '#3B82F6', desc: 'Active enrolled', path: '/app/students' },
+              { title: 'Total Staff', value: stats?.total_staff || 0, icon: UserCog, color: '#10B981', desc: 'Teaching & non-teaching', path: '/app/employee-management' },
+              { title: 'Fee Collection', value: `₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee, color: '#F59E0B', desc: 'This month', path: '/app/fee-management' },
+              { title: 'Attendance', value: `${stats?.attendance_today?.present || 0}%`, icon: CalendarCheck, color: '#8B5CF6', desc: 'Present today', path: '/app/attendance' },
+            ].map((card, idx) => (
+              <div key={idx} className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all" onClick={() => navigate(card.path)}>
+                <div className="flex items-start justify-between mb-2">
+                  <p className="text-xs text-gray-500 font-medium">{card.title}</p>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${card.color}12` }}>
+                    <card.icon className="w-4 h-4" style={{ color: card.color }} />
+                  </div>
+                </div>
+                <p className="text-xl font-bold text-gray-800">{card.value}</p>
+                <p className="text-[11px] text-gray-400 mt-1">{card.desc}</p>
               </div>
-              <button 
-                onClick={() => navigate('/app/fee-management')}
-                className="text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                More Details
+            ))}
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'academic',
+      label: 'Academic',
+      icon: BookOpen,
+      color: '#F59E0B',
+      badge: null,
+      content: (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+          {[
+            { icon: Users, label: 'Students', path: '/app/students', color: '#3B82F6' },
+            { icon: GraduationCap, label: 'Classes', path: '/app/classes', color: '#10B981' },
+            { icon: CalendarCheck, label: 'Attendance', path: '/app/attendance', color: '#F59E0B' },
+            { icon: Clock, label: 'Timetable', path: '/app/timetable-management', color: '#8B5CF6' },
+            { icon: ClipboardList, label: 'Exam & Report Card', path: '/app/exam-report', color: '#EF4444' },
+            { icon: Award, label: 'Certificates', path: '/app/certificates', color: '#F97316' },
+            { icon: FileText, label: 'Admit Cards', path: '/app/admit-cards', color: '#06B6D4' },
+          ].map((module, idx) => (
+            <button key={idx} onClick={() => navigate(module.path)} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group text-left">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${module.color}12` }}>
+                <module.icon className="w-4 h-4" style={{ color: module.color }} />
+              </div>
+              <span className="text-sm font-medium text-gray-700">{module.label}</span>
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: 'team',
+      label: 'Team Management',
+      icon: Briefcase,
+      color: '#10B981',
+      badge: null,
+      content: (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+          {[
+            { icon: Users, label: 'All Team Members', path: '/app/employee-management', color: '#3B82F6' },
+            { icon: Calendar, label: 'Leave Management', path: '/app/leave', color: '#F59E0B' },
+            { icon: DollarSign, label: 'Salary / Payroll', path: '/app/salary', color: '#10B981' },
+            { icon: Shield, label: 'Permissions & Roles', path: '/app/permission-manager', color: '#EF4444' },
+          ].map((module, idx) => (
+            <button key={idx} onClick={() => navigate(module.path)} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group text-left">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${module.color}12` }}>
+                <module.icon className="w-4 h-4" style={{ color: module.color }} />
+              </div>
+              <span className="text-sm font-medium text-gray-700">{module.label}</span>
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: 'finance',
+      label: 'Finance',
+      icon: Wallet,
+      color: '#F59E0B',
+      badge: stats?.pending_fees ? `₹${((stats.pending_fees || 0) / 1000).toFixed(0)}K pending` : null,
+      content: (
+        <div className="p-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            {[
+              { icon: Wallet, label: 'Fee Management', path: '/app/fee-management', color: '#F59E0B' },
+              { icon: Calculator, label: 'AI Accountant', path: '/app/accountant', color: '#8B5CF6' },
+            ].map((module, idx) => (
+              <button key={idx} onClick={() => navigate(module.path)} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group text-left">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${module.color}12` }}>
+                  <module.icon className="w-4 h-4" style={{ color: module.color }} />
+                </div>
+                <span className="text-sm font-medium text-gray-700">{module.label}</span>
               </button>
-            </div>
-            <div className="h-56">
+            ))}
+          </div>
+          {feeData.length > 0 && (
+            <div className="h-44 mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={feeData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
                   <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#fff', 
-                      border: '1px solid #DBEAFE',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-                    }}
-                  />
+                  <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #DBEAFE', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }} />
                   <Bar dataKey="collected" fill="#3B82F6" name="Collected" radius={[6, 6, 0, 0]} />
                   <Bar dataKey="pending" fill="#F59E0B" name="Pending" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-gray-800">All Modules</h3>
-                <p className="text-xs text-gray-400 mt-0.5">सभी मॉड्यूल</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-              {modules.map((module, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => navigate(module.path)}
-                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group"
-                  data-testid={`module-${idx}`}
-                >
-                  <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"
-                    style={{ backgroundColor: `${module.color}12` }}
-                  >
-                    <module.icon className="w-5 h-5" style={{ color: module.color }} />
-                  </div>
-                  <span className="text-xs font-medium text-gray-600">{module.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
-
-        <div className="space-y-5">
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="font-semibold text-gray-800 text-sm">Today's Attendance</h3>
-                <p className="text-xs text-gray-400">आज की उपस्थिति</p>
+      )
+    },
+    {
+      id: 'communication',
+      label: 'Communication',
+      icon: Megaphone,
+      color: '#8B5CF6',
+      badge: null,
+      content: (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+          {[
+            { icon: Bell, label: 'Notices', path: '/app/notices', color: '#3B82F6' },
+            { icon: MessageSquare, label: 'SMS Center', path: '/app/sms', color: '#10B981' },
+            { icon: Video, label: 'Meetings', path: '/app/meetings', color: '#8B5CF6' },
+            { icon: Image, label: 'Gallery', path: '/app/gallery', color: '#F97316' },
+            { icon: Users, label: 'Family Portal', path: '/app/family-portal', color: '#06B6D4' },
+            { icon: MessageSquare, label: 'Complaints', path: '/app/complaints', color: '#EF4444' },
+          ].map((module, idx) => (
+            <button key={idx} onClick={() => navigate(module.path)} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group text-left">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${module.color}12` }}>
+                <module.icon className="w-4 h-4" style={{ color: module.color }} />
               </div>
-              <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
-                {new Date().toLocaleDateString('en-IN')}
-              </span>
-            </div>
-            
-            <div className="h-40">
+              <span className="text-sm font-medium text-gray-700">{module.label}</span>
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: 'ai_tools',
+      label: 'AI Tools',
+      icon: Cpu,
+      color: '#EC4899',
+      badge: null,
+      content: (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+          {[
+            { icon: Brain, label: 'Tino AI (Command Center)', path: '/app/tino-ai', color: '#8B5CF6' },
+            { icon: Sparkles, label: 'AI Paper Generator', path: '/app/ai-paper', color: '#EC4899' },
+            { icon: Image, label: 'AI Content & Event Designer', path: '/app/event-designer', color: '#F97316' },
+            { icon: Calendar, label: 'School Calendar', path: '/app/school-calendar', color: '#3B82F6' },
+          ].map((module, idx) => (
+            <button key={idx} onClick={() => navigate(module.path)} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group text-left">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${module.color}12` }}>
+                <module.icon className="w-4 h-4" style={{ color: module.color }} />
+              </div>
+              <span className="text-sm font-medium text-gray-700">{module.label}</span>
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: 'infrastructure',
+      label: 'Infrastructure',
+      icon: Building,
+      color: '#06B6D4',
+      badge: null,
+      content: (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+          {[
+            { icon: Bus, label: 'Transport', path: '/app/transport', color: '#06B6D4' },
+            { icon: Heart, label: 'Health Module', path: '/app/health', color: '#EF4444' },
+            { icon: Fingerprint, label: 'Biometric', path: '/app/biometric', color: '#8B5CF6' },
+            { icon: Video, label: 'CCTV Dashboard', path: '/app/cctv', color: '#64748B' },
+          ].map((module, idx) => (
+            <button key={idx} onClick={() => navigate(module.path)} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group text-left">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${module.color}12` }}>
+                <module.icon className="w-4 h-4" style={{ color: module.color }} />
+              </div>
+              <span className="text-sm font-medium text-gray-700">{module.label}</span>
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: 'school_setup',
+      label: 'School Setup',
+      icon: Wrench,
+      color: '#64748B',
+      badge: null,
+      content: (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+          {[
+            { icon: Wrench, label: 'Setup Wizard', path: '/app/setup-wizard', color: '#F59E0B' },
+            { icon: Building, label: 'School Profile', path: '/app/school-management', color: '#3B82F6' },
+            { icon: Image, label: 'Logo & Watermark', path: '/app/logo-settings', color: '#10B981' },
+            { icon: Bell, label: 'Board Updates', path: '/app/board-notifications', color: '#F97316' },
+            { icon: Music, label: 'Prayer & Bell', path: '/app/prayer-system', color: '#8B5CF6' },
+            { icon: Globe, label: 'Website Builder', path: '/app/website', color: '#06B6D4' },
+          ].map((module, idx) => (
+            <button key={idx} onClick={() => navigate(module.path)} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group text-left">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${module.color}12` }}>
+                <module.icon className="w-4 h-4" style={{ color: module.color }} />
+              </div>
+              <span className="text-sm font-medium text-gray-700">{module.label}</span>
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: 'attendance_chart',
+      label: "Today's Attendance",
+      icon: CalendarCheck,
+      color: '#10B981',
+      badge: `${stats?.attendance_today?.present || 0}% Present`,
+      content: (
+        <div className="p-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="h-40 w-40">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={attendanceData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={45}
-                    outerRadius={65}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
+                  <Pie data={attendanceData} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={3} dataKey="value">
                     {attendanceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -356,54 +400,33 @@ export default function DashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            
-            <div className="flex justify-center gap-4 mt-2">
+            <div className="flex flex-col gap-2">
               {attendanceData.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-[11px] text-gray-500">{item.name}: {item.value}%</span>
+                <div key={idx} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-sm text-gray-600">{item.name}: <span className="font-semibold text-gray-800">{item.value}%</span></span>
                 </div>
               ))}
             </div>
-
-            <button 
-              onClick={() => navigate('/app/attendance')}
-              className="w-full mt-3 text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center justify-center gap-1 py-2 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              More Details
-            </button>
           </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800 text-sm">Tino AI</h3>
-                <p className="text-xs text-gray-400">AI Assistant</p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
-              Ask anything about your school. Get instant AI-powered answers and insights.
-            </p>
-            <button
-              onClick={() => navigate('/app/tino-ai')}
-              className="w-full py-2 text-sm font-medium text-blue-500 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              Start Chat
-            </button>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-800 text-sm">Recent Activity</h3>
-              <span className="text-[10px] text-gray-400">Latest updates</span>
-            </div>
-            
+          <button onClick={() => navigate('/app/attendance')} className="mt-3 text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+            View Full Report <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+      )
+    },
+    {
+      id: 'recent_activity',
+      label: 'Recent Activity',
+      icon: Clock,
+      color: '#6366F1',
+      badge: recentActivities.length > 0 ? `${recentActivities.length} updates` : null,
+      content: (
+        <div className="p-4">
+          {recentActivities.length > 0 ? (
             <div className="space-y-2">
-              {recentActivities.length > 0 ? recentActivities.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+              {recentActivities.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     item.type === 'student' ? 'bg-blue-50 text-blue-500' :
                     item.type === 'fee' ? 'bg-amber-50 text-amber-500' :
@@ -421,37 +444,84 @@ export default function DashboardPage() {
                   </div>
                   <span className="text-[10px] text-gray-400 flex-shrink-0">{item.time}</span>
                 </div>
-              )) : (
-                <div className="text-center py-6 text-gray-400">
-                  <Bell className="w-7 h-7 mx-auto mb-2 opacity-40" />
-                  <p className="text-xs">No recent activity</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-800 text-sm">Upcoming Events</h3>
-              <Calendar className="w-4 h-4 text-gray-400" />
-            </div>
-            
-            <div className="space-y-2">
-              {[
-                { event: 'Parent-Teacher Meeting', date: 'Jan 28', color: '#3B82F6' },
-                { event: 'Republic Day', date: 'Jan 26', color: '#F59E0B' },
-                { event: 'Annual Sports Day', date: 'Feb 5', color: '#10B981' },
-              ].map((item, idx) => (
-                <div key={idx} className="p-3 rounded-lg bg-gray-50 border-l-3 flex items-center gap-3" style={{ borderLeftWidth: '3px', borderLeftColor: item.color }}>
-                  <div>
-                    <p className="text-xs font-medium text-gray-700">{item.event}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{item.date}</p>
-                  </div>
-                </div>
               ))}
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-6 text-gray-400">
+              <Bell className="w-7 h-7 mx-auto mb-2 opacity-40" />
+              <p className="text-xs">No recent activity</p>
+            </div>
+          )}
         </div>
+      )
+    },
+  ];
+
+  return (
+    <div className="space-y-4 pb-10" data-testid="dashboard-page">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <p className="text-gray-400 text-sm">{greeting},</p>
+          <h1 className="text-2xl font-bold text-gray-800">
+            {schoolData?.name || 'Schooltino Dashboard'}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="bg-gray-100 px-3 py-1.5 rounded-full">
+            <p className="text-xs font-medium text-gray-600">{formatDateBadge()}</p>
+          </div>
+          <Button
+            onClick={() => navigate('/app/tino-ai')}
+            variant="outline"
+            size="sm"
+            className="border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
+          >
+            <Brain className="w-3.5 h-3.5 mr-1.5" /> Ask Tino AI
+          </Button>
+          <Button
+            onClick={() => navigate('/app/students')}
+            size="sm"
+            className="bg-blue-500 hover:bg-blue-600 text-white text-xs"
+          >
+            <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Admission
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {tabSections.map((tab) => (
+          <div key={tab.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => toggleTab(tab.id)}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${tab.color}12` }}
+                >
+                  <tab.icon className="w-4 h-4" style={{ color: tab.color }} />
+                </div>
+                <span className="text-sm font-semibold text-gray-800">{tab.label}</span>
+                {tab.badge && (
+                  <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 font-medium">
+                    {tab.badge}
+                  </span>
+                )}
+              </div>
+              {expandedTabs.includes(tab.id) ? (
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              )}
+            </button>
+            {expandedTabs.includes(tab.id) && (
+              <div className="border-t border-gray-100">
+                {tab.content}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
