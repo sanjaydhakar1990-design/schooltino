@@ -1,8 +1,3 @@
-/**
- * Schooltino Admin Dashboard - DigitalEdu Theme
- * Design: Corporate Clean, Professional ERP Look
- * Colors: White background, Blue (#2563EB) accents, Dark sidebar
- */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -50,9 +45,8 @@ export default function DashboardPage() {
     try {
       const response = await axios.get(`${API}/dashboard/stats?school_id=${schoolId}`);
       setStats(response.data);
-      // Set recent activities from real data
       if (response.data.recent_activities) {
-        setRecentActivities(response.data.recent_activities.slice(0, 4).map(activity => ({
+        setRecentActivities(response.data.recent_activities.slice(0, 5).map(activity => ({
           action: activity.action || 'Activity',
           name: activity.user_name || 'User',
           time: formatTimeAgo(activity.created_at),
@@ -68,12 +62,11 @@ export default function DashboardPage() {
     }
   };
 
-  // Helper to format time ago
   const formatTimeAgo = (dateStr) => {
     if (!dateStr) return 'Just now';
     const date = new Date(dateStr);
     const now = new Date();
-    const diff = Math.floor((now - date) / 1000); // seconds
+    const diff = Math.floor((now - date) / 1000);
     if (diff < 60) return 'Just now';
     if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
@@ -90,7 +83,6 @@ export default function DashboardPage() {
     { name: 'Leave', value: 0, color: '#F59E0B' }
   ];
 
-  // Use real fee data from stats if available
   const feeData = stats ? [
     { month: 'This Month', collected: stats.fee_collection_month || 0, pending: stats.pending_fees || 0 },
   ] : [];
@@ -98,7 +90,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96" data-testid="loading-spinner">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+        <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
       </div>
     );
   }
@@ -106,200 +98,177 @@ export default function DashboardPage() {
   if (!schoolId) {
     return (
       <div className="text-center py-20" data-testid="no-school-message">
-        <GraduationCap className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-slate-700 mb-2">No School Selected</h2>
-        <p className="text-slate-500">Please create or select a school from Settings.</p>
-        <Button onClick={() => navigate('/app/settings')} className="mt-4 bg-blue-600 hover:bg-blue-700">
+        <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">No School Selected</h2>
+        <p className="text-gray-500">Please create or select a school from Settings.</p>
+        <Button onClick={() => navigate('/app/settings')} className="mt-4 bg-blue-500 hover:bg-blue-600">
           <Settings className="w-4 h-4 mr-2" /> Go to Settings
         </Button>
       </div>
     );
   }
 
-  // Stats Cards Data - DigitalEdu Style
   const statsCards = [
     { 
       title: 'Total Students', 
-      titleHi: 'कुल छात्र',
       value: stats?.total_students || 0, 
       icon: Users, 
-      trend: '+12%',
-      trendUp: true,
-      color: 'bg-blue-600',
-      lightBg: 'bg-blue-50',
-      textColor: 'text-blue-600',
+      color: '#3B82F6',
+      desc: 'Active enrolled students',
       path: '/app/students'
     },
     { 
       title: 'Total Staff', 
-      titleHi: 'कुल स्टाफ',
       value: stats?.total_staff || 0, 
       icon: UserCog,
-      trend: '+3%',
-      trendUp: true,
-      color: 'bg-emerald-600',
-      lightBg: 'bg-emerald-50',
-      textColor: 'text-emerald-600',
+      color: '#10B981',
+      desc: 'Teaching & non-teaching staff',
       path: '/app/employee-management'
     },
     { 
       title: 'Fee Collection', 
-      titleHi: 'फीस संग्रह',
       value: `₹${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`, 
       icon: IndianRupee,
-      trend: '+8%',
-      trendUp: true,
-      color: 'bg-amber-500',
-      lightBg: 'bg-amber-50',
-      textColor: 'text-amber-600',
-      path: '/app/fees'
+      color: '#F59E0B',
+      desc: 'This month collection',
+      path: '/app/fee-management'
     },
     { 
-      title: 'Attendance', 
-      titleHi: 'उपस्थिति',
+      title: 'Attendance Today', 
       value: `${stats?.attendance_today?.present || 0}%`, 
       icon: CalendarCheck,
-      trend: '-2%',
-      trendUp: false,
-      color: 'bg-purple-600',
-      lightBg: 'bg-purple-50',
-      textColor: 'text-purple-600',
+      color: '#8B5CF6',
+      desc: 'Present today',
       path: '/app/attendance'
+    },
+    { 
+      title: 'Pending Fees', 
+      value: `₹${((stats?.pending_fees || 0) / 1000).toFixed(0)}K`, 
+      icon: AlertCircle,
+      color: '#EF4444',
+      desc: 'Outstanding amount',
+      path: '/app/fee-management'
     },
   ];
 
-  // Quick Actions - DigitalEdu Style
   const quickActions = [
-    { icon: UserPlus, label: 'New Admission', labelHi: 'नया प्रवेश', path: '/app/students', color: 'bg-blue-600 hover:bg-blue-700' },
-    { icon: CalendarCheck, label: 'Mark Attendance', labelHi: 'उपस्थिति दर्ज करें', path: '/app/attendance', color: 'bg-emerald-600 hover:bg-emerald-700' },
-    { icon: Receipt, label: 'Collect Fee', labelHi: 'फीस जमा करें', path: '/app/fees', color: 'bg-amber-500 hover:bg-amber-600' },
-    { icon: Brain, label: 'Ask Tino AI', labelHi: 'Tino AI से पूछें', path: '/app/tino-ai', color: 'bg-purple-600 hover:bg-purple-700' },
+    { icon: UserPlus, label: 'New Admission', path: '/app/students', color: '#3B82F6' },
+    { icon: CalendarCheck, label: 'Mark Attendance', path: '/app/attendance', color: '#10B981' },
+    { icon: Receipt, label: 'Collect Fee', path: '/app/fee-management', color: '#F59E0B' },
+    { icon: Brain, label: 'Ask Tino AI', path: '/app/tino-ai', color: '#8B5CF6' },
+    { icon: Bell, label: 'Send Notice', path: '/app/notices', color: '#EF4444' },
+    { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: '#EC4899' },
   ];
 
-  // Module Grid - DigitalEdu Style
   const modules = [
-    { icon: Users, label: 'Students', labelHi: 'छात्र', path: '/app/students', color: 'text-blue-600', bg: 'bg-blue-50' },
-    { icon: UserCog, label: 'Staff', labelHi: 'स्टाफ', path: '/app/employee-management', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { icon: CalendarCheck, label: 'Attendance', labelHi: 'उपस्थिति', path: '/app/attendance', color: 'text-green-600', bg: 'bg-green-50' },
-    { icon: Wallet, label: 'Fees', labelHi: 'फीस', path: '/app/fees', color: 'text-amber-600', bg: 'bg-amber-50' },
-    { icon: ClipboardList, label: 'Exams', labelHi: 'परीक्षा', path: '/app/exams', color: 'text-red-600', bg: 'bg-red-50' },
-    { icon: BookOpen, label: 'Library', labelHi: 'पुस्तकालय', path: '/app/library', color: 'text-orange-600', bg: 'bg-orange-50' },
-    { icon: Clock, label: 'Timetable', labelHi: 'समय सारणी', path: '/app/timetable', color: 'text-purple-600', bg: 'bg-purple-50' },
-    { icon: Bus, label: 'Transport', labelHi: 'परिवहन', path: '/app/transport', color: 'text-teal-600', bg: 'bg-teal-50' },
-    { icon: Shield, label: 'Visitor Pass', labelHi: 'विजिटर पास', path: '/app/visitor-pass', color: 'text-slate-600', bg: 'bg-slate-100' },
-    { icon: Image, label: 'Gallery', labelHi: 'गैलरी', path: '/app/gallery', color: 'text-pink-600', bg: 'bg-pink-50' },
-    { icon: Bell, label: 'Notices', labelHi: 'सूचनाएं', path: '/app/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { icon: Sparkles, label: 'AI Paper', labelHi: 'AI पेपर', path: '/app/ai-paper', color: 'text-cyan-600', bg: 'bg-cyan-50' },
+    { icon: Users, label: 'Students', path: '/app/students', color: '#3B82F6' },
+    { icon: UserCog, label: 'Staff', path: '/app/employee-management', color: '#10B981' },
+    { icon: CalendarCheck, label: 'Attendance', path: '/app/attendance', color: '#F59E0B' },
+    { icon: Wallet, label: 'Fees', path: '/app/fee-management', color: '#8B5CF6' },
+    { icon: ClipboardList, label: 'Exams', path: '/app/exam-report', color: '#EF4444' },
+    { icon: BookOpen, label: 'Library', path: '/app/library', color: '#F97316' },
+    { icon: Clock, label: 'Timetable', path: '/app/timetable-management', color: '#06B6D4' },
+    { icon: Bus, label: 'Transport', path: '/app/transport', color: '#14B8A6' },
+    { icon: Shield, label: 'Visitor Pass', path: '/app/visitor-pass', color: '#64748B' },
+    { icon: Image, label: 'Gallery', path: '/app/gallery', color: '#EC4899' },
+    { icon: Bell, label: 'Notices', path: '/app/notices', color: '#6366F1' },
+    { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: '#0EA5E9' },
   ];
 
   return (
-    <div className="space-y-6 pb-10" data-testid="dashboard-page">
-      {/* Welcome Header - Clean White Card */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <p className="text-slate-500 text-sm font-medium">{greeting},</p>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
-              {schoolData?.name || 'Schooltino Dashboard'}
-            </h1>
-            <p className="text-slate-500 text-sm mt-1">AI-Powered School Management System</p>
-          </div>
-          <div className="flex gap-3">
-            <Button 
-              onClick={() => navigate('/app/tino-ai')}
-              variant="outline"
-              className="border-slate-200 text-slate-700 hover:bg-slate-50"
-              data-testid="ask-tino-btn"
-            >
-              <Brain className="w-4 h-4 mr-2" /> Ask Tino AI
-            </Button>
-            <Button 
-              onClick={() => navigate('/app/students')}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              data-testid="new-admission-btn"
-            >
-              <UserPlus className="w-4 h-4 mr-2" /> New Admission
-            </Button>
-          </div>
+    <div className="space-y-5 pb-10" data-testid="dashboard-page">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <p className="text-gray-400 text-sm">{greeting},</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+            {schoolData?.name || 'Schooltino Dashboard'}
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => navigate('/app/tino-ai')}
+            variant="outline"
+            size="sm"
+            className="border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
+            data-testid="ask-tino-btn"
+          >
+            <Brain className="w-3.5 h-3.5 mr-1.5" /> Ask Tino AI
+          </Button>
+          <Button 
+            onClick={() => navigate('/app/students')}
+            size="sm"
+            className="bg-blue-500 hover:bg-blue-600 text-white text-xs"
+            data-testid="new-admission-btn"
+          >
+            <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Admission
+          </Button>
         </div>
       </div>
 
-      {/* Stats Cards - DigitalEdu Professional Style */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {statsCards.map((card, idx) => (
           <div 
             key={idx}
             onClick={() => navigate(card.path)}
-            className="bg-white rounded-lg border border-slate-200 p-5 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all group"
+            className="bg-white rounded-xl border border-blue-100 p-5 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all group"
             data-testid={`stat-card-${idx}`}
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`p-3 rounded-lg ${card.lightBg}`}>
-                <card.icon className={`w-5 h-5 ${card.textColor}`} />
-              </div>
-              <div className={`flex items-center gap-1 text-xs font-medium ${card.trendUp ? 'text-emerald-600' : 'text-red-500'}`}>
-                {card.trendUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {card.trend}
-              </div>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-800">{card.value}</p>
-              <p className="text-sm text-slate-500 mt-1">{card.title}</p>
-              <p className="text-xs text-slate-400">{card.titleHi}</p>
-            </div>
-            {/* Progress Bar - DigitalEdu Style */}
-            <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-sm text-gray-500 font-medium">{card.title}</p>
               <div 
-                className={`h-full ${card.color} rounded-full transition-all`}
-                style={{ width: `${Math.min(100, (typeof card.value === 'number' ? card.value : 75))}%` }}
-              />
+                className="w-9 h-9 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: `${card.color}12` }}
+              >
+                <card.icon className="w-5 h-5" style={{ color: card.color }} />
+              </div>
             </div>
+            <p className="text-2xl font-bold text-gray-800 mb-1">{card.value}</p>
+            <p className="text-xs text-gray-400">{card.desc}</p>
           </div>
         ))}
       </div>
 
-      {/* Quick Actions - DigitalEdu Style */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800">Quick Actions</h2>
-            <p className="text-xs text-slate-500">त्वरित कार्य</p>
-          </div>
+      <div className="bg-white rounded-xl border border-blue-100 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-gray-800">Quick Actions</h2>
+          <span className="text-xs text-gray-400">त्वरित कार्य</span>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {quickActions.map((action, idx) => (
             <button
               key={idx}
               onClick={() => navigate(action.path)}
-              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white ${action.color} transition-all shadow-sm hover:shadow-md`}
+              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all group"
               data-testid={`quick-action-${idx}`}
             >
-              <action.icon className="w-5 h-5" />
-              <span className="text-sm font-medium">{action.label}</span>
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
+                style={{ backgroundColor: `${action.color}12` }}
+              >
+                <action.icon className="w-5 h-5" style={{ color: action.color }} />
+              </div>
+              <span className="text-xs font-medium text-gray-600">{action.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Charts */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Fee Collection Chart */}
-          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 space-y-5">
+          <div className="bg-white rounded-xl border border-blue-100 p-5">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-slate-800">Fee Collection Overview</h3>
-                <p className="text-xs text-slate-500">फीस संग्रह विवरण</p>
+                <h3 className="font-semibold text-gray-800">Fee Collection Overview</h3>
+                <p className="text-xs text-gray-400 mt-0.5">फीस संग्रह विवरण</p>
               </div>
               <button 
-                onClick={() => navigate('/app/fees')}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                onClick={() => navigate('/app/fee-management')}
+                className="text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
               >
-                View All <ChevronRight className="w-3 h-3" />
+                More Details
               </button>
             </div>
-            <div className="h-64">
+            <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={feeData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -308,68 +277,67 @@ export default function DashboardPage() {
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: '#fff', 
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid #DBEAFE',
                       borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                     }}
                   />
-                  <Bar dataKey="collected" fill="#2563EB" name="Collected" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="pending" fill="#F59E0B" name="Pending" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="collected" fill="#3B82F6" name="Collected" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="pending" fill="#F59E0B" name="Pending" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* All Modules Grid */}
-          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-white rounded-xl border border-blue-100 p-5">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-slate-800">All Modules</h3>
-                <p className="text-xs text-slate-500">सभी मॉड्यूल</p>
+                <h3 className="font-semibold text-gray-800">All Modules</h3>
+                <p className="text-xs text-gray-400 mt-0.5">सभी मॉड्यूल</p>
               </div>
             </div>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
               {modules.map((module, idx) => (
                 <button
                   key={idx}
                   onClick={() => navigate(module.path)}
-                  className="flex flex-col items-center justify-center p-4 rounded-lg border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group"
+                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all group"
                   data-testid={`module-${idx}`}
                 >
-                  <div className={`p-2.5 rounded-lg ${module.bg} mb-2 group-hover:scale-110 transition-transform`}>
-                    <module.icon className={`w-5 h-5 ${module.color}`} />
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"
+                    style={{ backgroundColor: `${module.color}12` }}
+                  >
+                    <module.icon className="w-5 h-5" style={{ color: module.color }} />
                   </div>
-                  <span className="text-xs font-medium text-slate-700">{module.label}</span>
-                  <span className="text-[10px] text-slate-400">{module.labelHi}</span>
+                  <span className="text-xs font-medium text-gray-600">{module.label}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Right Column - Sidebar Widgets */}
-        <div className="space-y-6">
-          {/* Attendance Donut Chart */}
-          <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+        <div className="space-y-5">
+          <div className="bg-white rounded-xl border border-blue-100 p-5">
+            <div className="flex items-center justify-between mb-3">
               <div>
-                <h3 className="font-semibold text-slate-800">Today's Attendance</h3>
-                <p className="text-xs text-slate-500">आज की उपस्थिति</p>
+                <h3 className="font-semibold text-gray-800 text-sm">Today's Attendance</h3>
+                <p className="text-xs text-gray-400">आज की उपस्थिति</p>
               </div>
-              <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
-                {new Date().toLocaleDateString('hi-IN')}
+              <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+                {new Date().toLocaleDateString('en-IN')}
               </span>
             </div>
             
-            <div className="h-44">
+            <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={attendanceData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
+                    innerRadius={45}
+                    outerRadius={65}
                     paddingAngle={3}
                     dataKey="value"
                   >
@@ -382,91 +350,96 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
             
-            <div className="flex justify-center gap-4 mt-3">
+            <div className="flex justify-center gap-4 mt-2">
               {attendanceData.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs text-slate-600">{item.name}: {item.value}%</span>
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-[11px] text-gray-500">{item.name}: {item.value}%</span>
                 </div>
               ))}
             </div>
+
+            <button 
+              onClick={() => navigate('/app/attendance')}
+              className="w-full mt-3 text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center justify-center gap-1 py-2 border border-blue-100 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              More Details
+            </button>
           </div>
 
-          {/* Tino AI Card */}
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-5 text-white shadow-md">
+          <div className="bg-white rounded-xl border border-blue-100 p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <Brain className="w-6 h-6" />
+              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                <Brain className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">Tino AI</h3>
-                <p className="text-xs text-blue-100">AI Assistant</p>
+                <h3 className="font-semibold text-gray-800 text-sm">Tino AI</h3>
+                <p className="text-xs text-gray-400">AI Assistant</p>
               </div>
             </div>
-            <p className="text-sm text-blue-100 mb-4">
-              Ask anything about your school. Get instant AI-powered answers.
+            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+              Ask anything about your school. Get instant AI-powered answers and insights.
             </p>
-            <Button 
+            <button
               onClick={() => navigate('/app/tino-ai')}
-              className="w-full bg-white text-blue-600 hover:bg-blue-50"
+              className="w-full py-2 text-sm font-medium text-blue-500 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
             >
               Start Chat
-            </Button>
+            </button>
           </div>
 
-          {/* Recent Activity - Real Data */}
-          <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-800">Recent Activity</h3>
-              <span className="text-xs text-slate-400">वास्तविक डेटा</span>
+          <div className="bg-white rounded-xl border border-blue-100 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800 text-sm">Recent Activity</h3>
+              <span className="text-[10px] text-gray-400">Latest updates</span>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               {recentActivities.length > 0 ? recentActivities.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors border border-slate-100">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    item.type === 'student' ? 'bg-blue-100 text-blue-600' :
-                    item.type === 'fee' ? 'bg-amber-100 text-amber-600' :
-                    item.type === 'attendance' ? 'bg-emerald-100 text-emerald-600' :
-                    'bg-purple-100 text-purple-600'
+                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    item.type === 'student' ? 'bg-blue-50 text-blue-500' :
+                    item.type === 'fee' ? 'bg-amber-50 text-amber-500' :
+                    item.type === 'attendance' ? 'bg-emerald-50 text-emerald-500' :
+                    'bg-purple-50 text-purple-500'
                   }`}>
-                    {item.type === 'student' ? <UserPlus className="w-4 h-4" /> :
-                     item.type === 'fee' ? <IndianRupee className="w-4 h-4" /> :
-                     item.type === 'attendance' ? <CalendarCheck className="w-4 h-4" /> :
-                     <Bell className="w-4 h-4" />}
+                    {item.type === 'student' ? <UserPlus className="w-3.5 h-3.5" /> :
+                     item.type === 'fee' ? <IndianRupee className="w-3.5 h-3.5" /> :
+                     item.type === 'attendance' ? <CalendarCheck className="w-3.5 h-3.5" /> :
+                     <Bell className="w-3.5 h-3.5" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-700 truncate">{item.action}</p>
-                    <p className="text-xs text-slate-500 truncate">{item.name}</p>
+                    <p className="text-xs font-medium text-gray-700 truncate">{item.action}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{item.name}</p>
                   </div>
-                  <span className="text-xs text-slate-400 flex-shrink-0">{item.time}</span>
+                  <span className="text-[10px] text-gray-400 flex-shrink-0">{item.time}</span>
                 </div>
               )) : (
-                <div className="text-center py-6 text-slate-400">
-                  <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">कोई हालिया गतिविधि नहीं</p>
+                <div className="text-center py-6 text-gray-400">
+                  <Bell className="w-7 h-7 mx-auto mb-2 opacity-40" />
                   <p className="text-xs">No recent activity</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Upcoming Events */}
-          <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-800">Upcoming Events</h3>
-              <Calendar className="w-4 h-4 text-slate-400" />
+          <div className="bg-white rounded-xl border border-blue-100 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800 text-sm">Upcoming Events</h3>
+              <Calendar className="w-4 h-4 text-gray-400" />
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               {[
-                { event: 'Parent-Teacher Meeting', date: 'Jan 28', color: 'border-l-blue-500' },
-                { event: 'Republic Day', date: 'Jan 26', color: 'border-l-amber-500' },
-                { event: 'Annual Sports Day', date: 'Feb 5', color: 'border-l-emerald-500' },
+                { event: 'Parent-Teacher Meeting', date: 'Jan 28', color: '#3B82F6' },
+                { event: 'Republic Day', date: 'Jan 26', color: '#F59E0B' },
+                { event: 'Annual Sports Day', date: 'Feb 5', color: '#10B981' },
               ].map((item, idx) => (
-                <div key={idx} className={`p-3 rounded-lg bg-slate-50 border-l-4 ${item.color}`}>
-                  <p className="text-sm font-medium text-slate-700">{item.event}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{item.date}</p>
+                <div key={idx} className="p-3 rounded-lg bg-gray-50 border-l-3 flex items-center gap-3" style={{ borderLeftWidth: '3px', borderLeftColor: item.color }}>
+                  <div>
+                    <p className="text-xs font-medium text-gray-700">{item.event}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{item.date}</p>
+                  </div>
                 </div>
               ))}
             </div>
