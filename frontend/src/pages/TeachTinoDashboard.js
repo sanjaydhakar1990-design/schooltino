@@ -134,6 +134,15 @@ export default function TeachTinoDashboard() {
     { label: 'Attendance Rate', value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3 },
   ];
 
+  const teacherModuleCards = [
+    { id: 'smartroll', name: 'SmartRoll', desc: 'Automated attendance marking via biometric & AI face recognition.', icon: ClipboardCheck, gradient: 'from-orange-500 to-orange-600', lightBg: 'bg-orange-50', iconColor: 'text-orange-600', action: () => navigate('/app/attendance') },
+    { id: 'papergenie', name: 'PaperGenie', desc: 'Generates syllabus-based question papers instantly using AI.', icon: Sparkles, gradient: 'from-pink-500 to-pink-600', lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => navigate('/app/ai-paper') },
+    { id: 'classtino', name: 'ClassTino', desc: 'View & manage your assigned classes and schedules.', icon: BookOpen, gradient: 'from-emerald-500 to-emerald-600', lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => navigate('/app/classes') },
+    { id: 'examtino', name: 'ExamTino', desc: 'Exam management, report cards & result processing.', icon: FileText, gradient: 'from-purple-500 to-purple-600', lightBg: 'bg-purple-50', iconColor: 'text-purple-600', action: () => navigate('/app/exam-report') },
+    { id: 'tinoai', name: 'TinoAI', desc: 'AI Command Center - voice assistant & smart automation.', icon: Brain, gradient: 'from-violet-500 to-violet-600', lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => navigate('/app/tino-ai') },
+    { id: 'noticeboard', name: 'NoticeBoard', desc: 'Send announcements & notices to students and parents.', icon: Bell, gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => setShowNoticeDialog(true) },
+  ];
+
   const quickModules = [
     { icon: ClipboardCheck, label: 'Mark Attendance', desc: 'Daily attendance tracking', action: () => navigate('/app/attendance') },
     { icon: Sparkles, label: 'AI Paper Generator', desc: 'Auto generate papers', action: () => navigate('/app/ai-paper') },
@@ -223,6 +232,31 @@ export default function TeachTinoDashboard() {
               <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
             </div>
           ))}
+        </div>
+
+        <div>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Key Features</h2>
+            <p className="text-sm text-gray-500 mt-1">Powerful tools designed to enhance your teaching experience.</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {teacherModuleCards.map((card) => (
+              <div
+                key={card.id}
+                onClick={card.action}
+                className="group cursor-pointer bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
+                <div className="p-4">
+                  <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                    <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200">

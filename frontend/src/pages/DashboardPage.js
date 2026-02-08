@@ -15,7 +15,10 @@ import {
   Building, Award, FileText, CreditCard, Cpu,
   Megaphone, Briefcase, DollarSign, Home,
   ChevronLeft, ChevronLast, ChevronFirst,
-  ArrowUpDown
+  ArrowUpDown, Monitor, Mic, Smartphone,
+  PenTool, BookMarked, UserCheck, ShieldCheck,
+  Headphones, Camera, Layers, Database,
+  LayoutGrid, Send
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -29,6 +32,149 @@ const SortIcon = () => (
     <span className="text-[8px] leading-none">&#9660;</span>
   </span>
 );
+
+const moduleCards = [
+  {
+    id: 'admitpro',
+    name: 'AdmitPro',
+    desc: 'AI-powered student admission, enrollment & registration management.',
+    icon: UserPlus,
+    gradient: 'from-blue-500 to-blue-600',
+    lightBg: 'bg-blue-50',
+    iconColor: 'text-blue-600',
+    path: '/app/students',
+  },
+  {
+    id: 'examtino',
+    name: 'ExamTino',
+    desc: 'Automates exam management, report cards & result processing.',
+    icon: ClipboardList,
+    gradient: 'from-purple-500 to-purple-600',
+    lightBg: 'bg-purple-50',
+    iconColor: 'text-purple-600',
+    path: '/app/exam-report',
+  },
+  {
+    id: 'teachtino',
+    name: 'TeachTino',
+    desc: 'AI-based LMS that enhances teaching and learning experience.',
+    icon: BookOpen,
+    gradient: 'from-emerald-500 to-emerald-600',
+    lightBg: 'bg-emerald-50',
+    iconColor: 'text-emerald-600',
+    path: '/app/classes',
+  },
+  {
+    id: 'smartroll',
+    name: 'SmartRoll',
+    desc: 'Automated attendance via RFID, biometrics, and AI face recognition.',
+    icon: Fingerprint,
+    gradient: 'from-orange-500 to-orange-600',
+    lightBg: 'bg-orange-50',
+    iconColor: 'text-orange-600',
+    path: '/app/attendance',
+  },
+  {
+    id: 'feetino',
+    name: 'FeeTino',
+    desc: 'Complete fee collection, tracking & online payment with Razorpay.',
+    icon: IndianRupee,
+    gradient: 'from-green-500 to-green-600',
+    lightBg: 'bg-green-50',
+    iconColor: 'text-green-600',
+    path: '/app/fee-management',
+  },
+  {
+    id: 'papergenie',
+    name: 'PaperGenie',
+    desc: 'Generates syllabus-based question papers instantly using AI.',
+    icon: Sparkles,
+    gradient: 'from-pink-500 to-pink-600',
+    lightBg: 'bg-pink-50',
+    iconColor: 'text-pink-600',
+    path: '/app/ai-paper',
+  },
+  {
+    id: 'tinoai',
+    name: 'TinoAI',
+    desc: 'AI Command Center - voice assistant, chat & smart automation.',
+    icon: Brain,
+    gradient: 'from-violet-500 to-violet-600',
+    lightBg: 'bg-violet-50',
+    iconColor: 'text-violet-600',
+    path: '/app/tino-ai',
+  },
+  {
+    id: 'classtino',
+    name: 'ClassTino',
+    desc: 'Class management, timetable scheduling & section organization.',
+    icon: LayoutGrid,
+    gradient: 'from-cyan-500 to-cyan-600',
+    lightBg: 'bg-cyan-50',
+    iconColor: 'text-cyan-600',
+    path: '/app/timetable-management',
+  },
+  {
+    id: 'parenttino',
+    name: 'ParentTino',
+    desc: 'Family portal for parent-teacher communication & updates.',
+    icon: Users,
+    gradient: 'from-teal-500 to-teal-600',
+    lightBg: 'bg-teal-50',
+    iconColor: 'text-teal-600',
+    path: '/app/family-portal',
+  },
+  {
+    id: 'transporttino',
+    name: 'TransportTino',
+    desc: 'Route planning, GPS tracking & transport fleet management.',
+    icon: Bus,
+    gradient: 'from-amber-500 to-amber-600',
+    lightBg: 'bg-amber-50',
+    iconColor: 'text-amber-600',
+    path: '/app/transport',
+  },
+  {
+    id: 'cctvtino',
+    name: 'CCTVTino',
+    desc: 'AI-powered CCTV monitoring, alerts & campus surveillance.',
+    icon: Camera,
+    gradient: 'from-red-500 to-red-600',
+    lightBg: 'bg-red-50',
+    iconColor: 'text-red-600',
+    path: '/app/cctv',
+  },
+  {
+    id: 'stafftino',
+    name: 'StaffTino',
+    desc: 'Staff management, payroll, HR & employee directory.',
+    icon: UserCog,
+    gradient: 'from-indigo-500 to-indigo-600',
+    lightBg: 'bg-indigo-50',
+    iconColor: 'text-indigo-600',
+    path: '/app/employee-management',
+  },
+  {
+    id: 'smstino',
+    name: 'SMSTino',
+    desc: 'Bulk SMS, WhatsApp notifications & communication center.',
+    icon: Send,
+    gradient: 'from-sky-500 to-sky-600',
+    lightBg: 'bg-sky-50',
+    iconColor: 'text-sky-600',
+    path: '/app/sms',
+  },
+  {
+    id: 'analytix',
+    name: 'Analytix',
+    desc: 'Data-driven school analytics, reports & performance insights.',
+    icon: BarChart3,
+    gradient: 'from-slate-500 to-slate-600',
+    lightBg: 'bg-slate-50',
+    iconColor: 'text-slate-600',
+    path: '/app/school-analytics',
+  },
+];
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -89,12 +235,12 @@ export default function DashboardPage() {
 
   const statCardsRow2 = [
     { label: 'Total Classes', value: stats?.total_classes || 0, icon: GraduationCap },
-    { label: 'Active Modules', value: 34, icon: Cpu },
+    { label: 'Active Modules', value: 14, icon: Cpu },
     { label: 'Notices', value: stats?.total_notices || 0, icon: Bell },
     { label: 'Transport Routes', value: stats?.transport_routes || 0, icon: Bus },
   ];
 
-  const modules = [
+  const allModules = [
     { icon: Users, label: 'Students', desc: 'Student Records & Admission', path: '/app/students', category: 'Academic' },
     { icon: GraduationCap, label: 'Classes', desc: 'Class Management', path: '/app/classes', category: 'Academic' },
     { icon: CalendarCheck, label: 'Attendance', desc: 'Daily Attendance Tracking', path: '/app/attendance', category: 'Academic' },
@@ -131,7 +277,7 @@ export default function DashboardPage() {
     { icon: BarChart3, label: 'School Analytics', desc: 'Reports & Insights', path: '/app/school-analytics', category: 'Dashboard' },
   ];
 
-  const filteredModules = modules.filter(m => {
+  const filteredModules = allModules.filter(m => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return m.label.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q) || m.category.toLowerCase().includes(q);
@@ -186,12 +332,38 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      <div>
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Key Features of Schooltino</h2>
+          <p className="text-sm text-gray-500 mt-1">Powerful modules crafted to streamline school workflows and elevate productivity.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {moduleCards.map((card) => (
+            <div
+              key={card.id}
+              onClick={() => navigate(card.path)}
+              className="group cursor-pointer bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+            >
+              <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
+              <div className="p-4">
+                <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+                </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 pt-5 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
               <h2 className="text-xl font-bold text-gray-900">All Modules</h2>
-              <p className="text-sm text-gray-500 mt-1">List of all available modules. Use the "Open" action to navigate.</p>
+              <p className="text-sm text-gray-500 mt-1">Complete list of modules. Use the "Open" action to view details and continue the workflow.</p>
             </div>
             <div className="relative flex-shrink-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -258,47 +430,13 @@ export default function DashboardPage() {
             Showing {startIdx + 1} to {Math.min(startIdx + ITEMS_PER_PAGE, filteredModules.length)} of {filteredModules.length}
           </p>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
-            >
-              <ChevronFirst className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+            <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"><ChevronFirst className="w-4 h-4" /></button>
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"><ChevronLeft className="w-4 h-4" /></button>
             {getPageNumbers().map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {page}
-              </button>
+              <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${currentPage === page ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>{page}</button>
             ))}
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
-            >
-              <ChevronLast className="w-4 h-4" />
-            </button>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"><ChevronRight className="w-4 h-4" /></button>
+            <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-xs"><ChevronLast className="w-4 h-4" /></button>
           </div>
         </div>
       </div>

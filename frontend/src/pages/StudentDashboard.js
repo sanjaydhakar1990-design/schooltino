@@ -211,6 +211,15 @@ export default function StudyTinoDashboard() {
     { label: 'Syllabus Completed', value: `${Math.round(syllabus.reduce((a, b) => a + b.completed, 0) / (syllabus.length || 1))}%`, icon: Award },
   ];
 
+  const studentModuleCards = [
+    { id: 'studyai', name: 'StudyAI', desc: 'AI-powered study assistant for homework help & learning.', icon: Brain, gradient: 'from-violet-500 to-violet-600', lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => setShowAIHelper(true) },
+    { id: 'feetino', name: 'FeeTino', desc: 'Pay school fees online securely via Razorpay.', icon: Wallet, gradient: 'from-green-500 to-green-600', lightBg: 'bg-green-50', iconColor: 'text-green-600', action: () => setShowPaymentDialog(true) },
+    { id: 'examtino', name: 'ExamTino', desc: 'Take online exams, practice tests & view results.', icon: FileText, gradient: 'from-purple-500 to-purple-600', lightBg: 'bg-purple-50', iconColor: 'text-purple-600', action: () => navigate('/app/exams') },
+    { id: 'classchat', name: 'ClassChat', desc: 'Real-time chat with classmates & group discussions.', icon: MessageCircle, gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => openClassChat() },
+    { id: 'admitcard', name: 'AdmitCard', desc: 'View & download exam admit cards instantly.', icon: Award, gradient: 'from-amber-500 to-amber-600', lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => setShowAdmitCardDialog(true) },
+    { id: 'activities', name: 'Activities', desc: 'Track your extra-curricular activities & achievements.', icon: Trophy, gradient: 'from-red-500 to-red-600', lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => openActivities() },
+  ];
+
   const quickModules = [
     { icon: Award, label: 'Admit Card', desc: 'View/Download admit card', action: () => setShowAdmitCardDialog(true) },
     { icon: Wallet, label: 'Pay Fees', desc: 'Online fee payment', action: () => setShowPaymentDialog(true) },
@@ -285,6 +294,31 @@ export default function StudyTinoDashboard() {
               <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
             </div>
           ))}
+        </div>
+
+        <div>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Key Features</h2>
+            <p className="text-sm text-gray-500 mt-1">Powerful tools crafted to enhance your learning experience.</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {studentModuleCards.map((card) => (
+              <div
+                key={card.id}
+                onClick={card.action}
+                className="group cursor-pointer bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
+                <div className="p-4">
+                  <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                    <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200">
