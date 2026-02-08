@@ -89,24 +89,31 @@ export default function LandingPage() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Features data
   const features = [
-    { icon: Users, title: 'Student Management', desc: 'Complete student lifecycle from admission to alumni', color: 'bg-blue-500' },
-    { icon: UserCog, title: 'Staff & HR', desc: 'Salary, attendance, leave management', color: 'bg-emerald-500' },
-    { icon: Wallet, title: 'Fee Management', desc: 'Online payments, receipts, defaulter tracking', color: 'bg-amber-500' },
-    { icon: Calendar, title: 'Attendance', desc: 'Biometric, CCTV, manual - all integrated', color: 'bg-purple-500' },
-    { icon: Brain, title: 'AI Assistant', desc: 'Voice commands, paper generation, insights', color: 'bg-rose-500' },
-    { icon: Video, title: 'CCTV Integration', desc: 'Auto attendance, security alerts, monitoring', color: 'bg-indigo-500' },
-    { icon: BookOpen, title: 'Exam System', desc: 'Online exams, AI paper generation, results', color: 'bg-cyan-500' },
-    { icon: Bus, title: 'Transport', desc: 'Route management, GPS tracking, fee collection', color: 'bg-orange-500' },
-    { icon: Heart, title: 'Health Module', desc: 'Medical records, vaccinations, health checkups', color: 'bg-pink-500' },
-    { icon: MessageSquare, title: 'Communication', desc: 'SMS, notices, parent portal, meetings', color: 'bg-teal-500' },
-    { icon: Fingerprint, title: 'Biometric', desc: 'Fingerprint & face recognition attendance', color: 'bg-violet-500' },
-    { icon: BarChart3, title: 'Analytics', desc: 'Reports, insights, performance tracking', color: 'bg-lime-500' },
+    { icon: Users, title: 'Student Management', desc: 'Complete student lifecycle from admission to alumni', color: 'text-blue-600' },
+    { icon: UserCog, title: 'Staff & HR', desc: 'Salary, attendance, leave management', color: 'text-emerald-600' },
+    { icon: Wallet, title: 'Fee Management', desc: 'Online payments, receipts, defaulter tracking', color: 'text-amber-600' },
+    { icon: Calendar, title: 'Attendance', desc: 'Biometric, CCTV, manual - all integrated', color: 'text-purple-600' },
+    { icon: Brain, title: 'AI Assistant', desc: 'Voice commands, paper generation, insights', color: 'text-rose-600' },
+    { icon: Video, title: 'CCTV Integration', desc: 'Auto attendance, security alerts, monitoring', color: 'text-indigo-600' },
+    { icon: BookOpen, title: 'Exam System', desc: 'Online exams, AI paper generation, results', color: 'text-cyan-600' },
+    { icon: Bus, title: 'Transport', desc: 'Route management, GPS tracking, fee collection', color: 'text-orange-600' },
+    { icon: Heart, title: 'Health Module', desc: 'Medical records, vaccinations, health checkups', color: 'text-pink-600' },
+    { icon: MessageSquare, title: 'Communication', desc: 'SMS, notices, parent portal, meetings', color: 'text-teal-600' },
+    { icon: Fingerprint, title: 'Biometric', desc: 'Fingerprint & face recognition attendance', color: 'text-violet-600' },
+    { icon: BarChart3, title: 'Analytics', desc: 'Reports, insights, performance tracking', color: 'text-lime-600' },
   ];
 
-  // Pricing data with Monthly and Yearly options
-  const [billingCycle, setBillingCycle] = useState('yearly'); // monthly or yearly
+  const whyChooseItems = [
+    { icon: Brain, title: 'AI-Powered Automation', desc: 'Smart AI handles paper generation, insights, and voice commands automatically' },
+    { icon: Building, title: 'Complete School ERP', desc: '40+ modules covering every aspect of school management in one platform' },
+    { icon: BarChart3, title: 'Data-Driven Decisions', desc: 'Real-time analytics and reports to make informed decisions for your school' },
+    { icon: Smartphone, title: 'Mobile First', desc: 'Full-featured mobile apps for parents, teachers, and administrators' },
+    { icon: IndianRupee, title: 'Affordable Pricing', desc: '50% cheaper than competitors with 3x more features and no hidden costs' },
+    { icon: Globe, title: 'Hindi + English Support', desc: 'Complete bilingual support - use the platform in Hindi or English seamlessly' },
+  ];
+
+  const [billingCycle, setBillingCycle] = useState('yearly');
   
   const pricing = [
     { 
@@ -146,40 +153,36 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Fixed Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+          <div className="flex items-center justify-between h-18 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
                 <School className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-900">Schooltino</span>
+              <span className="text-xl font-bold text-gray-900">Schooltino</span>
             </div>
             
-            {/* Nav Links - Desktop */}
-            <div className="hidden md:flex items-center gap-8">
-              <button onClick={() => scrollToSection('features')} className="text-slate-600 hover:text-indigo-600 text-sm font-medium">
+            <div className="hidden md:flex items-center gap-10">
+              <button onClick={() => scrollToSection('features')} className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors">
                 Features
               </button>
-              <button onClick={() => scrollToSection('pricing')} className="text-slate-600 hover:text-indigo-600 text-sm font-medium">
+              <button onClick={() => scrollToSection('pricing')} className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors">
                 Pricing
               </button>
-              <a href="/teachtino" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
+              <a href="/teachtino" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors">
                 TeachTino
               </a>
-              <a href="/studytino" className="text-amber-600 hover:text-amber-700 text-sm font-medium">
+              <a href="/studytino" className="text-amber-600 hover:text-amber-700 text-sm font-medium transition-colors">
                 StudyTino
               </a>
             </div>
             
-            {/* CTA Buttons */}
             <div className="flex items-center gap-3">
-              <PWAInstallButton className="hidden sm:flex bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white" />
+              <PWAInstallButton className="hidden sm:flex bg-blue-600 hover:bg-blue-700 text-white" />
               <Button 
                 onClick={() => scrollToSection('register')} 
-                className="bg-indigo-600 hover:bg-indigo-700"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Get Started
               </Button>
@@ -188,40 +191,37 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gradient-to-b from-indigo-50 to-white">
+      <section className="pt-28 pb-20 bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left - Content */}
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-100 rounded-full text-indigo-700 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full text-blue-700 text-sm font-medium mb-8">
                 <Gift className="w-4 h-4" />
                 1 Month FREE Trial
               </div>
               
-              <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
                 Smart School
-                <span className="block text-indigo-600">Management System</span>
+                <span className="block text-blue-600 mt-2">Management System</span>
               </h1>
               
-              <p className="text-lg text-slate-600 mb-8">
-                <strong>AI + CCTV + Apps</strong> - Complete automation for modern schools. 
+              <p className="text-lg text-gray-500 mb-10 leading-relaxed">
+                <strong className="text-gray-700">AI + CCTV + Apps</strong> - Complete automation for modern schools. 
                 Manage students, staff, fees, attendance - all in one platform.
               </p>
               
-              {/* Key Highlights */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-2 gap-4 mb-10">
                 {[
                   { icon: Brain, text: 'AI Powered' },
                   { icon: Video, text: 'CCTV Ready' },
                   { icon: Smartphone, text: 'Mobile Apps' },
                   { icon: Shield, text: '100% Secure' }
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
-                    <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <item.icon className="w-4 h-4 text-indigo-600" />
+                  <div key={idx} className="flex items-center gap-3 p-3.5 bg-white rounded-lg border border-gray-200">
+                    <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                      <item.icon className="w-4 h-4 text-blue-600" />
                     </div>
-                    <span className="text-sm font-medium text-slate-700">{item.text}</span>
+                    <span className="text-sm font-medium text-gray-700">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -230,7 +230,7 @@ export default function LandingPage() {
                 <Button 
                   size="lg"
                   onClick={() => scrollToSection('register')}
-                  className="bg-indigo-600 hover:bg-indigo-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8"
                 >
                   Start Free Trial
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -239,6 +239,7 @@ export default function LandingPage() {
                   size="lg"
                   variant="outline"
                   onClick={() => scrollToSection('features')}
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
                   <Play className="w-4 h-4 mr-2" />
                   See Features
@@ -246,16 +247,14 @@ export default function LandingPage() {
               </div>
             </div>
             
-            {/* Right - Login/Register Card */}
             <div id="register">
-              <Card className="shadow-xl border-0">
+              <Card className="shadow-lg border border-gray-200">
                 <CardContent className="p-6">
-                  {/* Tabs */}
-                  <div className="flex mb-6 bg-slate-100 rounded-lg p-1">
+                  <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
                     <button
                       onClick={() => setActiveTab('login')}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                        activeTab === 'login' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600'
+                        activeTab === 'login' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
                       }`}
                     >
                       Login
@@ -263,7 +262,7 @@ export default function LandingPage() {
                     <button
                       onClick={() => setActiveTab('register')}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                        activeTab === 'register' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600'
+                        activeTab === 'register' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'
                       }`}
                     >
                       Register
@@ -273,7 +272,7 @@ export default function LandingPage() {
                   {activeTab === 'login' ? (
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1">Email</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Email</label>
                         <Input
                           type="email"
                           placeholder="director@school.com"
@@ -282,7 +281,7 @@ export default function LandingPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1">Password</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Password</label>
                         <div className="relative">
                           <Input
                             type={showPassword ? 'text' : 'password'}
@@ -293,19 +292,19 @@ export default function LandingPage() {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                       </div>
-                      <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={loading}>
+                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
                       </Button>
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
-                        className="text-sm text-indigo-600 hover:text-indigo-700 w-full text-center"
+                        className="text-sm text-blue-600 hover:text-blue-700 w-full text-center"
                       >
                         Forgot Password?
                       </button>
@@ -313,7 +312,7 @@ export default function LandingPage() {
                   ) : (
                     <form onSubmit={handleRegister} className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1">Your Name *</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Your Name *</label>
                         <Input
                           placeholder="Enter your name"
                           value={regForm.name}
@@ -321,7 +320,7 @@ export default function LandingPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1">School Name *</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">School Name *</label>
                         <Input
                           placeholder="Enter school name"
                           value={regForm.school_name}
@@ -329,7 +328,7 @@ export default function LandingPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1">Email *</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Email *</label>
                         <Input
                           type="email"
                           placeholder="your@email.com"
@@ -338,25 +337,24 @@ export default function LandingPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1">Mobile</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Mobile</label>
                         <Input
                           placeholder="+91 98765 43210"
                           value={regForm.mobile}
                           onChange={(e) => setRegForm(f => ({ ...f, mobile: e.target.value }))}
                         />
                       </div>
-                      <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={loading}>
+                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Start Free Trial'}
                       </Button>
-                      <p className="text-xs text-slate-500 text-center">
+                      <p className="text-xs text-gray-500 text-center">
                         By registering, you agree to our Terms & Privacy Policy
                       </p>
                     </form>
                   )}
                   
-                  {/* Quick Access Links */}
-                  <div className="mt-6 pt-6 border-t border-slate-200">
-                    <p className="text-sm text-slate-500 text-center mb-3">Quick Access</p>
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <p className="text-sm text-gray-500 text-center mb-3">Quick Access</p>
                     <div className="grid grid-cols-2 gap-3">
                       <a 
                         href="/teachtino" 
@@ -381,64 +379,66 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 bg-indigo-600">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[
-              { value: '500+', label: 'Schools' },
-              { value: '50,000+', label: 'Students' },
-              { value: '99.9%', label: 'Uptime' },
-              { value: '24/7', label: 'Support' }
-            ].map((stat, idx) => (
-              <div key={idx}>
-                <p className="text-3xl font-bold text-white">{stat.value}</p>
-                <p className="text-indigo-200 text-sm">{stat.label}</p>
+          <div className="text-center mb-14">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Schooltino?</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">
+              Trusted by 500+ schools for complete digital transformation
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {whyChooseItems.map((item, idx) => (
+              <div key={idx} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
+                  <item.icon className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-slate-50">
+      <section id="features" className="py-20 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Everything You Need</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Everything You Need</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">
               40+ modules to manage every aspect of your school efficiently
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, idx) => (
-              <Card key={idx} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className={`w-10 h-10 ${feature.color} rounded-lg flex items-center justify-center mb-3`}>
-                    <feature.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-slate-900 mb-1">{feature.title}</h3>
-                  <p className="text-sm text-slate-500">{feature.desc}</p>
-                </CardContent>
-              </Card>
+              <div key={idx} className="flex items-start gap-4 bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+                <div className="w-11 h-11 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <feature.icon className={`w-5 h-5 ${feature.color}`} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* AI Highlight Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+      <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/15 rounded-full text-sm font-medium mb-8">
                 <Sparkles className="w-4 h-4" />
                 AI-Powered
               </div>
               <h2 className="text-3xl font-bold mb-6">
                 Meet Tino AI - Your School's Smart Assistant
               </h2>
-              <p className="text-indigo-100 mb-8">
+              <p className="text-blue-100 mb-10 text-lg leading-relaxed">
                 Voice commands, instant insights, automated paper generation, and smart predictions. 
                 Tino AI understands your school and helps you make better decisions.
               </p>
@@ -451,28 +451,30 @@ export default function LandingPage() {
                   'Student performance analysis'
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-emerald-400" />
-                    <span>{item}</span>
+                    <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <span className="text-blue-50">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white/10 rounded-2xl p-8 backdrop-blur-sm">
+              <div className="bg-white/10 rounded-2xl p-8 border border-white/10">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
-                    <Brain className="w-6 h-6 text-indigo-600" />
+                    <Brain className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
                     <p className="font-semibold">Tino AI</p>
-                    <p className="text-sm text-indigo-200">Your AI Assistant</p>
+                    <p className="text-sm text-blue-200">Your AI Assistant</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="bg-white/10 rounded-lg p-3">
+                  <div className="bg-white/10 rounded-lg p-4">
                     <p className="text-sm">"Class 10 ka Science paper generate karo"</p>
                   </div>
-                  <div className="bg-indigo-500/50 rounded-lg p-3 ml-8">
+                  <div className="bg-white/15 rounded-lg p-4 ml-8">
                     <p className="text-sm">✅ Paper generated with 50 marks, 25 questions covering all chapters...</p>
                   </div>
                 </div>
@@ -482,73 +484,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Key Highlights Section */}
-      <section className="py-16 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">🎯 Schooltino Kyu Choose Karein?</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="p-4">
-              <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-indigo-200">Schools Trust Us</div>
-            </div>
-            <div className="p-4">
-              <div className="text-4xl font-bold mb-2">50%</div>
-              <div className="text-indigo-200">Sasta Than Competitors</div>
-            </div>
-            <div className="p-4">
-              <div className="text-4xl font-bold mb-2">24/7</div>
-              <div className="text-indigo-200">AI Support</div>
-            </div>
-            <div className="p-4">
-              <div className="text-4xl font-bold mb-2">100%</div>
-              <div className="text-indigo-200">Hindi Support</div>
-            </div>
-          </div>
-          
-          {/* Main Features Grid */}
-          <div className="grid md:grid-cols-3 gap-6 mt-12">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">🧠</div>
-              <h3 className="font-bold text-lg mb-2">Tino Brain AI</h3>
-              <p className="text-indigo-200 text-sm">Hindi mein baat karo - "Aaj kitne bachhe absent hain?" AI turant jawab dega!</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">📹</div>
-              <h3 className="font-bold text-lg mb-2">CCTV + Biometric</h3>
-              <p className="text-indigo-200 text-sm">Face recognition se automatic attendance - No proxy possible!</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">🚌</div>
-              <h3 className="font-bold text-lg mb-2">GPS Bus Tracking</h3>
-              <p className="text-indigo-200 text-sm">Parents ko real-time bus location dikhe - "Bus late hai" notification automatic!</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">📝</div>
-              <h3 className="font-bold text-lg mb-2">AI Paper Generator</h3>
-              <p className="text-indigo-200 text-sm">Chapter select karo, AI paper bana dega - NCERT syllabus ke according!</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">💰</div>
-              <h3 className="font-bold text-lg mb-2">Fee Management</h3>
-              <p className="text-indigo-200 text-sm">Online + Cash payment - Receipt turant student app mein!</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="text-3xl mb-3">📱</div>
-              <h3 className="font-bold text-lg mb-2">Parent App</h3>
-              <p className="text-indigo-200 text-sm">Parents ko sab kuch phone par - Attendance, Fees, Results, Bus Location!</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Simple, Affordable Pricing</h2>
             <p className="text-slate-600 mb-6">50% cheaper than competitors with 3x more features</p>
             
-            {/* Billing Toggle */}
             <div className="flex items-center justify-center gap-4 mb-8">
               <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-indigo-600' : 'text-slate-500'}`}>
                 Monthly
@@ -569,7 +510,6 @@ export default function LandingPage() {
               )}
             </div>
             
-            {/* Per-Student Pricing Note */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-w-2xl mx-auto mb-8">
               <p className="text-amber-800 text-sm">
                 <strong>💡 Per-Student Pricing bhi available hai!</strong><br/>
@@ -633,7 +573,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 bg-slate-900">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
@@ -669,7 +608,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Floating WhatsApp Button */}
       <a
         href="https://wa.me/917879967616?text=Hi%20Schooltino!%20I%20want%20demo%20for%20my%20school."
         target="_blank"
@@ -682,7 +620,6 @@ export default function LandingPage() {
         </svg>
       </a>
 
-      {/* Footer */}
       <footer className="py-12 bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
@@ -737,7 +674,6 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Forgot Password Modal */}
       {showForgotPassword && (
         <ForgotPassword 
           isOpen={showForgotPassword} 
