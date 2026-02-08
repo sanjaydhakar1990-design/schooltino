@@ -129,25 +129,21 @@ async def get_health_record(student_id: str, school_id: str):
         {"_id": 0}
     )
     
-    if not record:
-        raise HTTPException(status_code=404, detail="Health record not found")
-    
-    # Get immunization history
     immunizations = await db.immunizations.find(
         {"student_id": student_id, "school_id": school_id},
         {"_id": 0}
     ).sort("date_given", -1).to_list(length=50)
     
-    # Get recent incidents
     incidents = await db.medical_incidents.find(
         {"student_id": student_id, "school_id": school_id},
         {"_id": 0}
     ).sort("created_at", -1).to_list(length=10)
     
     return {
-        "health_record": record,
+        "health_record": record or {},
         "immunizations": immunizations,
-        "recent_incidents": incidents
+        "recent_incidents": incidents,
+        "has_record": record is not None
     }
 
 @router.post("/immunizations")

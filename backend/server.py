@@ -4573,19 +4573,27 @@ Total = 10+6+4 = 20 marks ✓
 Generate the paper now in pure {request.language} language.""")
         response = await chat.send_message(user_msg)
         
-        # Parse response
         import json
         import re
         
-        # Extract JSON from response
         json_match = re.search(r'\{[\s\S]*\}', response)
         if json_match:
             questions_data = json.loads(json_match.group())
         else:
             questions_data = {"questions": []}
         
-        # Validate and fix marks if needed
         questions = questions_data.get("questions", [])
+        if not questions and "question_paper" in questions_data:
+            sections = questions_data.get("question_paper", {}).get("sections", [])
+            for section in sections:
+                for q in section.get("questions", []):
+                    questions.append(q)
+        
+        if not questions and "sections" in questions_data:
+            for section in questions_data.get("sections", []):
+                for q in section.get("questions", []):
+                    questions.append(q)
+        
         actual_total = sum(q.get("marks", 0) for q in questions)
         
         # If marks don't match, try to adjust
@@ -4608,6 +4616,15 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
             if json_match:
                 questions_data = json.loads(json_match.group())
                 questions = questions_data.get("questions", [])
+                if not questions and "question_paper" in questions_data:
+                    sections = questions_data.get("question_paper", {}).get("sections", [])
+                    for section in sections:
+                        for q in section.get("questions", []):
+                            questions.append(q)
+                if not questions and "sections" in questions_data:
+                    for section in questions_data.get("sections", []):
+                        for q in section.get("questions", []):
+                            questions.append(q)
                 actual_total = sum(q.get("marks", 0) for q in questions)
         
         # Only as last resort, adjust marks (but with better questions)

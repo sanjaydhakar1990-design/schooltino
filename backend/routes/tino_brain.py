@@ -911,7 +911,7 @@ async def query_tino_brain(request: TinoBrainQuery, background_tasks: Background
         execution_results.append(f"✅ Alert created: {result.get('title', 'New Alert')}")
     
     # 18. ADMIT CARD GENERATION
-    elif any(k in query_lower for k in ["admit card", "admitcard", "प्रवेश पत्र", "hall ticket"]):
+    elif any(k in query_lower for k in ["admit card", "admitcard", "admit_card", "प्रवेश पत्र", "hall ticket", "hallticket", "एडमिट कार्ड", "admit cards", "generate admit"]):
         from routes.admit_card import ai_generate_admit_cards
         result = await ai_generate_admit_cards(query_lower, request.school_id, db)
         data = result

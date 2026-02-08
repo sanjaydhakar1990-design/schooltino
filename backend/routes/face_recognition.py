@@ -29,6 +29,20 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 router = APIRouter(prefix="/face-recognition", tags=["Face Recognition"])
 
 
+@router.get("/status")
+async def get_face_recognition_status():
+    """Get face recognition system status"""
+    devices = await db.cctv_devices.find({}, {"_id": 0}).to_list(length=100)
+    active_devices = [d for d in devices if d.get("status") == "active"]
+    return {
+        "status": "active",
+        "total_devices": len(devices),
+        "active_devices": len(active_devices),
+        "ai_enabled": bool(OPENAI_API_KEY),
+        "devices": devices
+    }
+
+
 # ==================== MODELS ====================
 
 class PhotoUpload(BaseModel):
