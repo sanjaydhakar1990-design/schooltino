@@ -23,18 +23,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/voice-assistant", tags=["Voice Assistant"])
 
-# Database connection
-def get_db():
-    from motor.motor_asyncio import AsyncIOMotorClient
-    mongo_url = os.environ['MONGO_URL']
-    client = AsyncIOMotorClient(mongo_url)
-    return client[os.environ['DB_NAME']]
+from core.database import db
 
-db = None
 def get_database():
-    global db
-    if db is None:
-        db = get_db()
     return db
 
 # API Keys

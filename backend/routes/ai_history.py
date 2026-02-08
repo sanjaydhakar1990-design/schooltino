@@ -54,23 +54,9 @@ async def get_current_user_from_token(authorization: str = None):
     return {"id": "user123", "school_id": "school123", "role": "director"}
 
 
-def get_db():
-    """Get database instance from server module"""
-    import sys
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from motor.motor_asyncio import AsyncIOMotorClient
-    from dotenv import load_dotenv
-    load_dotenv()
-    mongo_url = os.environ['MONGO_URL']
-    client = AsyncIOMotorClient(mongo_url)
-    return client[os.environ['DB_NAME']]
-
-db = None
+from core.database import db
 
 def get_database():
-    global db
-    if db is None:
-        db = get_db()
     return db
 
 

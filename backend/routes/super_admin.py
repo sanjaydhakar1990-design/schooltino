@@ -14,7 +14,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
-from motor.motor_asyncio import AsyncIOMotorClient
+from core.database import db
 import os
 import uuid
 import bcrypt
@@ -23,12 +23,6 @@ from functools import wraps
 
 # SECRET HIDDEN URL - Change this to your preferred secret path
 router = APIRouter(prefix="/owner-console-x7k9m2", tags=["Platform Owner"])
-
-# Database connection
-mongo_url = os.environ.get('MONGO_URL')
-db_name = os.environ.get('DB_NAME', 'schooltino')
-db_client = AsyncIOMotorClient(mongo_url)
-db = db_client[db_name]
 
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'schooltino-super-secret-key-2026')
 

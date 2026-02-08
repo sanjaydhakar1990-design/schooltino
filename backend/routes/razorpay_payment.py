@@ -11,15 +11,9 @@ from datetime import datetime, timezone
 import uuid
 import os
 import razorpay
-from motor.motor_asyncio import AsyncIOMotorClient
+from core.database import db
 
 router = APIRouter(prefix="/razorpay", tags=["Razorpay Payments"])
-
-# Database connection
-mongo_url = os.environ.get('MONGO_URL')
-db_name = os.environ.get('DB_NAME', 'test_database')
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
 
 def get_database():
     return db

@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 from datetime import datetime, timezone, time
-from motor.motor_asyncio import AsyncIOMotorClient
+from core.database import db
 import os
 from dotenv import load_dotenv
 import uuid
@@ -21,16 +21,7 @@ load_dotenv()
 
 router = APIRouter(prefix="/timetable", tags=["Timetable Management"])
 
-# Database connection
-def get_db():
-    client = AsyncIOMotorClient(os.environ['MONGO_URL'])
-    return client[os.environ['DB_NAME']]
-
-db = None
 def get_database():
-    global db
-    if db is None:
-        db = get_db()
     return db
 
 # Models

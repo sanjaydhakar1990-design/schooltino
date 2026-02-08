@@ -15,13 +15,7 @@ import os
 import sys
 import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
 
-from motor.motor_asyncio import AsyncIOMotorClient
-
-# Database connection
-mongo_url = os.environ.get('MONGO_URL')
-db_name = os.environ.get('DB_NAME', 'test_database')
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
+from core.database import db
 
 # Emergent LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage

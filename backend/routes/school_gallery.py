@@ -10,19 +10,13 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 from datetime import datetime, timezone
-from motor.motor_asyncio import AsyncIOMotorClient
+from core.database import db
 import os
 import uuid
 import aiofiles
 from pathlib import Path
 
 router = APIRouter(prefix="/gallery", tags=["School Gallery"])
-
-# Database connection
-mongo_url = os.environ.get('MONGO_URL')
-db_name = os.environ.get('DB_NAME', 'schooltino')
-db_client = AsyncIOMotorClient(mongo_url)
-db = db_client[db_name]
 
 UPLOAD_DIR = Path("./uploads/gallery")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

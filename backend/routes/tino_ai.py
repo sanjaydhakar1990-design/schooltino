@@ -9,19 +9,13 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List
-from motor.motor_asyncio import AsyncIOMotorClient
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from core.database import db
 from dotenv import load_dotenv
 
 load_dotenv()
 
 router = APIRouter(prefix="/tino-ai", tags=["Tino AI"])
-
-# MongoDB connection
-MONGO_URL = os.environ.get("MONGO_URL")
-DB_NAME = os.environ.get("DB_NAME", "schooltino")
-client = AsyncIOMotorClient(MONGO_URL)
-db = client[DB_NAME]
 
 # LLM API Key
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")

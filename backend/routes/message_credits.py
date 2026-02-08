@@ -11,17 +11,11 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
-from motor.motor_asyncio import AsyncIOMotorClient
+from core.database import db
 import os
 import uuid
 
 router = APIRouter(prefix="/message-credits", tags=["Message Credits"])
-
-# Database connection
-mongo_url = os.environ.get('MONGO_URL')
-db_name = os.environ.get('DB_NAME', 'schooltino')
-db_client = AsyncIOMotorClient(mongo_url)
-db = db_client[db_name]
 
 # Message costs (in credits)
 MESSAGE_COSTS = {
