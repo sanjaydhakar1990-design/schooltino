@@ -22,9 +22,10 @@ module.exports = {
   },
   devServer: (devServerConfig) => {
     devServerConfig.allowedHosts = 'all';
-    devServerConfig.client = {
-      webSocketURL: 'auto://0.0.0.0:0/ws',
-    };
+    devServerConfig.client = false;
+    devServerConfig.webSocketServer = false;
+    devServerConfig.hot = false;
+    devServerConfig.liveReload = false;
     devServerConfig.headers = {
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       'Pragma': 'no-cache',
