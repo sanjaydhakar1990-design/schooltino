@@ -163,25 +163,25 @@ export default function TeachTinoDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50" data-testid="teachtino-dashboard">
+    <div className="min-h-screen bg-gray-50" data-testid="teachtino-dashboard">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                <GraduationCap className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h1 className="font-bold text-slate-900">TeachTino</h1>
-                <p className="text-xs text-slate-500">{user?.name}</p>
+                <h1 className="font-bold text-gray-800">TeachTino</h1>
+                <p className="text-xs text-gray-400">{user?.name}</p>
               </div>
             </div>
             
@@ -190,7 +190,7 @@ export default function TeachTinoDashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowTinoAI(true)}
-                className="text-slate-600"
+                className="text-gray-600 hover:bg-gray-100"
               >
                 <Brain className="w-5 h-5" />
               </Button>
@@ -198,7 +198,7 @@ export default function TeachTinoDashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowProfileDialog(true)}
-                className="text-slate-600"
+                className="text-gray-600 hover:bg-gray-100"
               >
                 <Settings className="w-5 h-5" />
               </Button>
@@ -206,7 +206,7 @@ export default function TeachTinoDashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-rose-600"
+                className="text-red-600 hover:bg-red-50"
               >
                 <LogOut className="w-5 h-5" />
               </Button>
@@ -219,60 +219,68 @@ export default function TeachTinoDashboard() {
       <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
         {/* Welcome Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold text-gray-800">
             {getGreeting()}, {user?.name?.split(' ')[0]}! 👋
           </h2>
-          <p className="text-slate-500">
+          <p className="text-sm text-gray-600">
             {new Date().toLocaleDateString('hi-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-white">
-            <CardContent className="p-4">
+          <Card className="bg-white rounded-xl border border-gray-200 p-5">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500">My Classes</p>
-                  <p className="text-2xl font-bold text-slate-900">{myClasses.length}</p>
+                  <p className="text-xs text-gray-400">My Classes</p>
+                  <p className="text-2xl font-bold text-gray-800 mt-1">{myClasses.length}</p>
                 </div>
-                <BookOpen className="w-8 h-8 text-indigo-500" />
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <BookOpen className="w-6 h-6 text-blue-500" />
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white">
-            <CardContent className="p-4">
+          <Card className="bg-white rounded-xl border border-gray-200 p-5">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500">Present Today</p>
-                  <p className="text-2xl font-bold text-emerald-600">{todayAttendance.present}</p>
+                  <p className="text-xs text-gray-400">Present Today</p>
+                  <p className="text-2xl font-bold text-gray-800 mt-1">{todayAttendance.present}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-emerald-500" />
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white">
-            <CardContent className="p-4">
+          <Card className="bg-white rounded-xl border border-gray-200 p-5">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500">Absent</p>
-                  <p className="text-2xl font-bold text-rose-600">{todayAttendance.absent}</p>
+                  <p className="text-xs text-gray-400">Absent</p>
+                  <p className="text-2xl font-bold text-gray-800 mt-1">{todayAttendance.absent}</p>
                 </div>
-                <XCircle className="w-8 h-8 text-rose-500" />
+                <div className="bg-red-50 p-3 rounded-lg">
+                  <XCircle className="w-6 h-6 text-red-500" />
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white">
-            <CardContent className="p-4">
+          <Card className="bg-white rounded-xl border border-gray-200 p-5">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500">Notices</p>
-                  <p className="text-2xl font-bold text-amber-600">{recentNotices.length}</p>
+                  <p className="text-xs text-gray-400">Notices</p>
+                  <p className="text-2xl font-bold text-gray-800 mt-1">{recentNotices.length}</p>
                 </div>
-                <Bell className="w-8 h-8 text-amber-500" />
+                <div className="bg-amber-50 p-3 rounded-lg">
+                  <Bell className="w-6 h-6 text-amber-500" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -281,64 +289,66 @@ export default function TeachTinoDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Button
-            className="h-auto py-4 flex flex-col gap-2 bg-indigo-600 hover:bg-indigo-700"
+            className="h-auto py-4 flex flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
             onClick={() => navigate('/app/attendance')}
           >
             <ClipboardCheck className="w-6 h-6" />
-            <span>Mark Attendance</span>
+            <span className="text-sm">Mark Attendance</span>
           </Button>
           
           <Button
-            className="h-auto py-4 flex flex-col gap-2 bg-emerald-600 hover:bg-emerald-700"
+            className="h-auto py-4 flex flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
             onClick={() => navigate('/app/ai-paper')}
           >
             <Sparkles className="w-6 h-6" />
-            <span>AI Paper</span>
+            <span className="text-sm">AI Paper</span>
           </Button>
           
           <Button
-            className="h-auto py-4 flex flex-col gap-2 bg-amber-600 hover:bg-amber-700"
+            className="h-auto py-4 flex flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
             onClick={() => setShowNoticeDialog(true)}
           >
             <Bell className="w-6 h-6" />
-            <span>Send Notice</span>
+            <span className="text-sm">Send Notice</span>
           </Button>
           
           <Button
-            className="h-auto py-4 flex flex-col gap-2 bg-purple-600 hover:bg-purple-700"
+            className="h-auto py-4 flex flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
             onClick={() => setShowLeaveDialog(true)}
           >
             <Calendar className="w-6 h-6" />
-            <span>Apply Leave</span>
+            <span className="text-sm">Apply Leave</span>
           </Button>
         </div>
 
         {/* My Classes */}
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between">
+        <Card className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+          <CardHeader className="pb-3 border-b border-gray-100">
+            <CardTitle className="text-base font-semibold text-gray-800 flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-indigo-600" />
+                <div className="bg-blue-50 p-2 rounded-lg">
+                  <BookOpen className="w-4 h-4 text-blue-500" />
+                </div>
                 My Classes
               </span>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/app/classes')}>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/app/classes')} className="text-gray-600 hover:bg-gray-100">
                 View All <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {myClasses.length === 0 ? (
-                <p className="text-slate-500 col-span-full text-center py-4">No classes assigned</p>
+                <p className="text-gray-600 col-span-full text-center py-4">No classes assigned</p>
               ) : (
                 myClasses.map((cls) => (
                   <div
                     key={cls.id}
-                    className="p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-indigo-300 cursor-pointer transition-all"
+                    className="p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 cursor-pointer transition-all"
                     onClick={() => navigate(`/app/classes/${cls.id}`)}
                   >
-                    <h4 className="font-medium text-slate-900">{cls.name}</h4>
-                    <p className="text-sm text-slate-500">{cls.student_count || 0} students</p>
+                    <h4 className="font-medium text-gray-800">{cls.name}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{cls.student_count || 0} students</p>
                   </div>
                 ))
               )}
@@ -347,22 +357,24 @@ export default function TeachTinoDashboard() {
         </Card>
 
         {/* Recent Notices */}
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-amber-600" />
+        <Card className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+          <CardHeader className="pb-3 border-b border-gray-100">
+            <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
+              <div className="bg-amber-50 p-2 rounded-lg">
+                <Bell className="w-4 h-4 text-amber-500" />
+              </div>
               Recent Notices
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {recentNotices.length === 0 ? (
-              <p className="text-slate-500 text-center py-4">No notices</p>
+              <p className="text-gray-600 text-center py-4">No notices</p>
             ) : (
               <div className="space-y-3">
                 {recentNotices.map((notice) => (
-                  <div key={notice.id} className="p-3 bg-slate-50 rounded-lg">
-                    <h4 className="font-medium text-slate-900">{notice.title}</h4>
-                    <p className="text-sm text-slate-500 line-clamp-2">{notice.content}</p>
+                  <div key={notice.id} className="p-3 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-medium text-gray-800">{notice.title}</h4>
+                    <p className="text-sm text-gray-600 line-clamp-2 mt-1">{notice.content}</p>
                   </div>
                 ))}
               </div>
@@ -372,26 +384,28 @@ export default function TeachTinoDashboard() {
 
         {/* Pending Leave Approvals - Only for Principal/VP */}
         {canApproveLeave && pendingLeaves.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+          <Card className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <CardHeader className="pb-3 border-b border-gray-100">
+              <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                <div className="bg-amber-50 p-2 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                </div>
                 Pending Leave Approvals ({pendingLeaves.length})
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <div className="space-y-3">
                 {pendingLeaves.slice(0, 3).map((leave) => (
-                  <div key={leave.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                  <div key={leave.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <div>
-                      <p className="font-medium text-slate-900">{leave.user_name || 'Staff'}</p>
-                      <p className="text-sm text-slate-500">{leave.leave_type} - {leave.reason}</p>
+                      <p className="font-medium text-gray-800">{leave.user_name || 'Staff'}</p>
+                      <p className="text-sm text-gray-600 mt-0.5">{leave.leave_type} - {leave.reason}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" className="bg-emerald-600" onClick={() => handleApproveLeave(leave.id)}>
+                      <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleApproveLeave(leave.id)}>
                         <CheckCircle className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleRejectLeave(leave.id)}>
+                      <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white rounded-lg" onClick={() => handleRejectLeave(leave.id)}>
                         <XCircle className="w-4 h-4" />
                       </Button>
                     </div>
@@ -404,39 +418,39 @@ export default function TeachTinoDashboard() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
           <button 
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-lg ${activeTab === 'home' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500'}`}
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg ${activeTab === 'home' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}
           >
             <Home className="w-5 h-5" />
             <span className="text-xs">Home</span>
           </button>
           <button 
             onClick={() => navigate('/app/classes')}
-            className="flex flex-col items-center gap-1 p-2 text-slate-500"
+            className="flex flex-col items-center gap-1 p-2 text-gray-600"
           >
             <BookOpen className="w-5 h-5" />
             <span className="text-xs">Classes</span>
           </button>
           <button 
             onClick={() => navigate('/app/attendance')}
-            className="flex flex-col items-center gap-1 p-2 text-slate-500"
+            className="flex flex-col items-center gap-1 p-2 text-gray-600"
           >
             <ClipboardCheck className="w-5 h-5" />
             <span className="text-xs">Attendance</span>
           </button>
           <button 
             onClick={() => navigate('/app/notices')}
-            className="flex flex-col items-center gap-1 p-2 text-slate-500"
+            className="flex flex-col items-center gap-1 p-2 text-gray-600"
           >
             <Bell className="w-5 h-5" />
             <span className="text-xs">Notices</span>
           </button>
           <button 
             onClick={() => setShowTinoAI(true)}
-            className="flex flex-col items-center gap-1 p-2 text-slate-500"
+            className="flex flex-col items-center gap-1 p-2 text-gray-600"
           >
             <Brain className="w-5 h-5" />
             <span className="text-xs">Tino AI</span>
@@ -446,17 +460,17 @@ export default function TeachTinoDashboard() {
 
       {/* Leave Application Dialog */}
       <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Apply for Leave</DialogTitle>
+        <DialogContent className="bg-white rounded-xl">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="text-base font-semibold text-gray-800">Apply for Leave</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium">Leave Type</label>
+              <label className="text-sm font-medium text-gray-700">Leave Type</label>
               <select
                 value={leaveForm.leave_type}
                 onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })}
-                className="w-full mt-1 p-2 border rounded-lg"
+                className="w-full mt-2 p-2 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
               >
                 <option value="casual">Casual Leave</option>
                 <option value="sick">Sick Leave</option>
@@ -465,31 +479,34 @@ export default function TeachTinoDashboard() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">From Date</label>
+                <label className="text-sm font-medium text-gray-700">From Date</label>
                 <Input
                   type="date"
                   value={leaveForm.from_date}
                   onChange={(e) => setLeaveForm({ ...leaveForm, from_date: e.target.value })}
+                  className="mt-2 border-gray-200"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">To Date</label>
+                <label className="text-sm font-medium text-gray-700">To Date</label>
                 <Input
                   type="date"
                   value={leaveForm.to_date}
                   onChange={(e) => setLeaveForm({ ...leaveForm, to_date: e.target.value })}
+                  className="mt-2 border-gray-200"
                 />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Reason</label>
+              <label className="text-sm font-medium text-gray-700">Reason</label>
               <Textarea
                 value={leaveForm.reason}
                 onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
                 placeholder="Enter reason for leave..."
+                className="mt-2 border-gray-200"
               />
             </div>
-            <Button className="w-full" onClick={handleApplyLeave}>
+            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg" onClick={handleApplyLeave}>
               Submit Application
             </Button>
           </div>
@@ -498,29 +515,31 @@ export default function TeachTinoDashboard() {
 
       {/* Notice Dialog */}
       <Dialog open={showNoticeDialog} onOpenChange={setShowNoticeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Send Notice</DialogTitle>
+        <DialogContent className="bg-white rounded-xl">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="text-base font-semibold text-gray-800">Send Notice</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium">Title</label>
+              <label className="text-sm font-medium text-gray-700">Title</label>
               <Input
                 value={noticeForm.title}
                 onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
                 placeholder="Notice title..."
+                className="mt-2 border-gray-200"
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Content</label>
+              <label className="text-sm font-medium text-gray-700">Content</label>
               <Textarea
                 value={noticeForm.content}
                 onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
                 placeholder="Notice content..."
                 rows={4}
+                className="mt-2 border-gray-200"
               />
             </div>
-            <Button className="w-full" onClick={handleSendNotice}>
+            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg" onClick={handleSendNotice}>
               <Send className="w-4 h-4 mr-2" />
               Send Notice
             </Button>
@@ -530,25 +549,27 @@ export default function TeachTinoDashboard() {
 
       {/* Profile Dialog */}
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Profile & Settings</DialogTitle>
+        <DialogContent className="max-w-md bg-white rounded-xl">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="text-base font-semibold text-gray-800">Profile & Settings</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 py-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-indigo-600" />
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-blue-500" />
               </div>
               <div>
-                <h3 className="font-semibold">{user?.name}</h3>
-                <p className="text-sm text-slate-500">{user?.email}</p>
-                <Badge className="mt-1 capitalize">{user?.role}</Badge>
+                <h3 className="font-semibold text-gray-800">{user?.name}</h3>
+                <p className="text-sm text-gray-600 mt-0.5">{user?.email}</p>
+                <Badge className="mt-2 capitalize bg-blue-50 text-blue-600 border border-blue-100">{user?.role}</Badge>
               </div>
             </div>
             
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-3 flex items-center gap-2">
-                <Camera className="w-4 h-4" />
+            <div className="border-t border-gray-100 pt-4">
+              <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                <div className="bg-blue-50 p-1 rounded">
+                  <Camera className="w-4 h-4 text-blue-500" />
+                </div>
                 Face Recognition Setup
               </h4>
               <StaffPhotoUpload 

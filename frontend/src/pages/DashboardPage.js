@@ -5,14 +5,11 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import {
-  Users, UserCog, GraduationCap, Wallet, TrendingUp, Clock,
-  CalendarCheck, Bell, Calculator, Sparkles, Settings, Brain,
-  BookOpen, Bus, Heart, Fingerprint, Video, Shield,
-  FileText, MessageSquare, Image, Calendar, BarChart3,
-  ChevronRight, AlertCircle, CheckCircle, Loader2, Plus,
-  ArrowUpRight, IndianRupee, UserPlus, Receipt, Phone,
-  CreditCard, Award, Building, ClipboardList, TrendingDown,
-  Activity, DollarSign, PieChart as PieChartIcon
+  Users, UserCog, GraduationCap, Clock,
+  CalendarCheck, Bell, Sparkles, Settings, Brain,
+  BookOpen, Bus, Shield, Image, Calendar,
+  Loader2, IndianRupee, UserPlus, Receipt,
+  ClipboardList
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { toast } from 'sonner';
@@ -141,14 +138,6 @@ export default function DashboardPage() {
       desc: 'Present today',
       path: '/app/attendance'
     },
-    { 
-      title: 'Pending Fees', 
-      value: `₹${((stats?.pending_fees || 0) / 1000).toFixed(0)}K`, 
-      icon: AlertCircle,
-      color: '#EF4444',
-      desc: 'Outstanding amount',
-      path: '/app/fee-management'
-    },
   ];
 
   const quickActions = [
@@ -175,42 +164,54 @@ export default function DashboardPage() {
     { icon: Sparkles, label: 'AI Paper', path: '/app/ai-paper', color: '#0EA5E9' },
   ];
 
+  const formatDateBadge = () => {
+    const date = new Date();
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-IN', { month: 'short' });
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
   return (
-    <div className="space-y-5 pb-10" data-testid="dashboard-page">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6 pb-10" data-testid="dashboard-page">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p className="text-gray-400 text-sm">{greeting},</p>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
             {schoolData?.name || 'Schooltino Dashboard'}
           </h1>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => navigate('/app/tino-ai')}
-            variant="outline"
-            size="sm"
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
-            data-testid="ask-tino-btn"
-          >
-            <Brain className="w-3.5 h-3.5 mr-1.5" /> Ask Tino AI
-          </Button>
-          <Button 
-            onClick={() => navigate('/app/students')}
-            size="sm"
-            className="bg-blue-500 hover:bg-blue-600 text-white text-xs"
-            data-testid="new-admission-btn"
-          >
-            <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Admission
-          </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="bg-gray-100 px-4 py-2 rounded-full">
+            <p className="text-xs font-medium text-gray-600">{formatDateBadge()}</p>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => navigate('/app/tino-ai')}
+              variant="outline"
+              size="sm"
+              className="border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
+              data-testid="ask-tino-btn"
+            >
+              <Brain className="w-3.5 h-3.5 mr-1.5" /> Ask Tino AI
+            </Button>
+            <Button 
+              onClick={() => navigate('/app/students')}
+              size="sm"
+              className="bg-blue-500 hover:bg-blue-600 text-white text-xs"
+              data-testid="new-admission-btn"
+            >
+              <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Admission
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statsCards.map((card, idx) => (
           <div 
             key={idx}
-            onClick={() => navigate(card.path)}
-            className="bg-white rounded-xl border border-blue-100 p-5 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all group"
+            className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all group"
             data-testid={`stat-card-${idx}`}
           >
             <div className="flex items-start justify-between mb-3">
@@ -223,22 +224,28 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-800 mb-1">{card.value}</p>
-            <p className="text-xs text-gray-400">{card.desc}</p>
+            <p className="text-xs text-gray-400 mb-4">{card.desc}</p>
+            <button
+              onClick={() => navigate(card.path)}
+              className="text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1"
+            >
+              View Details <span className="text-xs">›</span>
+            </button>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-blue-100 p-5">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-200">
           <h2 className="text-base font-semibold text-gray-800">Quick Actions</h2>
           <span className="text-xs text-gray-400">त्वरित कार्य</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-4">
           {quickActions.map((action, idx) => (
             <button
               key={idx}
               onClick={() => navigate(action.path)}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all group"
+              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all group"
               data-testid={`quick-action-${idx}`}
             >
               <div 
@@ -255,7 +262,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
-          <div className="bg-white rounded-xl border border-blue-100 p-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-gray-800">Fee Collection Overview</h3>
@@ -289,7 +296,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-blue-100 p-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-gray-800">All Modules</h3>
@@ -318,7 +325,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-5">
-          <div className="bg-white rounded-xl border border-blue-100 p-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-gray-800 text-sm">Today's Attendance</h3>
@@ -361,13 +368,13 @@ export default function DashboardPage() {
 
             <button 
               onClick={() => navigate('/app/attendance')}
-              className="w-full mt-3 text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center justify-center gap-1 py-2 border border-blue-100 rounded-lg hover:bg-blue-50 transition-colors"
+              className="w-full mt-3 text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center justify-center gap-1 py-2 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors"
             >
               More Details
             </button>
           </div>
 
-          <div className="bg-white rounded-xl border border-blue-100 p-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
                 <Brain className="w-5 h-5 text-white" />
@@ -382,13 +389,13 @@ export default function DashboardPage() {
             </p>
             <button
               onClick={() => navigate('/app/tino-ai')}
-              className="w-full py-2 text-sm font-medium text-blue-500 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+              className="w-full py-2 text-sm font-medium text-blue-500 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors"
             >
               Start Chat
             </button>
           </div>
 
-          <div className="bg-white rounded-xl border border-blue-100 p-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-800 text-sm">Recent Activity</h3>
               <span className="text-[10px] text-gray-400">Latest updates</span>
@@ -423,7 +430,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-blue-100 p-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-800 text-sm">Upcoming Events</h3>
               <Calendar className="w-4 h-4 text-gray-400" />

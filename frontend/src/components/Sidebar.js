@@ -210,7 +210,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       <aside
         className={`fixed lg:relative top-0 left-0 h-screen w-[260px] z-50 lg:z-auto transform transition-transform duration-300 ease-in-out shrink-0 overflow-hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } flex flex-col bg-white border-r border-blue-100`}
+        } flex flex-col bg-white border-r border-gray-200`}
         data-testid="sidebar"
       >
         <button
@@ -220,10 +220,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <X className="w-5 h-5 text-gray-500" />
         </button>
 
-        <div className="p-4 border-b border-blue-50">
+        <div className="p-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             {schoolLogo ? (
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm overflow-hidden flex-shrink-0 border border-blue-100">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm overflow-hidden flex-shrink-0 border border-gray-200">
                 <img src={schoolLogo} alt="School Logo" className="w-full h-full object-contain" />
               </div>
             ) : (
@@ -278,7 +278,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                           isActive
-                            ? 'bg-blue-50 text-blue-700 font-medium border border-blue-100'
+                            ? 'bg-blue-50 text-blue-700 font-medium border border-blue-200'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
                         }`
                       }
@@ -306,7 +306,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           ))}
         </nav>
 
-        <div className="p-3 border-t border-blue-50">
+        <div className="p-3 border-t border-gray-100">
           <NavLink
             to="/app/profile"
             onClick={handleNavClick}

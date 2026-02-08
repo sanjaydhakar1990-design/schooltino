@@ -11,7 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 // StaffPage removed - merged into EmployeeManagementPage
 import ClassesPage from './pages/ClassesPage';
-import AttendancePage from './pages/AttendancePage';
+// AttendancePage removed - using ImprovedAttendancePage
 import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
 import FeesPage from './pages/FeesPage';
 import NoticesPage from './pages/NoticesPage';
@@ -35,7 +35,7 @@ import ZoomMeetings from './pages/ZoomMeetings';
 import SetupWizard from './pages/SetupWizard';
 import SubscriptionPage from './pages/SubscriptionPage';
 import TeachTinoLogin from './pages/TeachTinoLogin';
-import StudyTinoLogin from './pages/StudyTinoLogin';
+// StudyTinoLogin removed - replaced by StudyTinoLoginPage
 import OnlineExamSystem from './pages/OnlineExamSystem';
 import CCTVManagement from './pages/CCTVManagement';
 import StorageBackup from './pages/StorageBackup';
@@ -60,8 +60,7 @@ import TinoBrainDashboard from './pages/TinoBrainDashboard';
 import MarketingPage from './pages/MarketingPage';
 import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
-import AdmitCardManagement from './pages/AdmitCardManagement';
-import ImprovedAdmitCardManagement from './pages/ImprovedAdmitCardManagement';
+// AdmitCardManagement and ImprovedAdmitCardManagement removed - using AdmitCardManagementFixed
 import AdmitCardManagementFixed from './pages/AdmitCardManagementFixed';
 import PDFDownloadPage from './pages/PDFDownloadPage';
 import SetupGuidePage from './pages/SetupGuidePage';

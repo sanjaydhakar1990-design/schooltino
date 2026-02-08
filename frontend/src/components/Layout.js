@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Globe, Mic, Home, ChevronRight, Search } from 'lucide-react';
+import { Menu, Globe, Mic, Home, ChevronRight, Search, Bell } from 'lucide-react';
 import Sidebar from './Sidebar';
 import PWAInstaller from './PWAInstaller';
 import { useLanguage } from '../context/LanguageContext';
@@ -181,11 +181,11 @@ export const Layout = () => {
       </div>
 
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        <header className="sticky top-0 h-14 bg-white border-b border-gray-200 z-30 flex items-center justify-between px-4" data-testid="app-header">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 h-16 bg-white border-b border-gray-200 shadow-sm z-30 flex items-center justify-between px-5" data-testid="app-header">
+          <div className="flex items-center gap-4 flex-1">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+              className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               data-testid="mobile-menu-btn"
             >
               <Menu className="w-5 h-5" />
@@ -193,27 +193,27 @@ export const Layout = () => {
             
             <button
               onClick={() => navigate('/app/dashboard')}
-              className="flex items-center gap-2 px-3 py-1.5 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors text-sm font-medium border-0"
               data-testid="home-btn"
             >
               <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Home</span>
+              <span>Home</span>
             </button>
 
-            <div className="hidden md:flex items-center text-sm text-gray-400">
-              <Home className="w-3.5 h-3.5" />
-              <ChevronRight className="w-3.5 h-3.5 mx-1" />
-              <span className="text-gray-700 font-medium">{currentPage}</span>
+            <div className="hidden md:flex items-center gap-2 text-sm">
+              <span className="text-gray-500">Home</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <span className="text-blue-600 font-medium">{currentPage}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden md:flex items-center relative">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="hidden lg:flex items-center relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search Module"
-                className="pl-9 pr-4 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-300 focus:bg-white w-48 text-gray-600 placeholder-gray-400"
+                className="pl-9 pr-4 py-2 text-sm bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:border-blue-300 focus:bg-white w-56 text-gray-700 placeholder-gray-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -221,38 +221,54 @@ export const Layout = () => {
 
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+              className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Search className="w-4 h-4" />
+            </button>
+
+            <button
+              className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Notifications"
+            >
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full" />
             </button>
 
             <PWAInstaller />
             
             <button
               onClick={handleQuickToggle}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs transition-all border border-gray-200"
+              className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs transition-all border border-gray-200"
               data-testid="language-toggle"
               title={`Switch to ${otherLang.label}`}
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span className="font-medium">{currentLang.flag} {currentLang.shortLabel}</span>
+              <Globe className="w-4 h-4" />
+              <span className="font-medium hidden sm:inline">{currentLang.shortLabel}</span>
             </button>
             
             <button
               onClick={() => navigate('/app/tino-ai')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm"
+              className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm font-medium"
               data-testid="ask-tino-btn"
             >
-              <Mic className="w-3.5 h-3.5" />
-              <span className="font-medium hidden sm:inline">Ask Tino</span>
-              <span className="w-1.5 h-1.5 bg-green-300 rounded-full animate-pulse" />
+              <Mic className="w-4 h-4" />
+              <span className="hidden sm:inline">Ask Tino</span>
+              <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse" />
             </button>
 
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors" onClick={() => navigate('/app/profile')}>
-              <span className="text-white font-medium text-sm">
-                {user?.name?.charAt(0) || 'U'}
+            <button
+              onClick={() => navigate('/app/profile')}
+              className="flex items-center gap-2 p-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-medium text-sm">
+                  {user?.name?.charAt(0) || 'U'}
+                </span>
+              </div>
+              <span className="hidden md:inline text-sm font-medium text-gray-700 truncate max-w-[100px]">
+                {user?.name || 'User'}
               </span>
-            </div>
+            </button>
           </div>
         </header>
 
