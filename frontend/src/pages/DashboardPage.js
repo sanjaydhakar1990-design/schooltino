@@ -39,6 +39,7 @@ const moduleCards = [
     name: 'AdmitPro',
     desc: 'AI-powered student admission, enrollment & registration management.',
     icon: UserPlus,
+    image: '/images/admitpro.png',
     gradient: 'from-blue-500 to-blue-600',
     lightBg: 'bg-blue-50',
     iconColor: 'text-blue-600',
@@ -49,6 +50,7 @@ const moduleCards = [
     name: 'ExamTino',
     desc: 'Automates exam management, report cards & result processing.',
     icon: ClipboardList,
+    image: '/images/examtino.png',
     gradient: 'from-purple-500 to-purple-600',
     lightBg: 'bg-purple-50',
     iconColor: 'text-purple-600',
@@ -59,6 +61,7 @@ const moduleCards = [
     name: 'TeachTino',
     desc: 'AI-based LMS that enhances teaching and learning experience.',
     icon: BookOpen,
+    image: '/images/teachtino.png',
     gradient: 'from-emerald-500 to-emerald-600',
     lightBg: 'bg-emerald-50',
     iconColor: 'text-emerald-600',
@@ -69,6 +72,7 @@ const moduleCards = [
     name: 'SmartRoll',
     desc: 'Automated attendance via RFID, biometrics, and AI face recognition.',
     icon: Fingerprint,
+    image: '/images/smartroll.png',
     gradient: 'from-orange-500 to-orange-600',
     lightBg: 'bg-orange-50',
     iconColor: 'text-orange-600',
@@ -79,6 +83,7 @@ const moduleCards = [
     name: 'FeeTino',
     desc: 'Complete fee collection, tracking & online payment with Razorpay.',
     icon: IndianRupee,
+    image: '/images/feetino.png',
     gradient: 'from-green-500 to-green-600',
     lightBg: 'bg-green-50',
     iconColor: 'text-green-600',
@@ -89,6 +94,7 @@ const moduleCards = [
     name: 'PaperGenie',
     desc: 'Generates syllabus-based question papers instantly using AI.',
     icon: Sparkles,
+    image: '/images/papergenie.png',
     gradient: 'from-pink-500 to-pink-600',
     lightBg: 'bg-pink-50',
     iconColor: 'text-pink-600',
@@ -99,6 +105,7 @@ const moduleCards = [
     name: 'TinoAI',
     desc: 'AI Command Center - voice assistant, chat & smart automation.',
     icon: Brain,
+    image: '/images/tinoai.png',
     gradient: 'from-violet-500 to-violet-600',
     lightBg: 'bg-violet-50',
     iconColor: 'text-violet-600',
@@ -109,6 +116,7 @@ const moduleCards = [
     name: 'ClassTino',
     desc: 'Class management, timetable scheduling & section organization.',
     icon: LayoutGrid,
+    image: '/images/classtino.png',
     gradient: 'from-cyan-500 to-cyan-600',
     lightBg: 'bg-cyan-50',
     iconColor: 'text-cyan-600',
@@ -119,6 +127,7 @@ const moduleCards = [
     name: 'ParentTino',
     desc: 'Family portal for parent-teacher communication & updates.',
     icon: Users,
+    image: '/images/parenttino.png',
     gradient: 'from-teal-500 to-teal-600',
     lightBg: 'bg-teal-50',
     iconColor: 'text-teal-600',
@@ -129,6 +138,7 @@ const moduleCards = [
     name: 'TransportTino',
     desc: 'Route planning, GPS tracking & transport fleet management.',
     icon: Bus,
+    image: '/images/transporttino.png',
     gradient: 'from-amber-500 to-amber-600',
     lightBg: 'bg-amber-50',
     iconColor: 'text-amber-600',
@@ -139,6 +149,7 @@ const moduleCards = [
     name: 'CCTVTino',
     desc: 'AI-powered CCTV monitoring, alerts & campus surveillance.',
     icon: Camera,
+    image: '/images/cctvtino.png',
     gradient: 'from-red-500 to-red-600',
     lightBg: 'bg-red-50',
     iconColor: 'text-red-600',
@@ -149,6 +160,7 @@ const moduleCards = [
     name: 'StaffTino',
     desc: 'Staff management, payroll, HR & employee directory.',
     icon: UserCog,
+    image: '/images/stafftino.png',
     gradient: 'from-indigo-500 to-indigo-600',
     lightBg: 'bg-indigo-50',
     iconColor: 'text-indigo-600',
@@ -159,6 +171,7 @@ const moduleCards = [
     name: 'SMSTino',
     desc: 'Bulk SMS, WhatsApp notifications & communication center.',
     icon: Send,
+    image: '/images/smstino.png',
     gradient: 'from-sky-500 to-sky-600',
     lightBg: 'bg-sky-50',
     iconColor: 'text-sky-600',
@@ -169,6 +182,7 @@ const moduleCards = [
     name: 'Analytix',
     desc: 'Data-driven school analytics, reports & performance insights.',
     icon: BarChart3,
+    image: '/images/analytix.png',
     gradient: 'from-slate-500 to-slate-600',
     lightBg: 'bg-slate-50',
     iconColor: 'text-slate-600',
@@ -338,18 +352,21 @@ export default function DashboardPage() {
           <p className="text-sm text-gray-500 mt-1">Powerful modules crafted to streamline school workflows and elevate productivity.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
           {moduleCards.map((card) => (
             <div
               key={card.id}
               onClick={() => navigate(card.path)}
               className="group cursor-pointer bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
             >
-              <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
+              <div className={`relative bg-gradient-to-br ${card.gradient} p-4 flex items-center justify-center`} style={{minHeight: '140px'}}>
+                {card.image ? (
+                  <img src={card.image} alt={card.name} className="w-full h-28 object-contain group-hover:scale-105 transition-transform duration-300" />
+                ) : (
+                  <card.icon className="w-16 h-16 text-white/80" />
+                )}
+              </div>
               <div className="p-4">
-                <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
-                </div>
                 <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
                 <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
               </div>
