@@ -119,19 +119,15 @@ export default function TeachTinoDashboard() {
     );
   }
 
-  const statCardsRow1 = [
-    { label: 'My Classes', value: myClasses.length, icon: BookOpen },
-    { label: 'Present Today', value: todayAttendance.present, icon: CheckCircle },
-    { label: 'Absent Today', value: todayAttendance.absent, icon: XCircle },
-    { label: 'Total Students', value: todayAttendance.total, icon: Users },
-    { label: 'Pending Leaves', value: pendingLeaves.length, icon: Calendar },
-  ];
-
-  const statCardsRow2 = [
-    { label: 'Notices', value: recentNotices.length, icon: Bell },
-    { label: 'Exams Scheduled', value: 0, icon: FileText },
-    { label: 'AI Papers Generated', value: 0, icon: Sparkles },
-    { label: 'Attendance Rate', value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3 },
+  const statCards = [
+    { label: 'My Classes', value: myClasses.length, icon: BookOpen, subtext: 'Assigned class sections' },
+    { label: 'Present Today', value: todayAttendance.present, icon: CheckCircle, subtext: 'Students present today' },
+    { label: 'Absent Today', value: todayAttendance.absent, icon: XCircle, subtext: 'Students absent today' },
+    { label: 'Total Students', value: todayAttendance.total, icon: Users, subtext: 'Across all your classes' },
+    { label: 'Pending Leaves', value: pendingLeaves.length, icon: Calendar, subtext: 'Awaiting your approval' },
+    { label: 'Notices', value: recentNotices.length, icon: Bell, subtext: 'Published announcements' },
+    { label: 'Exams Scheduled', value: 0, icon: FileText, subtext: 'Upcoming examinations' },
+    { label: 'Attendance Rate', value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3, subtext: 'Overall attendance percentage' },
   ];
 
   const teacherModuleCards = [
@@ -210,26 +206,17 @@ export default function TeachTinoDashboard() {
           <span className="text-gray-500 text-xs">Teacher Dashboard</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          {statCardsRow1.map((card, idx) => (
-            <div key={idx} className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-              <div className="flex items-center gap-1.5 mb-3">
-                <card.icon className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-[11px] text-gray-500 font-medium leading-tight">{card.label}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {statCards.map((card, idx) => (
+            <div key={idx} className="bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-sm text-slate-500 font-medium">{card.label}</span>
+                <div className="w-8 h-8 bg-blue-50 rounded-md flex items-center justify-center">
+                  <card.icon className="w-4 h-4 text-blue-500" />
+                </div>
               </div>
-              <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {statCardsRow2.map((card, idx) => (
-            <div key={idx} className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-              <div className="flex items-center gap-1.5 mb-3">
-                <card.icon className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-[11px] text-gray-500 font-medium leading-tight">{card.label}</span>
-              </div>
-              <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
+              <div className="text-2xl font-bold text-slate-800 mb-1">{card.value}</div>
+              <div className="text-xs text-slate-400">{card.subtext}</div>
             </div>
           ))}
         </div>

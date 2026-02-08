@@ -239,19 +239,15 @@ export default function DashboardPage() {
     );
   }
 
-  const statCardsRow1 = [
-    { label: 'Total Students', value: stats?.total_students || 0, icon: Users },
-    { label: 'Total Staff', value: stats?.total_staff || 0, icon: UserCog },
-    { label: 'Fee Collected', value: `₹${((stats?.fee_collection_month || 0)).toLocaleString()}`, icon: IndianRupee },
-    { label: 'Pending Fees', value: `₹${((stats?.pending_fees || 0)).toLocaleString()}`, icon: Wallet },
-    { label: 'Attendance Today', value: `${stats?.attendance_today?.present || 0}%`, icon: CalendarCheck },
-  ];
-
-  const statCardsRow2 = [
-    { label: 'Total Classes', value: stats?.total_classes || 0, icon: GraduationCap },
-    { label: 'Active Modules', value: 14, icon: Cpu },
-    { label: 'Notices', value: stats?.total_notices || 0, icon: Bell },
-    { label: 'Transport Routes', value: stats?.transport_routes || 0, icon: Bus },
+  const statCards = [
+    { label: 'Total Students', value: stats?.total_students || 0, icon: Users, subtext: 'Currently enrolled students' },
+    { label: 'Total Staff', value: stats?.total_staff || 0, icon: UserCog, subtext: 'Active staff members' },
+    { label: 'Fee Collected', value: `₹${((stats?.fee_collection_month || 0)).toLocaleString()}`, icon: IndianRupee, subtext: 'This month collection' },
+    { label: 'Pending Fees', value: `₹${((stats?.pending_fees || 0)).toLocaleString()}`, icon: Wallet, subtext: 'Outstanding balance' },
+    { label: 'Attendance Today', value: `${stats?.attendance_today?.present || 0}%`, icon: CalendarCheck, subtext: 'Present students today' },
+    { label: 'Total Classes', value: stats?.total_classes || 0, icon: GraduationCap, subtext: 'Active class sections' },
+    { label: 'Active Modules', value: 14, icon: Cpu, subtext: 'Running system modules' },
+    { label: 'Notices', value: stats?.total_notices || 0, icon: Bell, subtext: 'Published announcements' },
   ];
 
   const allModules = [
@@ -322,26 +318,17 @@ export default function DashboardPage() {
         <span className="text-gray-500 text-xs">{schoolData?.name || 'Dashboard'}</span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        {statCardsRow1.map((card, idx) => (
-          <div key={idx} className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-            <div className="flex items-center gap-1.5 mb-3">
-              <card.icon className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-[11px] text-gray-500 font-medium leading-tight">{card.label}</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {statCards.map((card, idx) => (
+          <div key={idx} className="bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-sm text-slate-500 font-medium">{card.label}</span>
+              <div className="w-8 h-8 bg-blue-50 rounded-md flex items-center justify-center">
+                <card.icon className="w-4 h-4 text-blue-500" />
+              </div>
             </div>
-            <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {statCardsRow2.map((card, idx) => (
-          <div key={idx} className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-            <div className="flex items-center gap-1.5 mb-3">
-              <card.icon className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-[11px] text-gray-500 font-medium leading-tight">{card.label}</span>
-            </div>
-            <p className="text-[28px] font-bold text-gray-900 leading-none">{card.value}</p>
+            <div className="text-2xl font-bold text-slate-800 mb-1">{card.value}</div>
+            <div className="text-xs text-slate-400">{card.subtext}</div>
           </div>
         ))}
       </div>
