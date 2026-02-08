@@ -67,6 +67,13 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - Core school management features work fully
 
 ## Recent Changes
+- 2026-02-08: Edudibon Design System overhaul - Applied purple-blue gradient theme across entire app:
+  - LoginPage: Gradient background, feature showcase grid, tab-based portal selection (Admin/Teacher/Student), gradient login button
+  - TeachTinoDashboard: Welcome greeting, 8 individually colored stat card icons, circular module icons, cleaner bottom nav with shadow
+  - StudentDashboard: Welcome greeting, 8 colored stat cards, circular module icons, all 9 dialogs + Razorpay preserved
+  - Sidebar: Gradient accent bar at top, gradient icon backgrounds, indigo branding text
+  - Layout header: Gradient "Ask Tino" button with blue shadow, gradient user avatar
+  - Global CSS: Gradient primary buttons (blue-to-indigo), refined stat/module card styles with rounded-xl and shadow-md hover
 - 2026-02-08: Dynamic school branding - Header shows school logo + full name, PWA installs with school's own logo as app icon, document title shows school name, favicon/apple-touch-icon dynamically replaced with school logo, removed hardcoded "Schooltino" branding from login page/dashboard/manifest/index.html, sidebar fallback uses both logo_url and logo fields
 - 2026-02-08: Added EduNova-style branded module cards grid on all 3 dashboards (Schooltino=14 cards, TeachTino=6, StudyTino=6) with gradient top bars, colored icons, hover effects
 - 2026-02-08: Fixed Analytics page not opening - added auth headers to all API calls in SchoolAnalytics.js, added missing backend endpoints (attendance/summary, fee-payment/summary, analytics/teachers, analytics/syllabus-progress, analytics/class-performance)
