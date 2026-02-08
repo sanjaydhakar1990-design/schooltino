@@ -45,28 +45,34 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
-    const { access_token, user: userData } = response.data;
-    
-    localStorage.setItem('token', access_token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-    
-    setToken(access_token);
-    setUser(userData);
-    
-    if (userData.school_id) {
-      setSchoolId(userData.school_id);
-      localStorage.setItem('schoolId', userData.school_id);
-      // Fetch school data
-      try {
-        const schoolRes = await axios.get(`${API}/schools/${userData.school_id}`);
-        setSchoolData(schoolRes.data);
-      } catch (e) {
-        console.error('Failed to fetch school data:', e);
+    try {
+      console.log('Making login request to:', `${API}/auth/login`);
+      const response = await axios.post(`${API}/auth/login`, { email, password });
+      console.log('Login response:', response.status);
+      const { access_token, user: userData } = response.data;
+      
+      localStorage.setItem('token', access_token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      
+      setToken(access_token);
+      setUser(userData);
+      
+      if (userData.school_id) {
+        setSchoolId(userData.school_id);
+        localStorage.setItem('schoolId', userData.school_id);
+        try {
+          const schoolRes = await axios.get(`${API}/schools/${userData.school_id}`);
+          setSchoolData(schoolRes.data);
+        } catch (e) {
+          console.error('Failed to fetch school data:', e);
+        }
       }
+      
+      return userData;
+    } catch (error) {
+      console.error('Login API error:', error.message, error.response?.status, error.response?.data);
+      throw error;
     }
-    
-    return userData;
   };
 
   const setupDirector = async (userData) => {

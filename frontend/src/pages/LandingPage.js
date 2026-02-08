@@ -77,7 +77,9 @@ export default function LandingPage() {
       toast.success('Welcome to Schooltino!');
       navigate('/app/dashboard');
     } catch (error) {
-      toast.error('Invalid credentials');
+      console.error('Login error:', error);
+      const msg = error.response?.data?.detail || error.message || 'Login failed';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
