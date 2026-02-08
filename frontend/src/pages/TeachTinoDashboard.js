@@ -18,7 +18,7 @@ import {
   Settings, LogOut, CheckCircle, XCircle,
   Send, User, CalendarDays, Loader2, Brain,
   BarChart3, Zap, Camera, Home, PlusCircle,
-  Mic, ChevronRight, ChevronDown, AlertTriangle
+  Mic, ChevronRight, AlertTriangle, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
@@ -30,7 +30,7 @@ export default function TeachTinoDashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [expandedTabs, setExpandedTabs] = useState(['quick_stats', 'quick_actions']);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [myClasses, setMyClasses] = useState([]);
   const [recentNotices, setRecentNotices] = useState([]);
@@ -40,25 +40,16 @@ export default function TeachTinoDashboard() {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNoticeDialog, setShowNoticeDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
-  const [showTinoAI, setShowTinoAI] = useState(false);
   
   const [leaveForm, setLeaveForm] = useState({
-    leave_type: 'casual',
-    from_date: '',
-    to_date: '',
-    reason: ''
+    leave_type: 'casual', from_date: '', to_date: '', reason: ''
   });
-  const [noticeForm, setNoticeForm] = useState({
-    title: '',
-    content: ''
-  });
+  const [noticeForm, setNoticeForm] = useState({ title: '', content: '' });
 
   const isPrincipal = user?.role === 'principal' || user?.role === 'vice_principal';
   const canApproveLeave = isPrincipal || user?.role === 'director';
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -68,11 +59,9 @@ export default function TeachTinoDashboard() {
         axios.get(`${API}/notices?limit=5`),
         axios.get(`${API}/leave/pending`)
       ]);
-
       if (classesRes.status === 'fulfilled') setMyClasses(classesRes.value.data?.slice(0, 6) || []);
-      if (noticesRes.status === 'fulfilled') setRecentNotices(noticesRes.value.data?.slice(0, 3) || []);
+      if (noticesRes.status === 'fulfilled') setRecentNotices(noticesRes.value.data?.slice(0, 5) || []);
       if (leavesRes.status === 'fulfilled') setPendingLeaves(leavesRes.value.data || []);
-      
       setTodayAttendance({ present: 42, absent: 3, total: 45 });
     } catch (error) {
       console.error('Fetch error:', error);
@@ -81,68 +70,35 @@ export default function TeachTinoDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/teachtino');
-  };
+  const handleLogout = () => { logout(); navigate('/teachtino'); };
 
   const handleApplyLeave = async () => {
-    if (!leaveForm.from_date || !leaveForm.to_date || !leaveForm.reason) {
-      toast.error('Please fill all fields');
-      return;
-    }
+    if (!leaveForm.from_date || !leaveForm.to_date || !leaveForm.reason) { toast.error('Please fill all fields'); return; }
     try {
-      await axios.post(`${API}/leave/apply`, {
-        ...leaveForm,
-        school_id: user?.school_id
-      });
+      await axios.post(`${API}/leave/apply`, { ...leaveForm, school_id: user?.school_id });
       toast.success('Leave applied successfully!');
       setShowLeaveDialog(false);
       setLeaveForm({ leave_type: 'casual', from_date: '', to_date: '', reason: '' });
-    } catch (error) {
-      toast.error('Failed to apply leave');
-    }
+    } catch (error) { toast.error('Failed to apply leave'); }
   };
 
   const handleSendNotice = async () => {
-    if (!noticeForm.title || !noticeForm.content) {
-      toast.error('Please fill all fields');
-      return;
-    }
+    if (!noticeForm.title || !noticeForm.content) { toast.error('Please fill all fields'); return; }
     try {
-      await axios.post(`${API}/notices`, {
-        ...noticeForm,
-        target_audience: ['students', 'parents'],
-        priority: 'normal',
-        school_id: user?.school_id
-      });
+      await axios.post(`${API}/notices`, { ...noticeForm, target_audience: ['students', 'parents'], priority: 'normal', school_id: user?.school_id });
       toast.success('Notice sent!');
       setShowNoticeDialog(false);
       setNoticeForm({ title: '', content: '' });
       fetchData();
-    } catch (error) {
-      toast.error('Failed to send notice');
-    }
+    } catch (error) { toast.error('Failed to send notice'); }
   };
 
   const handleApproveLeave = async (leaveId) => {
-    try {
-      await axios.post(`${API}/leave/${leaveId}/approve`);
-      toast.success('Leave approved!');
-      fetchData();
-    } catch (error) {
-      toast.error('Failed to approve');
-    }
+    try { await axios.post(`${API}/leave/${leaveId}/approve`); toast.success('Leave approved!'); fetchData(); } catch (error) { toast.error('Failed to approve'); }
   };
 
   const handleRejectLeave = async (leaveId) => {
-    try {
-      await axios.post(`${API}/leave/${leaveId}/reject`);
-      toast.success('Leave rejected');
-      fetchData();
-    } catch (error) {
-      toast.error('Failed to reject');
-    }
+    try { await axios.post(`${API}/leave/${leaveId}/reject`); toast.success('Leave rejected'); fetchData(); } catch (error) { toast.error('Failed to reject'); }
   };
 
   const getGreeting = () => {
@@ -152,161 +108,39 @@ export default function TeachTinoDashboard() {
     return 'Good Evening';
   };
 
-  const toggleTab = (tabId) => {
-    setExpandedTabs(prev =>
-      prev.includes(tabId)
-        ? prev.filter(t => t !== tabId)
-        : [...prev, tabId]
-    );
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
       </div>
     );
   }
 
-  const tabSections = [
-    {
-      id: 'quick_stats',
-      label: 'Overview',
-      icon: BarChart3,
-      color: '#3B82F6',
-      badge: null,
-      content: (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-          {[
-            { title: 'My Classes', value: myClasses.length, icon: BookOpen, color: '#3B82F6' },
-            { title: 'Present Today', value: todayAttendance.present, icon: CheckCircle, color: '#10B981' },
-            { title: 'Absent', value: todayAttendance.absent, icon: XCircle, color: '#EF4444' },
-            { title: 'Notices', value: recentNotices.length, icon: Bell, color: '#F59E0B' },
-          ].map((card, idx) => (
-            <div key={idx} className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-400">{card.title}</p>
-                  <p className="text-2xl font-bold text-gray-800 mt-1">{card.value}</p>
-                </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${card.color}12` }}>
-                  <card.icon className="w-5 h-5" style={{ color: card.color }} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )
-    },
-    {
-      id: 'quick_actions',
-      label: 'Quick Actions',
-      icon: Zap,
-      color: '#8B5CF6',
-      badge: null,
-      content: (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-          {[
-            { icon: ClipboardCheck, label: 'Mark Attendance', color: '#3B82F6', action: () => navigate('/app/attendance') },
-            { icon: Sparkles, label: 'AI Paper', color: '#EC4899', action: () => navigate('/app/ai-paper') },
-            { icon: Bell, label: 'Send Notice', color: '#F59E0B', action: () => setShowNoticeDialog(true) },
-            { icon: Calendar, label: 'Apply Leave', color: '#8B5CF6', action: () => setShowLeaveDialog(true) },
-          ].map((action, idx) => (
-            <button
-              key={idx}
-              onClick={action.action}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all group"
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: `${action.color}12` }}>
-                <action.icon className="w-5 h-5" style={{ color: action.color }} />
-              </div>
-              <span className="text-xs font-medium text-gray-600">{action.label}</span>
-            </button>
-          ))}
-        </div>
-      )
-    },
-    {
-      id: 'my_classes',
-      label: 'My Classes',
-      icon: BookOpen,
-      color: '#3B82F6',
-      badge: myClasses.length > 0 ? `${myClasses.length} classes` : null,
-      content: (
-        <div className="p-4">
-          {myClasses.length === 0 ? (
-            <p className="text-gray-500 text-center py-4 text-sm">No classes assigned</p>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {myClasses.map((cls) => (
-                <button
-                  key={cls.id}
-                  className="p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-200 hover:bg-blue-50 cursor-pointer transition-all text-left"
-                  onClick={() => navigate(`/app/classes/${cls.id}`)}
-                >
-                  <h4 className="font-medium text-gray-800 text-sm">{cls.name}</h4>
-                  <p className="text-xs text-gray-500 mt-1">{cls.student_count || 0} students</p>
-                </button>
-              ))}
-            </div>
-          )}
-          <button onClick={() => navigate('/app/classes')} className="mt-3 text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
-            View All Classes <ChevronRight className="w-3 h-3" />
-          </button>
-        </div>
-      )
-    },
-    {
-      id: 'notices',
-      label: 'Recent Notices',
-      icon: Bell,
-      color: '#F59E0B',
-      badge: recentNotices.length > 0 ? `${recentNotices.length} new` : null,
-      content: (
-        <div className="p-4">
-          {recentNotices.length === 0 ? (
-            <p className="text-gray-500 text-center py-4 text-sm">No notices</p>
-          ) : (
-            <div className="space-y-2">
-              {recentNotices.map((notice) => (
-                <div key={notice.id} className="p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-200 transition-all">
-                  <h4 className="font-medium text-gray-800 text-sm">{notice.title}</h4>
-                  <p className="text-xs text-gray-500 line-clamp-2 mt-1">{notice.content}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    },
-    ...(canApproveLeave && pendingLeaves.length > 0 ? [{
-      id: 'leave_approvals',
-      label: 'Pending Leave Approvals',
-      icon: AlertTriangle,
-      color: '#EF4444',
-      badge: `${pendingLeaves.length} pending`,
-      content: (
-        <div className="p-4 space-y-2">
-          {pendingLeaves.slice(0, 3).map((leave) => (
-            <div key={leave.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-              <div>
-                <p className="font-medium text-gray-800 text-sm">{leave.user_name || 'Staff'}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{leave.leave_type} - {leave.reason}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white rounded-lg h-8 px-3" onClick={() => handleApproveLeave(leave.id)}>
-                  <CheckCircle className="w-3.5 h-3.5" />
-                </Button>
-                <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white rounded-lg h-8 px-3" onClick={() => handleRejectLeave(leave.id)}>
-                  <XCircle className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )
-    }] : []),
+  const statCards = [
+    { label: 'My Classes', value: myClasses.length, icon: BookOpen },
+    { label: 'Present Today', value: todayAttendance.present, icon: CheckCircle },
+    { label: 'Absent Today', value: todayAttendance.absent, icon: XCircle },
+    { label: 'Total Students', value: todayAttendance.total, icon: Users },
+    { label: 'Notices', value: recentNotices.length, icon: Bell },
+    { label: 'Pending Leaves', value: pendingLeaves.length, icon: Calendar },
   ];
+
+  const quickModules = [
+    { icon: ClipboardCheck, label: 'Mark Attendance', desc: 'Daily attendance tracking', action: () => navigate('/app/attendance') },
+    { icon: Sparkles, label: 'AI Paper Generator', desc: 'Auto generate papers', action: () => navigate('/app/ai-paper') },
+    { icon: Bell, label: 'Send Notice', desc: 'Send announcements', action: () => setShowNoticeDialog(true) },
+    { icon: Calendar, label: 'Apply Leave', desc: 'Submit leave application', action: () => setShowLeaveDialog(true) },
+    { icon: BookOpen, label: 'My Classes', desc: 'View assigned classes', action: () => navigate('/app/classes') },
+    { icon: Brain, label: 'Tino AI', desc: 'AI Assistant', action: () => navigate('/app/tino-ai') },
+    { icon: FileText, label: 'Exam Reports', desc: 'View exam results', action: () => navigate('/app/exam-report') },
+    { icon: User, label: 'My Profile', desc: 'Profile & Settings', action: () => setShowProfileDialog(true) },
+  ];
+
+  const filteredModules = quickModules.filter(m => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return m.label.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q);
+  });
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="teachtino-dashboard">
@@ -322,11 +156,7 @@ export default function TeachTinoDashboard() {
                 <p className="text-xs text-gray-400">{user?.name}</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setShowTinoAI(true)} className="text-gray-600 hover:bg-gray-100">
-                <Brain className="w-5 h-5" />
-              </Button>
               <Button variant="ghost" size="sm" onClick={() => setShowProfileDialog(true)} className="text-gray-600 hover:bg-gray-100">
                 <Settings className="w-5 h-5" />
               </Button>
@@ -338,48 +168,139 @@ export default function TeachTinoDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {getGreeting()}, {user?.name?.split(' ')[0]}!
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {new Date().toLocaleDateString('hi-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
+      <main className="max-w-7xl mx-auto px-4 py-5 pb-24 space-y-5">
+        <div className="flex items-center gap-2 text-sm">
+          <button className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md text-xs font-medium hover:bg-blue-600 transition-colors">
+            <Home className="w-3.5 h-3.5" />
+            Home
+          </button>
+          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+          <span className="text-gray-500 text-xs">Teacher Dashboard</span>
         </div>
 
-        <div className="space-y-2">
-          {tabSections.map((tab) => (
-            <div key={tab.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <button
-                onClick={() => toggleTab(tab.id)}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${tab.color}12` }}>
-                    <tab.icon className="w-4 h-4" style={{ color: tab.color }} />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-800">{tab.label}</span>
-                  {tab.badge && (
-                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 font-medium">
-                      {tab.badge}
-                    </span>
-                  )}
-                </div>
-                {expandedTabs.includes(tab.id) ? (
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                )}
-              </button>
-              {expandedTabs.includes(tab.id) && (
-                <div className="border-t border-gray-100">
-                  {tab.content}
-                </div>
-              )}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {statCards.map((card, idx) => (
+            <div key={idx} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <card.icon className="w-4 h-4 text-gray-400" />
+                <span className="text-xs text-gray-500 font-medium">{card.label}</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{card.value}</p>
             </div>
           ))}
         </div>
+
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">Quick Actions</h2>
+                <p className="text-xs text-gray-500 mt-0.5">List of actions available. Use the "Open" button to navigate.</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" placeholder="Search keyword" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 w-full sm:w-64 text-gray-700" />
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Module Name</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Description</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredModules.map((module, idx) => (
+                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <module.icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-800">{module.label}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <span className="text-sm text-gray-500">{module.desc}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={module.action} className="px-4 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors">
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+            <p className="text-xs text-gray-500">Showing {filteredModules.length} of {quickModules.length} actions</p>
+          </div>
+        </div>
+
+        {canApproveLeave && pendingLeaves.length > 0 && (
+          <div className="bg-white rounded-lg border border-gray-200">
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-800">Pending Leave Approvals</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Staff leave requests awaiting your approval.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Staff Name</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Type</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Reason</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingLeaves.slice(0, 5).map((leave) => (
+                    <tr key={leave.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-800">{leave.user_name || 'Staff'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 hidden sm:table-cell capitalize">{leave.leave_type}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{leave.reason}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => handleApproveLeave(leave.id)} className="px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 transition-colors">Approve</button>
+                          <button onClick={() => handleRejectLeave(leave.id)} className="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition-colors">Reject</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {recentNotices.length > 0 && (
+          <div className="bg-white rounded-lg border border-gray-200">
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-800">Recent Notices</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Latest announcements and notices.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Content</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentNotices.map((notice) => (
+                    <tr key={notice.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-800">{notice.title}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 hidden sm:table-cell line-clamp-1">{notice.content}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
@@ -389,13 +310,9 @@ export default function TeachTinoDashboard() {
             { icon: BookOpen, label: 'Classes', action: () => navigate('/app/classes') },
             { icon: ClipboardCheck, label: 'Attendance', action: () => navigate('/app/attendance') },
             { icon: Bell, label: 'Notices', action: () => navigate('/app/notices') },
-            { icon: Brain, label: 'Tino AI', action: () => setShowTinoAI(true) },
+            { icon: Brain, label: 'Tino AI', action: () => navigate('/app/tino-ai') },
           ].map((item, idx) => (
-            <button
-              key={idx}
-              onClick={item.action}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg ${item.active ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}
-            >
+            <button key={idx} onClick={item.action} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${item.active ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}>
               <item.icon className="w-5 h-5" />
               <span className="text-xs">{item.label}</span>
             </button>
@@ -411,11 +328,7 @@ export default function TeachTinoDashboard() {
           <div className="space-y-4 py-4">
             <div>
               <label className="text-sm font-medium text-gray-700">Leave Type</label>
-              <select
-                value={leaveForm.leave_type}
-                onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })}
-                className="w-full mt-2 p-2 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-              >
+              <select value={leaveForm.leave_type} onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })} className="w-full mt-2 p-2 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500">
                 <option value="casual">Casual Leave</option>
                 <option value="sick">Sick Leave</option>
                 <option value="earned">Earned Leave</option>
@@ -435,9 +348,7 @@ export default function TeachTinoDashboard() {
               <label className="text-sm font-medium text-gray-700">Reason</label>
               <Textarea value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} placeholder="Enter reason for leave..." className="mt-2 border-gray-200" />
             </div>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg" onClick={handleApplyLeave}>
-              Submit Application
-            </Button>
+            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg" onClick={handleApplyLeave}>Submit Application</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -457,8 +368,7 @@ export default function TeachTinoDashboard() {
               <Textarea value={noticeForm.content} onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })} placeholder="Notice content..." rows={4} className="mt-2 border-gray-200" />
             </div>
             <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg" onClick={handleSendNotice}>
-              <Send className="w-4 h-4 mr-2" />
-              Send Notice
+              <Send className="w-4 h-4 mr-2" /> Send Notice
             </Button>
           </div>
         </DialogContent>
@@ -480,18 +390,12 @@ export default function TeachTinoDashboard() {
                 <Badge className="mt-2 capitalize bg-blue-50 text-blue-600 border border-blue-100">{user?.role}</Badge>
               </div>
             </div>
-            
             <div className="border-t border-gray-100 pt-4">
               <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
-                <div className="bg-blue-50 p-1 rounded">
-                  <Camera className="w-4 h-4 text-blue-500" />
-                </div>
+                <div className="bg-blue-50 p-1 rounded"><Camera className="w-4 h-4 text-blue-500" /></div>
                 Face Recognition Setup
               </h4>
-              <StaffPhotoUpload 
-                userId={user?.id}
-                schoolId={user?.school_id}
-              />
+              <StaffPhotoUpload userId={user?.id} schoolId={user?.school_id} />
             </div>
           </div>
         </DialogContent>
