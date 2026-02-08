@@ -58,7 +58,7 @@ export const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const schoolLogo = schoolData?.logo_url;
+  const schoolLogo = schoolData?.logo_url || schoolData?.logo;
   const schoolName = schoolData?.name || user?.school_name;
 
   const languages = [
@@ -77,7 +77,7 @@ export const Layout = () => {
   const currentPage = breadcrumbMap[location.pathname] || 'Page';
 
   useEffect(() => {
-    if (schoolLogo && schoolLogo.length > 100) {
+    if (schoolLogo && (schoolLogo.startsWith('data:') || schoolLogo.startsWith('http') || schoolLogo.startsWith('/'))) {
       try {
         const existingIcons = document.querySelectorAll("link[rel*='icon']");
         existingIcons.forEach(icon => icon.remove());
@@ -114,8 +114,9 @@ export const Layout = () => {
         const manifestLink = document.querySelector("link[rel='manifest']");
         if (manifestLink) {
           const dynamicManifest = {
-            name: schoolName || 'Schooltino',
-            short_name: schoolName?.split(' ')[0] || 'School',
+            name: schoolName || 'School',
+            short_name: schoolName?.split(' ').slice(0, 2).join(' ') || 'School',
+            description: schoolName ? `${schoolName} - School Management` : 'School Management System',
             icons: [
               { src: schoolLogo, sizes: '72x72', type: 'image/png', purpose: 'any maskable' },
               { src: schoolLogo, sizes: '96x96', type: 'image/png', purpose: 'any maskable' },
@@ -140,13 +141,27 @@ export const Layout = () => {
         }
         
         if (schoolName) {
-          document.title = `${schoolName} - Schooltino`;
+          document.title = schoolName;
+          const appleTitleMeta = document.querySelector("meta[name='apple-mobile-web-app-title']");
+          if (appleTitleMeta) {
+            appleTitleMeta.content = schoolName;
+          }
         }
       } catch (error) {
         console.error('Failed to update app icon:', error);
       }
     }
   }, [schoolLogo, schoolName]);
+
+  useEffect(() => {
+    if (schoolName) {
+      document.title = schoolName;
+      const appleTitleMeta = document.querySelector("meta[name='apple-mobile-web-app-title']");
+      if (appleTitleMeta) {
+        appleTitleMeta.content = schoolName;
+      }
+    }
+  }, [schoolName]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex relative">
@@ -191,17 +206,27 @@ export const Layout = () => {
               <Menu className="w-5 h-5" />
             </button>
             
-            <button
-              onClick={() => navigate('/app/dashboard')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors text-sm font-medium border-0"
-              data-testid="home-btn"
-            >
-              <Home className="w-4 h-4" />
-              <span>Home</span>
-            </button>
+            <div className="flex items-center gap-3">
+              {schoolLogo ? (
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-200 flex-shrink-0">
+                  <img src={schoolLogo} alt="School" className="w-full h-full object-contain" />
+                </div>
+              ) : null}
+              {schoolName && (
+                <span className="hidden sm:block text-sm font-semibold text-gray-800 truncate max-w-[200px] lg:max-w-[300px]">
+                  {schoolName}
+                </span>
+              )}
+            </div>
 
-            <div className="hidden md:flex items-center gap-2 text-sm">
-              <span className="text-gray-500">Home</span>
+            <div className="hidden md:flex items-center gap-2 text-sm ml-2 border-l border-gray-200 pl-4">
+              <button
+                onClick={() => navigate('/app/dashboard')}
+                className="text-gray-500 hover:text-blue-600 transition-colors"
+                data-testid="home-btn"
+              >
+                Home
+              </button>
               <ChevronRight className="w-4 h-4 text-gray-400" />
               <span className="text-blue-600 font-medium">{currentPage}</span>
             </div>

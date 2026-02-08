@@ -223,10 +223,10 @@ export default function LoginPage() {
             <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
               <School className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white font-heading">Schooltino</h1>
+            <h1 className="text-4xl font-bold text-white font-heading">Smart School</h1>
           </div>
           <h2 className="text-5xl font-bold text-white mb-6 font-heading leading-tight">
-            Smart School<br />Management System
+            School<br />Management System
           </h2>
           <p className="text-slate-300 text-xl max-w-md mb-8">
             AI + CCTV + Apps - Complete automation for modern schools.
@@ -239,7 +239,7 @@ export default function LoginPage() {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">Schooltino Admin</p>
+                <p className="font-semibold">Admin Portal</p>
                 <p className="text-sm text-slate-400">For Directors & Principals</p>
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function LoginPage() {
             <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
               <School className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold font-heading">Schooltino</h1>
+            <h1 className="text-2xl font-bold font-heading">Smart School</h1>
           </div>
 
           {/* SECRET: Super Admin Login Modal */}
@@ -470,7 +470,7 @@ export default function LoginPage() {
                     </div>
                     <Button type="submit" className="w-full h-12 bg-blue-500 hover:bg-blue-600" disabled={loading} data-testid="admin-login-btn">
                       {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                      Login to Schooltino
+                      Login
                       <ChevronRight className="w-5 h-5 ml-2" />
                     </Button>
                   </form>

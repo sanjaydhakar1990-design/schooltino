@@ -56,8 +56,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (schoolData?.logo) {
-      setSchoolLogo(schoolData.logo);
+    if (schoolData?.logo_url || schoolData?.logo) {
+      setSchoolLogo(schoolData.logo_url || schoolData.logo);
     }
   }, [schoolData]);
 
@@ -233,7 +233,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             )}
             <div className="flex-1 min-w-0">
               <h1 className="font-bold text-gray-800 text-sm leading-tight truncate">
-                {schoolData?.name || 'Schooltino'}
+                {schoolData?.name || 'School'}
               </h1>
               <p className="text-xs text-blue-500 capitalize truncate">{user?.role || 'Admin'} Panel</p>
             </div>

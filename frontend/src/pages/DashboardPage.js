@@ -334,7 +334,7 @@ export default function DashboardPage() {
 
       <div>
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Key Features of Schooltino</h2>
+          <h2 className="text-xl font-bold text-gray-900">Key Features</h2>
           <p className="text-sm text-gray-500 mt-1">Powerful modules crafted to streamline school workflows and elevate productivity.</p>
         </div>
 
