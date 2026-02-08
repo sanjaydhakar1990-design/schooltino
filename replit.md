@@ -88,6 +88,10 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
   - StudentDashboard.js: Full EduNova restyling (amber/orange→blue-gray professional)
   - App.js: Removed unused duplicate imports (StudyTinoLogin, AdmitCardManagement, AttendancePage)
   - Design: White bg, gray-50 content area, gray-200 borders, blue-500 accents, shadow-sm cards
+- 2026-02-08: Critical fix - Root URL `/` was showing old LandingPage instead of redesigned LoginPage, redirected `/` to `/login`
+- 2026-02-08: Cleaned up old files - removed LandingPage.js, MarketingPage.js, WhatsAppPamphlets.js, SchoolMarketingPage.js, PDFDownloadPage.js, sw.js, duplicate admit card/attendance/timetable pages
+- 2026-02-08: Fixed PWA service worker caching - SW only registers in production, dev mode auto-clears caches
+- 2026-02-08: Added server-side Cache-Control headers via craco.config.js and setupProxy.js
 - 2026-02-07: Fresh clone from GitHub, fixed all dependency issues
 - 2026-02-07: Simplified craco.config.js for Replit compatibility (removed visual-edits/health-check plugins)
 - 2026-02-07: Added setupProxy.js for frontend-to-backend API proxying

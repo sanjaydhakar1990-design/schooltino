@@ -6,7 +6,6 @@ import { LanguageProvider } from './context/LanguageContext';
 
 // Pages
 import LoginPage from './pages/LoginPage';
-import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 // StaffPage removed - merged into EmployeeManagementPage
@@ -50,19 +49,14 @@ import FrontOfficePage from './pages/FrontOfficePage';
 import TransportPage from './pages/TransportPage';
 import HealthModulePage from './pages/HealthModulePage';
 import BiometricPage from './pages/BiometricPage';
-import TimetablePage from './pages/TimetablePage';
 import DirectorAIDashboard from './pages/DirectorAIDashboard';
 import MultiYearFeesPage from './pages/MultiYearFeesPage';
 import SalaryTrackingPage from './pages/SalaryTrackingPage';
 import StudentReceiptsPage from './pages/StudentReceiptsPage';
 import UnifiedPortal from './pages/UnifiedPortal';
 import TinoBrainDashboard from './pages/TinoBrainDashboard';
-import MarketingPage from './pages/MarketingPage';
-import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
-import SchoolMarketingPage from './pages/SchoolMarketingPage';
 // AdmitCardManagement and ImprovedAdmitCardManagement removed - using AdmitCardManagementFixed
 import AdmitCardManagementFixed from './pages/AdmitCardManagementFixed';
-import PDFDownloadPage from './pages/PDFDownloadPage';
 import SetupGuidePage from './pages/SetupGuidePage';
 import SuperAdminPanel from './pages/SuperAdminPanel';
 import TeacherRoleManager from './pages/TeacherRoleManager';
@@ -236,28 +230,10 @@ const PublicRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Landing Page - Marketing Home */}
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       
-      {/* Super Admin Panel - HIDDEN SECRET URL */}
       <Route path="/owner-x7k9m2" element={<SuperAdminPanel />} />
       
-      {/* Marketing Brochure Page - Shareable on WhatsApp */}
-      <Route path="/marketing" element={<MarketingPage />} />
-      <Route path="/brochure" element={<MarketingPage />} />
-      
-      {/* WhatsApp Pamphlets - Daily Shareable Content */}
-      <Route path="/pamphlets" element={<WhatsAppPamphlets />} />
-      <Route path="/whatsapp" element={<WhatsAppPamphlets />} />
-      
-      {/* PDF Download Page */}
-      <Route path="/download-brochure" element={<PDFDownloadPage />} />
-      <Route path="/pdf" element={<PDFDownloadPage />} />
-      
-      {/* School Marketing Page - Each school can share their page */}
-      <Route path="/school/:schoolId" element={<SchoolMarketingPage />} />
-      
-      {/* Public Routes */}
       <Route 
         path="/login" 
         element={
@@ -342,7 +318,7 @@ function AppRoutes() {
         <Route path="transport" element={<TransportPage />} />
         <Route path="health" element={<HealthModulePage />} />
         <Route path="biometric" element={<BiometricPage />} />
-        <Route path="timetable" element={<TimetablePage />} />
+        <Route path="timetable" element={<TimetableManagement />} />
         <Route path="teacher-roles" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="director-ai" element={<DirectorAIDashboard />} />
         <Route path="tino-brain" element={<TinoBrainDashboard />} />
