@@ -1154,11 +1154,16 @@ async def get_registered_schools():
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
+    logger.info(f"Login attempt for email: '{credentials.email}', password length: {len(credentials.password)}, password repr: {repr(credentials.password)}")
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user:
+        logger.info(f"User not found for email: '{credentials.email}'")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    if not bcrypt.checkpw(credentials.password.encode(), user["password"].encode()):
+    logger.info(f"User found: {user['email']}, stored hash: {user['password'][:20]}...")
+    check_result = bcrypt.checkpw(credentials.password.encode(), user["password"].encode())
+    logger.info(f"Password check result: {check_result}")
+    if not check_result:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not user.get("is_active", True):
