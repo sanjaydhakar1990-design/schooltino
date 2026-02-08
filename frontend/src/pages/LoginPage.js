@@ -485,6 +485,7 @@ export default function LoginPage() {
           <p className="text-center text-xs text-gray-400 mt-6">
             Powered by Schooltino - Smart School Management
           </p>
+          <p className="text-center text-[10px] text-gray-300 mt-1">v2.1 - Updated Design</p>
         </div>
       </div>
     </div>
