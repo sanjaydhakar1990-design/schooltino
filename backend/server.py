@@ -79,6 +79,7 @@ from routes.did_avatar import router as did_avatar_router
 from routes.documents import router as documents_router
 from routes.bulk_import import router as bulk_import_router
 from routes.dual_credits import router as dual_credits_router
+from routes.syllabus_sync import router as syllabus_sync_router
 
 # ==================== MODELS ====================
 
@@ -12153,6 +12154,7 @@ api_router.include_router(did_avatar_router)
 api_router.include_router(documents_router)
 api_router.include_router(bulk_import_router)
 api_router.include_router(dual_credits_router)
+api_router.include_router(syllabus_sync_router)
 
 app.include_router(api_router)
 

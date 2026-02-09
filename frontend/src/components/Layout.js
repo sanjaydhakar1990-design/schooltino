@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Bell, Search, MapPin, Phone, Mail, Hash, GraduationCap } from 'lucide-react';
+import axios from 'axios';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { GlobalWatermark } from './SchoolLogoWatermark';
@@ -53,6 +54,10 @@ const breadcrumbMap = {
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { user, schoolData } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -83,17 +88,60 @@ export const Layout = () => {
     }
   }, [schoolLogo]);
 
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user?.id || !user?.school_id) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/notifications?user_id=${user.id}&school_id=${user.school_id}&user_type=${user.role || 'admin'}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const notifs = res.data?.notifications || [];
+        setNotifications(notifs);
+        setUnreadCount(notifs.filter(n => !n.read && !n.is_read).length);
+      } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+      }
+    };
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, [user?.id, user?.school_id, user?.role]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showNotifications && !e.target.closest('.relative')) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showNotifications]);
+
+  const markAsRead = async (notifId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL || ''}/api/notifications/${notifId}/mark-read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, is_read: true, read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0">
-        <Sidebar isOpen={true} onClose={() => {}} />
+      <div className={`hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0 transition-all duration-200`}>
+        <Sidebar isOpen={true} onClose={() => {}} isCollapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
       <div className="lg:hidden">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} isCollapsed={false} onToggleCollapse={() => {}} />
       </div>
 
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
@@ -150,10 +198,42 @@ export const Layout = () => {
                 <Search className="w-4 h-4" />
                 <span className="hidden md:inline">Search...</span>
               </button>
-              <button className="relative p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full"></span>
-              </button>
+              <div className="relative">
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                  )}
+                </button>
+                {showNotifications && (
+                  <div className="absolute right-0 top-full mt-2 w-80 max-h-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                    <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
+                      <span className="text-xs text-gray-500">{unreadCount} unread</span>
+                    </div>
+                    <div className="overflow-y-auto max-h-72">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500 text-sm">No notifications</div>
+                      ) : (
+                        notifications.slice(0, 20).map(notif => (
+                          <div 
+                            key={notif.id}
+                            onClick={() => markAsRead(notif.id)}
+                            className={`p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read && !notif.is_read ? 'bg-blue-50' : ''}`}
+                          >
+                            <p className="text-sm font-medium text-gray-900 truncate">{notif.title || 'Notification'}</p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">{notif.created_at ? new Date(notif.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               <button onClick={() => navigate('/app/profile')} className="w-9 h-9 gradient-card-blue rounded-xl flex items-center justify-center shadow-sm">
                 <span className="text-white text-sm font-semibold">{user?.name?.charAt(0) || 'U'}</span>
               </button>

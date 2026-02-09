@@ -18,11 +18,10 @@ import {
   Settings, LogOut, CheckCircle, XCircle,
   Send, User, CalendarDays, Loader2, Brain,
   BarChart3, Zap, Camera, Home, PlusCircle,
-  Mic, ChevronRight, AlertTriangle, Search,
+  ChevronRight, AlertTriangle, Search,
   ChevronLeft, ChevronFirst, ChevronLast
 } from 'lucide-react';
 import { toast } from 'sonner';
-import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
 import StaffPhotoUpload from '../components/StaffPhotoUpload';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -465,7 +464,6 @@ export default function TeachTinoDashboard() {
         </DialogContent>
       </Dialog>
 
-      <VoiceAssistantFAB />
     </div>
   );
 }

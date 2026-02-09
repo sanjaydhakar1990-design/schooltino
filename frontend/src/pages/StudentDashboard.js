@@ -18,13 +18,12 @@ import {
   User, Calendar, Bell, BookOpen, Clock, CheckCircle, XCircle,
   Download, LogOut, School, ChevronRight, Search, Settings, 
   FileText, CalendarDays, AlertTriangle, Loader2, Brain, 
-  Send, CreditCard, Wallet, Mic, Phone, Lock, Home,
+  Send, CreditCard, Wallet, Phone, Lock, Home,
   Eye, Paperclip, Star, ClipboardList, MessageCircle, Users,
   Trophy, Activity, AlertOctagon, Award, Zap,
   ChevronLeft, ChevronFirst, ChevronLast
 } from 'lucide-react';
 import { toast } from 'sonner';
-import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
 import AdmitCardSection from '../components/AdmitCardSection';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
@@ -66,7 +65,6 @@ export default function StudyTinoDashboard() {
   const [showNoticeDialog, setShowNoticeDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showAIHelper, setShowAIHelper] = useState(false);
-  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [showComplaintDialog, setShowComplaintDialog] = useState(false);
   const [showActivitiesDialog, setShowActivitiesDialog] = useState(false);
@@ -289,7 +287,6 @@ export default function StudyTinoDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={() => setVoiceModalOpen(true)} className="text-blue-500 hover:bg-blue-50 rounded-xl"><Mic className="w-5 h-5" /></Button>
               <Button variant="ghost" size="icon" onClick={() => setShowProfileDialog(true)} className="hover:bg-gray-50 rounded-xl"><Settings className="w-5 h-5 text-gray-400" /></Button>
               <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-400 hover:bg-gray-50 rounded-xl"><LogOut className="w-5 h-5" /></Button>
             </div>
@@ -574,7 +571,7 @@ export default function StudyTinoDashboard() {
           <DialogHeader><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-blue-50 rounded flex items-center justify-center"><Brain className="w-4 h-4 text-blue-500" /></div>StudyTino AI Helper</DialogTitle></DialogHeader>
           <div className="text-center py-4">
             <p className="text-gray-600 mb-4">Ask any study-related question!</p>
-            <Button onClick={() => { setShowAIHelper(false); setVoiceModalOpen(true); }} className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg"><Mic className="w-4 h-4 mr-2" /> Talk to Tino AI</Button>
+            <Button onClick={() => { setShowAIHelper(false); navigate('/app/tino-ai'); }} className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg"><Brain className="w-4 h-4 mr-2" /> Open Tino AI</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -641,7 +638,6 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
-      <VoiceAssistantFAB />
     </div>
   );
 }
