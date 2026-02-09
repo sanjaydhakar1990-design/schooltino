@@ -66,32 +66,23 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - AI voice/avatar features are limited without the real package
 - Core school management features work fully
 
+## Design Philosophy
+- "Bilkul simple" (completely simple) minimal design
+- No gradients, no colored icons, no watermarks, no marketing panels
+- White backgrounds, gray-200 borders, gray icons, dark buttons
+- Clean flat navigation, minimal header (breadcrumb + bell + avatar)
+- All core functionality preserved; visual clutter removed
+
 ## Recent Changes
-- 2026-02-08: Edudibon Design System overhaul - Applied purple-blue gradient theme across entire app:
-  - LoginPage: Gradient background, feature showcase grid, tab-based portal selection (Admin/Teacher/Student), gradient login button
-  - TeachTinoDashboard: Welcome greeting, 8 individually colored stat card icons, circular module icons, cleaner bottom nav with shadow
-  - StudentDashboard: Welcome greeting, 8 colored stat cards, circular module icons, all 9 dialogs + Razorpay preserved
-  - Sidebar: Gradient accent bar at top, gradient icon backgrounds, indigo branding text
-  - Layout header: Gradient "Ask Tino" button with blue shadow, gradient user avatar
-  - Global CSS: Gradient primary buttons (blue-to-indigo), refined stat/module card styles with rounded-xl and shadow-md hover
-- 2026-02-08: Dynamic school branding - Header shows school logo + full name, PWA installs with school's own logo as app icon, document title shows school name, favicon/apple-touch-icon dynamically replaced with school logo, removed hardcoded "Schooltino" branding from login page/dashboard/manifest/index.html, sidebar fallback uses both logo_url and logo fields
-- 2026-02-08: Added EduNova-style branded module cards grid on all 3 dashboards (Schooltino=14 cards, TeachTino=6, StudyTino=6) with gradient top bars, colored icons, hover effects
-- 2026-02-08: Fixed Analytics page not opening - added auth headers to all API calls in SchoolAnalytics.js, added missing backend endpoints (attendance/summary, fee-payment/summary, analytics/teachers, analytics/syllabus-progress, analytics/class-performance)
-- 2026-02-08: Fixed School data not saving - updated SchoolCreate model to accept extra fields (signature_url, seal_url, watermark settings), added validator for empty string to None conversion on int fields (established_year, total_capacity), updated SchoolResponse with extra="allow", fixed frontend to clean payload before sending
-- 2026-02-08: Full EduNova Corporate Clean theme applied across entire application:
-  - Global CSS (index.css): EduNova theme variables, Tailwind overrides, consistent typography
-  - UI Components (card, table, tabs, button): gray-200 borders, white backgrounds, rounded-xl
-  - Sidebar.js: White theme, gray-200 borders, blue-200 active state borders
-  - Layout.js: Clean header with notification bell, breadcrumbs, gray borders
-  - DashboardPage.js: Professional stat cards with gray-200 borders, clean layout
-  - TeachTinoDashboard.js: Full EduNova restyling (slate→gray, professional cards/buttons)
-  - StudentDashboard.js: Full EduNova restyling (amber/orange→blue-gray professional)
-  - App.js: Removed unused duplicate imports (StudyTinoLogin, AdmitCardManagement, AttendancePage)
-  - Design: White bg, gray-50 content area, gray-200 borders, blue-500 accents, shadow-sm cards
-- 2026-02-08: Critical fix - Root URL `/` was showing old LandingPage instead of redesigned LoginPage, redirected `/` to `/login`
-- 2026-02-08: Cleaned up old files - removed LandingPage.js, MarketingPage.js, WhatsAppPamphlets.js, SchoolMarketingPage.js, PDFDownloadPage.js, sw.js, duplicate admit card/attendance/timetable pages
-- 2026-02-08: Fixed PWA service worker caching - SW only registers in production, dev mode auto-clears caches
-- 2026-02-08: Added server-side Cache-Control headers via craco.config.js and setupProxy.js
+- 2026-02-09: Complete minimal UI redesign ("bilkul simple"):
+  - LoginPage: Centered card with clean tabs, no gradients or left marketing panel
+  - Sidebar: Flat navigation list with gray icons, no descriptions or colored backgrounds
+  - Layout header: Minimal topbar with breadcrumb, bell, avatar only (removed search, language toggle, Ask Tino button, watermark)
+  - DashboardPage: Clean stat cards, pill-shaped quick actions, flat module grid
+  - index.css: Removed all gradient styles, simplified to neutral gray palette
+  - Preserved: Dynamic favicon/title branding, PWA support, all routes and functionality
+  - Removed 14 unused files (TinoAvatar, TinoFace, SchoolWatermark, duplicate pages, etc.)
+  - Fixed WebSocket hot-reload blocking Replit iframe (disabled in craco.config.js)
 - 2026-02-07: Fresh clone from GitHub, fixed all dependency issues
 - 2026-02-07: Simplified craco.config.js for Replit compatibility (removed visual-edits/health-check plugins)
 - 2026-02-07: Added setupProxy.js for frontend-to-backend API proxying
