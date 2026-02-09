@@ -22,15 +22,19 @@ module.exports = {
   },
   devServer: (devServerConfig) => {
     devServerConfig.allowedHosts = 'all';
-    devServerConfig.client = false;
-    devServerConfig.webSocketServer = false;
-    devServerConfig.hot = false;
-    devServerConfig.liveReload = false;
+    devServerConfig.hot = true;
+    devServerConfig.liveReload = true;
+    devServerConfig.client = {
+      webSocketURL: 'auto://0.0.0.0:0/ws',
+      overlay: false,
+    };
     devServerConfig.headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0',
-      'Surrogate-Control': 'no-store',
     };
     return devServerConfig;
   },

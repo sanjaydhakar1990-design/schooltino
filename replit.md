@@ -77,11 +77,12 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - All core functionality preserved plus new modules
 
 ## Recent Changes
-- 2026-02-09: NextOS-style complete redesign:
-  - LoginPage: Gradient hero section with "Brain of EdTech / Soul of Educator" headline, stats bar, 12 feature cards, clean white login card
+- 2026-02-09: NextOS exact-match redesign v2:
+  - LoginPage: Exact NextOS arrangement - hero section with login card, stats section with icons (21K+ institutions, 300+ engineers), 11 large alternating left/right feature showcase cards with CSS illustrations, bullet points, taglines. CTA section and full 4-column footer.
+  - DashboardPage: Systematic module groups (Academic, Administration, Communication & Tools, AI & Infrastructure), stat cards with trend arrows, quick actions in card section, setup wizard CTA banner
+  - craco.config.js: Re-enabled hot reload with WebSocket config for Replit iframe preview fix
   - Sidebar: Dark blue gradient, school logo, glass-effect search, translucent nav items, gradient user avatar
   - Layout header: Modern with search button, notification bell with blue dot, gradient avatar
-  - DashboardPage: Stat cards with gradient icon backgrounds & trend badges, quick action buttons, 20 module cards with gradient icons
   - index.css: Blue/purple gradient theme, gradient utility classes, glass-card, feature-card, modern shadows
   - New pages: SchoolFeedPage (social feed), StudentWalletPage (digital wallet), EStorePage (school e-store)
   - New routes: /app/school-feed, /app/student-wallet, /app/e-store, /app/visitor-pass
