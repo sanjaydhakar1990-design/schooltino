@@ -7,7 +7,9 @@ import {
   Heart, Fingerprint, Clock, Brain, ChevronDown, ChevronRight, ChevronLeft,
   BookOpen, Video, Image, MessageSquare, Calendar,
   Shield, Calculator, Award, FileText, Building,
-  Music, Globe, Wrench, Search, ShoppingBag, Rss
+  Music, Globe, Wrench, Search, ShoppingBag, Rss,
+  CreditCard, Target, BookMarked, Package, Home, Tv,
+  Layers, Megaphone, Smartphone, Link2, UserPlus
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
@@ -39,24 +41,40 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       ]
     },
     {
-      id: 'academic', label: 'Academic',
+      id: 'admission', label: 'Admission & CRM',
       items: [
         { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
+        { path: '/app/admission-crm', icon: Target, label: 'Admission CRM', permKey: 'students' },
+        { path: '/app/marketing', icon: Megaphone, label: 'Marketing', permKey: 'students' },
+      ]
+    },
+    {
+      id: 'academic', label: 'Academic',
+      items: [
         { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes' },
         { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance' },
         { path: '/app/timetable-management', icon: Clock, label: 'Timetable', permKey: 'attendance' },
         { path: '/app/exam-report', icon: FileText, label: 'Exams & Reports', permKey: 'attendance' },
+        { path: '/app/homework', icon: BookMarked, label: 'Homework', permKey: 'attendance' },
         { path: '/app/certificates', icon: Award, label: 'Certificates', permKey: 'students' },
         { path: '/app/admit-cards', icon: FileText, label: 'Admit Cards', permKey: 'attendance' },
       ]
     },
     {
-      id: 'team', label: 'Team',
+      id: 'learning', label: 'Learning & Content',
+      items: [
+        { path: '/app/digital-library', icon: BookOpen, label: 'Digital Library', permKey: 'dashboard' },
+        { path: '/app/live-classes', icon: Tv, label: 'Live Classes', permKey: 'dashboard' },
+        { path: '/app/course-management', icon: Layers, label: 'Courses', permKey: 'dashboard' },
+      ]
+    },
+    {
+      id: 'team', label: 'HR & Staff',
       items: [
         { path: '/app/employee-management', icon: Users, label: 'Staff & Permissions', permKey: 'staff' },
         { path: '/app/leave', icon: Calendar, label: 'Leave', permKey: 'leave_management' },
         { path: '/app/salary', icon: Wallet, label: 'Salary', permKey: 'fees' },
-        { path: '/app/ai-staff-attendance', icon: Fingerprint, label: 'AI Attendance', permKey: 'attendance' },
+        { path: '/app/ai-staff-attendance', icon: Fingerprint, label: 'AI Staff Attendance', permKey: 'attendance' },
       ]
     },
     {
@@ -64,6 +82,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       items: [
         { path: '/app/fee-management', icon: Wallet, label: 'Fee Management', permKey: 'fees' },
         { path: '/app/accountant', icon: Calculator, label: 'Accountant', permKey: 'fees' },
+        { path: '/app/credit-system', icon: CreditCard, label: 'Credit System', permKey: 'fees' },
         { path: '/app/student-wallet', icon: Wallet, label: 'Student Wallet', permKey: 'fees' },
         { path: '/app/e-store', icon: ShoppingBag, label: 'e-Store', permKey: 'fees' },
         { path: '/app/tally-integration', icon: Globe, label: 'Tally Integration', permKey: 'fees', directorOnly: true },
@@ -74,6 +93,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       items: [
         { path: '/app/notices', icon: Bell, label: 'Notices', permKey: 'notices' },
         { path: '/app/sms', icon: MessageSquare, label: 'SMS & WhatsApp', permKey: 'sms_center' },
+        { path: '/app/integrated-comm', icon: MessageSquare, label: 'Integrated Comms', permKey: 'sms_center' },
         { path: '/app/gallery', icon: Image, label: 'Gallery', permKey: 'gallery' },
         { path: '/app/complaints', icon: MessageSquare, label: 'Complaints', permKey: 'settings' },
       ]
@@ -92,10 +112,19 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       items: [
         { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance' },
         { path: '/app/visitor-pass', icon: Shield, label: 'Visit Management', permKey: 'attendance' },
+        { path: '/app/inventory', icon: Package, label: 'Inventory', permKey: 'settings' },
+        { path: '/app/hostel', icon: Home, label: 'Hostel', permKey: 'settings' },
         { path: '/app/health', icon: Heart, label: 'Health', permKey: 'attendance' },
         { path: '/app/biometric', icon: Fingerprint, label: 'Biometric', permKey: 'attendance' },
         { path: '/app/multi-branch', icon: Building, label: 'Multi-Branch', permKey: 'settings', directorOnly: true },
         { path: '/app/cctv', icon: Video, label: 'CCTV', permKey: 'cctv' },
+      ]
+    },
+    {
+      id: 'showcase', label: 'Platform',
+      items: [
+        { path: '/app/mobile-app', icon: Smartphone, label: 'Mobile App', permKey: 'dashboard' },
+        { path: '/app/integrations', icon: Link2, label: 'Integrations', permKey: 'dashboard' },
       ]
     },
     {

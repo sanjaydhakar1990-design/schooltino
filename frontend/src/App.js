@@ -4,13 +4,10 @@ import './i18n';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 
-// Pages
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
-// StaffPage removed - merged into EmployeeManagementPage
 import ClassesPage from './pages/ClassesPage';
-// AttendancePage removed - using ImprovedAttendancePage
 import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
 import FeesPage from './pages/FeesPage';
 import NoticesPage from './pages/NoticesPage';
@@ -33,7 +30,6 @@ import ZoomMeetings from './pages/ZoomMeetings';
 import SetupWizard from './pages/SetupWizard';
 import SubscriptionPage from './pages/SubscriptionPage';
 import TeachTinoLogin from './pages/TeachTinoLogin';
-// StudyTinoLogin removed - replaced by StudyTinoLoginPage
 import OnlineExamSystem from './pages/OnlineExamSystem';
 import CCTVManagement from './pages/CCTVManagement';
 import StorageBackup from './pages/StorageBackup';
@@ -54,7 +50,6 @@ import SalaryTrackingPage from './pages/SalaryTrackingPage';
 import StudentReceiptsPage from './pages/StudentReceiptsPage';
 import UnifiedPortal from './pages/UnifiedPortal';
 import TinoBrainDashboard from './pages/TinoBrainDashboard';
-// AdmitCardManagement and ImprovedAdmitCardManagement removed - using AdmitCardManagementFixed
 import AdmitCardManagementFixed from './pages/AdmitCardManagementFixed';
 import SetupGuidePage from './pages/SetupGuidePage';
 import SuperAdminPanel from './pages/SuperAdminPanel';
@@ -83,152 +78,74 @@ import MultiBranchPage from './pages/MultiBranchPage';
 import AIStaffAttendancePage from './pages/AIStaffAttendancePage';
 import TallyIntegrationPage from './pages/TallyIntegrationPage';
 
-// PWA Install Prompt
+import IntegratedCommunicationPage from './pages/IntegratedCommunicationPage';
+import UnifiedMobileAppPage from './pages/UnifiedMobileAppPage';
+import IntegrationsHubPage from './pages/IntegrationsHubPage';
+import CreditSystemPage from './pages/CreditSystemPage';
+import AdmissionCRMPage from './pages/AdmissionCRMPage';
+import HomeworkPage from './pages/HomeworkPage';
+import DigitalLibraryPage from './pages/DigitalLibraryPage';
+import InventoryPage from './pages/InventoryPage';
+import HostelPage from './pages/HostelPage';
+import LiveClassesPage from './pages/LiveClassesPage';
+import CourseManagementPage from './pages/CourseManagementPage';
+import MarketingCampaignPage from './pages/MarketingCampaignPage';
+
 import PWAInstallPrompt from './components/PWAInstallPrompt';
-
-// Trial Mode Components
 import { TrialBanner, SupportFAB } from './components/TrialMode';
-
-// Notice Popup System
 import NoticePopup from './components/NoticePopup';
-
-// New Pages
-// StaffDirectory removed - merged into EmployeeManagementPage
 import ProfilePage from './pages/ProfilePage';
-
-// Components
 import Layout from './components/Layout';
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="spinner w-12 h-12" />
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="spinner w-12 h-12" /></div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 };
 
-// Role-based Protected Route - SECURITY
 const RoleProtectedRoute = ({ children, allowedRoles, redirectTo = "/login" }) => {
   const { isAuthenticated, loading, user } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="spinner w-12 h-12" />
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  // Check if user's role is in allowed roles
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="spinner w-12 h-12" /></div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!allowedRoles.includes(user?.role)) {
-    // Redirect based on role
-    if (user?.role === 'student') {
-      return <Navigate to="/student-dashboard" replace />;
-    } else if (user?.role === 'teacher') {
-      return <Navigate to="/portal" replace />;
-    } else {
-      return <Navigate to={redirectTo} replace />;
-    }
+    if (user?.role === 'student') return <Navigate to="/student-dashboard" replace />;
+    if (user?.role === 'teacher') return <Navigate to="/portal" replace />;
+    return <Navigate to={redirectTo} replace />;
   }
-  
   return children;
 };
 
-// Student Only Route - BLOCKS admin/teacher access
 const StudentOnlyRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="spinner w-12 h-12" />
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/studytino" replace />;
-  }
-  
-  // Only students can access
-  if (user?.role !== 'student') {
-    return <Navigate to="/app/dashboard" replace />;
-  }
-  
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="spinner w-12 h-12" /></div>;
+  if (!isAuthenticated) return <Navigate to="/studytino" replace />;
+  if (user?.role !== 'student') return <Navigate to="/app/dashboard" replace />;
   return children;
 };
 
-// Admin Only Route - Director, Principal only
 const AdminOnlyRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="spinner w-12 h-12" />
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  // Only director, principal, vice_principal, co_director
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="spinner w-12 h-12" /></div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   const adminRoles = ['director', 'principal', 'vice_principal', 'co_director'];
   if (!adminRoles.includes(user?.role)) {
-    // Redirect to their appropriate dashboard
-    if (user?.role === 'student') {
-      return <Navigate to="/student-dashboard" replace />;
-    } else if (user?.role === 'teacher') {
-      return <Navigate to="/portal" replace />;
-    }
+    if (user?.role === 'student') return <Navigate to="/student-dashboard" replace />;
     return <Navigate to="/portal" replace />;
   }
-  
   return children;
 };
 
-// Public Route Component (redirect if already logged in)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="spinner w-12 h-12" />
-      </div>
-    );
-  }
-  
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="spinner w-12 h-12" /></div>;
   if (isAuthenticated && user) {
-    // Role-based redirect - All staff go to Unified Portal
     const role = user.role;
-    if (['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director'].includes(role)) {
-      return <Navigate to="/portal" replace />;
-    } else if (role === 'student') {
-      return <Navigate to="/student-dashboard" replace />;
-    } else if (role === 'director') {
-      return <Navigate to="/app/dashboard" replace />;
-    }
+    if (['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director'].includes(role)) return <Navigate to="/portal" replace />;
+    if (role === 'student') return <Navigate to="/student-dashboard" replace />;
+    if (role === 'director') return <Navigate to="/app/dashboard" replace />;
     return <Navigate to="/portal" replace />;
   }
-  
   return children;
 };
 
@@ -236,51 +153,13 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
-      
       <Route path="/owner-x7k9m2" element={<SuperAdminPanel />} />
-      
-      <Route 
-        path="/login" 
-        element={
-          <PublicRoute>
-            <LoginPage />
-          </PublicRoute>
-        } 
-      />
-
-      {/* TeachTino Portal - Teacher Login */}
+      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/teachtino" element={<TeachTinoLogin />} />
-      
-      {/* StudyTino Portal - Combined Student & Parent Login */}
-      {/* Note: StudyTinoLoginPage is the new combined page at line 392 */}
-      <Route 
-        path="/studytino/receipts" 
-        element={
-          <StudentOnlyRoute>
-            <StudentReceiptsPage />
-          </StudentOnlyRoute>
-        } 
-      />
+      <Route path="/studytino/receipts" element={<StudentOnlyRoute><StudentReceiptsPage /></StudentOnlyRoute>} />
+      <Route path="/student-dashboard" element={<StudentOnlyRoute><StudentDashboard /></StudentOnlyRoute>} />
 
-      {/* Student Dashboard - ONLY for students */}
-      <Route 
-        path="/student-dashboard" 
-        element={
-          <StudentOnlyRoute>
-            <StudentDashboard />
-          </StudentOnlyRoute>
-        } 
-      />
-
-      {/* Admin Protected Routes - Director/Principal only */}
-      <Route
-        path="/app"
-        element={
-          <AdminOnlyRoute>
-            <Layout />
-          </AdminOnlyRoute>
-        }
-      >
+      <Route path="/app" element={<AdminOnlyRoute><Layout /></AdminOnlyRoute>}>
         <Route index element={<Navigate to="/app/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="school-analytics" element={<SchoolAnalytics />} />
@@ -352,9 +231,21 @@ function AppRoutes() {
         <Route path="ai-staff-attendance" element={<AIStaffAttendancePage />} />
         <Route path="tally-integration" element={<TallyIntegrationPage />} />
         <Route path="visitor-pass" element={<FrontOfficePage />} />
+
+        <Route path="integrated-comm" element={<IntegratedCommunicationPage />} />
+        <Route path="mobile-app" element={<UnifiedMobileAppPage />} />
+        <Route path="integrations" element={<IntegrationsHubPage />} />
+        <Route path="credit-system" element={<CreditSystemPage />} />
+        <Route path="admission-crm" element={<AdmissionCRMPage />} />
+        <Route path="homework" element={<HomeworkPage />} />
+        <Route path="digital-library" element={<DigitalLibraryPage />} />
+        <Route path="inventory" element={<InventoryPage />} />
+        <Route path="hostel" element={<HostelPage />} />
+        <Route path="live-classes" element={<LiveClassesPage />} />
+        <Route path="course-management" element={<CourseManagementPage />} />
+        <Route path="marketing" element={<MarketingCampaignPage />} />
       </Route>
       
-      {/* Old routes redirect to /app */}
       <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
       <Route path="/students" element={<Navigate to="/app/students" replace />} />
       <Route path="/staff" element={<Navigate to="/app/staff" replace />} />
@@ -364,85 +255,26 @@ function AppRoutes() {
       <Route path="/notices" element={<Navigate to="/app/notices" replace />} />
       <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
 
-      {/* TeachTino Portal - Only for Teachers */}
-      <Route
-        path="/teacher-dashboard"
-        element={
-          <RoleProtectedRoute allowedRoles={['teacher', 'principal', 'vice_principal']} redirectTo="/login">
-            <TeachTinoDashboard />
-          </RoleProtectedRoute>
-        }
-      />
-
-      {/* Unified Portal - For Staff (NOT students, NOT full admin access) */}
-      <Route
-        path="/portal"
-        element={
-          <RoleProtectedRoute 
-            allowedRoles={['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director']} 
-            redirectTo="/login"
-          >
-            <UnifiedPortal />
-          </RoleProtectedRoute>
-        }
-      />
-
-      {/* Student Portal - Standalone */}
-      <Route
-        path="/student-dashboard"
-        element={
-          <ProtectedRoute>
-            <StudentDashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* StudyTino Combined Login - Students & Parents */}
+      <Route path="/teacher-dashboard" element={<RoleProtectedRoute allowedRoles={['teacher', 'principal', 'vice_principal']} redirectTo="/login"><TeachTinoDashboard /></RoleProtectedRoute>} />
+      <Route path="/portal" element={<RoleProtectedRoute allowedRoles={['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director']} redirectTo="/login"><UnifiedPortal /></RoleProtectedRoute>} />
       <Route path="/studytino" element={<StudyTinoLoginPage />} />
-
-      {/* Parent Portal - Standalone (No auth required - has own login) */}
       <Route path="/parent-portal" element={<ParentPortalPage />} />
-
-      {/* Fee Payment Page - Student Access */}
-      <Route
-        path="/fee-payment"
-        element={
-          <ProtectedRoute>
-            <FeePaymentPage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Catch all - Smart redirect based on role */}
+      <Route path="/fee-payment" element={<ProtectedRoute><FeePaymentPage /></ProtectedRoute>} />
       <Route path="*" element={<SmartRedirect />} />
     </Routes>
   );
 }
 
-// PWA Install Prompt Wrapper - Only shows when logged in
 function PWAInstallPromptWrapper() {
-  // Show PWA prompt to all users - no login required
   return <PWAInstallPrompt />;
 }
 
-// Smart redirect based on user role
 function SmartRedirect() {
   const { user, isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
-  }
-  
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
   const role = user.role;
-  // Students go to student dashboard
-  if (role === 'student') {
-    return <Navigate to="/student-dashboard" replace />;
-  }
-  // Director goes to full admin dashboard
-  if (role === 'director') {
-    return <Navigate to="/app/dashboard" replace />;
-  }
-  // All other staff go to Unified Portal
+  if (role === 'student') return <Navigate to="/student-dashboard" replace />;
+  if (role === 'director') return <Navigate to="/app/dashboard" replace />;
   return <Navigate to="/portal" replace />;
 }
 
@@ -451,28 +283,15 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <LanguageProvider>
-          {/* Trial Banner removed from admin dashboard per user request */}
-          
           <AppRoutes />
-          
-          {/* PWA Install Prompt - Shows after login */}
           <PWAInstallPromptWrapper />
-          
-          {/* Notice Popup - Shows unread notices as popup */}
           <NoticePopup />
-          
-          {/* Support FAB - Bottom right */}
           <SupportFAB />
-          
           <Toaster 
             position="top-right" 
             richColors 
             closeButton
-            toastOptions={{
-              style: {
-                fontFamily: 'Inter, sans-serif'
-              }
-            }}
+            toastOptions={{ style: { fontFamily: 'Inter, sans-serif' } }}
           />
         </LanguageProvider>
       </AuthProvider>

@@ -9,8 +9,10 @@ import {
   Fingerprint, Video, Image, MessageSquare,
   Calendar, Brain, Shield, Award,
   Calculator, Wrench, UserPlus,
-  Rss, ShoppingBag, Building, Database, Scan, Globe,
-  BarChart3, ChevronRight, ArrowUpRight, ArrowDownRight
+  Rss, ShoppingBag, Building, Globe,
+  BarChart3, ChevronRight, ArrowUpRight, ArrowDownRight,
+  CreditCard, Target, BookMarked, Package, Home, Tv,
+  Layers, Megaphone, Smartphone, Link2, BookOpen, Heart
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -61,11 +63,11 @@ export default function DashboardPage() {
   }
 
   const statCards = [
-    { label: 'Total Students', value: stats?.total_students || 0, icon: Users, gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', trend: '+12%', trendUp: true },
-    { label: 'Total Staff', value: stats?.total_staff || 0, icon: UserCog, gradient: 'from-purple-500 to-purple-600', lightBg: 'bg-purple-50', trend: '+5%', trendUp: true },
-    { label: 'Fee Collected', value: `\u20B9${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee, gradient: 'from-emerald-500 to-teal-600', lightBg: 'bg-emerald-50', trend: '+18%', trendUp: true },
-    { label: 'Attendance Today', value: `${stats?.attendance_today?.present || 0}%`, icon: CalendarCheck, gradient: 'from-orange-500 to-amber-600', lightBg: 'bg-orange-50', trend: '+2%', trendUp: true },
-    { label: 'Pending Fees', value: `\u20B9${((stats?.pending_fees || 0) / 1000).toFixed(0)}K`, icon: Wallet, gradient: 'from-red-500 to-rose-600', lightBg: 'bg-red-50', trend: '-8%', trendUp: false },
+    { label: 'Total Students', value: stats?.total_students || 0, icon: Users, gradient: 'from-blue-500 to-blue-600', trend: '+12%', trendUp: true },
+    { label: 'Total Staff', value: stats?.total_staff || 0, icon: UserCog, gradient: 'from-purple-500 to-purple-600', trend: '+5%', trendUp: true },
+    { label: 'Fee Collected', value: `\u20B9${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee, gradient: 'from-emerald-500 to-teal-600', trend: '+18%', trendUp: true },
+    { label: 'Attendance Today', value: `${stats?.attendance_today?.present || 0}%`, icon: CalendarCheck, gradient: 'from-orange-500 to-amber-600', trend: '+2%', trendUp: true },
+    { label: 'Pending Fees', value: `\u20B9${((stats?.pending_fees || 0) / 1000).toFixed(0)}K`, icon: Wallet, gradient: 'from-red-500 to-rose-600', trend: '-8%', trendUp: false },
   ];
 
   const quickActions = [
@@ -79,49 +81,90 @@ export default function DashboardPage() {
 
   const moduleGroups = [
     {
-      title: 'Academic',
+      title: 'Admission & Enrollment',
       modules: [
-        { icon: Users, label: 'Students', desc: 'Manage students', path: '/app/students', gradient: 'from-blue-500 to-blue-600' },
+        { icon: Users, label: 'Students', desc: 'Student records', path: '/app/students', gradient: 'from-blue-500 to-blue-600' },
+        { icon: Target, label: 'Admission CRM', desc: 'Lead tracking', path: '/app/admission-crm', gradient: 'from-cyan-500 to-blue-500' },
+        { icon: Megaphone, label: 'Marketing', desc: 'SEO & campaigns', path: '/app/marketing', gradient: 'from-green-500 to-emerald-500' },
+      ],
+    },
+    {
+      title: 'Academic Management',
+      modules: [
         { icon: GraduationCap, label: 'Classes', desc: 'Class management', path: '/app/classes', gradient: 'from-cyan-500 to-blue-500' },
         { icon: CalendarCheck, label: 'Attendance', desc: 'Track attendance', path: '/app/attendance', gradient: 'from-teal-500 to-emerald-500' },
         { icon: Clock, label: 'Timetable', desc: 'Schedule classes', path: '/app/timetable-management', gradient: 'from-indigo-500 to-blue-500' },
-        { icon: FileText, label: 'Exams', desc: 'Exam & reports', path: '/app/exam-report', gradient: 'from-pink-500 to-rose-500' },
+        { icon: FileText, label: 'Exams & Reports', desc: 'Exam & grading', path: '/app/exam-report', gradient: 'from-pink-500 to-rose-500' },
+        { icon: BookMarked, label: 'Homework', desc: 'Assign & grade', path: '/app/homework', gradient: 'from-teal-500 to-green-500' },
         { icon: Award, label: 'Certificates', desc: 'Generate certs', path: '/app/certificates', gradient: 'from-amber-500 to-orange-500' },
       ],
     },
     {
-      title: 'Administration',
+      title: 'Learning & Content',
       modules: [
-        { icon: UserCog, label: 'Staff & Permissions', desc: 'Employee mgmt', path: '/app/employee-management', gradient: 'from-purple-500 to-violet-500' },
-        { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fee-management', gradient: 'from-emerald-500 to-green-500' },
-        { icon: Calculator, label: 'Accountant', desc: 'Finance tools', path: '/app/accountant', gradient: 'from-sky-500 to-blue-500' },
-        { icon: Wallet, label: 'Student Wallet', desc: 'Digital wallet', path: '/app/student-wallet', gradient: 'from-violet-500 to-purple-500' },
-        { icon: Calendar, label: 'Leave', desc: 'Leave tracking', path: '/app/leave', gradient: 'from-teal-500 to-cyan-500' },
-        { icon: Database, label: 'Tally Integration', desc: 'Accounting sync', path: '/app/tally-integration', gradient: 'from-orange-500 to-red-500' },
+        { icon: BookOpen, label: 'Digital Library', desc: 'Books & e-books', path: '/app/digital-library', gradient: 'from-purple-500 to-fuchsia-500' },
+        { icon: Tv, label: 'Live Classes', desc: 'Online teaching', path: '/app/live-classes', gradient: 'from-red-500 to-rose-500' },
+        { icon: Layers, label: 'Courses', desc: 'Course builder', path: '/app/course-management', gradient: 'from-indigo-500 to-violet-500' },
       ],
     },
     {
-      title: 'Communication & Tools',
+      title: 'HR & Staff Management',
+      modules: [
+        { icon: UserCog, label: 'Staff & Permissions', desc: 'Employee mgmt', path: '/app/employee-management', gradient: 'from-purple-500 to-violet-500' },
+        { icon: Calendar, label: 'Leave', desc: 'Leave tracking', path: '/app/leave', gradient: 'from-teal-500 to-cyan-500' },
+        { icon: Wallet, label: 'Salary', desc: 'Payroll mgmt', path: '/app/salary', gradient: 'from-green-500 to-emerald-500' },
+        { icon: Fingerprint, label: 'AI Staff Attendance', desc: 'Geo-facial scan', path: '/app/ai-staff-attendance', gradient: 'from-green-500 to-emerald-500' },
+      ],
+    },
+    {
+      title: 'Finance & Payments',
+      modules: [
+        { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fee-management', gradient: 'from-emerald-500 to-green-500' },
+        { icon: Calculator, label: 'Accountant', desc: 'Finance tools', path: '/app/accountant', gradient: 'from-sky-500 to-blue-500' },
+        { icon: CreditCard, label: 'Credit System', desc: 'Credits & plans', path: '/app/credit-system', gradient: 'from-amber-500 to-orange-500' },
+        { icon: Wallet, label: 'Student Wallet', desc: 'Digital wallet', path: '/app/student-wallet', gradient: 'from-violet-500 to-purple-500' },
+        { icon: ShoppingBag, label: 'e-Store', desc: 'School store', path: '/app/e-store', gradient: 'from-fuchsia-500 to-pink-500' },
+        { icon: Globe, label: 'Tally Integration', desc: 'Accounting sync', path: '/app/tally-integration', gradient: 'from-orange-500 to-red-500' },
+      ],
+    },
+    {
+      title: 'Communication',
       modules: [
         { icon: Bell, label: 'Notices', desc: 'Announcements', path: '/app/notices', gradient: 'from-orange-500 to-amber-500' },
         { icon: MessageSquare, label: 'SMS & WhatsApp', desc: 'Send messages', path: '/app/sms', gradient: 'from-sky-500 to-cyan-500' },
+        { icon: MessageSquare, label: 'Integrated Comms', desc: 'All-in-one comms', path: '/app/integrated-comm', gradient: 'from-blue-500 to-indigo-500' },
         { icon: Rss, label: 'School Feed', desc: 'Social feed', path: '/app/school-feed', gradient: 'from-blue-500 to-indigo-500' },
         { icon: Image, label: 'Gallery', desc: 'Photo albums', path: '/app/gallery', gradient: 'from-pink-500 to-rose-500' },
-        { icon: ShoppingBag, label: 'e-Store', desc: 'School store', path: '/app/e-store', gradient: 'from-violet-500 to-fuchsia-500' },
         { icon: Calendar, label: 'Calendar', desc: 'School events', path: '/app/school-calendar', gradient: 'from-emerald-500 to-teal-500' },
       ],
     },
     {
-      title: 'AI & Infrastructure',
+      title: 'AI & Tools',
       modules: [
         { icon: Brain, label: 'Tino AI', desc: 'AI assistant', path: '/app/tino-ai', gradient: 'from-indigo-500 to-violet-500' },
         { icon: Sparkles, label: 'AI Paper', desc: 'Auto papers', path: '/app/ai-paper', gradient: 'from-purple-500 to-pink-500' },
-        { icon: Scan, label: 'AI Attendance', desc: 'Geo-facial scan', path: '/app/ai-staff-attendance', gradient: 'from-green-500 to-emerald-500' },
+        { icon: Image, label: 'Event Designer', desc: 'Design assets', path: '/app/event-designer', gradient: 'from-rose-500 to-pink-500' },
+      ],
+    },
+    {
+      title: 'Infrastructure & Operations',
+      modules: [
         { icon: Bus, label: 'Transport', desc: 'NFC & GPS', path: '/app/transport', gradient: 'from-orange-500 to-red-500' },
         { icon: Shield, label: 'Visit Mgmt', desc: 'OTP approval', path: '/app/visitor-pass', gradient: 'from-teal-500 to-cyan-500' },
+        { icon: Package, label: 'Inventory', desc: 'Stock control', path: '/app/inventory', gradient: 'from-slate-500 to-zinc-600' },
+        { icon: Home, label: 'Hostel', desc: 'Hostel & mess', path: '/app/hostel', gradient: 'from-rose-500 to-pink-500' },
+        { icon: Heart, label: 'Health', desc: 'Student health', path: '/app/health', gradient: 'from-red-500 to-rose-500' },
         { icon: Building, label: 'Multi-Branch', desc: 'Branch mgmt', path: '/app/multi-branch', gradient: 'from-blue-500 to-indigo-500' },
         { icon: Fingerprint, label: 'Biometric', desc: 'Bio attendance', path: '/app/biometric', gradient: 'from-slate-500 to-gray-600' },
         { icon: Video, label: 'CCTV', desc: 'Surveillance', path: '/app/cctv', gradient: 'from-red-500 to-rose-500' },
+      ],
+    },
+    {
+      title: 'Platform & Integrations',
+      modules: [
+        { icon: Smartphone, label: 'Mobile App', desc: '6-role app', path: '/app/mobile-app', gradient: 'from-sky-500 to-blue-500' },
+        { icon: Link2, label: 'Integrations', desc: '20+ integrations', path: '/app/integrations', gradient: 'from-violet-500 to-purple-500' },
+        { icon: Globe, label: 'Website', desc: 'No-code website', path: '/app/website', gradient: 'from-emerald-500 to-green-500' },
       ],
     },
   ];
