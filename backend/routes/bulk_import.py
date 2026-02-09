@@ -330,18 +330,46 @@ async def create_student_from_row(row: dict, school_id: str, classes: dict, db) 
 async def create_employee_from_row(row: dict, school_id: str, db) -> dict:
     """Create an employee record from CSV row"""
     
-    employee_id = f"EMP-{uuid.uuid4().hex[:8].upper()}"
+    emp_id = f"EMP-{uuid.uuid4().hex[:8].upper()}"
+    
+    year = datetime.now().year
+    count = await db.staff.count_documents({"employee_id": {"$regex": f"^EMP-{year}-"}})
+    employee_id = f"EMP-{year}-{str(count + 1).zfill(4)}"
+    
+    designation_raw = str(row.get('designation', 'teacher')).strip().lower()
+    
+    designation_role_map = {
+        'teacher': 'teacher', 'principal': 'principal',
+        'accountant': 'admin_staff', 'clerk': 'clerk',
+        'peon': 'peon', 'librarian': 'admin_staff',
+        'admin': 'admin_staff', 'office staff': 'admin_staff'
+    }
+    role = designation_role_map.get(designation_raw, 'teacher')
+    
+    email = str(row.get('email', '')).strip()
+    mobile = str(row.get('mobile', '')).strip()
+    if not email:
+        email = f"{mobile}@school.local"
+    
+    salary_val = None
+    try:
+        sal = row.get('salary')
+        if sal and str(sal).strip():
+            salary_val = float(str(sal).strip())
+    except (ValueError, TypeError):
+        salary_val = None
     
     employee_data = {
-        "id": employee_id,
+        "id": emp_id,
+        "employee_id": employee_id,
         "name": str(row.get('name', '')).strip(),
-        "designation": str(row.get('designation', 'teacher')).strip().lower(),
-        "mobile": str(row.get('mobile', '')).strip(),
-        "email": str(row.get('email', '')).strip(),
+        "designation": designation_raw,
+        "mobile": mobile,
+        "email": email,
         "address": str(row.get('address', '')).strip(),
         "qualification": str(row.get('qualification', '')).strip(),
         "joining_date": str(row.get('joining_date', datetime.now().strftime('%Y-%m-%d'))).strip(),
-        "salary": float(row.get('salary', 0)) if row.get('salary') else None,
+        "salary": salary_val,
         "aadhar_no": str(row.get('aadhar_no', '')).strip(),
         "pan_number": str(row.get('pan_number', '')).strip(),
         "department": str(row.get('department', '')).strip(),
@@ -350,7 +378,8 @@ async def create_employee_from_row(row: dict, school_id: str, db) -> dict:
         "school_id": school_id,
         "is_active": True,
         "has_login": False,
-        "role": "teacher",
+        "role": role,
+        "can_teach": role == 'teacher' or designation_raw in ['teacher', 'principal'],
         "created_at": datetime.utcnow().isoformat(),
         "import_source": "bulk_import"
     }

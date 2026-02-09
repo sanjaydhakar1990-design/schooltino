@@ -588,21 +588,20 @@ class UnifiedEmployeeCreate(BaseModel):
 
 class UnifiedEmployeeResponse(BaseModel):
     id: str
-    employee_id: str
+    employee_id: Optional[str] = None
     name: str
-    mobile: str
-    email: str
+    mobile: Optional[str] = None
+    email: Optional[str] = None
     address: Optional[str] = None
     photo_url: Optional[str] = None
-    school_id: str
-    designation: str
+    school_id: Optional[str] = None
+    designation: Optional[str] = "teacher"
     department: Optional[str] = None
     qualification: Optional[str] = None
     joining_date: Optional[str] = None
     salary: Optional[float] = None
     is_active: bool = True
-    created_at: str
-    # Login details
+    created_at: Optional[str] = None
     has_login: bool = False
     user_id: Optional[str] = None
     role: Optional[str] = None
@@ -9585,6 +9584,45 @@ async def save_school_settings(settings: SchoolSettingsModel, current_user: dict
     await log_audit(current_user["id"], "update", "school_settings", {"school_id": settings.school_id})
     
     return {"message": "Settings saved successfully", "settings": settings_dict}
+
+# ==================== MODULE VISIBILITY ENDPOINTS ====================
+
+@api_router.get("/settings/module-visibility")
+async def get_module_visibility(current_user: dict = Depends(get_current_user)):
+    """Get module visibility settings for the school"""
+    school_id = current_user.get("school_id")
+    if not school_id:
+        return {}
+    
+    settings = await db.module_visibility.find_one(
+        {"school_id": school_id},
+        {"_id": 0, "school_id": 0, "updated_at": 0, "updated_by": 0}
+    )
+    
+    return settings.get("modules", {}) if settings else {}
+
+@api_router.post("/settings/module-visibility")
+async def save_module_visibility(body: dict, current_user: dict = Depends(get_current_user)):
+    """Save module visibility settings for the school"""
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    school_id = current_user.get("school_id")
+    if not school_id:
+        raise HTTPException(status_code=400, detail="No school selected")
+    
+    await db.module_visibility.update_one(
+        {"school_id": school_id},
+        {"$set": {
+            "school_id": school_id,
+            "modules": body,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_by": current_user["id"]
+        }},
+        upsert=True
+    )
+    
+    return {"message": "Module visibility saved successfully"}
 
 # ==================== ANALYTICS ENDPOINTS ====================
 

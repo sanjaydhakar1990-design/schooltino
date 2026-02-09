@@ -104,11 +104,6 @@ export default function SettingsPage() {
 
   const loadModuleVisibility = async () => {
     try {
-      const saved = localStorage.getItem('module_visibility_settings');
-      if (saved) {
-        setModuleVisibility(JSON.parse(saved));
-        return;
-      }
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API}/settings/module-visibility`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -116,20 +111,31 @@ export default function SettingsPage() {
       if (response.data && Object.keys(response.data).length > 0) {
         setModuleVisibility(response.data);
         localStorage.setItem('module_visibility_settings', JSON.stringify(response.data));
+        return;
       }
     } catch (error) {
+      console.log('Backend module visibility not available, using local');
+    }
+    try {
+      const saved = localStorage.getItem('module_visibility_settings');
+      if (saved) {
+        setModuleVisibility(JSON.parse(saved));
+      }
+    } catch (e) {
       console.error('Failed to load module visibility');
     }
   };
 
   const toggleModule = (moduleKey, portal) => {
-    setModuleVisibility(prev => ({
-      ...prev,
+    const newVisibility = {
+      ...moduleVisibility,
       [moduleKey]: {
-        ...prev[moduleKey],
-        [portal]: !prev[moduleKey]?.[portal]
+        ...moduleVisibility[moduleKey],
+        [portal]: !moduleVisibility[moduleKey]?.[portal]
       }
-    }));
+    };
+    setModuleVisibility(newVisibility);
+    localStorage.setItem('module_visibility_settings', JSON.stringify(newVisibility));
   };
 
   const saveModuleVisibility = async () => {
@@ -140,10 +146,10 @@ export default function SettingsPage() {
       await axios.post(`${API}/settings/module-visibility`, moduleVisibility, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Module visibility settings saved!');
+      toast.success('Module settings saved! Sidebar updated.');
     } catch (error) {
       localStorage.setItem('module_visibility_settings', JSON.stringify(moduleVisibility));
-      toast.success('Settings saved locally!');
+      toast.success('Settings saved locally! Sidebar updated.');
     } finally {
       setSavingModules(false);
     }

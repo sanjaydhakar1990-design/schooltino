@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, GraduationCap, CalendarCheck,
   Wallet, Bell, Sparkles, Settings, LogOut, X, Bus,
@@ -17,6 +17,45 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const navigate = useNavigate();
   const [expandedGroups, setExpandedGroups] = useState(['main']);
   const [searchQuery, setSearchQuery] = useState('');
+  const [moduleVisibility, setModuleVisibility] = useState(null);
+
+  useEffect(() => {
+    const loadModuleVisibility = () => {
+      try {
+        const saved = localStorage.getItem('module_visibility_settings');
+        if (saved) {
+          setModuleVisibility(JSON.parse(saved));
+        }
+      } catch (e) {
+        console.error('Failed to load module visibility');
+      }
+    };
+    loadModuleVisibility();
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'module_visibility_settings') {
+        try {
+          setModuleVisibility(e.newValue ? JSON.parse(e.newValue) : null);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    const interval = setInterval(loadModuleVisibility, 2000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const isModuleEnabled = (moduleKey) => {
+    if (!moduleKey) return true;
+    if (!moduleVisibility) return true;
+    const mod = moduleVisibility[moduleKey];
+    if (!mod) return true;
+    return mod.schooltino !== false;
+  };
 
   const handleLogout = () => { logout(); navigate('/login'); };
   const isDirector = user?.role === 'director';
@@ -31,98 +70,100 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     setExpandedGroups(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]);
   };
 
+  const ALWAYS_VISIBLE = ['dashboard', 'settings'];
+
   const navGroups = [
     {
       id: 'main', label: 'Main',
       items: [
-        { path: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { path: '/app/school-analytics', icon: LayoutDashboard, label: 'Analytics', permKey: 'school_analytics' },
-        { path: '/app/school-feed', icon: Rss, label: 'School Feed', permKey: 'dashboard' },
+        { path: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard', moduleKey: 'dashboard' },
+        { path: '/app/school-analytics', icon: LayoutDashboard, label: 'Analytics', permKey: 'school_analytics', moduleKey: 'dashboard' },
+        { path: '/app/school-feed', icon: Rss, label: 'School Feed', permKey: 'dashboard', moduleKey: 'school_feed' },
       ]
     },
     {
       id: 'admission', label: 'Students & Admission',
       items: [
-        { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
-        { path: '/app/admission-crm', icon: Target, label: 'Admission CRM', permKey: 'students' },
-        { path: '/app/marketing', icon: Megaphone, label: 'Marketing', permKey: 'students' },
+        { path: '/app/students', icon: Users, label: 'Students', permKey: 'students', moduleKey: 'students' },
+        { path: '/app/admission-crm', icon: Target, label: 'Admission CRM', permKey: 'students', moduleKey: 'students' },
+        { path: '/app/marketing', icon: Megaphone, label: 'Marketing', permKey: 'students', moduleKey: 'students' },
       ]
     },
     {
       id: 'academic', label: 'Academic',
       items: [
-        { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes' },
-        { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance' },
-        { path: '/app/timetable-management', icon: Clock, label: 'Timetable', permKey: 'attendance' },
-        { path: '/app/exam-report', icon: FileText, label: 'Exams & Reports', permKey: 'attendance' },
-        { path: '/app/certificates', icon: Award, label: 'Certificates', permKey: 'students' },
-        { path: '/app/admit-cards', icon: FileText, label: 'Admit Cards', permKey: 'attendance' },
+        { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes', moduleKey: 'classes' },
+        { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance', moduleKey: 'attendance' },
+        { path: '/app/timetable-management', icon: Clock, label: 'Timetable', permKey: 'attendance', moduleKey: 'timetable' },
+        { path: '/app/exam-report', icon: FileText, label: 'Exams & Reports', permKey: 'attendance', moduleKey: 'exams_reports' },
+        { path: '/app/certificates', icon: Award, label: 'Certificates', permKey: 'students', moduleKey: 'certificates' },
+        { path: '/app/admit-cards', icon: FileText, label: 'Admit Cards', permKey: 'attendance', moduleKey: 'admit_cards' },
       ]
     },
     {
       id: 'learning', label: 'Learning & Content',
       items: [
-        { path: '/app/digital-library', icon: BookOpen, label: 'Digital Library', permKey: 'dashboard' },
-        { path: '/app/live-classes', icon: Tv, label: 'Live Classes', permKey: 'dashboard' },
-        { path: '/app/course-management', icon: Layers, label: 'Courses', permKey: 'dashboard' },
+        { path: '/app/digital-library', icon: BookOpen, label: 'Digital Library', permKey: 'dashboard', moduleKey: 'digital_library' },
+        { path: '/app/live-classes', icon: Tv, label: 'Live Classes', permKey: 'dashboard', moduleKey: 'live_classes' },
+        { path: '/app/course-management', icon: Layers, label: 'Courses', permKey: 'dashboard', moduleKey: 'courses' },
       ]
     },
     {
       id: 'team', label: 'HR & Staff',
       items: [
-        { path: '/app/employee-management', icon: Users, label: 'Staff & Permissions', permKey: 'staff' },
-        { path: '/app/leave', icon: Calendar, label: 'Leave', permKey: 'leave_management' },
-        { path: '/app/salary', icon: Wallet, label: 'Salary', permKey: 'fees' },
-        { path: '/app/ai-staff-attendance', icon: Fingerprint, label: 'AI Staff Attendance', permKey: 'attendance' },
+        { path: '/app/employee-management', icon: Users, label: 'Staff & Permissions', permKey: 'staff', moduleKey: 'staff' },
+        { path: '/app/leave', icon: Calendar, label: 'Leave', permKey: 'leave_management', moduleKey: 'staff' },
+        { path: '/app/salary', icon: Wallet, label: 'Salary', permKey: 'fees', moduleKey: 'staff' },
+        { path: '/app/ai-staff-attendance', icon: Fingerprint, label: 'AI Staff Attendance', permKey: 'attendance', moduleKey: 'attendance' },
       ]
     },
     {
       id: 'finance', label: 'Finance',
       items: [
-        { path: '/app/fee-management', icon: Wallet, label: 'Fee Management', permKey: 'fees' },
-        { path: '/app/accountant', icon: Calculator, label: 'Accountant', permKey: 'fees' },
-        { path: '/app/credit-system', icon: CreditCard, label: 'Credit System', permKey: 'fees' },
-        { path: '/app/e-store', icon: ShoppingBag, label: 'e-Store', permKey: 'fees' },
-        { path: '/app/tally-integration', icon: Globe, label: 'Tally Integration', permKey: 'fees', directorOnly: true },
+        { path: '/app/fee-management', icon: Wallet, label: 'Fee Management', permKey: 'fees', moduleKey: 'fee_management' },
+        { path: '/app/accountant', icon: Calculator, label: 'Accountant', permKey: 'fees', moduleKey: 'fee_management' },
+        { path: '/app/credit-system', icon: CreditCard, label: 'Credit System', permKey: 'fees', moduleKey: 'credit_system' },
+        { path: '/app/e-store', icon: ShoppingBag, label: 'e-Store', permKey: 'fees', moduleKey: 'e_store' },
+        { path: '/app/tally-integration', icon: Globe, label: 'Tally Integration', permKey: 'fees', directorOnly: true, moduleKey: 'integrations' },
       ]
     },
     {
       id: 'communicate', label: 'Communication',
       items: [
-        { path: '/app/notices', icon: Bell, label: 'Notices', permKey: 'notices' },
-        { path: '/app/integrated-comm', icon: MessageSquare, label: 'Communication Hub', permKey: 'sms_center' },
-        { path: '/app/gallery', icon: Image, label: 'Gallery', permKey: 'gallery' },
-        { path: '/app/event-designer', icon: Image, label: 'Event Designer', permKey: 'ai_content' },
+        { path: '/app/notices', icon: Bell, label: 'Notices', permKey: 'notices', moduleKey: 'notices' },
+        { path: '/app/integrated-comm', icon: MessageSquare, label: 'Communication Hub', permKey: 'sms_center', moduleKey: 'communication_hub' },
+        { path: '/app/gallery', icon: Image, label: 'Gallery', permKey: 'gallery', moduleKey: 'gallery' },
+        { path: '/app/event-designer', icon: Image, label: 'Event Designer', permKey: 'ai_content', moduleKey: 'event_designer' },
       ]
     },
     {
       id: 'ai_tools', label: 'AI & Tools',
       items: [
-        { path: '/app/ai-paper', icon: Brain, label: 'AI Paper Generator', permKey: 'ai_content' },
+        { path: '/app/ai-paper', icon: Brain, label: 'AI Paper Generator', permKey: 'ai_content', moduleKey: 'ai_paper' },
       ]
     },
     {
       id: 'infra', label: 'Infrastructure',
       items: [
-        { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance' },
-        { path: '/app/visitor-pass', icon: Shield, label: 'Visit Management', permKey: 'attendance' },
-        { path: '/app/inventory', icon: Package, label: 'Inventory', permKey: 'settings' },
-        { path: '/app/hostel', icon: Home, label: 'Hostel', permKey: 'settings' },
-        { path: '/app/health', icon: Heart, label: 'Health', permKey: 'attendance' },
-        { path: '/app/biometric', icon: Fingerprint, label: 'Biometric', permKey: 'attendance' },
+        { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance', moduleKey: 'transport' },
+        { path: '/app/visitor-pass', icon: Shield, label: 'Visit Management', permKey: 'attendance', moduleKey: 'visit_management' },
+        { path: '/app/inventory', icon: Package, label: 'Inventory', permKey: 'settings', moduleKey: 'inventory' },
+        { path: '/app/hostel', icon: Home, label: 'Hostel', permKey: 'settings', moduleKey: 'hostel' },
+        { path: '/app/health', icon: Heart, label: 'Health', permKey: 'attendance', moduleKey: 'health' },
+        { path: '/app/biometric', icon: Fingerprint, label: 'Biometric', permKey: 'attendance', moduleKey: 'attendance' },
         { path: '/app/multi-branch', icon: Building, label: 'Multi-Branch', permKey: 'settings', directorOnly: true },
-        { path: '/app/cctv', icon: Video, label: 'CCTV', permKey: 'cctv' },
+        { path: '/app/cctv', icon: Video, label: 'CCTV', permKey: 'cctv', moduleKey: 'cctv' },
       ]
     },
     {
-      id: 'setup', label: 'Settings',
+      id: 'setup', label: 'Settings', alwaysVisible: true,
       items: [
         { path: '/app/school-management', icon: Building, label: 'School Profile', permKey: 'settings', directorOnly: true },
         { path: '/app/setup-wizard', icon: Wrench, label: 'Setup Wizard', permKey: 'settings', directorOnly: true },
         { path: '/app/logo-settings', icon: Image, label: 'Logo & Branding', permKey: 'settings', directorOnly: true },
         { path: '/app/website', icon: Globe, label: 'Website', permKey: 'website_integration' },
-        { path: '/app/integrations', icon: Link2, label: 'Integrations', permKey: 'dashboard' },
-        { path: '/app/school-calendar', icon: Calendar, label: 'Calendar', permKey: 'settings' },
+        { path: '/app/integrations', icon: Link2, label: 'Integrations', permKey: 'dashboard', moduleKey: 'integrations' },
+        { path: '/app/school-calendar', icon: Calendar, label: 'Calendar', permKey: 'settings', moduleKey: 'calendar' },
         { path: '/app/settings', icon: Settings, label: 'Settings', permKey: 'settings', directorOnly: true },
       ]
     },
@@ -133,6 +174,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     items: group.items.filter(item => {
       if (item.directorOnly && !isDirector) return false;
       if (item.permKey && !hasPermission(item.permKey)) return false;
+      if (!group.alwaysVisible && item.moduleKey && !ALWAYS_VISIBLE.includes(item.moduleKey) && !isModuleEnabled(item.moduleKey)) return false;
       if (searchQuery) return item.label.toLowerCase().includes(searchQuery.toLowerCase());
       return true;
     })
