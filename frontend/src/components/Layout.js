@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Bell, Search, MapPin, Phone, Mail, Hash, GraduationCap } from 'lucide-react';
+import { Menu, Bell, Search, MapPin, Phone, Mail, Hash, GraduationCap, Brain, CreditCard, Send, X } from 'lucide-react';
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
@@ -18,9 +18,9 @@ const breadcrumbMap = {
   '/app/salary': 'Salary',
   '/app/notices': 'Notices',
   '/app/sms': 'SMS',
+  '/app/integrated-comm': 'Communication Hub',
   '/app/meetings': 'Meetings',
   '/app/gallery': 'Gallery',
-  '/app/tino-ai': 'Tino AI',
   '/app/tino-brain': 'Tino Brain',
   '/app/ai-paper': 'AI Paper',
   '/app/transport': 'Transport',
@@ -50,6 +50,19 @@ const breadcrumbMap = {
   '/app/e-store': 'e-Store',
   '/app/profile': 'Profile',
   '/app/settings': 'Settings',
+  '/app/admission-crm': 'Admission CRM',
+  '/app/marketing': 'Marketing',
+  '/app/digital-library': 'Digital Library',
+  '/app/live-classes': 'Live Classes',
+  '/app/course-management': 'Courses',
+  '/app/homework': 'Homework',
+  '/app/ai-staff-attendance': 'AI Staff Attendance',
+  '/app/credit-system': 'Credit System',
+  '/app/tally-integration': 'Tally Integration',
+  '/app/inventory': 'Inventory',
+  '/app/hostel': 'Hostel',
+  '/app/multi-branch': 'Multi-Branch',
+  '/app/integrations': 'Integrations',
 };
 
 export const Layout = () => {
@@ -58,6 +71,13 @@ export const Layout = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showTinoChat, setShowTinoChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [creditBalance, setCreditBalance] = useState(null);
+  const [showCreditDropdown, setShowCreditDropdown] = useState(false);
+  const chatEndRef = useRef(null);
   const { user, schoolData } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -109,14 +129,41 @@ export const Layout = () => {
   }, [user?.id, user?.school_id, user?.role]);
 
   useEffect(() => {
+    const fetchCreditBalance = async () => {
+      if (!user?.school_id) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/credits/balance`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { school_id: user.school_id }
+        });
+        setCreditBalance(res.data?.balance ?? res.data?.credits ?? 0);
+      } catch (err) {
+        console.error('Failed to fetch credit balance:', err);
+        setCreditBalance(0);
+      }
+    };
+    fetchCreditBalance();
+  }, [user?.school_id]);
+
+  useEffect(() => {
     const handleClickOutside = (e) => {
-      if (showNotifications && !e.target.closest('.relative')) {
+      if (showNotifications && !e.target.closest('.notification-dropdown')) {
         setShowNotifications(false);
+      }
+      if (showCreditDropdown && !e.target.closest('.credit-dropdown')) {
+        setShowCreditDropdown(false);
       }
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [showNotifications]);
+  }, [showNotifications, showCreditDropdown]);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
 
   const markAsRead = async (notifId) => {
     try {
@@ -128,6 +175,36 @@ export const Layout = () => {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Failed to mark notification as read:', err);
+    }
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || chatLoading) return;
+    const userMsg = chatInput.trim();
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setChatLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL || ''}/api/tino-ai/chat`, {
+        message: userMsg,
+        school_id: user?.school_id,
+        user_id: user?.id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setChatMessages(prev => [...prev, { role: 'assistant', text: res.data?.response || 'No response' }]);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, I could not process your request right now.' }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const handleChatKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
     }
   };
 
@@ -198,7 +275,43 @@ export const Layout = () => {
                 <Search className="w-4 h-4" />
                 <span className="hidden md:inline">Search...</span>
               </button>
-              <div className="relative">
+
+              <div className="relative credit-dropdown">
+                <button
+                  onClick={() => setShowCreditDropdown(!showCreditDropdown)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
+                  title="Credit Balance"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span className="text-sm font-semibold">{creditBalance !== null ? creditBalance : '—'}</span>
+                </button>
+                {showCreditDropdown && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                    <div className="p-4">
+                      <p className="text-xs text-gray-500 mb-1">Credit Balance</p>
+                      <p className="text-2xl font-bold text-gray-900">{creditBalance !== null ? creditBalance : 0}</p>
+                    </div>
+                    <div className="p-3 border-t border-gray-100">
+                      <button
+                        onClick={() => { setShowCreditDropdown(false); navigate('/app/credit-system'); }}
+                        className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Recharge
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => setShowTinoChat(!showTinoChat)}
+                className="relative p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
+                title="Tino AI Chat"
+              >
+                <Brain className="w-5 h-5" />
+              </button>
+
+              <div className="relative notification-dropdown">
                 <button 
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="relative p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
@@ -245,6 +358,62 @@ export const Layout = () => {
           </div>
         </main>
       </div>
+
+      {showTinoChat && (
+        <div className="fixed bottom-4 right-4 w-80 sm:w-96 h-[480px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-[60] overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+            <div className="flex items-center gap-2">
+              <Brain className="w-5 h-5" />
+              <span className="font-semibold text-sm">Tino AI</span>
+            </div>
+            <button onClick={() => setShowTinoChat(false)} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            {chatMessages.length === 0 && (
+              <div className="text-center text-gray-400 text-sm mt-8">
+                <Brain className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                <p>Hi! I'm Tino AI. How can I help you today?</p>
+              </div>
+            )}
+            {chatMessages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+            {chatLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 text-gray-500 px-3 py-2 rounded-xl text-sm">
+                  <span className="animate-pulse">Thinking...</span>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+          <div className="p-3 border-t border-gray-200">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={handleChatKeyDown}
+                placeholder="Type a message..."
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+              />
+              <button
+                onClick={sendChatMessage}
+                disabled={chatLoading || !chatInput.trim()}
+                className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

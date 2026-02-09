@@ -21,16 +21,19 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function LiveClassesPage() {
   const { user } = useAuth();
+  const schoolId = user?.school_id || localStorage.getItem('school_id');
   const [activeTab, setActiveTab] = useState('schedule');
   const [loading, setLoading] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [teachers, setTeachers] = useState([]);
 
   const [classForm, setClassForm] = useState({
     title: '',
     subject: '',
     class_name: '',
     teacher: '',
+    teacher_id: '',
     date: '',
     time: '',
     duration: '60',
@@ -38,33 +41,37 @@ export default function LiveClassesPage() {
     meeting_link: ''
   });
 
-  const [scheduledClasses, setScheduledClasses] = useState([
+  const defaultScheduled = [
     { id: 1, title: 'Mathematics - Trigonometry', subject: 'Mathematics', class_name: 'Class 10-A', teacher: 'Mr. Sharma', date: '2026-02-10', time: '10:00', duration: 60, platform: 'Zoom', meeting_link: 'https://zoom.us/j/123456', status: 'upcoming' },
     { id: 2, title: 'Physics - Laws of Motion', subject: 'Physics', class_name: 'Class 11-B', teacher: 'Mrs. Gupta', date: '2026-02-10', time: '11:30', duration: 45, platform: 'Google Meet', meeting_link: 'https://meet.google.com/abc-def', status: 'upcoming' },
     { id: 3, title: 'English - Essay Writing', subject: 'English', class_name: 'Class 9-A', teacher: 'Ms. Patel', date: '2026-02-11', time: '09:00', duration: 40, platform: 'Built-in', meeting_link: '', status: 'upcoming' },
     { id: 4, title: 'Chemistry - Periodic Table', subject: 'Chemistry', class_name: 'Class 12-A', teacher: 'Dr. Singh', date: '2026-02-11', time: '14:00', duration: 50, platform: 'Zoom', meeting_link: 'https://zoom.us/j/789012', status: 'upcoming' },
     { id: 5, title: 'Hindi - Kabir Ke Dohe', subject: 'Hindi', class_name: 'Class 8-B', teacher: 'Mrs. Verma', date: '2026-02-12', time: '10:30', duration: 35, platform: 'Google Meet', meeting_link: 'https://meet.google.com/xyz-abc', status: 'upcoming' },
-  ]);
+  ];
 
-  const [ongoingClasses, setOngoingClasses] = useState([
+  const defaultOngoing = [
     { id: 101, title: 'Biology - Cell Division', subject: 'Biology', class_name: 'Class 11-A', teacher: 'Dr. Mehta', platform: 'Zoom', attendees: 38, maxAttendees: 45, startedAt: new Date(Date.now() - 25 * 60000).toISOString(), duration: 60, meeting_link: 'https://zoom.us/j/345678' },
     { id: 102, title: 'Computer Science - Python', subject: 'Computer Science', class_name: 'Class 12-B', teacher: 'Mr. Kumar', platform: 'Built-in', attendees: 32, maxAttendees: 40, startedAt: new Date(Date.now() - 10 * 60000).toISOString(), duration: 45, meeting_link: '' },
-  ]);
+  ];
 
-  const [recordings, setRecordings] = useState([
+  const defaultRecordings = [
     { id: 201, title: 'Mathematics - Algebra Basics', subject: 'Mathematics', class_name: 'Class 9-A', teacher: 'Mr. Sharma', date: '2026-02-08', duration: '58:32', size: '245 MB', views: 127, status: 'available' },
     { id: 202, title: 'Science - Chemical Reactions', subject: 'Science', class_name: 'Class 10-B', teacher: 'Mrs. Gupta', date: '2026-02-07', duration: '42:15', size: '178 MB', views: 89, status: 'available' },
     { id: 203, title: 'Social Studies - Indian Constitution', subject: 'Social Studies', class_name: 'Class 8-A', teacher: 'Mr. Joshi', date: '2026-02-06', duration: '35:48', size: '156 MB', views: 64, status: 'available' },
     { id: 204, title: 'English - Grammar Workshop', subject: 'English', class_name: 'Class 7-B', teacher: 'Ms. Patel', date: '2026-02-05', duration: '40:22', size: '192 MB', views: 103, status: 'processing' },
-  ]);
+  ];
 
-  const [attendanceData, setAttendanceData] = useState([
+  const defaultAttendance = [
     { id: 301, class_name: 'Class 10-A', subject: 'Mathematics', date: '2026-02-08', totalStudents: 45, present: 41, absent: 4, teacher: 'Mr. Sharma', session: 'Trigonometry' },
     { id: 302, class_name: 'Class 11-B', subject: 'Physics', date: '2026-02-08', totalStudents: 40, present: 36, absent: 4, teacher: 'Mrs. Gupta', session: 'Laws of Motion' },
     { id: 303, class_name: 'Class 9-A', subject: 'English', date: '2026-02-07', totalStudents: 42, present: 39, absent: 3, teacher: 'Ms. Patel', session: 'Essay Writing' },
     { id: 304, class_name: 'Class 12-A', subject: 'Chemistry', date: '2026-02-07', totalStudents: 38, present: 35, absent: 3, teacher: 'Dr. Singh', session: 'Periodic Table' },
-  ]);
+  ];
 
+  const [scheduledClasses, setScheduledClasses] = useState(defaultScheduled);
+  const [ongoingClasses, setOngoingClasses] = useState(defaultOngoing);
+  const [recordings, setRecordings] = useState(defaultRecordings);
+  const [attendanceData, setAttendanceData] = useState(defaultAttendance);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [showAttendanceDetail, setShowAttendanceDetail] = useState(false);
 
@@ -79,25 +86,91 @@ export default function LiveClassesPage() {
     { id: 's8', name: 'Priya Mehta', rollNo: 8, status: 'present', joinTime: '10:03', leaveTime: '10:58' },
   ];
 
+  useEffect(() => {
+    fetchTeachers();
+    fetchLiveClasses();
+  }, []);
+
+  const fetchTeachers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      let teacherList = [];
+      try {
+        const res = await axios.get(`${API}/employees?school_id=${schoolId}`, { headers });
+        teacherList = (res.data || []).filter(e => 
+          e.role === 'teacher' || e.designation?.toLowerCase().includes('teacher')
+        );
+      } catch {
+        try {
+          const res = await axios.get(`${API}/staff?school_id=${schoolId}`, { headers });
+          teacherList = (res.data || []).filter(e => 
+            e.role === 'teacher' || e.designation?.toLowerCase().includes('teacher')
+          );
+        } catch {
+          try {
+            const res = await axios.get(`${API}/users?role=teacher`, { headers });
+            teacherList = res.data || [];
+          } catch {
+            console.log('Could not fetch teachers from any endpoint');
+          }
+        }
+      }
+      setTeachers(teacherList);
+    } catch (err) {
+      console.error('Failed to fetch teachers:', err);
+    }
+  };
+
+  const fetchLiveClasses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.get(`${API}/live-classes?school_id=${schoolId}`, { headers });
+      const classes = res.data || [];
+      if (classes.length > 0) {
+        setScheduledClasses(classes.filter(c => c.status === 'upcoming' || c.status === 'scheduled'));
+        setOngoingClasses(classes.filter(c => c.status === 'ongoing' || c.status === 'live'));
+      }
+    } catch {
+      console.log('Using default live class data');
+    }
+  };
+
   const getElapsedMinutes = (startedAt) => {
     return Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000);
   };
 
-  const handleCreateClass = () => {
+  const handleCreateClass = async () => {
     if (!classForm.title || !classForm.subject || !classForm.date || !classForm.time) {
       toast.error('Please fill all required fields');
       return;
     }
+    const selectedTeacher = teachers.find(t => (t.id || t._id) === classForm.teacher_id);
+    const teacherName = selectedTeacher?.name || classForm.teacher || '';
     const newClass = {
       id: Date.now(),
       ...classForm,
+      teacher: teacherName,
       duration: parseInt(classForm.duration),
       status: 'upcoming'
     };
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/live-classes`, {
+        ...newClass,
+        school_id: schoolId
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.data?.id) newClass.id = res.data.id;
+    } catch {
+      console.log('Saved locally');
+    }
+
     setScheduledClasses(prev => [newClass, ...prev]);
     toast.success('Live class scheduled successfully!');
     setShowCreateDialog(false);
-    setClassForm({ title: '', subject: '', class_name: '', teacher: '', date: '', time: '', duration: '60', platform: 'Zoom', meeting_link: '' });
+    setClassForm({ title: '', subject: '', class_name: '', teacher: '', teacher_id: '', date: '', time: '', duration: '60', platform: 'Zoom', meeting_link: '' });
   };
 
   const handleDeleteScheduled = (id) => {
@@ -406,7 +479,25 @@ export default function LiveClassesPage() {
             </div>
             <div className="space-y-2">
               <Label>Teacher</Label>
-              <Input value={classForm.teacher} onChange={(e) => setClassForm(f => ({ ...f, teacher: e.target.value }))} placeholder="Teacher name" />
+              {teachers.length > 0 ? (
+                <select 
+                  value={classForm.teacher_id} 
+                  onChange={(e) => {
+                    const t = teachers.find(t => (t.id || t._id) === e.target.value);
+                    setClassForm(f => ({ ...f, teacher_id: e.target.value, teacher: t?.name || '' }));
+                  }} 
+                  className="w-full h-10 rounded-lg border border-slate-200 px-3"
+                >
+                  <option value="">-- Select Teacher --</option>
+                  {teachers.map(t => (
+                    <option key={t.id || t._id} value={t.id || t._id}>
+                      {t.name} {t.subject ? `(${t.subject})` : ''}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input value={classForm.teacher} onChange={(e) => setClassForm(f => ({ ...f, teacher: e.target.value }))} placeholder="Teacher name" />
+              )}
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">

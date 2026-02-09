@@ -383,6 +383,21 @@ const AdmitCardManagementFixed = () => {
     }
   };
 
+  const publishExamToStudyTino = async (examId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/api/admit-card/publish-and-notify`, {
+        school_id: schoolId,
+        exam_id: examId
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(`✅ ${res.data.message || 'Published to StudyTino!'}`);
+      fetchData();
+    } catch (err) {
+      console.error('Publish error:', err);
+      toast.error(err.response?.data?.detail || 'Publish failed');
+    }
+  };
+
   const examTypes = [
     { value: 'unit_test', label: 'Unit Test', icon: '📝' },
     { value: 'quarterly', label: 'Quarterly', icon: '📚' },
@@ -511,7 +526,7 @@ const AdmitCardManagementFixed = () => {
                     <Printer className="w-4 h-4 mr-1" />
                     Print
                   </Button>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => publishExamToStudyTino(exam.id)}>
                     <Send className="w-4 h-4 mr-1" />
                     Publish
                   </Button>
@@ -562,7 +577,7 @@ const AdmitCardManagementFixed = () => {
                     <Upload className="w-3 h-3 mr-1" />
                     Bulk Upload
                   </Button>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs">
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs" onClick={() => publishExamToStudyTino(exam.id)}>
                     Publish
                   </Button>
                 </div>

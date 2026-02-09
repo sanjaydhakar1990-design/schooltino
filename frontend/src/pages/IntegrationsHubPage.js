@@ -1,126 +1,213 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import {
-  Puzzle, CreditCard, Fingerprint, MessageSquare, BookOpen,
-  Shield, Cloud, IndianRupee, Scan, Smartphone, Mail,
-  Bell, FileText, Calculator, Landmark, Key, FolderArchive,
-  HardDrive, Database, Flame, Settings, Zap, Lock, RefreshCw,
-  ExternalLink, Phone, Wifi, CreditCard as CardIcon
+  Puzzle, CreditCard, MessageSquare, BookOpen,
+  Cloud, IndianRupee, Smartphone, Mail,
+  Bell, FileText, Calculator, Settings, Zap, Lock, RefreshCw,
+  ExternalLink, Phone, X, Check, AlertCircle, Loader2,
+  Brain, Shield, HardDrive, Flame, Key
 } from 'lucide-react';
+import { toast } from 'sonner';
 
-const integrationCategories = [
-  {
-    title: 'Payment Gateways',
+const CATEGORY_CONFIG = {
+  Payment: {
     icon: CreditCard,
     color: 'from-blue-500 to-indigo-500',
     bgColor: 'bg-blue-50',
     textColor: 'text-blue-600',
-    items: [
-      { name: 'Razorpay', description: 'Online fee collection, auto-reconciliation', status: 'active', icon: IndianRupee },
-      { name: 'CCAvenue', description: 'Multi-mode payments (CC, DC, Net Banking, UPI)', status: 'available', icon: CardIcon },
-      { name: 'HDFC SmartHub', description: 'Bank integration for fee collection', status: 'coming_soon', icon: Landmark },
-      { name: 'Paytm', description: 'UPI and wallet payments', status: 'available', icon: Smartphone },
-    ]
   },
-  {
-    title: 'Biometric & Access',
-    icon: Fingerprint,
-    color: 'from-emerald-500 to-green-500',
-    bgColor: 'bg-emerald-50',
-    textColor: 'text-emerald-600',
-    items: [
-      { name: 'Fingerprint Devices', description: 'MANTRA, Startek, SecuGen', status: 'active', icon: Fingerprint },
-      { name: 'Face Recognition', description: 'AI-powered attendance', status: 'active', icon: Scan },
-      { name: 'RFID Cards', description: 'Contactless attendance', status: 'available', icon: Wifi },
-      { name: 'NFC Tags', description: 'Transport attendance', status: 'coming_soon', icon: Smartphone },
-    ]
-  },
-  {
-    title: 'Communication',
+  Communication: {
     icon: MessageSquare,
     color: 'from-purple-500 to-pink-500',
     bgColor: 'bg-purple-50',
     textColor: 'text-purple-600',
-    items: [
-      { name: 'SMS Gateway', description: 'MSG91, Twilio integration', status: 'active', icon: Phone },
-      { name: 'WhatsApp Business API', description: 'Official WhatsApp messaging', status: 'active', icon: MessageSquare },
-      { name: 'Email', description: 'SMTP, SendGrid, Mailgun', status: 'available', icon: Mail },
-      { name: 'Push Notifications', description: 'Firebase FCM', status: 'available', icon: Bell },
-    ]
   },
-  {
-    title: 'Accounting & Finance',
+  AI: {
+    icon: Brain,
+    color: 'from-emerald-500 to-teal-500',
+    bgColor: 'bg-emerald-50',
+    textColor: 'text-emerald-600',
+  },
+  Accounting: {
     icon: Calculator,
     color: 'from-orange-500 to-red-500',
     bgColor: 'bg-orange-50',
     textColor: 'text-orange-600',
-    items: [
-      { name: 'Tally ERP', description: 'Auto-sync fee data', status: 'active', icon: BookOpen },
-      { name: 'Zoho Books', description: 'Cloud accounting', status: 'available', icon: FileText },
-      { name: 'QuickBooks', description: 'Financial reporting', status: 'coming_soon', icon: Calculator },
-    ]
   },
-  {
-    title: 'Government & Compliance',
+  Authentication: {
     icon: Shield,
     color: 'from-amber-500 to-yellow-500',
     bgColor: 'bg-amber-50',
     textColor: 'text-amber-600',
-    items: [
-      { name: 'UDISE+', description: 'Student data reporting', status: 'available', icon: Landmark },
-      { name: 'Aadhaar', description: 'Identity verification', status: 'available', icon: Key },
-      { name: 'DigiLocker', description: 'Digital certificates', status: 'coming_soon', icon: FolderArchive },
-    ]
   },
-  {
-    title: 'Cloud & Storage',
+  Storage: {
     icon: Cloud,
     color: 'from-cyan-500 to-blue-500',
     bgColor: 'bg-cyan-50',
     textColor: 'text-cyan-600',
-    items: [
-      { name: 'AWS S3', description: 'Media storage', status: 'active', icon: HardDrive },
-      { name: 'Google Cloud', description: 'Backup & analytics', status: 'available', icon: Cloud },
-      { name: 'Firebase', description: 'Real-time database', status: 'available', icon: Flame },
-    ]
   },
-];
+};
 
-const statusConfig = {
-  active: { label: 'Active', className: 'bg-green-100 text-green-700' },
-  available: { label: 'Available', className: 'bg-blue-100 text-blue-700' },
-  coming_soon: { label: 'Coming Soon', className: 'bg-gray-100 text-gray-500' },
+const INTEGRATION_ICONS = {
+  razorpay: IndianRupee,
+  ccavenue: CreditCard,
+  paytm: Smartphone,
+  twilio_sms: Phone,
+  whatsapp_business: MessageSquare,
+  email_smtp: Mail,
+  firebase_fcm: Bell,
+  openai: Brain,
+  elevenlabs: Zap,
+  google_vision: Zap,
+  tally_erp: BookOpen,
+  zoho_books: FileText,
+  google_oauth: Key,
+  aadhaar_verify: Shield,
+  aws_s3: HardDrive,
+  google_cloud: Cloud,
+  firebase_db: Flame,
+};
+
+const CONFIG_FIELDS = {
+  razorpay: [{ key: 'key_id', label: 'Razorpay Key ID' }, { key: 'key_secret', label: 'Key Secret', type: 'password' }],
+  twilio_sms: [{ key: 'account_sid', label: 'Account SID' }, { key: 'auth_token', label: 'Auth Token', type: 'password' }, { key: 'from_number', label: 'From Number' }],
+  whatsapp_business: [{ key: 'api_key', label: 'API Key', type: 'password' }, { key: 'phone_number_id', label: 'Phone Number ID' }],
+  openai: [{ key: 'api_key', label: 'OpenAI API Key', type: 'password' }],
+  elevenlabs: [{ key: 'api_key', label: 'ElevenLabs API Key', type: 'password' }],
+  tally_erp: [{ key: 'server_url', label: 'Tally Server URL' }, { key: 'port', label: 'Port' }],
+  google_oauth: [{ key: 'client_id', label: 'Client ID' }, { key: 'client_secret', label: 'Client Secret', type: 'password' }],
+  aws_s3: [{ key: 'access_key', label: 'Access Key ID' }, { key: 'secret_key', label: 'Secret Access Key', type: 'password' }, { key: 'bucket', label: 'Bucket Name' }, { key: 'region', label: 'Region' }],
+  email_smtp: [{ key: 'host', label: 'SMTP Host' }, { key: 'port', label: 'Port' }, { key: 'username', label: 'Username' }, { key: 'password', label: 'Password', type: 'password' }],
+  zoho_books: [{ key: 'org_id', label: 'Organization ID' }, { key: 'auth_token', label: 'Auth Token', type: 'password' }],
+  google_cloud: [{ key: 'project_id', label: 'Project ID' }, { key: 'credentials_json', label: 'Credentials JSON', type: 'password' }],
+  firebase_db: [{ key: 'project_id', label: 'Project ID' }, { key: 'api_key', label: 'API Key', type: 'password' }],
+  firebase_fcm: [{ key: 'server_key', label: 'Server Key', type: 'password' }],
+  google_vision: [{ key: 'api_key', label: 'API Key', type: 'password' }],
+  ccavenue: [{ key: 'merchant_id', label: 'Merchant ID' }, { key: 'access_code', label: 'Access Code' }, { key: 'working_key', label: 'Working Key', type: 'password' }],
+  paytm: [{ key: 'merchant_id', label: 'Merchant ID' }, { key: 'merchant_key', label: 'Merchant Key', type: 'password' }],
+  aadhaar_verify: [{ key: 'api_key', label: 'Verification API Key', type: 'password' }],
 };
 
 const stats = [
-  { label: '20+ Integrations', icon: Puzzle },
+  { label: '17+ Integrations', icon: Puzzle },
   { label: 'Plug & Play', icon: Zap },
   { label: 'Secure APIs', icon: Lock },
   { label: 'Auto-Sync', icon: RefreshCw },
 ];
 
+const API_BASE = '/api';
+
 export default function IntegrationsHubPage() {
   const { user } = useAuth();
-  const [statuses, setStatuses] = useState(() => {
-    const initial = {};
-    integrationCategories.forEach(cat => {
-      cat.items.forEach(item => {
-        initial[item.name] = item.status;
+  const [integrations, setIntegrations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [configuring, setConfiguring] = useState(null);
+  const [configValues, setConfigValues] = useState({});
+  const [actionLoading, setActionLoading] = useState(null);
+
+  const getToken = useCallback(() => {
+    return localStorage.getItem('token') || '';
+  }, []);
+
+  const fetchIntegrations = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/integrations/list`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
       });
-    });
-    return initial;
+      if (res.ok) {
+        const data = await res.json();
+        setIntegrations(data.integrations || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch integrations:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    fetchIntegrations();
+  }, [fetchIntegrations]);
+
+  const handleConnect = async (integrationId, config = {}) => {
+    setActionLoading(integrationId);
+    try {
+      const res = await fetch(`${API_BASE}/integrations/connect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ integration_id: integrationId, config })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setConfiguring(null);
+        setConfigValues({});
+        await fetchIntegrations();
+      } else {
+        toast.error(data.detail || 'Connection failed');
+      }
+    } catch (err) {
+      toast.error('Failed to connect integration');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDisconnect = async (integrationId) => {
+    setActionLoading(integrationId);
+    try {
+      const res = await fetch(`${API_BASE}/integrations/disconnect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ integration_id: integrationId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        await fetchIntegrations();
+      } else {
+        toast.error(data.detail || 'Disconnection failed');
+      }
+    } catch (err) {
+      toast.error('Failed to disconnect integration');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const openConfigure = (integration) => {
+    setConfiguring(integration.id);
+    setConfigValues(integration.config || {});
+  };
+
+  const handleSaveConfig = (integrationId) => {
+    handleConnect(integrationId, configValues);
+  };
+
+  const categorized = {};
+  integrations.forEach(item => {
+    if (!categorized[item.category]) categorized[item.category] = [];
+    categorized[item.category].push(item);
   });
 
-  const toggleStatus = (name, currentStatus) => {
-    if (currentStatus === 'coming_soon') return;
-    setStatuses(prev => ({
-      ...prev,
-      [name]: prev[name] === 'active' ? 'available' : 'active'
-    }));
-  };
+  const categoryOrder = ['Payment', 'Communication', 'AI', 'Accounting', 'Authentication', 'Storage'];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -131,7 +218,7 @@ export default function IntegrationsHubPage() {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Integrations Hub</h1>
-            <p className="text-violet-100 mt-1">Integrate to Innovate — The Schooltino Way</p>
+            <p className="text-violet-100 mt-1">Connect third-party services to supercharge your school</p>
           </div>
         </div>
       </div>
@@ -149,52 +236,124 @@ export default function IntegrationsHubPage() {
         ))}
       </div>
 
-      {integrationCategories.map(category => (
-        <div key={category.title} className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center`}>
-              <category.icon className="w-5 h-5 text-white" />
+      {categoryOrder.map(catName => {
+        const items = categorized[catName];
+        if (!items || items.length === 0) return null;
+        const catConfig = CATEGORY_CONFIG[catName];
+        const CatIcon = catConfig.icon;
+        return (
+          <div key={catName} className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${catConfig.color} flex items-center justify-center`}>
+                <CatIcon className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">{catName}</h2>
+              <Badge variant="secondary" className="ml-2">{items.length}</Badge>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">{category.title}</h2>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {category.items.map(item => {
-              const currentStatus = statuses[item.name];
-              const config = statusConfig[currentStatus];
-              return (
-                <Card key={item.name} className="border-0 shadow-md hover:shadow-lg transition-shadow">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={`w-12 h-12 rounded-xl ${category.bgColor} flex items-center justify-center`}>
-                        <item.icon className={`w-6 h-6 ${category.textColor}`} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {items.map(item => {
+                const IntIcon = INTEGRATION_ICONS[item.id] || Puzzle;
+                const isConnected = item.status === 'connected';
+                const isLoading = actionLoading === item.id;
+                const isConfigOpen = configuring === item.id;
+                const fields = CONFIG_FIELDS[item.id] || [];
+
+                return (
+                  <Card key={item.id} className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className={`w-12 h-12 rounded-xl ${catConfig.bgColor} flex items-center justify-center`}>
+                          <IntIcon className={`w-6 h-6 ${catConfig.textColor}`} />
+                        </div>
+                        <Badge className={isConnected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}>
+                          {isConnected ? (
+                            <><Check className="w-3 h-3 mr-1" /> Connected</>
+                          ) : (
+                            <><AlertCircle className="w-3 h-3 mr-1" /> Not Connected</>
+                          )}
+                        </Badge>
                       </div>
-                      <Badge className={config.className}>
-                        {config.label}
-                      </Badge>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
-                    <p className="text-sm text-gray-500 mb-4">{item.description}</p>
-                    <Button
-                      size="sm"
-                      variant={currentStatus === 'coming_soon' ? 'outline' : 'default'}
-                      className={currentStatus === 'coming_soon' ? 'w-full text-gray-400 cursor-not-allowed' : currentStatus === 'active' ? 'w-full bg-green-600 hover:bg-green-700' : 'w-full bg-violet-600 hover:bg-violet-700'}
-                      disabled={currentStatus === 'coming_soon'}
-                      onClick={() => toggleStatus(item.name, currentStatus)}
-                    >
-                      {currentStatus === 'coming_soon' ? 'Coming Soon' : currentStatus === 'active' ? (
-                        <><Settings className="w-4 h-4 mr-2" /> Configured</>
+                      <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
+                      <p className="text-sm text-gray-500 mb-4">{item.description}</p>
+
+                      {isConfigOpen ? (
+                        <div className="space-y-3 border-t pt-3">
+                          {fields.length > 0 ? fields.map(field => (
+                            <div key={field.key}>
+                              <label className="text-xs font-medium text-gray-600 mb-1 block">{field.label}</label>
+                              <input
+                                type={field.type || 'text'}
+                                className="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                                value={configValues[field.key] || ''}
+                                onChange={(e) => setConfigValues(prev => ({...prev, [field.key]: e.target.value}))}
+                                placeholder={field.label}
+                              />
+                            </div>
+                          )) : (
+                            <p className="text-xs text-gray-400">No configuration needed. Click Save to connect.</p>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-green-600 hover:bg-green-700"
+                              disabled={isLoading}
+                              onClick={() => handleSaveConfig(item.id)}
+                            >
+                              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 mr-1" />}
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setConfiguring(null); setConfigValues({}); }}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
                       ) : (
-                        <><ExternalLink className="w-4 h-4 mr-2" /> Configure</>
+                        <div className="flex gap-2">
+                          {isConnected ? (
+                            <>
+                              <Button
+                                size="sm"
+                                className="flex-1 bg-green-600 hover:bg-green-700"
+                                onClick={() => openConfigure(item)}
+                              >
+                                <Settings className="w-4 h-4 mr-1" /> Configure
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                disabled={isLoading}
+                                onClick={() => handleDisconnect(item.id)}
+                              >
+                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size="sm"
+                              className="w-full bg-violet-600 hover:bg-violet-700"
+                              disabled={isLoading}
+                              onClick={() => openConfigure(item)}
+                            >
+                              {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <ExternalLink className="w-4 h-4 mr-1" />}
+                              Setup
+                            </Button>
+                          )}
+                        </div>
                       )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <Card className="border-0 shadow-md bg-gradient-to-r from-violet-50 to-purple-50">
         <CardContent className="p-6 text-center">

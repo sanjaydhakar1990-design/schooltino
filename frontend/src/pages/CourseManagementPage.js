@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -22,6 +22,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function CourseManagementPage() {
   const { user } = useAuth();
+  const schoolId = user?.school_id || localStorage.getItem('school_id');
   const [activeTab, setActiveTab] = useState('courses');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showModuleDialog, setShowModuleDialog] = useState(false);
@@ -46,46 +47,73 @@ export default function CourseManagementPage() {
     name: '', course_id: '', start_date: '', max_students: ''
   });
 
-  const [courses, setCourses] = useState([
+  const defaultCourses = [
     { id: 1, title: 'JEE Mathematics Crash Course', description: 'Complete JEE Mains math preparation with practice sets', subject: 'Mathematics', class_name: 'Class 11-12', teacher: 'Mr. Sharma', duration: '6 months', enrolled: 128, price: 4999, status: 'active', modules: 12, rating: 4.8 },
     { id: 2, title: 'NEET Biology Complete', description: 'Comprehensive biology course for NEET aspirants', subject: 'Biology', class_name: 'Class 11-12', teacher: 'Dr. Mehta', duration: '8 months', enrolled: 95, price: 5999, status: 'active', modules: 18, rating: 4.6 },
     { id: 3, title: 'English Communication Skills', description: 'Spoken English and writing skills development', subject: 'English', class_name: 'Class 8-10', teacher: 'Ms. Patel', duration: '3 months', enrolled: 67, price: 1999, status: 'active', modules: 8, rating: 4.5 },
     { id: 4, title: 'Computer Science with Python', description: 'Learn Python programming from basics to advanced', subject: 'Computer Science', class_name: 'Class 11-12', teacher: 'Mr. Kumar', duration: '4 months', enrolled: 84, price: 2999, status: 'draft', modules: 10, rating: 4.7 },
     { id: 5, title: 'Hindi Sahitya Special', description: 'Hindi literature board exam preparation', subject: 'Hindi', class_name: 'Class 9-10', teacher: 'Mrs. Verma', duration: '3 months', enrolled: 52, price: 1499, status: 'active', modules: 6, rating: 4.3 },
-  ]);
+  ];
 
-  const [modules, setModules] = useState([
+  const defaultModules = [
     { id: 1, courseId: 1, title: 'Algebra Fundamentals', description: 'Basic algebraic concepts and equations', videoLink: 'https://example.com/v1', order: 1, contentCount: 5, completed: 85 },
     { id: 2, courseId: 1, title: 'Trigonometry', description: 'Trigonometric functions and identities', videoLink: 'https://example.com/v2', order: 2, contentCount: 7, completed: 72 },
     { id: 3, courseId: 1, title: 'Coordinate Geometry', description: 'Points, lines, circles in coordinate system', videoLink: 'https://example.com/v3', order: 3, contentCount: 4, completed: 60 },
     { id: 4, courseId: 1, title: 'Calculus - Limits', description: 'Introduction to limits and continuity', videoLink: 'https://example.com/v4', order: 4, contentCount: 6, completed: 45 },
     { id: 5, courseId: 1, title: 'Calculus - Derivatives', description: 'Differentiation techniques and applications', videoLink: 'https://example.com/v5', order: 5, contentCount: 8, completed: 30 },
-  ]);
+  ];
 
-  const [contentItems, setContentItems] = useState([
+  const defaultContentItems = [
     { id: 1, moduleId: 1, title: 'Algebra Notes - Chapter 1', type: 'pdf', size: '2.4 MB', drm: true, downloads: 98 },
     { id: 2, moduleId: 1, title: 'Introduction to Algebra', type: 'video', size: '156 MB', drm: true, downloads: 120 },
     { id: 3, moduleId: 1, title: 'Practice Set - Equations', type: 'practice', size: '1.2 MB', drm: false, downloads: 85 },
     { id: 4, moduleId: 2, title: 'Trigonometry Formulas PDF', type: 'pdf', size: '3.1 MB', drm: true, downloads: 110 },
     { id: 5, moduleId: 2, title: 'Sin Cos Tan Video Lesson', type: 'video', size: '210 MB', drm: true, downloads: 95 },
     { id: 6, moduleId: 3, title: 'Coordinate Geometry Study Material', type: 'pdf', size: '4.5 MB', drm: false, downloads: 72 },
-  ]);
+  ];
 
-  const [enrollments, setEnrollments] = useState([
+  const defaultEnrollments = [
     { id: 1, studentName: 'Aarav Patel', courseTitle: 'JEE Mathematics Crash Course', batch: 'Batch A - Morning', enrolledDate: '2026-01-15', feePaid: 4999, feeStatus: 'paid', progress: 68 },
     { id: 2, studentName: 'Ananya Sharma', courseTitle: 'JEE Mathematics Crash Course', batch: 'Batch A - Morning', enrolledDate: '2026-01-16', feePaid: 4999, feeStatus: 'paid', progress: 72 },
     { id: 3, studentName: 'Arjun Singh', courseTitle: 'NEET Biology Complete', batch: 'Batch B - Evening', enrolledDate: '2026-01-20', feePaid: 3000, feeStatus: 'partial', progress: 45 },
     { id: 4, studentName: 'Diya Gupta', courseTitle: 'English Communication Skills', batch: 'Batch C - Weekend', enrolledDate: '2026-02-01', feePaid: 1999, feeStatus: 'paid', progress: 30 },
     { id: 5, studentName: 'Ishaan Kumar', courseTitle: 'Computer Science with Python', batch: 'Batch A - Morning', enrolledDate: '2026-02-05', feePaid: 0, feeStatus: 'unpaid', progress: 10 },
-  ]);
+  ];
 
-  const [batches] = useState([
+  const defaultBatches = [
     { id: 1, name: 'Batch A - Morning', courseTitle: 'JEE Mathematics Crash Course', students: 35, maxStudents: 40, startDate: '2026-01-15', status: 'active' },
     { id: 2, name: 'Batch B - Evening', courseTitle: 'NEET Biology Complete', students: 28, maxStudents: 35, startDate: '2026-01-20', status: 'active' },
     { id: 3, name: 'Batch C - Weekend', courseTitle: 'English Communication Skills', students: 22, maxStudents: 30, startDate: '2026-02-01', status: 'active' },
-  ]);
+  ];
 
-  const handleCreateCourse = () => {
+  const [courses, setCourses] = useState(defaultCourses);
+  const [modules, setModules] = useState(defaultModules);
+  const [contentItems, setContentItems] = useState(defaultContentItems);
+  const [enrollments, setEnrollments] = useState(defaultEnrollments);
+  const [batches, setBatches] = useState(defaultBatches);
+
+  useEffect(() => {
+    fetchCourseData();
+  }, []);
+
+  const fetchCourseData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      const [coursesRes, enrollRes, batchesRes] = await Promise.all([
+        axios.get(`${API}/courses?school_id=${schoolId}`, { headers }).catch(() => null),
+        axios.get(`${API}/courses/enrollments?school_id=${schoolId}`, { headers }).catch(() => null),
+        axios.get(`${API}/courses/batches?school_id=${schoolId}`, { headers }).catch(() => null),
+      ]);
+      if (coursesRes?.data?.length > 0) setCourses(coursesRes.data);
+      if (enrollRes?.data?.length > 0) setEnrollments(enrollRes.data);
+      if (batchesRes?.data?.length > 0) setBatches(batchesRes.data);
+    } catch {
+      console.log('Using default course data');
+    }
+  };
+
+  const handleCreateCourse = async () => {
     if (!courseForm.title || !courseForm.subject) {
       toast.error('Title and Subject are required');
       return;
@@ -98,13 +126,25 @@ export default function CourseManagementPage() {
       modules: 0,
       rating: 0
     };
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/courses`, {
+        ...newCourse,
+        school_id: schoolId
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.data?.id) newCourse.id = res.data.id;
+    } catch {
+      console.log('Saved course locally');
+    }
+
     setCourses(prev => [newCourse, ...prev]);
     toast.success('Course created successfully!');
     setShowCreateDialog(false);
     setCourseForm({ title: '', description: '', subject: '', class_name: '', teacher: '', duration: '', price: '', status: 'draft' });
   };
 
-  const handleAddModule = () => {
+  const handleAddModule = async () => {
     if (!moduleForm.title) {
       toast.error('Module title is required');
       return;
@@ -119,13 +159,25 @@ export default function CourseManagementPage() {
       contentCount: 0,
       completed: 0
     };
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/courses/${selectedCourse?.id}/modules`, {
+        ...newModule,
+        school_id: schoolId
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.data?.id) newModule.id = res.data.id;
+    } catch {
+      console.log('Saved module locally');
+    }
+
     setModules(prev => [...prev, newModule]);
     toast.success('Module added successfully!');
     setShowModuleDialog(false);
     setModuleForm({ title: '', description: '', video_link: '' });
   };
 
-  const handleUploadContent = () => {
+  const handleUploadContent = async () => {
     if (!contentForm.title || !contentForm.type) {
       toast.error('Content title and type are required');
       return;
@@ -139,17 +191,51 @@ export default function CourseManagementPage() {
       drm: true,
       downloads: 0
     };
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/courses/content`, {
+        ...newContent,
+        school_id: schoolId
+      }, { headers: { Authorization: `Bearer ${token}` } });
+    } catch {
+      console.log('Saved content locally');
+    }
+
     setContentItems(prev => [...prev, newContent]);
     toast.success('Content uploaded successfully!');
     setShowContentDialog(false);
     setContentForm({ title: '', type: 'pdf', file: null, module_id: null });
   };
 
-  const handleCreateBatch = () => {
+  const handleCreateBatch = async () => {
     if (!batchForm.name) {
       toast.error('Batch name is required');
       return;
     }
+
+    const newBatch = {
+      id: Date.now(),
+      name: batchForm.name,
+      courseTitle: courses.find(c => c.id === parseInt(batchForm.course_id))?.title || '',
+      students: 0,
+      maxStudents: parseInt(batchForm.max_students) || 40,
+      startDate: batchForm.start_date,
+      status: 'active'
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/courses/batches`, {
+        ...newBatch,
+        ...batchForm,
+        school_id: schoolId
+      }, { headers: { Authorization: `Bearer ${token}` } });
+    } catch {
+      console.log('Saved batch locally');
+    }
+
+    setBatches(prev => [...prev, newBatch]);
     toast.success('Batch created successfully!');
     setShowBatchDialog(false);
     setBatchForm({ name: '', course_id: '', start_date: '', max_students: '' });

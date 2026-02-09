@@ -68,6 +68,7 @@ from routes.complaints import router as complaints_router
 from routes.sports_activities import router as activities_router
 from routes.razorpay_payment import router as razorpay_router
 from routes.admit_card import router as admit_card_router
+from routes.prayer import router as prayer_router
 from routes.ai_auto_config import router as ai_auto_config_router
 from routes.school_gallery import router as gallery_router
 from routes.govt_exam_docs import router as govt_exam_router
@@ -82,6 +83,8 @@ from routes.dual_credits import router as dual_credits_router
 from routes.syllabus_sync import router as syllabus_sync_router
 from routes.branches import router as branches_router
 from routes.staff_attendance import router as staff_attendance_router
+from routes.e_store import router as e_store_router
+from routes.integrations import router as integrations_router
 
 # ==================== MODELS ====================
 
@@ -12145,6 +12148,7 @@ api_router.include_router(complaints_router)
 api_router.include_router(activities_router)
 api_router.include_router(razorpay_router)
 api_router.include_router(admit_card_router)
+api_router.include_router(prayer_router)
 api_router.include_router(ai_auto_config_router)
 api_router.include_router(gallery_router)
 api_router.include_router(govt_exam_router)
@@ -12160,6 +12164,8 @@ api_router.include_router(syllabus_sync_router)
 
 api_router.include_router(branches_router)
 api_router.include_router(staff_attendance_router)
+api_router.include_router(e_store_router)
+api_router.include_router(integrations_router)
 app.include_router(api_router)
 
 # Mount static files for uploads and marketing materials

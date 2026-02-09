@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import axios from 'axios';
 import { 
   Heart, Activity, Syringe, AlertTriangle, Plus, RefreshCw,
   Search, User, Calendar, FileText, Thermometer, Eye,
-  Stethoscope, Pill, Scale, Ruler, Droplet, ClipboardList
+  Stethoscope, Pill, Scale, Ruler, Droplet, ClipboardList, GraduationCap
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -48,6 +49,15 @@ export default function HealthModulePage() {
   const [showCheckupDialog, setShowCheckupDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [classes, setClasses] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [selectedClassForIncident, setSelectedClassForIncident] = useState('');
+  const [selectedClassForHealth, setSelectedClassForHealth] = useState('');
+  const [loadingStudentsIncident, setLoadingStudentsIncident] = useState(false);
+  const [loadingStudentsHealth, setLoadingStudentsHealth] = useState(false);
+  const [studentsIncident, setStudentsIncident] = useState([]);
+  const [studentsHealth, setStudentsHealth] = useState([]);
+
   const schoolId = user?.school_id || 'school123';
 
   const [incidentForm, setIncidentForm] = useState({
@@ -88,13 +98,19 @@ export default function HealthModulePage() {
         fetch(`${API_URL}/api/health/immunizations/due?school_id=${schoolId}`)
       ]);
       
-      setAnalytics(await analyticsRes.json());
-      const incData = await incidentsRes.json();
-      setIncidents(incData.incidents || []);
-      const checkData = await checkupsRes.json();
-      setCheckups(checkData.checkups || []);
-      const dueData = await dueRes.json();
-      setDueImmunizations(dueData.due_immunizations || []);
+      if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
+      if (incidentsRes.ok) {
+        const incData = await incidentsRes.json();
+        setIncidents(incData.incidents || []);
+      }
+      if (checkupsRes.ok) {
+        const checkData = await checkupsRes.json();
+        setCheckups(checkData.checkups || []);
+      }
+      if (dueRes.ok) {
+        const dueData = await dueRes.json();
+        setDueImmunizations(dueData.due_immunizations || []);
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -102,14 +118,61 @@ export default function HealthModulePage() {
     }
   }, [schoolId]);
 
+  const fetchClasses = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/classes?school_id=${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setClasses(res.data || []);
+    } catch (error) {
+      setClasses([]);
+    }
+  }, [schoolId]);
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchClasses();
+  }, [fetchData, fetchClasses]);
+
+  const fetchStudentsForIncident = async (classId) => {
+    setSelectedClassForIncident(classId);
+    if (!classId) { setStudentsIncident([]); return; }
+    setLoadingStudentsIncident(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/students?school_id=${schoolId}&class_id=${classId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStudentsIncident(res.data || []);
+    } catch (error) {
+      setStudentsIncident([]);
+    } finally {
+      setLoadingStudentsIncident(false);
+    }
+  };
+
+  const fetchStudentsForHealth = async (classId) => {
+    setSelectedClassForHealth(classId);
+    if (!classId) { setStudentsHealth([]); return; }
+    setLoadingStudentsHealth(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/students?school_id=${schoolId}&class_id=${classId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStudentsHealth(res.data || []);
+    } catch (error) {
+      setStudentsHealth([]);
+    } finally {
+      setLoadingStudentsHealth(false);
+    }
+  };
 
   const handleReportIncident = async (e) => {
     e.preventDefault();
     if (!incidentForm.student_id || !incidentForm.description) {
-      toast.error('Student ID aur description required hai');
+      toast.error('Student aur description required hai');
       return;
     }
 
@@ -125,6 +188,8 @@ export default function HealthModulePage() {
         toast.success('Incident reported!');
         setShowIncidentDialog(false);
         setIncidentForm({ student_id: '', incident_type: 'illness', description: '', severity: 'low', treatment_given: '', sent_home: false, parent_notified: false });
+        setSelectedClassForIncident('');
+        setStudentsIncident([]);
         fetchData();
       }
     } catch (error) {
@@ -135,7 +200,7 @@ export default function HealthModulePage() {
   const handleSaveHealthRecord = async (e) => {
     e.preventDefault();
     if (!healthForm.student_id) {
-      toast.error('Student ID required hai');
+      toast.error('Student select karein');
       return;
     }
 
@@ -161,6 +226,8 @@ export default function HealthModulePage() {
         toast.success('Health record saved!');
         setShowHealthRecordDialog(false);
         setHealthForm({ student_id: '', blood_group: '', height_cm: '', weight_kg: '', allergies: '', chronic_conditions: '', notes: '' });
+        setSelectedClassForHealth('');
+        setStudentsHealth([]);
         fetchData();
       }
     } catch (error) {
@@ -194,9 +261,46 @@ export default function HealthModulePage() {
     }
   };
 
+  const StudentSelector = ({ classValue, onClassChange, studentsList, loadingStudents, formStudentId, onStudentChange }) => (
+    <div className="space-y-3">
+      <div>
+        <label className="text-sm font-medium">Class चुनें *</label>
+        <select
+          value={classValue}
+          onChange={(e) => onClassChange(e.target.value)}
+          className="w-full h-10 px-3 border rounded-md text-sm"
+        >
+          <option value="">-- Class चुनें --</option>
+          {classes.map(cls => (
+            <option key={cls.id} value={cls.id}>{cls.name} {cls.section ? `(${cls.section})` : ''}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-sm font-medium">Student चुनें *</label>
+        {loadingStudents ? (
+          <div className="text-center py-2 text-sm text-slate-500">Loading students...</div>
+        ) : (
+          <select
+            value={formStudentId}
+            onChange={(e) => onStudentChange(e.target.value)}
+            className="w-full h-10 px-3 border rounded-md text-sm"
+            disabled={!classValue}
+          >
+            <option value="">{classValue ? '-- Student चुनें --' : 'पहले class चुनें'}</option>
+            {studentsList.map(s => (
+              <option key={s.id || s.student_id} value={s.student_id || s.id}>
+                {s.name} ({s.student_id})
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6" data-testid="health-module-page">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -215,7 +319,6 @@ export default function HealthModulePage() {
         </div>
       </div>
 
-      {/* Stats */}
       {analytics && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card className="bg-gradient-to-br from-red-500/10 to-pink-500/10 border-red-500/20">
@@ -273,7 +376,6 @@ export default function HealthModulePage() {
           <TabsTrigger value="checkups">Checkups</TabsTrigger>
         </TabsList>
 
-        {/* Incidents Tab */}
         <TabsContent value="incidents" className="mt-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Today&apos;s Medical Incidents</h3>
@@ -322,7 +424,6 @@ export default function HealthModulePage() {
           )}
         </TabsContent>
 
-        {/* Health Records Tab */}
         <TabsContent value="records" className="mt-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Student Health Records</h3>
@@ -338,14 +439,10 @@ export default function HealthModulePage() {
               <p className="text-muted-foreground mt-1">
                 {analytics?.total_health_records || 0} students ke health records stored hain
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Student ID search karke individual record dekh sakte hain
-              </p>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Immunizations Tab */}
         <TabsContent value="immunizations" className="mt-4">
           <Card>
             <CardHeader>
@@ -377,7 +474,6 @@ export default function HealthModulePage() {
           </Card>
         </TabsContent>
 
-        {/* Checkups Tab */}
         <TabsContent value="checkups" className="mt-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Scheduled Health Checkups</h3>
@@ -428,21 +524,20 @@ export default function HealthModulePage() {
         </TabsContent>
       </Tabs>
 
-      {/* Report Incident Dialog */}
       <Dialog open={showIncidentDialog} onOpenChange={setShowIncidentDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Report Medical Incident</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleReportIncident} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Student ID *</label>
-              <Input
-                value={incidentForm.student_id}
-                onChange={(e) => setIncidentForm({...incidentForm, student_id: e.target.value})}
-                placeholder="STD-2026-XXXXX"
-              />
-            </div>
+            <StudentSelector
+              classValue={selectedClassForIncident}
+              onClassChange={fetchStudentsForIncident}
+              studentsList={studentsIncident}
+              loadingStudents={loadingStudentsIncident}
+              formStudentId={incidentForm.student_id}
+              onStudentChange={(val) => setIncidentForm({...incidentForm, student_id: val})}
+            />
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium">Incident Type</label>
@@ -491,49 +586,36 @@ export default function HealthModulePage() {
             </div>
             <div className="flex gap-4">
               <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={incidentForm.sent_home}
-                  onChange={(e) => setIncidentForm({...incidentForm, sent_home: e.target.checked})}
-                />
+                <input type="checkbox" checked={incidentForm.sent_home} onChange={(e) => setIncidentForm({...incidentForm, sent_home: e.target.checked})} />
                 <span className="text-sm">Sent Home</span>
               </label>
               <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={incidentForm.parent_notified}
-                  onChange={(e) => setIncidentForm({...incidentForm, parent_notified: e.target.checked})}
-                />
+                <input type="checkbox" checked={incidentForm.parent_notified} onChange={(e) => setIncidentForm({...incidentForm, parent_notified: e.target.checked})} />
                 <span className="text-sm">Parent Notified</span>
               </label>
             </div>
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowIncidentDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-red-600 hover:bg-red-700">
-                Report Incident
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowIncidentDialog(false)}>Cancel</Button>
+              <Button type="submit" className="bg-red-600 hover:bg-red-700">Report Incident</Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Health Record Dialog */}
       <Dialog open={showHealthRecordDialog} onOpenChange={setShowHealthRecordDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Add/Update Health Record</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveHealthRecord} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Student ID *</label>
-              <Input
-                value={healthForm.student_id}
-                onChange={(e) => setHealthForm({...healthForm, student_id: e.target.value})}
-                placeholder="STD-2026-XXXXX"
-              />
-            </div>
+            <StudentSelector
+              classValue={selectedClassForHealth}
+              onClassChange={fetchStudentsForHealth}
+              studentsList={studentsHealth}
+              loadingStudents={loadingStudentsHealth}
+              formStudentId={healthForm.student_id}
+              onStudentChange={(val) => setHealthForm({...healthForm, student_id: val})}
+            />
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium">Blood Group</label>
@@ -555,50 +637,29 @@ export default function HealthModulePage() {
               </div>
               <div>
                 <label className="text-sm font-medium">Height (cm)</label>
-                <Input
-                  type="number"
-                  value={healthForm.height_cm}
-                  onChange={(e) => setHealthForm({...healthForm, height_cm: e.target.value})}
-                />
+                <Input type="number" value={healthForm.height_cm} onChange={(e) => setHealthForm({...healthForm, height_cm: e.target.value})} />
               </div>
               <div>
                 <label className="text-sm font-medium">Weight (kg)</label>
-                <Input
-                  type="number"
-                  value={healthForm.weight_kg}
-                  onChange={(e) => setHealthForm({...healthForm, weight_kg: e.target.value})}
-                />
+                <Input type="number" value={healthForm.weight_kg} onChange={(e) => setHealthForm({...healthForm, weight_kg: e.target.value})} />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Allergies (comma separated)</label>
-              <Input
-                value={healthForm.allergies}
-                onChange={(e) => setHealthForm({...healthForm, allergies: e.target.value})}
-                placeholder="Peanuts, Dust, Milk..."
-              />
+              <Input value={healthForm.allergies} onChange={(e) => setHealthForm({...healthForm, allergies: e.target.value})} placeholder="Peanuts, Dust, Milk..." />
             </div>
             <div>
               <label className="text-sm font-medium">Chronic Conditions</label>
-              <Input
-                value={healthForm.chronic_conditions}
-                onChange={(e) => setHealthForm({...healthForm, chronic_conditions: e.target.value})}
-                placeholder="Asthma, Diabetes..."
-              />
+              <Input value={healthForm.chronic_conditions} onChange={(e) => setHealthForm({...healthForm, chronic_conditions: e.target.value})} placeholder="Asthma, Diabetes..." />
             </div>
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowHealthRecordDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                Save Record
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowHealthRecordDialog(false)}>Cancel</Button>
+              <Button type="submit">Save Record</Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Schedule Checkup Dialog */}
       <Dialog open={showCheckupDialog} onOpenChange={setShowCheckupDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -607,20 +668,12 @@ export default function HealthModulePage() {
           <form onSubmit={handleScheduleCheckup} className="space-y-4">
             <div>
               <label className="text-sm font-medium">Checkup Title *</label>
-              <Input
-                value={checkupForm.title}
-                onChange={(e) => setCheckupForm({...checkupForm, title: e.target.value})}
-                placeholder="Annual Health Checkup"
-              />
+              <Input value={checkupForm.title} onChange={(e) => setCheckupForm({...checkupForm, title: e.target.value})} placeholder="Annual Health Checkup" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium">Checkup Type</label>
-                <select
-                  value={checkupForm.checkup_type}
-                  onChange={(e) => setCheckupForm({...checkupForm, checkup_type: e.target.value})}
-                  className="w-full h-10 px-3 border rounded-md"
-                >
+                <select value={checkupForm.checkup_type} onChange={(e) => setCheckupForm({...checkupForm, checkup_type: e.target.value})} className="w-full h-10 px-3 border rounded-md">
                   <option value="general">General</option>
                   <option value="dental">Dental</option>
                   <option value="eye">Eye</option>
@@ -630,28 +683,16 @@ export default function HealthModulePage() {
               </div>
               <div>
                 <label className="text-sm font-medium">Date *</label>
-                <Input
-                  type="date"
-                  value={checkupForm.scheduled_date}
-                  onChange={(e) => setCheckupForm({...checkupForm, scheduled_date: e.target.value})}
-                />
+                <Input type="date" value={checkupForm.scheduled_date} onChange={(e) => setCheckupForm({...checkupForm, scheduled_date: e.target.value})} />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Doctor Name</label>
-              <Input
-                value={checkupForm.doctor_name}
-                onChange={(e) => setCheckupForm({...checkupForm, doctor_name: e.target.value})}
-                placeholder="Dr. Name"
-              />
+              <Input value={checkupForm.doctor_name} onChange={(e) => setCheckupForm({...checkupForm, doctor_name: e.target.value})} placeholder="Dr. Name" />
             </div>
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowCheckupDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                Schedule
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowCheckupDialog(false)}>Cancel</Button>
+              <Button type="submit" className="bg-green-600 hover:bg-green-700">Schedule</Button>
             </div>
           </form>
         </DialogContent>

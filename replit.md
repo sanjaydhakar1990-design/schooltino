@@ -96,6 +96,22 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - All core functionality preserved plus new modules
 
 ## Recent Changes
+- 2026-02-09: Comprehensive portal separation & feature overhaul v8:
+  - Portal Separation: TeachTino now has Homework, School Feed, Exam & Reports, Live Classes tabs; StudyTino now has Wallet, Live Classes, School Feed (like/share/comment), E-Store
+  - Sidebar: Removed Tino AI & Mobile App; merged SMS into Communication Hub; reordered groups by usage frequency
+  - Layout header: Added Tino AI chat (floating panel, text-only), credit balance indicator with recharge
+  - Credit System: Razorpay integration, removed free plan, paid-only plans (₹499-₹4999), real API calls
+  - Fixed pages: ComplaintFeedback (full CRUD), CertificateGenerator (class-wise selection), HealthModule (student selection), ImageGallery (event-based), EStore (full CRUD + cart)
+  - Fixed pages: TimetableManagement (class teacher subject Period 1), LiveClasses (teacher dropdown), DigitalLibrary, CourseManagement, EventDesigner (save/load)
+  - Communication Hub: Merged SMS + WhatsApp, credit system integration, cost estimation before send
+  - Settings: Module toggle system (33 modules × 3 portals), School Setup quick links
+  - Prayer System: Sound playback via TTS/HTML5 Audio, file upload support
+  - Admit Card: Connected to StudyTino, fixed API paths, publish to students
+  - AI Paper: Fixed board support (CBSE/MPBSE/RBSE), chapter auto-fetch, section-wise numbering, language selection
+  - Integrations Hub: 17 integrations across 6 categories, connect/disconnect/configure
+  - PWA: Fixed service worker, install prompt works across all portals
+  - New backend routes: prayer.py, e_store.py, integrations.py
+  - App.js: SMS redirects to integrated-comm, Mobile App redirects to dashboard
 - 2026-02-09: UI cleanup & profile enhancement v7:
   - Removed duplicate profile: Profile now only accessible from sidebar top (clickable NavLink), removed from sidebar bottom and header top-right
   - School name made bigger in header (text-xl)

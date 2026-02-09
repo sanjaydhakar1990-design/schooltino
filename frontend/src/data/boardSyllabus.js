@@ -1739,69 +1739,56 @@ export const getChapters = (board, className, subject) => {
 // Marks pattern per board
 export const BOARD_MARKS_PATTERN = {
   CBSE: {
-    mcq: { marks: 1, label: 'MCQ (1 mark)' },
-    fill_blank: { marks: 1, label: 'Fill in Blanks (1 mark)' },
-    vsaq: { marks: 2, label: 'Very Short Answer (2 marks)' },
-    short: { marks: 3, label: 'Short Answer (3 marks)' },
-    long: { marks: 4, label: 'Long Answer (4 marks)' },
-    diagram: { marks: 3, label: 'Diagram Based (3 marks)' },
-    hots: { marks: 4, label: 'HOTS (4 marks)' },
-    case_study: { marks: 4, label: 'Case Study (4 marks)' },
+    mcq: { marks: 1, label: 'MCQ (1 mark)', section: 'A' },
+    fill_blank: { marks: 1, label: 'Fill in Blanks (1 mark)', section: 'A' },
+    true_false: { marks: 1, label: 'True/False (1 mark)', section: 'A' },
+    short: { marks: 2, label: 'Short Answer (1-2 marks)', section: 'B' },
+    long: { marks: 4, label: 'Long Answer (3-5 marks)', section: 'C' },
+    very_long: { marks: 5, label: 'Very Long Answer (5+ marks)', section: 'D' },
   },
   MPBSE: {
-    mcq: { marks: 1, label: 'बहुविकल्पीय (1 अंक)' },
-    fill_blank: { marks: 1, label: 'रिक्त स्थान (1 अंक)' },
-    ati_laghu: { marks: 2, label: 'अति लघु उत्तरीय (2 अंक)' },
-    laghu: { marks: 3, label: 'लघु उत्तरीय (3 अंक)' },
-    dirgha: { marks: 4, label: 'दीर्घ उत्तरीय (4 अंक)' },
-    diagram: { marks: 3, label: 'चित्र आधारित (3 अंक)' },
-    nibandh: { marks: 5, label: 'निबंधात्मक (5 अंक)' },
+    mcq: { marks: 1, label: 'बहुविकल्पीय / MCQ (1 अंक)', section: 'अ' },
+    fill_blank: { marks: 1, label: 'रिक्त स्थान / Fill in Blanks (1 अंक)', section: 'अ' },
+    true_false: { marks: 1, label: 'सही/गलत / True/False (1 अंक)', section: 'अ' },
+    short: { marks: 2, label: 'लघु उत्तरीय / Short Answer (1-2 अंक)', section: 'ब' },
+    long: { marks: 4, label: 'दीर्घ उत्तरीय / Long Answer (3-5 अंक)', section: 'स' },
+    very_long: { marks: 5, label: 'अति दीर्घ उत्तरीय / Very Long Answer (5+ अंक)', section: 'द' },
   },
   RBSE: {
-    mcq: { marks: 1, label: 'बहुविकल्पीय (1 अंक)' },
-    fill_blank: { marks: 1, label: 'रिक्त स्थान (1 अंक)' },
-    ati_laghu: { marks: 2, label: 'अति लघु उत्तरीय (2 अंक)' },
-    laghu: { marks: 3, label: 'लघु उत्तरीय (3 अंक)' },
-    dirgha: { marks: 4, label: 'दीर्घ उत्तरीय (4 अंक)' },
-    diagram: { marks: 3, label: 'चित्र आधारित (3 अंक)' },
+    mcq: { marks: 1, label: 'बहुविकल्पीय / MCQ (1 अंक)', section: 'अ' },
+    fill_blank: { marks: 1, label: 'रिक्त स्थान / Fill in Blanks (1 अंक)', section: 'अ' },
+    true_false: { marks: 1, label: 'सही/गलत / True/False (1 अंक)', section: 'अ' },
+    short: { marks: 2, label: 'लघु उत्तरीय / Short Answer (1-2 अंक)', section: 'ब' },
+    long: { marks: 4, label: 'दीर्घ उत्तरीय / Long Answer (3-5 अंक)', section: 'स' },
+    very_long: { marks: 5, label: 'अति दीर्घ उत्तरीय / Very Long Answer (5+ अंक)', section: 'द' },
   },
   NCERT: {
-    mcq: { marks: 1, label: 'MCQ (1 mark)' },
-    fill_blank: { marks: 1, label: 'Fill in Blanks (1 mark)' },
-    vsaq: { marks: 2, label: 'Very Short Answer (2 marks)' },
-    short: { marks: 3, label: 'Short Answer (3 marks)' },
-    long: { marks: 4, label: 'Long Answer (4 marks)' },
-    diagram: { marks: 3, label: 'Diagram Based (3 marks)' },
-    hots: { marks: 4, label: 'HOTS (4 marks)' },
+    mcq: { marks: 1, label: 'MCQ (1 mark)', section: 'A' },
+    fill_blank: { marks: 1, label: 'Fill in Blanks (1 mark)', section: 'A' },
+    true_false: { marks: 1, label: 'True/False (1 mark)', section: 'A' },
+    short: { marks: 2, label: 'Short Answer (1-2 marks)', section: 'B' },
+    long: { marks: 4, label: 'Long Answer (3-5 marks)', section: 'C' },
+    very_long: { marks: 5, label: 'Very Long Answer (5+ marks)', section: 'D' },
   },
 };
 
 // Class-wise default paper configuration
 export const CLASS_PAPER_DEFAULTS = {
-  // Pre-Primary (Nursery, LKG, UKG) - Drawing/Activity based, no long answers
-  'Nursery': { totalMarks: 20, time: 30, questionTypes: ['oral', 'activity', 'coloring'], hasLong: false },
-  'LKG': { totalMarks: 25, time: 30, questionTypes: ['oral', 'activity', 'coloring', 'matching'], hasLong: false },
-  'UKG': { totalMarks: 30, time: 45, questionTypes: ['oral', 'activity', 'coloring', 'matching', 'fill_blank'], hasLong: false },
-  
-  // Primary Classes (1-5) - Simple questions, no long answers for Class 1-3
-  'Class 1': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'matching', 'very_short'], hasLong: false },
-  'Class 2': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'matching', 'very_short'], hasLong: false },
-  'Class 3': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'very_short', 'short'], hasLong: false },
-  'Class 4': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'very_short', 'short'], hasLong: true, maxLong: 1 },
-  'Class 5': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'very_short', 'short', 'long'], hasLong: true, maxLong: 2 },
-  
-  // Middle School (6-8)
-  'Class 6': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'vsaq', 'short', 'long', 'diagram'], hasLong: true },
-  'Class 7': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'vsaq', 'short', 'long', 'diagram'], hasLong: true },
-  'Class 8': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'vsaq', 'short', 'long', 'diagram'], hasLong: true },
-  
-  // Secondary (9-10) - Board exam pattern
-  'Class 9': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots'], hasLong: true },
-  'Class 10': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots', 'case_study'], hasLong: true },
-  
-  // Senior Secondary (11-12) - Board exam pattern
-  'Class 11': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots', 'case_study'], hasLong: true },
-  'Class 12': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'vsaq', 'short', 'long', 'diagram', 'hots', 'case_study'], hasLong: true },
+  'Nursery': { totalMarks: 20, time: 30, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false },
+  'LKG': { totalMarks: 25, time: 30, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false },
+  'UKG': { totalMarks: 30, time: 45, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false },
+  'Class 1': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false },
+  'Class 2': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false },
+  'Class 3': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false },
+  'Class 4': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: true },
+  'Class 5': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true },
+  'Class 6': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true },
+  'Class 7': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true },
+  'Class 8': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
+  'Class 9': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
+  'Class 10': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
+  'Class 11': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
+  'Class 12': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
 };
 
 // Drawing subject paper - all image-based questions

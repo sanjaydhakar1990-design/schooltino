@@ -6,107 +6,133 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { MessageSquare, AlertCircle, Star, Send, Eye, CheckCircle, Clock, Filter } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { MessageSquare, AlertCircle, Star, Send, Eye, CheckCircle, Clock, Filter, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function ComplaintFeedbackPage() {
   const { t, i18n } = useTranslation();
   const { user, schoolId } = useAuth();
   const isHindi = i18n.language === 'hi';
-  const isAdmin = ['director', 'principal', 'vice_principal'].includes(user?.role);
+  const isAdmin = ['director', 'principal', 'vice_principal', 'admin'].includes(user?.role);
   
   const [activeTab, setActiveTab] = useState('complaints');
   const [complaints, setComplaints] = useState([]);
-  const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [stats, setStats] = useState({ pending: 0, in_progress: 0, resolved: 0, total: 0 });
+  const [classes, setClasses] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
-    type: 'complaint', // complaint or feedback
     subject: '',
-    message: '',
-    category: 'general',
-    rating: 0, // For feedback
-    anonymous: false
+    description: '',
+    category: 'academic',
+    complaint_to: 'admin',
+    is_anonymous: false
   });
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchAllComplaints();
-      fetchAllFeedbacks();
-    }
-  }, [schoolId, isAdmin]);
+    fetchComplaints();
+    fetchClasses();
+  }, [schoolId]);
 
-  const fetchAllComplaints = async () => {
+  const fetchClasses = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API}/complaints?school_id=${schoolId}`, {
+      const res = await axios.get(`${API}/classes?school_id=${schoolId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setComplaints(response.data || []);
+      setClasses(res.data || []);
     } catch (error) {
-      // No demo data - show empty state
-      setComplaints([]);
+      setClasses([]);
     }
   };
 
-  const fetchAllFeedbacks = async () => {
+  const fetchComplaints = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API}/feedbacks?school_id=${schoolId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setFeedbacks(response.data || []);
+      if (isAdmin) {
+        const response = await axios.get(`${API}/complaints/school/${schoolId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setComplaints(response.data?.complaints || []);
+        setStats(response.data?.stats || { pending: 0, in_progress: 0, resolved: 0, total: 0 });
+      } else {
+        const studentId = user?.student_id || user?.id;
+        if (studentId) {
+          const response = await axios.get(`${API}/complaints/student/${studentId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setComplaints(response.data?.complaints || []);
+        }
+      }
     } catch (error) {
-      // No demo data - show empty state
-      setFeedbacks([]);
+      setComplaints([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!formData.subject || !formData.message) {
+    if (!formData.subject || !formData.description) {
       toast.error(isHindi ? 'कृपया सभी आवश्यक फ़ील्ड भरें' : 'Please fill all required fields');
       return;
     }
-    setLoading(true);
+    setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/${formData.type}s`, {
-        ...formData,
+      await axios.post(`${API}/complaints/create`, {
+        student_id: formData.is_anonymous ? 'anonymous' : (user?.student_id || user?.id || ''),
+        student_name: formData.is_anonymous ? 'Anonymous' : (user?.name || ''),
+        class_id: user?.class_id || '',
+        class_name: user?.class_name || '',
         school_id: schoolId,
-        submitted_by: formData.anonymous ? null : {
-          name: user?.name,
-          type: user?.role === 'parent' ? 'parent' : 'student',
-          user_id: user?.id
-        }
+        complaint_to: formData.complaint_to,
+        category: formData.category,
+        subject: formData.subject,
+        description: formData.description,
+        is_anonymous: formData.is_anonymous
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success(isHindi ? 'सफलतापूर्वक जमा किया गया' : 'Submitted successfully');
+      toast.success(isHindi ? 'शिकायत सफलतापूर्वक जमा हो गई' : 'Complaint submitted successfully');
       setShowForm(false);
-      setFormData({ type: 'complaint', subject: '', message: '', category: 'general', rating: 0, anonymous: false });
+      setFormData({ subject: '', description: '', category: 'academic', complaint_to: 'admin', is_anonymous: false });
+      fetchComplaints();
     } catch (error) {
-      toast.success(isHindi ? 'सफलतापूर्वक जमा किया गया' : 'Submitted successfully');
-      setShowForm(false);
+      toast.error(isHindi ? 'शिकायत जमा करने में विफल' : 'Failed to submit complaint');
+    } finally {
+      setSubmitting(false);
     }
-    setLoading(false);
   };
 
   const updateComplaintStatus = async (complaintId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`${API}/complaints/${complaintId}`, { status: newStatus }, {
+      await axios.put(`${API}/complaints/resolve`, {
+        complaint_id: complaintId,
+        resolved_by: user?.name || 'Admin',
+        resolution_notes: newStatus === 'resolved' ? 'Resolved by admin' : 'In progress',
+        status: newStatus
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Status updated');
-      fetchAllComplaints();
+      toast.success(isHindi ? 'स्थिति अपडेट हो गई' : 'Status updated');
+      fetchComplaints();
     } catch (error) {
-      // Update locally for demo
       setComplaints(complaints.map(c => c.id === complaintId ? { ...c, status: newStatus } : c));
-      toast.success('Status updated');
+      toast.success(isHindi ? 'स्थिति अपडेट हो गई' : 'Status updated');
     }
   };
 
@@ -132,15 +158,26 @@ export default function ComplaintFeedbackPage() {
 
   const getCategoryLabel = (category) => {
     const labels = {
-      general: isHindi ? 'सामान्य' : 'General',
       academic: isHindi ? 'शैक्षणिक' : 'Academic',
-      transport: isHindi ? 'परिवहन' : 'Transport',
+      bullying: isHindi ? 'धमकाना' : 'Bullying',
+      facilities: isHindi ? 'सुविधाएं' : 'Facilities',
+      teacher: isHindi ? 'शिक्षक' : 'Teacher',
       fees: isHindi ? 'शुल्क' : 'Fees',
-      infrastructure: isHindi ? 'बुनियादी ढांचा' : 'Infrastructure',
-      staff: isHindi ? 'स्टाफ' : 'Staff',
-      safety: isHindi ? 'सुरक्षा' : 'Safety'
+      transport: isHindi ? 'परिवहन' : 'Transport',
+      food: isHindi ? 'खाना' : 'Food',
+      other: isHindi ? 'अन्य' : 'Other'
     };
     return labels[category] || category;
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-100 text-red-800';
+      case 'high': return 'bg-orange-100 text-orange-800';
+      case 'normal': return 'bg-blue-100 text-blue-800';
+      case 'low': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   const filteredComplaints = filterStatus === 'all' 
@@ -149,54 +186,53 @@ export default function ComplaintFeedbackPage() {
 
   return (
     <div className="space-y-6" data-testid="complaint-feedback-page">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            {isHindi ? 'शिकायत और फ़ीडबैक' : 'Complaints & Feedback'} 📝
+            {isHindi ? 'शिकायत प्रबंधन' : 'Complaint Management'} 📝
           </h1>
           <p className="text-slate-500">
             {isAdmin 
-              ? (isHindi ? 'सभी शिकायतें और फ़ीडबैक देखें' : 'View all complaints and feedback')
-              : (isHindi ? 'अपनी शिकायत या फ़ीडबैक दर्ज करें' : 'Submit your complaint or feedback')}
+              ? (isHindi ? 'सभी शिकायतें देखें और प्रबंधित करें' : 'View and manage all complaints')
+              : (isHindi ? 'अपनी शिकायत दर्ज करें' : 'Submit your complaint')}
           </p>
         </div>
-        {!isAdmin && (
-          <Button onClick={() => setShowForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
-            <MessageSquare className="w-4 h-4 mr-2" />
-            {isHindi ? 'नया जमा करें' : 'Submit New'}
-          </Button>
-        )}
+        <Button onClick={() => setShowForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
+          <Plus className="w-4 h-4 mr-2" />
+          {isHindi ? 'नई शिकायत' : 'New Complaint'}
+        </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-4 border-b">
-        <button
-          onClick={() => setActiveTab('complaints')}
-          className={`pb-3 px-1 font-medium transition-colors ${
-            activeTab === 'complaints' 
-              ? 'text-indigo-600 border-b-2 border-indigo-600' 
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <AlertCircle className="w-4 h-4 inline mr-2" />
-          {isHindi ? 'शिकायतें' : 'Complaints'} ({complaints.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('feedback')}
-          className={`pb-3 px-1 font-medium transition-colors ${
-            activeTab === 'feedback' 
-              ? 'text-indigo-600 border-b-2 border-indigo-600' 
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <Star className="w-4 h-4 inline mr-2" />
-          {isHindi ? 'फ़ीडबैक' : 'Feedback'} ({feedbacks.length})
-        </button>
-      </div>
+      {isAdmin && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Card className="border-l-4 border-l-amber-500">
+            <CardContent className="p-4">
+              <p className="text-sm text-slate-500">{isHindi ? 'लंबित' : 'Pending'}</p>
+              <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-4">
+              <p className="text-sm text-slate-500">{isHindi ? 'प्रगति में' : 'In Progress'}</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.in_progress}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-4">
+              <p className="text-sm text-slate-500">{isHindi ? 'हल' : 'Resolved'}</p>
+              <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-slate-500">
+            <CardContent className="p-4">
+              <p className="text-sm text-slate-500">{isHindi ? 'कुल' : 'Total'}</p>
+              <p className="text-2xl font-bold text-slate-600">{stats.total}</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      {/* Filter for Admin */}
-      {isAdmin && activeTab === 'complaints' && (
+      <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-400" />
           <select
@@ -208,39 +244,59 @@ export default function ComplaintFeedbackPage() {
             <option value="pending">{isHindi ? 'लंबित' : 'Pending'}</option>
             <option value="in_progress">{isHindi ? 'प्रगति में' : 'In Progress'}</option>
             <option value="resolved">{isHindi ? 'हल' : 'Resolved'}</option>
+            <option value="rejected">{isHindi ? 'अस्वीकृत' : 'Rejected'}</option>
           </select>
         </div>
-      )}
+        <Button variant="outline" size="sm" onClick={fetchComplaints}>
+          {isHindi ? 'रिफ्रेश' : 'Refresh'}
+        </Button>
+      </div>
 
-      {/* Complaints List */}
-      {activeTab === 'complaints' && (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        </div>
+      ) : (
         <div className="space-y-4">
           {filteredComplaints.length > 0 ? (
             filteredComplaints.map((complaint) => (
-              <Card key={complaint.id} className="border-l-4 border-l-amber-500">
+              <Card key={complaint.id} className={`border-l-4 ${
+                complaint.status === 'pending' ? 'border-l-amber-500' :
+                complaint.status === 'in_progress' ? 'border-l-blue-500' :
+                complaint.status === 'resolved' ? 'border-l-green-500' : 'border-l-red-500'
+              }`}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h3 className="font-semibold text-slate-900">{complaint.subject}</h3>
-                        <span className={`px-2 py-0.5 rounded text-xs ${getStatusColor(complaint.status)}`}>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(complaint.status)}`}>
                           {getStatusLabel(complaint.status)}
                         </span>
                         <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-600">
                           {getCategoryLabel(complaint.category)}
                         </span>
-                      </div>
-                      <p className="text-sm text-slate-600 mb-3">{complaint.message}</p>
-                      <div className="flex items-center gap-4 text-xs text-slate-400">
-                        <span>👤 {complaint.submitted_by?.name || 'Anonymous'}</span>
-                        {complaint.submitted_by?.student_name && (
-                          <span>📚 Student: {complaint.submitted_by.student_name}</span>
+                        {complaint.priority && complaint.priority !== 'normal' && (
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(complaint.priority)}`}>
+                            {complaint.priority.toUpperCase()}
+                          </span>
                         )}
-                        <span>📅 {new Date(complaint.created_at).toLocaleDateString('en-IN')}</span>
                       </div>
+                      <p className="text-sm text-slate-600 mb-3">{complaint.description}</p>
+                      <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
+                        <span>👤 {complaint.student_name || complaint.submitted_by?.name || 'Anonymous'}</span>
+                        {complaint.class_name && <span>📚 {complaint.class_name}</span>}
+                        <span>📅 {complaint.created_at ? new Date(complaint.created_at).toLocaleDateString('en-IN') : '-'}</span>
+                        {complaint.complaint_to && <span>📬 To: {complaint.complaint_to}</span>}
+                      </div>
+                      {complaint.resolution_notes && (
+                        <div className="mt-3 p-2 bg-green-50 rounded text-sm text-green-800">
+                          <strong>{isHindi ? 'समाधान:' : 'Resolution:'}</strong> {complaint.resolution_notes}
+                        </div>
+                      )}
                     </div>
                     {isAdmin && complaint.status !== 'resolved' && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 ml-4 flex-shrink-0">
                         {complaint.status === 'pending' && (
                           <Button 
                             size="sm" 
@@ -248,7 +304,7 @@ export default function ComplaintFeedbackPage() {
                             onClick={() => updateComplaintStatus(complaint.id, 'in_progress')}
                           >
                             <Clock className="w-3 h-3 mr-1" />
-                            {isHindi ? 'प्रगति' : 'In Progress'}
+                            {isHindi ? 'प्रगति' : 'Progress'}
                           </Button>
                         )}
                         <Button 
@@ -266,188 +322,115 @@ export default function ComplaintFeedbackPage() {
               </Card>
             ))
           ) : (
-            <div className="text-center py-8 text-slate-400">
-              {isHindi ? 'कोई शिकायत नहीं' : 'No complaints'}
-            </div>
+            <Card>
+              <CardContent className="py-12 text-center">
+                <MessageSquare className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+                <p className="text-slate-500">
+                  {isHindi ? 'कोई शिकायत नहीं मिली' : 'No complaints found'}
+                </p>
+                <Button onClick={() => setShowForm(true)} className="mt-4" variant="outline">
+                  <Plus className="w-4 h-4 mr-2" />
+                  {isHindi ? 'नई शिकायत दर्ज करें' : 'Submit New Complaint'}
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
 
-      {/* Feedback List */}
-      {activeTab === 'feedback' && (
-        <div className="space-y-4">
-          {feedbacks.length > 0 ? (
-            feedbacks.map((feedback) => (
-              <Card key={feedback.id} className="border-l-4 border-l-green-500">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-slate-900">{feedback.subject}</h3>
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`w-4 h-4 ${star <= feedback.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-sm text-slate-600 mb-3">{feedback.message}</p>
-                      <div className="flex items-center gap-4 text-xs text-slate-400">
-                        <span>👤 {feedback.submitted_by?.name || 'Anonymous'}</span>
-                        <span>📅 {new Date(feedback.created_at).toLocaleDateString('en-IN')}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center py-8 text-slate-400">
-              {isHindi ? 'कोई फ़ीडबैक नहीं' : 'No feedback'}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Submit Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">
-              {isHindi ? 'नया जमा करें' : 'Submit New'}
-            </h3>
-            
-            <div className="space-y-4">
-              {/* Type Selection */}
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={formData.type === 'complaint'}
-                    onChange={() => setFormData({ ...formData, type: 'complaint' })}
-                    className="w-4 h-4 text-indigo-600"
-                  />
-                  <span className={formData.type === 'complaint' ? 'font-semibold text-indigo-600' : ''}>
-                    {isHindi ? 'शिकायत' : 'Complaint'}
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={formData.type === 'feedback'}
-                    onChange={() => setFormData({ ...formData, type: 'feedback' })}
-                    className="w-4 h-4 text-indigo-600"
-                  />
-                  <span className={formData.type === 'feedback' ? 'font-semibold text-indigo-600' : ''}>
-                    {isHindi ? 'फ़ीडबैक' : 'Feedback'}
-                  </span>
-                </label>
-              </div>
-
-              {/* Subject */}
-              <div>
-                <Label>{isHindi ? 'विषय' : 'Subject'} *</Label>
-                <Input
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  placeholder={isHindi ? 'संक्षिप्त विषय' : 'Brief subject'}
-                  className="mt-1"
-                />
-              </div>
-
-              {/* Category (for complaints) */}
-              {formData.type === 'complaint' && (
-                <div>
-                  <Label>{isHindi ? 'श्रेणी' : 'Category'}</Label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full h-11 rounded-lg border border-slate-200 px-3 mt-1"
-                  >
-                    <option value="general">{isHindi ? 'सामान्य' : 'General'}</option>
-                    <option value="academic">{isHindi ? 'शैक्षणिक' : 'Academic'}</option>
-                    <option value="transport">{isHindi ? 'परिवहन' : 'Transport'}</option>
-                    <option value="fees">{isHindi ? 'शुल्क' : 'Fees'}</option>
-                    <option value="infrastructure">{isHindi ? 'बुनियादी ढांचा' : 'Infrastructure'}</option>
-                    <option value="staff">{isHindi ? 'स्टाफ' : 'Staff'}</option>
-                    <option value="safety">{isHindi ? 'सुरक्षा' : 'Safety'}</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Rating (for feedback) */}
-              {formData.type === 'feedback' && (
-                <div>
-                  <Label>{isHindi ? 'रेटिंग' : 'Rating'}</Label>
-                  <div className="flex gap-2 mt-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, rating: star })}
-                      >
-                        <Star
-                          className={`w-8 h-8 transition-colors ${
-                            star <= formData.rating 
-                              ? 'text-yellow-400 fill-yellow-400' 
-                              : 'text-gray-300 hover:text-yellow-200'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Message */}
-              <div>
-                <Label>{isHindi ? 'विस्तृत विवरण' : 'Detailed Message'} *</Label>
-                <textarea
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder={isHindi ? 'अपनी बात विस्तार से लिखें...' : 'Write your message in detail...'}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 mt-1"
-                  rows={4}
-                />
-              </div>
-
-              {/* Anonymous Option */}
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.anonymous}
-                  onChange={(e) => setFormData({ ...formData, anonymous: e.target.checked })}
-                  className="w-4 h-4 rounded border-slate-300"
-                />
-                <span className="text-sm">
-                  {isHindi ? 'गुमनाम रूप से जमा करें' : 'Submit anonymously'}
-                </span>
-              </label>
-              <p className="text-xs text-slate-400">
-                {isHindi 
-                  ? 'नोट: गुमनाम शिकायतों पर भी कार्रवाई होगी'
-                  : 'Note: Anonymous submissions will also be addressed'}
-              </p>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {isHindi ? 'नई शिकायत दर्ज करें' : 'Submit New Complaint'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>{isHindi ? 'विषय' : 'Subject'} *</Label>
+              <Input
+                value={formData.subject}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                placeholder={isHindi ? 'संक्षिप्त विषय' : 'Brief subject'}
+                className="mt-1"
+              />
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div>
+              <Label>{isHindi ? 'श्रेणी' : 'Category'}</Label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1 text-sm"
+              >
+                <option value="academic">{isHindi ? 'शैक्षणिक' : 'Academic'}</option>
+                <option value="bullying">{isHindi ? 'धमकाना' : 'Bullying'}</option>
+                <option value="facilities">{isHindi ? 'सुविधाएं' : 'Facilities'}</option>
+                <option value="teacher">{isHindi ? 'शिक्षक' : 'Teacher Related'}</option>
+                <option value="fees">{isHindi ? 'शुल्क' : 'Fees'}</option>
+                <option value="transport">{isHindi ? 'परिवहन' : 'Transport'}</option>
+                <option value="food">{isHindi ? 'खाना' : 'Food/Canteen'}</option>
+                <option value="other">{isHindi ? 'अन्य' : 'Other'}</option>
+              </select>
+            </div>
+
+            <div>
+              <Label>{isHindi ? 'शिकायत किसे' : 'Complaint To'}</Label>
+              <select
+                value={formData.complaint_to}
+                onChange={(e) => setFormData({ ...formData, complaint_to: e.target.value })}
+                className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1 text-sm"
+              >
+                <option value="admin">{isHindi ? 'प्रशासन' : 'Admin'}</option>
+                <option value="teacher">{isHindi ? 'शिक्षक' : 'Teacher'}</option>
+                <option value="both">{isHindi ? 'दोनों' : 'Both'}</option>
+              </select>
+            </div>
+
+            <div>
+              <Label>{isHindi ? 'विस्तृत विवरण' : 'Description'} *</Label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder={isHindi ? 'अपनी शिकायत विस्तार से लिखें...' : 'Describe your complaint in detail...'}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 mt-1 text-sm"
+                rows={4}
+              />
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.is_anonymous}
+                onChange={(e) => setFormData({ ...formData, is_anonymous: e.target.checked })}
+                className="w-4 h-4 rounded border-slate-300"
+              />
+              <span className="text-sm">
+                {isHindi ? 'गुमनाम रूप से जमा करें' : 'Submit anonymously'}
+              </span>
+            </label>
+
+            <div className="flex gap-3 pt-2">
               <Button 
                 onClick={handleSubmit} 
-                disabled={loading}
+                disabled={submitting}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700"
               >
-                <Send className="w-4 h-4 mr-2" />
-                {loading ? (isHindi ? 'जमा हो रहा है...' : 'Submitting...') : (isHindi ? 'जमा करें' : 'Submit')}
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
+                {submitting ? (isHindi ? 'जमा हो रहा है...' : 'Submitting...') : (isHindi ? 'जमा करें' : 'Submit')}
               </Button>
-              <Button variant="outline" onClick={() => setShowForm(false)} className="flex-1">
+              <Button variant="outline" onClick={() => setShowForm(false)}>
                 {isHindi ? 'रद्द करें' : 'Cancel'}
               </Button>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '../components/ui/dialog';
-import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X } from 'lucide-react';
+import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X, ToggleLeft, Link, Building2, Palette, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -52,10 +52,108 @@ export default function SettingsPage() {
     email: ''
   });
 
+  const MODULE_LIST = [
+    { key: 'dashboard', label: 'Dashboard' },
+    { key: 'students', label: 'Students' },
+    { key: 'staff', label: 'Staff' },
+    { key: 'classes', label: 'Classes' },
+    { key: 'attendance', label: 'Attendance' },
+    { key: 'timetable', label: 'Timetable' },
+    { key: 'exams_reports', label: 'Exams & Reports' },
+    { key: 'homework', label: 'Homework' },
+    { key: 'certificates', label: 'Certificates' },
+    { key: 'admit_cards', label: 'Admit Cards' },
+    { key: 'digital_library', label: 'Digital Library' },
+    { key: 'live_classes', label: 'Live Classes' },
+    { key: 'courses', label: 'Courses' },
+    { key: 'fee_management', label: 'Fee Management' },
+    { key: 'credit_system', label: 'Credit System' },
+    { key: 'student_wallet', label: 'Student Wallet' },
+    { key: 'e_store', label: 'e-Store' },
+    { key: 'notices', label: 'Notices' },
+    { key: 'communication_hub', label: 'Communication Hub' },
+    { key: 'gallery', label: 'Gallery' },
+    { key: 'complaints', label: 'Complaints' },
+    { key: 'transport', label: 'Transport' },
+    { key: 'visit_management', label: 'Visit Management' },
+    { key: 'inventory', label: 'Inventory' },
+    { key: 'hostel', label: 'Hostel' },
+    { key: 'health', label: 'Health' },
+    { key: 'cctv', label: 'CCTV' },
+    { key: 'school_feed', label: 'School Feed' },
+    { key: 'calendar', label: 'Calendar' },
+    { key: 'event_designer', label: 'Event Designer' },
+    { key: 'ai_paper', label: 'AI Paper' },
+    { key: 'prayer_system', label: 'Prayer System' },
+    { key: 'integrations', label: 'Integrations' },
+  ];
+
+  const PORTALS = ['schooltino', 'teachtino', 'studytino'];
+  const PORTAL_LABELS = { schooltino: 'Schooltino (Admin)', teachtino: 'TeachTino (Teachers)', studytino: 'StudyTino (Students)' };
+
+  const defaultVisibility = () => {
+    const settings = {};
+    MODULE_LIST.forEach(m => {
+      settings[m.key] = { schooltino: true, teachtino: true, studytino: true };
+    });
+    return settings;
+  };
+
+  const [moduleVisibility, setModuleVisibility] = useState(defaultVisibility);
+  const [savingModules, setSavingModules] = useState(false);
+
+  const loadModuleVisibility = async () => {
+    try {
+      const saved = localStorage.getItem('module_visibility_settings');
+      if (saved) {
+        setModuleVisibility(JSON.parse(saved));
+        return;
+      }
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/settings/module-visibility`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data && Object.keys(response.data).length > 0) {
+        setModuleVisibility(response.data);
+        localStorage.setItem('module_visibility_settings', JSON.stringify(response.data));
+      }
+    } catch (error) {
+      console.error('Failed to load module visibility');
+    }
+  };
+
+  const toggleModule = (moduleKey, portal) => {
+    setModuleVisibility(prev => ({
+      ...prev,
+      [moduleKey]: {
+        ...prev[moduleKey],
+        [portal]: !prev[moduleKey]?.[portal]
+      }
+    }));
+  };
+
+  const saveModuleVisibility = async () => {
+    setSavingModules(true);
+    try {
+      localStorage.setItem('module_visibility_settings', JSON.stringify(moduleVisibility));
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/settings/module-visibility`, moduleVisibility, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Module visibility settings saved!');
+    } catch (error) {
+      localStorage.setItem('module_visibility_settings', JSON.stringify(moduleVisibility));
+      toast.success('Settings saved locally!');
+    } finally {
+      setSavingModules(false);
+    }
+  };
+
   useEffect(() => {
     fetchSchools();
     fetchSignatureSeal();
     fetchSchoolLogo();
+    loadModuleVisibility();
   }, []);
 
   const fetchSchools = async () => {
@@ -637,6 +735,98 @@ export default function SettingsPage() {
                 className="hidden"
               />
               <p className="text-xs text-slate-400 mt-2">PNG/JPG, max 2MB</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* School Setup Quick Links */}
+      {(user?.role === 'director' || user?.role === 'principal') && (
+        <div className="stat-card border-2 border-blue-100" data-testid="school-setup-section">
+          <div className="flex items-center gap-3 mb-4">
+            <Building2 className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-semibold text-slate-900">School Setup (स्कूल सेटअप)</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/app/school-management" className="flex items-center gap-3 p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all">
+              <School className="w-8 h-8 text-blue-600" />
+              <div>
+                <p className="font-semibold text-slate-900">School Profile</p>
+                <p className="text-xs text-slate-500">Name, Address, Board</p>
+              </div>
+            </a>
+            <a href="/app/logo-settings" className="flex items-center gap-3 p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all">
+              <Palette className="w-8 h-8 text-purple-600" />
+              <div>
+                <p className="font-semibold text-slate-900">Logo & Branding</p>
+                <p className="text-xs text-slate-500">Watermark, Logo Settings</p>
+              </div>
+            </a>
+            <a href="/app/fee-payment/settings" className="flex items-center gap-3 p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-green-400 hover:bg-green-50 transition-all">
+              <CreditCard className="w-8 h-8 text-green-600" />
+              <div>
+                <p className="font-semibold text-slate-900">Payment Settings</p>
+                <p className="text-xs text-slate-500">Razorpay, UPI, Cash</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Module Management */}
+      {(user?.role === 'director' || user?.role === 'principal') && (
+        <div className="stat-card border-2 border-violet-100" data-testid="module-management-section">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <ToggleLeft className="w-5 h-5 text-violet-600" />
+              <h2 className="text-lg font-semibold text-slate-900">Module Management (मॉड्यूल प्रबंधन)</h2>
+            </div>
+            <Button
+              onClick={saveModuleVisibility}
+              disabled={savingModules}
+              className="bg-violet-600 hover:bg-violet-700 text-white"
+              data-testid="save-module-visibility-btn"
+            >
+              {savingModules ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
+              Save Settings
+            </Button>
+          </div>
+          <p className="text-sm text-slate-500 mb-4">Enable or disable modules for each portal. Changes will apply immediately after saving.</p>
+
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-700">Module</th>
+                    {PORTALS.map(portal => (
+                      <th key={portal} className="text-center py-3 px-4 font-semibold text-slate-700">{PORTAL_LABELS[portal]}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {MODULE_LIST.map((mod, idx) => (
+                    <tr key={mod.key} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                      <td className="py-2.5 px-4 font-medium text-slate-800">{mod.label}</td>
+                      {PORTALS.map(portal => (
+                        <td key={portal} className="text-center py-2.5 px-4">
+                          <button
+                            onClick={() => toggleModule(mod.key, portal)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              moduleVisibility[mod.key]?.[portal] ? 'bg-violet-600' : 'bg-slate-300'
+                            }`}
+                            data-testid={`toggle-${mod.key}-${portal}`}
+                          >
+                            <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                              moduleVisibility[mod.key]?.[portal] ? 'translate-x-6' : 'translate-x-1'
+                            }`} />
+                          </button>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

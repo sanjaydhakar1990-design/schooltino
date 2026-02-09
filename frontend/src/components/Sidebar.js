@@ -9,7 +9,7 @@ import {
   Shield, Calculator, Award, FileText, Building,
   Music, Globe, Wrench, Search, ShoppingBag, Rss,
   CreditCard, Target, BookMarked, Package, Home, Tv,
-  Layers, Megaphone, Smartphone, Link2, UserPlus
+  Layers, Megaphone, Link2, UserPlus
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
@@ -41,14 +41,6 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       ]
     },
     {
-      id: 'admission', label: 'Admission & CRM',
-      items: [
-        { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
-        { path: '/app/admission-crm', icon: Target, label: 'Admission CRM', permKey: 'students' },
-        { path: '/app/marketing', icon: Megaphone, label: 'Marketing', permKey: 'students' },
-      ]
-    },
-    {
       id: 'academic', label: 'Academic',
       items: [
         { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes' },
@@ -58,6 +50,14 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         { path: '/app/homework', icon: BookMarked, label: 'Homework', permKey: 'attendance' },
         { path: '/app/certificates', icon: Award, label: 'Certificates', permKey: 'students' },
         { path: '/app/admit-cards', icon: FileText, label: 'Admit Cards', permKey: 'attendance' },
+      ]
+    },
+    {
+      id: 'admission', label: 'Students & Admission',
+      items: [
+        { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
+        { path: '/app/admission-crm', icon: Target, label: 'Admission CRM', permKey: 'students' },
+        { path: '/app/marketing', icon: Megaphone, label: 'Marketing', permKey: 'students' },
       ]
     },
     {
@@ -92,19 +92,9 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       id: 'communicate', label: 'Communication',
       items: [
         { path: '/app/notices', icon: Bell, label: 'Notices', permKey: 'notices' },
-        { path: '/app/sms', icon: MessageSquare, label: 'SMS & WhatsApp', permKey: 'sms_center' },
-        { path: '/app/integrated-comm', icon: MessageSquare, label: 'Integrated Comms', permKey: 'sms_center' },
+        { path: '/app/integrated-comm', icon: MessageSquare, label: 'Communication Hub', permKey: 'sms_center' },
         { path: '/app/gallery', icon: Image, label: 'Gallery', permKey: 'gallery' },
         { path: '/app/complaints', icon: MessageSquare, label: 'Complaints', permKey: 'settings' },
-      ]
-    },
-    {
-      id: 'tools', label: 'AI & Tools',
-      items: [
-        { path: '/app/tino-ai', icon: Brain, label: 'Tino AI', permKey: 'dashboard' },
-        { path: '/app/ai-paper', icon: Sparkles, label: 'AI Paper', permKey: 'ai_paper' },
-        { path: '/app/event-designer', icon: Image, label: 'Event Designer', permKey: 'ai_content' },
-        { path: '/app/school-calendar', icon: Calendar, label: 'Calendar', permKey: 'settings' },
       ]
     },
     {
@@ -121,13 +111,6 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       ]
     },
     {
-      id: 'showcase', label: 'Platform',
-      items: [
-        { path: '/app/mobile-app', icon: Smartphone, label: 'Mobile App', permKey: 'dashboard' },
-        { path: '/app/integrations', icon: Link2, label: 'Integrations', permKey: 'dashboard' },
-      ]
-    },
-    {
       id: 'setup', label: 'Settings',
       items: [
         { path: '/app/school-management', icon: Building, label: 'School Profile', permKey: 'settings', directorOnly: true },
@@ -135,6 +118,9 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         { path: '/app/logo-settings', icon: Image, label: 'Logo & Branding', permKey: 'settings', directorOnly: true },
         { path: '/app/prayer-system', icon: Music, label: 'Prayer System', permKey: 'settings' },
         { path: '/app/website', icon: Globe, label: 'Website', permKey: 'website_integration' },
+        { path: '/app/integrations', icon: Link2, label: 'Integrations', permKey: 'dashboard' },
+        { path: '/app/school-calendar', icon: Calendar, label: 'Calendar', permKey: 'settings' },
+        { path: '/app/event-designer', icon: Image, label: 'Event Designer', permKey: 'ai_content' },
       ]
     },
   ];

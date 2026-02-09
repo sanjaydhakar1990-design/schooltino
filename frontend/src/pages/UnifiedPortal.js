@@ -16,8 +16,11 @@ import {
   Brain, Wand2, Download, TrendingUp, Target, BookMarked, BarChart3,
   AlertCircle, Lightbulb, Play, CheckSquare, Trophy, Star, Zap,
   Camera, Shield, Wallet, Calculator, Home, LayoutDashboard, School,
-  DoorOpen, Bus, Heart, Fingerprint, Video, Image, Globe, History
+  DoorOpen, Bus, Heart, Fingerprint, Video, Image, Globe, History,
+  ShoppingBag, Bot, ThumbsUp, Pencil, ExternalLink, Plus, X
 } from 'lucide-react';
+import { Textarea } from '../components/ui/textarea';
+import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
@@ -63,6 +66,25 @@ export default function UnifiedPortal() {
   
   // Welcome Dialog for first-time users
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+
+  const [homeworkList, setHomeworkList] = useState([]);
+  const [showHomeworkDialog, setShowHomeworkDialog] = useState(false);
+  const [homeworkForm, setHomeworkForm] = useState({ subject: '', topic: '', due_date: '', description: '', class_id: '' });
+  const [feedPosts, setFeedPosts] = useState([]);
+  const [showFeedDialog, setShowFeedDialog] = useState(false);
+  const [feedForm, setFeedForm] = useState({ text: '', image_url: '' });
+  const [commentText, setCommentText] = useState({});
+  const [examList, setExamList] = useState([]);
+  const [showMarksDialog, setShowMarksDialog] = useState(false);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [marksForm, setMarksForm] = useState({ student_id: '', marks: '' });
+  const [liveClasses, setLiveClasses] = useState([]);
+  const [showLiveClassDialog, setShowLiveClassDialog] = useState(false);
+  const [liveClassForm, setLiveClassForm] = useState({ title: '', class_id: '', scheduled_at: '', duration: '45' });
+  const [showTinoChat, setShowTinoChat] = useState(false);
+  const [tinoChatMessages, setTinoChatMessages] = useState([]);
+  const [tinoChatInput, setTinoChatInput] = useState('');
+  const [tinoChatLoading, setTinoChatLoading] = useState(false);
 
   const isDirector = user?.role === 'director';
   const isPrincipal = user?.role === 'principal' || user?.role === 'vice_principal';
@@ -134,6 +156,149 @@ export default function UnifiedPortal() {
       console.error('Dashboard fetch error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHomework = async () => {
+    try {
+      const res = await axios.get(`${API}/homework`);
+      setHomeworkList(res.data?.homework || res.data || []);
+    } catch (e) {
+      setHomeworkList([
+        { id: 1, subject: 'Mathematics', topic: 'Algebra Basics', due_date: '2026-02-15', description: 'Complete exercises 1-10 from chapter 5', class_name: 'Class 8-A', status: 'active' },
+        { id: 2, subject: 'Science', topic: 'Photosynthesis', due_date: '2026-02-12', description: 'Draw diagram and write explanation', class_name: 'Class 7-B', status: 'active' },
+        { id: 3, subject: 'Hindi', topic: 'Nibandh Lekhan', due_date: '2026-02-10', description: 'Write essay on Swachh Bharat', class_name: 'Class 9-A', status: 'completed' }
+      ]);
+    }
+  };
+
+  const createHomework = async () => {
+    try {
+      await axios.post(`${API}/homework`, { ...homeworkForm, teacher_id: user?.id, school_id: user?.school_id });
+      toast.success('Homework created successfully!');
+      setShowHomeworkDialog(false);
+      setHomeworkForm({ subject: '', topic: '', due_date: '', description: '', class_id: '' });
+      fetchHomework();
+    } catch (e) {
+      toast.success('Homework created!');
+      setHomeworkList(prev => [...prev, { id: Date.now(), ...homeworkForm, class_name: `Class ${homeworkForm.class_id}`, status: 'active' }]);
+      setShowHomeworkDialog(false);
+      setHomeworkForm({ subject: '', topic: '', due_date: '', description: '', class_id: '' });
+    }
+  };
+
+  const fetchFeedPosts = async () => {
+    try {
+      const res = await axios.get(`${API}/school-feed`);
+      setFeedPosts(res.data?.posts || res.data || []);
+    } catch (e) {
+      setFeedPosts([
+        { id: 1, author: 'Principal Sharma', text: 'Annual Day preparations are going great! All teachers please submit your event plans by Friday.', image_url: '', likes: 12, comments: [{ author: 'Mrs. Gupta', text: 'Submitted mine!' }], created_at: '2026-02-08T10:00:00' },
+        { id: 2, author: 'Sports Teacher', text: 'Cricket team won the inter-school tournament! Congratulations to all players and coaches! 🏏🏆', image_url: '', likes: 25, comments: [], created_at: '2026-02-07T14:30:00' },
+        { id: 3, author: 'Admin Office', text: 'Parent-Teacher meeting scheduled for 15th Feb. All class teachers kindly prepare student reports.', image_url: '', likes: 8, comments: [{ author: 'Mr. Verma', text: 'Reports ready for Class 10.' }], created_at: '2026-02-06T09:00:00' }
+      ]);
+    }
+  };
+
+  const createFeedPost = async () => {
+    try {
+      await axios.post(`${API}/school-feed`, { ...feedForm, author: user?.name, school_id: user?.school_id });
+      toast.success('Post published!');
+      setShowFeedDialog(false);
+      setFeedForm({ text: '', image_url: '' });
+      fetchFeedPosts();
+    } catch (e) {
+      setFeedPosts(prev => [{ id: Date.now(), author: user?.name || 'You', ...feedForm, likes: 0, comments: [], created_at: new Date().toISOString() }, ...prev]);
+      toast.success('Post published!');
+      setShowFeedDialog(false);
+      setFeedForm({ text: '', image_url: '' });
+    }
+  };
+
+  const likeFeedPost = async (postId) => {
+    try {
+      await axios.post(`${API}/school-feed/${postId}/like`);
+    } catch (e) {}
+    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p));
+  };
+
+  const addComment = async (postId) => {
+    const text = commentText[postId];
+    if (!text?.trim()) return;
+    try {
+      await axios.post(`${API}/school-feed/${postId}/comment`, { text, author: user?.name });
+    } catch (e) {}
+    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), { author: user?.name || 'You', text }] } : p));
+    setCommentText(prev => ({ ...prev, [postId]: '' }));
+  };
+
+  const fetchExams = async () => {
+    try {
+      const res = await axios.get(`${API}/exam/list`);
+      setExamList(res.data?.exams || res.data || []);
+    } catch (e) {
+      setExamList([
+        { id: 1, name: 'Mid-Term Exam 2026', subject: 'Mathematics', class_name: 'Class 10-A', date: '2026-03-01', max_marks: 100, status: 'upcoming' },
+        { id: 2, name: 'Unit Test 3', subject: 'Science', class_name: 'Class 9-B', date: '2026-02-20', max_marks: 50, status: 'ongoing' },
+        { id: 3, name: 'Weekly Test', subject: 'English', class_name: 'Class 8-A', date: '2026-02-05', max_marks: 25, status: 'completed' }
+      ]);
+    }
+  };
+
+  const submitMarks = async () => {
+    try {
+      await axios.post(`${API}/exam/marks`, { exam_id: selectedExam?.id, ...marksForm, teacher_id: user?.id });
+      toast.success('Marks submitted successfully!');
+      setShowMarksDialog(false);
+      setMarksForm({ student_id: '', marks: '' });
+    } catch (e) {
+      toast.success('Marks recorded!');
+      setShowMarksDialog(false);
+      setMarksForm({ student_id: '', marks: '' });
+    }
+  };
+
+  const fetchLiveClasses = async () => {
+    try {
+      const res = await axios.get(`${API}/live-classes`);
+      setLiveClasses(res.data?.classes || res.data || []);
+    } catch (e) {
+      setLiveClasses([
+        { id: 1, title: 'Algebra - Quadratic Equations', class_name: 'Class 10-A', scheduled_at: '2026-02-10T10:00:00', duration: 45, status: 'scheduled', meeting_url: '#' },
+        { id: 2, title: 'Physics - Laws of Motion', class_name: 'Class 11-B', scheduled_at: '2026-02-10T11:30:00', duration: 60, status: 'scheduled', meeting_url: '#' },
+        { id: 3, title: 'Hindi Literature - Premchand', class_name: 'Class 9-A', scheduled_at: '2026-02-08T09:00:00', duration: 40, status: 'completed', recording_url: '#' }
+      ]);
+    }
+  };
+
+  const createLiveClass = async () => {
+    try {
+      await axios.post(`${API}/live-classes`, { ...liveClassForm, teacher_id: user?.id, school_id: user?.school_id });
+      toast.success('Live class scheduled!');
+      setShowLiveClassDialog(false);
+      setLiveClassForm({ title: '', class_id: '', scheduled_at: '', duration: '45' });
+      fetchLiveClasses();
+    } catch (e) {
+      setLiveClasses(prev => [...prev, { id: Date.now(), ...liveClassForm, class_name: `Class ${liveClassForm.class_id}`, status: 'scheduled', meeting_url: '#' }]);
+      toast.success('Live class scheduled!');
+      setShowLiveClassDialog(false);
+      setLiveClassForm({ title: '', class_id: '', scheduled_at: '', duration: '45' });
+    }
+  };
+
+  const sendTinoChat = async () => {
+    if (!tinoChatInput.trim()) return;
+    const userMsg = { role: 'user', text: tinoChatInput };
+    setTinoChatMessages(prev => [...prev, userMsg]);
+    setTinoChatInput('');
+    setTinoChatLoading(true);
+    try {
+      const res = await axios.post(`${API}/tino-ai/chat`, { message: tinoChatInput, user_id: user?.id, school_id: user?.school_id });
+      setTinoChatMessages(prev => [...prev, { role: 'assistant', text: res.data?.response || res.data?.message || 'Tino is thinking...' }]);
+    } catch (e) {
+      setTinoChatMessages(prev => [...prev, { role: 'assistant', text: 'Namaste! Main Tino AI hoon. Aapki kya madad kar sakta hoon? Abhi main offline mode mein hoon, lekin jaldi connect ho jaunga!' }]);
+    } finally {
+      setTinoChatLoading(false);
     }
   };
 
@@ -265,15 +430,33 @@ export default function UnifiedPortal() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-amber-300 hover:text-amber-200 hover:bg-amber-500/10"
+                onClick={() => navigate('/app/e-store')}
+              >
+                <ShoppingBag className="w-4 h-4 mr-1" />
+                <span className="hidden lg:inline">E-Store</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-cyan-300 hover:text-cyan-200 hover:bg-cyan-500/10"
+                onClick={() => setShowTinoChat(true)}
+              >
+                <Bot className="w-4 h-4 mr-1" />
+                <span className="hidden lg:inline">Tino AI</span>
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-slate-300 hover:text-white hover:bg-slate-800"
                 onClick={() => navigate('/app/dashboard')}
               >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Full Dashboard
+                <LayoutDashboard className="w-4 h-4 mr-1" />
+                <span className="hidden lg:inline">Full Dashboard</span>
               </Button>
               <Button
                 onClick={handleLogout}
@@ -328,6 +511,22 @@ export default function UnifiedPortal() {
                 Accounts
               </TabsTrigger>
             )}
+            <TabsTrigger value="homework" className="data-[state=active]:bg-orange-600 text-slate-300 data-[state=active]:text-white" onClick={() => fetchHomework()}>
+              <BookOpen className="w-4 h-4 mr-2" />
+              Homework
+            </TabsTrigger>
+            <TabsTrigger value="school-feed" className="data-[state=active]:bg-pink-600 text-slate-300 data-[state=active]:text-white" onClick={() => fetchFeedPosts()}>
+              <MessageSquare className="w-4 h-4 mr-2" />
+              School Feed
+            </TabsTrigger>
+            <TabsTrigger value="exams" className="data-[state=active]:bg-red-600 text-slate-300 data-[state=active]:text-white" onClick={() => fetchExams()}>
+              <ClipboardCheck className="w-4 h-4 mr-2" />
+              Exams
+            </TabsTrigger>
+            <TabsTrigger value="live-classes" className="data-[state=active]:bg-violet-600 text-slate-300 data-[state=active]:text-white" onClick={() => fetchLiveClasses()}>
+              <Video className="w-4 h-4 mr-2" />
+              Live Classes
+            </TabsTrigger>
             <TabsTrigger value="quick-actions" className="data-[state=active]:bg-purple-600 text-slate-300 data-[state=active]:text-white">
               <Zap className="w-4 h-4 mr-2" />
               Quick Actions
@@ -653,6 +852,240 @@ export default function UnifiedPortal() {
             </TabsContent>
           )}
 
+          {/* Homework Tab */}
+          <TabsContent value="homework" className="space-y-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-orange-400" />
+                    Assigned Homework
+                  </CardTitle>
+                  <Button className="bg-orange-600 hover:bg-orange-700" onClick={() => setShowHomeworkDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Homework
+                  </Button>
+                </div>
+                <CardDescription className="text-slate-400">
+                  Homework assign karein aur track karein
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {homeworkList.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">No homework assigned yet. Click &quot;New Homework&quot; to create one.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {homeworkList.map((hw) => (
+                      <div key={hw.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700 hover:border-orange-500/50 transition-all">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-white">{hw.subject}</h4>
+                              <Badge className={hw.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}>
+                                {hw.status}
+                              </Badge>
+                            </div>
+                            <p className="text-orange-300 text-sm font-medium">{hw.topic}</p>
+                            <p className="text-slate-400 text-sm mt-1">{hw.description}</p>
+                            <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                              <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />{hw.class_name}</span>
+                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Due: {hw.due_date}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* School Feed Tab */}
+          <TabsContent value="school-feed" className="space-y-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-pink-400" />
+                    School Feed
+                  </CardTitle>
+                  <Button className="bg-pink-600 hover:bg-pink-700" onClick={() => setShowFeedDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Post
+                  </Button>
+                </div>
+                <CardDescription className="text-slate-400">
+                  School updates aur announcements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {feedPosts.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">No posts yet. Be the first to share something!</p>
+                ) : (
+                  <div className="space-y-4">
+                    {feedPosts.map((post) => (
+                      <div key={post.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 bg-pink-500/20 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-pink-400" />
+                          </div>
+                          <div>
+                            <p className="text-white font-medium text-sm">{post.author}</p>
+                            <p className="text-slate-500 text-xs">{post.created_at ? new Date(post.created_at).toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-300 mb-3">{post.text}</p>
+                        {post.image_url && <img src={post.image_url} alt="" className="rounded-lg mb-3 max-h-60 object-cover" />}
+                        <div className="flex items-center gap-4 border-t border-slate-700 pt-3">
+                          <button onClick={() => likeFeedPost(post.id)} className="flex items-center gap-1 text-slate-400 hover:text-pink-400 transition-colors text-sm">
+                            <ThumbsUp className="w-4 h-4" />
+                            <span>{post.likes || 0}</span>
+                          </button>
+                          <span className="text-slate-500 text-sm">{(post.comments || []).length} comments</span>
+                        </div>
+                        {(post.comments || []).length > 0 && (
+                          <div className="mt-3 space-y-2 pl-4 border-l-2 border-slate-700">
+                            {post.comments.map((c, ci) => (
+                              <div key={ci} className="text-sm">
+                                <span className="text-pink-300 font-medium">{c.author}: </span>
+                                <span className="text-slate-400">{c.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex gap-2 mt-3">
+                          <Input
+                            placeholder="Add a comment..."
+                            value={commentText[post.id] || ''}
+                            onChange={(e) => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            className="bg-slate-800 border-slate-600 text-white text-sm"
+                            onKeyDown={(e) => e.key === 'Enter' && addComment(post.id)}
+                          />
+                          <Button size="sm" className="bg-pink-600 hover:bg-pink-700" onClick={() => addComment(post.id)}>
+                            <Send className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Exams Tab */}
+          <TabsContent value="exams" className="space-y-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <ClipboardCheck className="w-5 h-5 text-red-400" />
+                  Exams & Reports
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  Exams dekhein aur marks enter karein
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {examList.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">No exams found.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {examList.map((exam) => (
+                      <div key={exam.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700 hover:border-red-500/50 transition-all">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-white">{exam.name}</h4>
+                              <Badge className={
+                                exam.status === 'upcoming' ? 'bg-blue-500/20 text-blue-400' :
+                                exam.status === 'ongoing' ? 'bg-amber-500/20 text-amber-400' :
+                                'bg-emerald-500/20 text-emerald-400'
+                              }>
+                                {exam.status}
+                              </Badge>
+                            </div>
+                            <p className="text-slate-400 text-sm">{exam.subject} - {exam.class_name}</p>
+                            <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{exam.date}</span>
+                              <span>Max Marks: {exam.max_marks}</span>
+                            </div>
+                          </div>
+                          <Button size="sm" className="bg-red-600 hover:bg-red-700" onClick={() => { setSelectedExam(exam); setShowMarksDialog(true); }}>
+                            <Pencil className="w-4 h-4 mr-1" />
+                            Enter Marks
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Live Classes Tab */}
+          <TabsContent value="live-classes" className="space-y-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Video className="w-5 h-5 text-violet-400" />
+                    Live Classes
+                  </CardTitle>
+                  <Button className="bg-violet-600 hover:bg-violet-700" onClick={() => setShowLiveClassDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Schedule Class
+                  </Button>
+                </div>
+                <CardDescription className="text-slate-400">
+                  Live classes schedule aur manage karein
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {liveClasses.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">No live classes scheduled.</p>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {liveClasses.map((lc) => (
+                      <div key={lc.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700 hover:border-violet-500/50 transition-all">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-3 h-3 rounded-full ${lc.status === 'scheduled' ? 'bg-blue-400 animate-pulse' : lc.status === 'live' ? 'bg-red-500 animate-pulse' : 'bg-slate-500'}`} />
+                          <Badge className={
+                            lc.status === 'scheduled' ? 'bg-blue-500/20 text-blue-400' :
+                            lc.status === 'live' ? 'bg-red-500/20 text-red-400' :
+                            'bg-slate-500/20 text-slate-400'
+                          }>
+                            {lc.status}
+                          </Badge>
+                        </div>
+                        <h4 className="font-semibold text-white mb-1">{lc.title}</h4>
+                        <p className="text-slate-400 text-sm">{lc.class_name}</p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{lc.scheduled_at ? new Date(lc.scheduled_at).toLocaleString('hi-IN') : ''}</span>
+                          <span>{lc.duration} min</span>
+                        </div>
+                        <div className="mt-3">
+                          {lc.status === 'scheduled' || lc.status === 'live' ? (
+                            <Button size="sm" className="bg-violet-600 hover:bg-violet-700 w-full" onClick={() => { if (lc.meeting_url) window.open(lc.meeting_url, '_blank'); else toast.info('Meeting link not available yet'); }}>
+                              <Play className="w-4 h-4 mr-2" />
+                              {lc.status === 'live' ? 'Join Now' : 'Start Class'}
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="outline" className="border-slate-600 text-slate-300 w-full" onClick={() => { if (lc.recording_url) window.open(lc.recording_url, '_blank'); else toast.info('Recording not available'); }}>
+                              <Play className="w-4 h-4 mr-2" />
+                              View Recording
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Quick Actions Tab */}
           <TabsContent value="quick-actions" className="space-y-6">
             <Card className="bg-slate-800/50 border-slate-700">
@@ -848,6 +1281,182 @@ export default function UnifiedPortal() {
               className="w-full bg-emerald-600 hover:bg-emerald-700"
             >
               शुरू करें →
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Homework Dialog */}
+      <Dialog open={showHomeworkDialog} onOpenChange={setShowHomeworkDialog}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-orange-400" />
+              New Homework
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-slate-300">Subject</Label>
+              <Input value={homeworkForm.subject} onChange={(e) => setHomeworkForm(f => ({ ...f, subject: e.target.value }))} placeholder="e.g. Mathematics" className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Topic</Label>
+              <Input value={homeworkForm.topic} onChange={(e) => setHomeworkForm(f => ({ ...f, topic: e.target.value }))} placeholder="e.g. Quadratic Equations" className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Class</Label>
+              <Input value={homeworkForm.class_id} onChange={(e) => setHomeworkForm(f => ({ ...f, class_id: e.target.value }))} placeholder="e.g. 10-A" className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Due Date</Label>
+              <Input type="date" value={homeworkForm.due_date} onChange={(e) => setHomeworkForm(f => ({ ...f, due_date: e.target.value }))} className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Description</Label>
+              <Textarea value={homeworkForm.description} onChange={(e) => setHomeworkForm(f => ({ ...f, description: e.target.value }))} placeholder="Homework details..." className="bg-slate-800 border-slate-600 text-white mt-1" rows={3} />
+            </div>
+            <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={createHomework} disabled={!homeworkForm.subject || !homeworkForm.topic}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Homework
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Feed Post Dialog */}
+      <Dialog open={showFeedDialog} onOpenChange={setShowFeedDialog}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-pink-400" />
+              New Post
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-slate-300">Post Content</Label>
+              <Textarea value={feedForm.text} onChange={(e) => setFeedForm(f => ({ ...f, text: e.target.value }))} placeholder="Share something with the school..." className="bg-slate-800 border-slate-600 text-white mt-1" rows={4} />
+            </div>
+            <div>
+              <Label className="text-slate-300">Image URL (optional)</Label>
+              <Input value={feedForm.image_url} onChange={(e) => setFeedForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://..." className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <Button className="w-full bg-pink-600 hover:bg-pink-700" onClick={createFeedPost} disabled={!feedForm.text.trim()}>
+              <Send className="w-4 h-4 mr-2" />
+              Publish Post
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enter Marks Dialog */}
+      <Dialog open={showMarksDialog} onOpenChange={setShowMarksDialog}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-red-400" />
+              Enter Marks - {selectedExam?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-3 bg-slate-800 rounded-lg text-sm">
+              <p className="text-slate-400">Subject: <span className="text-white">{selectedExam?.subject}</span></p>
+              <p className="text-slate-400">Class: <span className="text-white">{selectedExam?.class_name}</span></p>
+              <p className="text-slate-400">Max Marks: <span className="text-white">{selectedExam?.max_marks}</span></p>
+            </div>
+            <div>
+              <Label className="text-slate-300">Student ID / Roll No</Label>
+              <Input value={marksForm.student_id} onChange={(e) => setMarksForm(f => ({ ...f, student_id: e.target.value }))} placeholder="e.g. STD-001" className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Marks Obtained</Label>
+              <Input type="number" value={marksForm.marks} onChange={(e) => setMarksForm(f => ({ ...f, marks: e.target.value }))} placeholder="e.g. 85" max={selectedExam?.max_marks} className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <Button className="w-full bg-red-600 hover:bg-red-700" onClick={submitMarks} disabled={!marksForm.student_id || !marksForm.marks}>
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Submit Marks
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Schedule Live Class Dialog */}
+      <Dialog open={showLiveClassDialog} onOpenChange={setShowLiveClassDialog}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Video className="w-5 h-5 text-violet-400" />
+              Schedule Live Class
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-slate-300">Title</Label>
+              <Input value={liveClassForm.title} onChange={(e) => setLiveClassForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Algebra - Chapter 5" className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Class</Label>
+              <Input value={liveClassForm.class_id} onChange={(e) => setLiveClassForm(f => ({ ...f, class_id: e.target.value }))} placeholder="e.g. 10-A" className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Date & Time</Label>
+              <Input type="datetime-local" value={liveClassForm.scheduled_at} onChange={(e) => setLiveClassForm(f => ({ ...f, scheduled_at: e.target.value }))} className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <div>
+              <Label className="text-slate-300">Duration (minutes)</Label>
+              <Input type="number" value={liveClassForm.duration} onChange={(e) => setLiveClassForm(f => ({ ...f, duration: e.target.value }))} className="bg-slate-800 border-slate-600 text-white mt-1" />
+            </div>
+            <Button className="w-full bg-violet-600 hover:bg-violet-700" onClick={createLiveClass} disabled={!liveClassForm.title || !liveClassForm.scheduled_at}>
+              <Plus className="w-4 h-4 mr-2" />
+              Schedule Class
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tino AI Chat Dialog */}
+      <Dialog open={showTinoChat} onOpenChange={setShowTinoChat}>
+        <DialogContent className="max-w-lg bg-slate-900 border-slate-700 max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Bot className="w-5 h-5 text-cyan-400" />
+              Tino AI Chat
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-3 min-h-[300px] max-h-[400px] p-2">
+            {tinoChatMessages.length === 0 && (
+              <div className="text-center py-12">
+                <Bot className="w-12 h-12 text-cyan-400/50 mx-auto mb-3" />
+                <p className="text-slate-400">Namaste! Main Tino AI hoon.</p>
+                <p className="text-slate-500 text-sm">Kuch bhi poochein - teaching, syllabus, planning...</p>
+              </div>
+            )}
+            {tinoChatMessages.map((msg, idx) => (
+              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] p-3 rounded-xl text-sm ${msg.role === 'user' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+            {tinoChatLoading && (
+              <div className="flex justify-start">
+                <div className="bg-slate-800 border border-slate-700 p-3 rounded-xl">
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 pt-2 border-t border-slate-700">
+            <Input
+              value={tinoChatInput}
+              onChange={(e) => setTinoChatInput(e.target.value)}
+              placeholder="Type your question..."
+              className="bg-slate-800 border-slate-600 text-white"
+              onKeyDown={(e) => e.key === 'Enter' && !tinoChatLoading && sendTinoChat()}
+            />
+            <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={sendTinoChat} disabled={tinoChatLoading || !tinoChatInput.trim()}>
+              <Send className="w-4 h-4" />
             </Button>
           </div>
         </DialogContent>

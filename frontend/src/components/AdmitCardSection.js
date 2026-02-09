@@ -13,7 +13,8 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
-const AdmitCardSection = ({ studentId, schoolId }) => {
+const AdmitCardSection = ({ studentId, schoolId, profile }) => {
+  const effectiveSchoolId = schoolId || profile?.school_id || profile?.schoolId;
   const [admitCards, setAdmitCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCard, setSelectedCard] = useState(null);
@@ -24,20 +25,26 @@ const AdmitCardSection = ({ studentId, schoolId }) => {
   const printRef = useRef();
 
   useEffect(() => {
-    if (studentId && schoolId) {
+    if (studentId && effectiveSchoolId) {
       fetchAdmitCards();
     } else {
       setLoading(false);
-      setError('Student या School ID नहीं मिली');
+      if (!studentId) setError('Student ID नहीं मिली');
+      else if (!effectiveSchoolId) setError('School ID नहीं मिली');
     }
-  }, [studentId, schoolId]);
+  }, [studentId, effectiveSchoolId]);
 
   const fetchAdmitCards = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API}/admit-card/student/${schoolId}/${studentId}`);
-      setAdmitCards(res.data.admit_cards || []);
+      const res = await axios.get(`${API}/api/admit-card/student/my-admit-cards/${studentId}?school_id=${effectiveSchoolId}`);
+      const cards = (res.data.admit_cards || []).map(card => ({
+        ...card,
+        is_eligible: card.is_eligible !== undefined ? card.is_eligible : card.eligible_to_download,
+        is_generated: card.is_generated || false
+      }));
+      setAdmitCards(cards);
     } catch (err) {
       console.error('Error fetching admit cards:', err);
       setError('Admit cards load नहीं हो पाए। शायद अभी कोई exam नहीं है।');
@@ -64,7 +71,7 @@ const AdmitCardSection = ({ studentId, schoolId }) => {
       // Generate admit card
       try {
         setProcessing(true);
-        const res = await axios.get(`${API}/admit-card/generate/${schoolId}/${card.exam_id}/${studentId}`);
+        const res = await axios.get(`${API}/api/admit-card/generate/${effectiveSchoolId}/${card.exam_id}/${studentId}`);
         if (res.data.success) {
           toast.success('Admit Card generated!');
           fetchAdmitCards();
@@ -84,8 +91,8 @@ const AdmitCardSection = ({ studentId, schoolId }) => {
     
     setProcessing(true);
     try {
-      const res = await axios.post(`${API}/admit-card/pay-and-download`, {
-        school_id: schoolId,
+      const res = await axios.post(`${API}/api/admit-card/student/pay-for-admit-card`, {
+        school_id: effectiveSchoolId,
         student_id: studentId,
         exam_id: selectedCard.exam_id,
         amount: paymentAmount,

@@ -63,12 +63,14 @@ export default function TimetableManagement() {
   // UI states
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
-  const [viewMode, setViewMode] = useState('class'); // class or teacher
+  const [viewMode, setViewMode] = useState('class');
   const [showSlotDialog, setShowSlotDialog] = useState(false);
   const [editingSlot, setEditingSlot] = useState(null);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [subjectAllocations, setSubjectAllocations] = useState([]);
   
   // Slot form
   const [slotForm, setSlotForm] = useState({
@@ -91,13 +93,14 @@ export default function TimetableManagement() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classRes, teacherRes, subjectRes, timetableRes, slotsRes, schoolRes] = await Promise.all([
+      const [classRes, teacherRes, subjectRes, timetableRes, slotsRes, schoolRes, allocRes] = await Promise.all([
         axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/staff?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
         axios.get(`${API}/subjects?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
         axios.get(`${API}/timetables?school_id=${schoolId}`, { headers }).catch(() => ({ data: {} })),
         axios.get(`${API}/timetable/time-slots?school_id=${schoolId}`, { headers }).catch(() => ({ data: { slots: [] } })),
-        axios.get(`${API}/schools/${schoolId}`, { headers }).catch(() => ({ data: {} }))
+        axios.get(`${API}/schools/${schoolId}`, { headers }).catch(() => ({ data: {} })),
+        axios.get(`${API}/subject-allocations?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] }))
       ]);
       
       setClasses(classRes.data || []);
@@ -134,8 +137,8 @@ export default function TimetableManagement() {
       ];
       setSubjects(subjectRes.data?.length > 0 ? subjectRes.data : defaultSubjects);
       setTimetables(timetableRes.data || {});
+      setSubjectAllocations(allocRes.data || []);
       
-      // Auto-select first class
       if (classRes.data?.length > 0) {
         setSelectedClass(classRes.data[0]);
       }
@@ -379,7 +382,134 @@ export default function TimetableManagement() {
     }
   };
 
-  // Print timetable
+  const getClassTeacherInfo = (classObj) => {
+    if (!classObj) return null;
+    const classTeacherId = classObj.class_teacher_id || classObj.classTeacherId;
+    if (classTeacherId) {
+      const teacher = teachers.find(t => t.id === classTeacherId || t._id === classTeacherId);
+      if (teacher) {
+        const alloc = subjectAllocations.find(a => 
+          (a.teacher_id === teacher.id || a.teacher_id === teacher._id) &&
+          (a.class_id === classObj.id || a.class_id === classObj._id)
+        );
+        const subjectName = alloc?.subject_name || teacher.subject || null;
+        const subjectId = alloc?.subject_id || subjects.find(s => s.name === subjectName)?.id || null;
+        return { teacher, subjectName, subjectId };
+      }
+    }
+    if (classObj.class_teacher) {
+      const teacher = teachers.find(t => t.name === classObj.class_teacher);
+      if (teacher) {
+        const subjectName = teacher.subject || null;
+        const subjectId = subjects.find(s => s.name === subjectName)?.id || null;
+        return { teacher, subjectName, subjectId };
+      }
+    }
+    return null;
+  };
+
+  const handleGenerateTimetable = async () => {
+    if (!selectedClass) {
+      toast.error('Please select a class first');
+      return;
+    }
+    setGenerating(true);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      try {
+        const res = await axios.post(`${API}/timetable/generate`, {
+          school_id: schoolId,
+          class_id: selectedClass.id || selectedClass._id
+        }, { headers });
+        if (res.data?.timetable) {
+          setTimetables(prev => ({
+            ...prev,
+            [selectedClass.id || selectedClass._id]: res.data.timetable
+          }));
+          toast.success('Timetable generated successfully!');
+          setGenerating(false);
+          return;
+        }
+      } catch (apiErr) {
+        console.log('API generate not available, using local generation');
+      }
+
+      const classId = selectedClass.id || selectedClass._id;
+      const classTeacher = getClassTeacherInfo(selectedClass);
+      const availableSubjects = subjects.filter(s => s.id && s.name);
+      const periods = timeSlots.filter(s => !s.isBreak);
+      const newTimetable = {};
+
+      DAYS.forEach(day => {
+        newTimetable[day] = {};
+        const shuffledSubjects = [...availableSubjects].sort(() => Math.random() - 0.5);
+        let subjectIndex = 0;
+
+        periods.forEach((period, pIdx) => {
+          let subject, teacher;
+          
+          if (pIdx === 0 && classTeacher?.subjectName) {
+            subject = subjects.find(s => s.name === classTeacher.subjectName) || 
+                      subjects.find(s => s.id === classTeacher.subjectId);
+            teacher = classTeacher.teacher;
+          } else {
+            subject = shuffledSubjects[subjectIndex % shuffledSubjects.length];
+            if (subject?.name === classTeacher?.subjectName && pIdx !== 0) {
+              subjectIndex++;
+              subject = shuffledSubjects[subjectIndex % shuffledSubjects.length];
+            }
+            subjectIndex++;
+            teacher = teachers.find(t => {
+              const alloc = subjectAllocations.find(a =>
+                (a.teacher_id === t.id || a.teacher_id === t._id) &&
+                (a.class_id === classId) &&
+                (a.subject_name === subject?.name || a.subject_id === subject?.id)
+              );
+              return !!alloc;
+            }) || teachers[Math.floor(Math.random() * (teachers.length || 1))] || null;
+          }
+
+          if (subject) {
+            newTimetable[day][period.id] = {
+              subject_id: subject.id,
+              subject_name: subject.name,
+              teacher_id: teacher?.id || teacher?._id || '',
+              teacher_name: teacher?.name || '',
+              room: ''
+            };
+          }
+        });
+      });
+
+      setTimetables(prev => ({
+        ...prev,
+        [classId]: newTimetable
+      }));
+
+      try {
+        await axios.post(`${API}/timetables/bulk`, {
+          school_id: schoolId,
+          class_id: classId,
+          timetable: newTimetable
+        }, { headers });
+      } catch (e) {
+        console.log('Could not save generated timetable to backend');
+      }
+
+      const msg = classTeacher?.subjectName 
+        ? `Timetable generated! Class teacher's subject (${classTeacher.subjectName}) placed in Period 1` 
+        : 'Timetable generated!';
+      toast.success(msg);
+    } catch (error) {
+      console.error('Generate error:', error);
+      toast.error('Failed to generate timetable');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const handlePrint = () => {
     const printContent = document.getElementById('timetable-grid');
     if (!printContent) return;
@@ -438,6 +568,14 @@ export default function TimetableManagement() {
           <p className="text-slate-500 mt-1">Class-wise & Teacher-wise scheduling</p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            onClick={handleGenerateTimetable} 
+            disabled={generating || !selectedClass}
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+          >
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+            {generating ? 'Generating...' : 'Auto Generate'}
+          </Button>
           <Button variant="outline" onClick={handlePrint} className="gap-2">
             <Printer className="w-4 h-4" />
             Print

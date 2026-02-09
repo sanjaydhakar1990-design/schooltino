@@ -20,7 +20,6 @@ import StudentDashboard from './pages/StudentDashboard';
 import AIContentStudio from './pages/AIContentStudio';
 import VoiceAssistant from './pages/VoiceAssistant';
 import ImageGallery from './pages/ImageGallery';
-import SMSCenter from './pages/SMSCenter';
 import WebsiteIntegration from './pages/WebsiteIntegration';
 import LeaveManagement from './pages/LeaveManagement';
 import CCTVDashboard from './pages/CCTVDashboard';
@@ -79,7 +78,6 @@ import AIStaffAttendancePage from './pages/AIStaffAttendancePage';
 import TallyIntegrationPage from './pages/TallyIntegrationPage';
 
 import IntegratedCommunicationPage from './pages/IntegratedCommunicationPage';
-import UnifiedMobileAppPage from './pages/UnifiedMobileAppPage';
 import IntegrationsHubPage from './pages/IntegrationsHubPage';
 import CreditSystemPage from './pages/CreditSystemPage';
 import AdmissionCRMPage from './pages/AdmissionCRMPage';
@@ -175,7 +173,7 @@ function AppRoutes() {
         <Route path="ai-content" element={<Navigate to="/app/event-designer" replace />} />
         <Route path="voice-assistant" element={<VoiceAssistant />} />
         <Route path="gallery" element={<ImageGallery />} />
-        <Route path="sms" element={<SMSCenter />} />
+        <Route path="sms" element={<Navigate to="/app/integrated-comm" replace />} />
         <Route path="website" element={<WebsiteIntegration />} />
         <Route path="leave" element={<LeaveManagement />} />
         <Route path="cctv" element={<CCTVDashboard />} />
@@ -233,7 +231,7 @@ function AppRoutes() {
         <Route path="visitor-pass" element={<FrontOfficePage />} />
 
         <Route path="integrated-comm" element={<IntegratedCommunicationPage />} />
-        <Route path="mobile-app" element={<UnifiedMobileAppPage />} />
+        <Route path="mobile-app" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="integrations" element={<IntegrationsHubPage />} />
         <Route path="credit-system" element={<CreditSystemPage />} />
         <Route path="admission-crm" element={<AdmissionCRMPage />} />

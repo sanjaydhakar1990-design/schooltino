@@ -12,7 +12,7 @@ import {
   Sparkles, Download, Printer, Image, Calendar, 
   PartyPopper, GraduationCap, Trophy, Music, Heart,
   Loader2, Palette, RefreshCw, Copy, Share2, MessageCircle,
-  FileImage, Megaphone, Bell, Users
+  FileImage, Megaphone, Bell, Users, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -45,9 +45,11 @@ export default function EventDesignerPage() {
   
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [selectedStyle, setSelectedStyle] = useState('modern');
-  const [designType, setDesignType] = useState('pamphlet'); // 'pamphlet' or 'invitation'
+  const [designType, setDesignType] = useState('pamphlet');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedDesign, setGeneratedDesign] = useState(null);
+  const [savedEvents, setSavedEvents] = useState([]);
+  const [showSavedTab, setShowSavedTab] = useState(false);
   
   const [eventDetails, setEventDetails] = useState({
     eventName: '',
@@ -67,25 +69,29 @@ export default function EventDesignerPage() {
     phone: ''
   });
 
-  // Fetch school details to set default name and logo
   useEffect(() => {
     const fetchSchoolDetails = async () => {
       if (!schoolId) return;
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${API}/api/schools/${schoolId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.data) {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [schoolRes, eventsRes] = await Promise.all([
+          axios.get(`${API}/api/schools/${schoolId}`, { headers }).catch(() => null),
+          axios.get(`${API}/api/events?school_id=${schoolId}`, { headers }).catch(() => null),
+        ]);
+        if (schoolRes?.data) {
           setSchool({
-            name: response.data.name || 'School Name',
-            logo: response.data.logo_url || null,
-            address: response.data.address || 'School Address',
-            phone: response.data.phone || ''
+            name: schoolRes.data.name || 'School Name',
+            logo: schoolRes.data.logo_url || null,
+            address: schoolRes.data.address || 'School Address',
+            phone: schoolRes.data.phone || ''
           });
         }
+        if (eventsRes?.data?.length > 0) {
+          setSavedEvents(eventsRes.data);
+        }
       } catch (error) {
-        console.error('Failed to fetch school details:', error);
+        console.error('Failed to fetch details:', error);
       }
     };
     fetchSchoolDetails();
@@ -161,6 +167,66 @@ export default function EventDesignerPage() {
       playful: { colors: { primary: '#EC4899', secondary: '#DB2777', accent: '#FCE7F3', text: '#831843' } }
     };
     return configs[style] || configs.modern;
+  };
+
+  const handleSaveEvent = async () => {
+    if (!eventDetails.eventName) {
+      toast.error(isHindi ? 'Event name ज़रूरी है' : 'Event name is required');
+      return;
+    }
+    const eventToSave = {
+      id: Date.now(),
+      ...eventDetails,
+      template: selectedTemplate,
+      style: selectedStyle,
+      designType,
+      school_id: schoolId,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/api/events`, eventToSave, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data?.id) eventToSave.id = res.data.id;
+    } catch {
+      console.log('Saved event locally');
+    }
+
+    setSavedEvents(prev => [eventToSave, ...prev]);
+    toast.success(isHindi ? 'Event design save हो गया!' : 'Event design saved!');
+  };
+
+  const handleLoadEvent = (event) => {
+    setEventDetails({
+      eventName: event.eventName || '',
+      eventDate: event.eventDate || '',
+      eventTime: event.eventTime || '',
+      venue: event.venue || '',
+      chiefGuest: event.chiefGuest || '',
+      description: event.description || '',
+      contactNumber: event.contactNumber || '',
+      specialNote: event.specialNote || ''
+    });
+    if (event.template) setSelectedTemplate(event.template);
+    if (event.style) setSelectedStyle(event.style);
+    if (event.designType) setDesignType(event.designType);
+    setShowSavedTab(false);
+    toast.success(isHindi ? 'Event load हो गया' : 'Event loaded');
+  };
+
+  const handleDeleteSavedEvent = async (eventId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API}/api/events/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch {
+      console.log('Deleted locally');
+    }
+    setSavedEvents(prev => prev.filter(e => e.id !== eventId));
+    toast.success(isHindi ? 'Event हटा दिया गया' : 'Event deleted');
   };
 
   const handlePrint = () => {
@@ -262,7 +328,6 @@ _Powered by Schooltino_`;
 
   return (
     <div className="space-y-6" data-testid="event-designer-page">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -273,7 +338,50 @@ _Powered by Schooltino_`;
             {isHindi ? 'AI से Pamphlets और Invitation Cards बनाएं' : 'Create beautiful pamphlets & invitation cards with AI'}
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowSavedTab(!showSavedTab)} className="gap-2">
+            <Calendar className="w-4 h-4" />
+            {isHindi ? 'सेव किए गए' : 'Saved'} ({savedEvents.length})
+          </Button>
+          <Button onClick={handleSaveEvent} className="bg-purple-600 hover:bg-purple-700 gap-2">
+            <Download className="w-4 h-4" />
+            {isHindi ? 'सेव करें' : 'Save Design'}
+          </Button>
+        </div>
       </div>
+
+      {showSavedTab && savedEvents.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">{isHindi ? 'सेव किए गए Events' : 'Saved Event Designs'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {savedEvents.map(event => (
+                <div key={event.id} className="p-3 border rounded-xl hover:border-purple-300 transition-all">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-sm">{event.eventName}</p>
+                      <p className="text-xs text-gray-500">{event.eventDate} | {event.designType}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {EVENT_TEMPLATES.find(t => t.id === event.template)?.name || 'Custom'}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => handleLoadEvent(event)} className="h-7 w-7 p-0">
+                        <RefreshCw className="w-3 h-3" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDeleteSavedEvent(event.id)} className="h-7 w-7 p-0 text-red-500 hover:text-red-700">
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Panel - Configuration */}

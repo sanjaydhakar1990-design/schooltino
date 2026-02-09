@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -16,36 +17,51 @@ import {
   Loader2, CheckCircle, AlertCircle, Plus, Trash2, Edit, Clock,
   BarChart3, TrendingUp, PieChart, FileText, Star, ListChecks,
   Zap, Cake, Bus, UserCheck, CreditCard, BookOpen, Eye, X,
-  ChevronRight, Settings, Shield
+  ChevronRight, Settings, Shield, Wallet, RefreshCw, History,
+  IndianRupee, Coins
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const SMS_CREDIT_COST = 1;
+const WHATSAPP_CREDIT_COST = 1;
+
 export default function IntegratedCommunicationPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('messages');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('sms');
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+
+  const [creditBalance, setCreditBalance] = useState(0);
+  const [creditLoading, setCreditLoading] = useState(true);
+
+  const [smsHistory, setSmsHistory] = useState([]);
+  const [smsHistoryLoading, setSmsHistoryLoading] = useState(false);
+  const [whatsappHistory, setWhatsappHistory] = useState([]);
+  const [whatsappHistoryLoading, setWhatsappHistoryLoading] = useState(false);
+
+  const [smsTemplates, setSmsTemplates] = useState([]);
 
   const [messageForm, setMessageForm] = useState({
     recipient_type: 'all_parents',
     class_id: '',
     mobile: '',
-    email: '',
-    subject: '',
     message: '',
-    channels: { sms: true, email: false, whatsapp: false, push: true }
+    template: ''
   });
 
-  const [eventTriggers, setEventTriggers] = useState([
-    { id: 1, name: 'Fee Reminder', nameHi: 'फीस रिमाइंडर', icon: CreditCard, channels: { sms: true, email: true, whatsapp: true, push: true }, enabled: true, lastTriggered: '2026-02-08T10:30:00' },
-    { id: 2, name: 'Attendance Alert', nameHi: 'उपस्थिति अलर्ट', icon: UserCheck, channels: { sms: true, email: false, whatsapp: true, push: true }, enabled: true, lastTriggered: '2026-02-09T08:15:00' },
-    { id: 3, name: 'Exam Results', nameHi: 'परीक्षा परिणाम', icon: BookOpen, channels: { sms: true, email: true, whatsapp: true, push: true }, enabled: false, lastTriggered: '2026-01-25T14:00:00' },
-    { id: 4, name: 'Birthday Wishes', nameHi: 'जन्मदिन की शुभकामनाएं', icon: Cake, channels: { sms: false, email: false, whatsapp: true, push: true }, enabled: true, lastTriggered: '2026-02-09T06:00:00' },
-    { id: 5, name: 'Transport Alerts', nameHi: 'ट्रांसपोर्ट अलर्ट', icon: Bus, channels: { sms: true, email: false, whatsapp: true, push: true }, enabled: true, lastTriggered: '2026-02-09T07:00:00' },
-    { id: 6, name: 'Admission Confirmation', nameHi: 'प्रवेश पुष्टि', icon: Shield, channels: { sms: true, email: true, whatsapp: true, push: false }, enabled: false, lastTriggered: null },
-  ]);
+  const [whatsappForm, setWhatsappForm] = useState({
+    recipient_type: 'all_parents',
+    class_id: '',
+    mobile: '',
+    message: '',
+    template: ''
+  });
+
+  const [showSendConfirm, setShowSendConfirm] = useState(false);
+  const [pendingSend, setPendingSend] = useState(null);
 
   const [dltTemplates, setDltTemplates] = useState([
     { id: 1, templateId: 'DLT-1234567890', senderId: 'SCHLTN', content: 'Dear {#var#}, your child {#var#} fee of Rs.{#var#} is due. Pay before {#var#}. - Schooltino', status: 'approved', category: 'Fee Reminder' },
@@ -55,6 +71,13 @@ export default function IntegratedCommunicationPage() {
   const [showDltDialog, setShowDltDialog] = useState(false);
   const [editingDlt, setEditingDlt] = useState(null);
   const [dltForm, setDltForm] = useState({ templateId: '', senderId: 'SCHLTN', content: '', category: '' });
+
+  const [whatsappTemplates] = useState([
+    { id: 'wa_fee', name: 'Fee Reminder', message: '🏫 Dear Parent, your child\'s fee of Rs.{amount} is pending. Please pay before {date}. Thank you! - Schooltino' },
+    { id: 'wa_attendance', name: 'Attendance Alert', message: '📋 Dear Parent, your ward {student_name} was marked {status} on {date}. - Schooltino' },
+    { id: 'wa_exam', name: 'Exam Notice', message: '📝 Dear Parent, exams for {student_name} will begin from {date}. Please ensure regular attendance. - Schooltino' },
+    { id: 'wa_holiday', name: 'Holiday Notice', message: '🎉 Dear Parent, school will remain closed on {date} due to {reason}. - Schooltino' },
+  ]);
 
   const [surveys, setSurveys] = useState([
     { id: 1, title: 'Parent Satisfaction Survey', titleHi: 'अभिभावक संतुष्टि सर्वेक्षण', questions: 5, responses: 127, target: 'All Parents', status: 'active', createdAt: '2026-02-01' },
@@ -69,8 +92,8 @@ export default function IntegratedCommunicationPage() {
     totalSent: 12450,
     channels: [
       { name: 'SMS', sent: 4200, delivered: 4150, failed: 50, rate: 98.8, color: 'bg-blue-500' },
-      { name: 'Email', sent: 3100, delivered: 2890, failed: 210, rate: 93.2, color: 'bg-purple-500' },
       { name: 'WhatsApp', sent: 3800, delivered: 3750, failed: 50, rate: 98.7, color: 'bg-green-500' },
+      { name: 'Email', sent: 3100, delivered: 2890, failed: 210, rate: 93.2, color: 'bg-purple-500' },
       { name: 'Push', sent: 1350, delivered: 1280, failed: 70, rate: 94.8, color: 'bg-orange-500' },
     ],
     monthlyTrend: [
@@ -80,61 +103,147 @@ export default function IntegratedCommunicationPage() {
     engagement: { opened: 78.5, clicked: 32.1, responded: 15.8 },
   };
 
-  useEffect(() => {
-    fetchClasses();
+  const fetchCreditBalance = useCallback(async () => {
+    setCreditLoading(true);
+    try {
+      const schoolId = user?.school_id;
+      if (schoolId) {
+        const res = await axios.get(`${API}/message-credits/balance/${schoolId}`);
+        setCreditBalance(res.data?.available_credits || 0);
+      }
+    } catch (error) {
+      try {
+        const res = await axios.get(`${API}/credits/balance`);
+        setCreditBalance(res.data?.available_credits || res.data?.balance || 0);
+      } catch {
+        setCreditBalance(0);
+      }
+    } finally {
+      setCreditLoading(false);
+    }
+  }, [user]);
+
+  const fetchSmsHistory = useCallback(async () => {
+    setSmsHistoryLoading(true);
+    try {
+      const res = await axios.get(`${API}/sms/history`);
+      setSmsHistory(res.data?.history || res.data || []);
+    } catch {
+      setSmsHistory([]);
+    } finally {
+      setSmsHistoryLoading(false);
+    }
   }, []);
 
-  const fetchClasses = async () => {
+  const fetchWhatsappHistory = useCallback(async () => {
+    setWhatsappHistoryLoading(true);
     try {
-      const res = await axios.get(`${API}/classes`);
-      setClasses(res.data || []);
-    } catch (error) {
-      console.error('Failed to fetch classes');
+      const res = await axios.get(`${API}/whatsapp/history`);
+      setWhatsappHistory(res.data?.history || res.data || []);
+    } catch {
+      setWhatsappHistory([]);
+    } finally {
+      setWhatsappHistoryLoading(false);
     }
+  }, []);
+
+  const fetchSmsTemplates = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/sms/templates`);
+      setSmsTemplates(res.data?.templates || []);
+    } catch {
+      setSmsTemplates([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const res = await axios.get(`${API}/classes`);
+        setClasses(res.data || []);
+      } catch {
+        console.error('Failed to fetch classes');
+      }
+    };
+    fetchClasses();
+    fetchCreditBalance();
+    fetchSmsTemplates();
+  }, [fetchCreditBalance, fetchSmsTemplates]);
+
+  const estimateRecipients = (form) => {
+    if (form.recipient_type === 'individual') return 1;
+    if (form.recipient_type === 'class') return 30;
+    return 100;
   };
 
-  const handleSendMessage = async (e) => {
+  const handleSmsSubmit = (e) => {
     e.preventDefault();
     if (!messageForm.message.trim()) {
       toast.error('Message लिखना ज़रूरी है');
       return;
     }
-    const activeChannels = Object.entries(messageForm.channels).filter(([, v]) => v).map(([k]) => k);
-    if (activeChannels.length === 0) {
-      toast.error('कम से कम एक channel select करें');
+    const estRecipients = estimateRecipients(messageForm);
+    const totalCost = estRecipients * SMS_CREDIT_COST;
+    setPendingSend({ type: 'sms', form: messageForm, estRecipients, totalCost });
+    setShowSendConfirm(true);
+  };
+
+  const handleWhatsappSubmit = (e) => {
+    e.preventDefault();
+    if (!whatsappForm.message.trim()) {
+      toast.error('Message लिखना ज़रूरी है');
       return;
     }
+    const estRecipients = estimateRecipients(whatsappForm);
+    const totalCost = estRecipients * WHATSAPP_CREDIT_COST;
+    setPendingSend({ type: 'whatsapp', form: whatsappForm, estRecipients, totalCost });
+    setShowSendConfirm(true);
+  };
+
+  const confirmAndSend = async () => {
+    if (!pendingSend) return;
+    const { type, form, totalCost } = pendingSend;
+
+    if (creditBalance < totalCost) {
+      toast.error(`Insufficient credits! Need ${totalCost} credits, you have ${creditBalance}. Please buy more credits.`);
+      setShowSendConfirm(false);
+      return;
+    }
+
     setSending(true);
+    setShowSendConfirm(false);
     try {
-      await axios.post(`${API}/sms/send`, {
-        recipient_type: messageForm.recipient_type,
-        class_id: messageForm.class_id,
-        mobile: messageForm.mobile,
-        message: messageForm.message,
-        channels: activeChannels,
+      const endpoint = type === 'sms' ? `${API}/sms/send` : `${API}/whatsapp/send`;
+      const res = await axios.post(endpoint, {
+        recipient_type: form.recipient_type,
+        class_id: form.class_id,
+        mobile: form.mobile,
+        message: form.message,
+        template: form.template,
       });
-      toast.success(`Message ${activeChannels.length} channels पर भेजा गया!`);
-      setMessageForm(f => ({ ...f, message: '', subject: '' }));
+
+      const count = res.data?.recipients_count || 1;
+      toast.success(`${type === 'sms' ? 'SMS' : 'WhatsApp'} sent to ${count} recipients! (${count * (type === 'sms' ? SMS_CREDIT_COST : WHATSAPP_CREDIT_COST)} credits used)`);
+
+      if (type === 'sms') {
+        setMessageForm(f => ({ ...f, message: '', template: '' }));
+      } else {
+        setWhatsappForm(f => ({ ...f, message: '', template: '' }));
+      }
+
+      fetchCreditBalance();
     } catch (error) {
-      toast.success(`Demo: Message ${activeChannels.join(', ')} पर भेजा गया!`);
-      setMessageForm(f => ({ ...f, message: '', subject: '' }));
+      const count = pendingSend.estRecipients;
+      toast.success(`Demo: ${type === 'sms' ? 'SMS' : 'WhatsApp'} sent to ~${count} recipients! (${totalCost} credits used)`);
+      if (type === 'sms') {
+        setMessageForm(f => ({ ...f, message: '', template: '' }));
+      } else {
+        setWhatsappForm(f => ({ ...f, message: '', template: '' }));
+      }
     } finally {
       setSending(false);
+      setPendingSend(null);
     }
-  };
-
-  const toggleTrigger = (id) => {
-    setEventTriggers(prev => prev.map(t =>
-      t.id === id ? { ...t, enabled: !t.enabled } : t
-    ));
-    const trigger = eventTriggers.find(t => t.id === id);
-    toast.success(`${trigger.name} ${trigger.enabled ? 'disabled' : 'enabled'} किया गया`);
-  };
-
-  const toggleTriggerChannel = (id, channel) => {
-    setEventTriggers(prev => prev.map(t =>
-      t.id === id ? { ...t, channels: { ...t.channels, [channel]: !t.channels[channel] } } : t
-    ));
   };
 
   const handleSaveDlt = () => {
@@ -213,11 +322,90 @@ export default function IntegratedCommunicationPage() {
     setSurveyForm({ title: '', target: 'All Parents', questions: [{ type: 'mcq', text: '', options: ['', ''] }] });
   };
 
-  const channelBadge = (name, active) => (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-      {name}
-    </span>
+  const RecipientSelector = ({ form, setForm, colorClass = 'indigo' }) => (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label>Send To (किसको भेजें)</Label>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { type: 'all_parents', icon: Users, label: 'All Parents', labelHi: 'सभी अभिभावक' },
+            { type: 'class', icon: GraduationCap, label: 'By Class', labelHi: 'कक्षा अनुसार' },
+            { type: 'individual', icon: Phone, label: 'Individual', labelHi: 'व्यक्तिगत' },
+          ].map(opt => (
+            <button
+              key={opt.type}
+              type="button"
+              onClick={() => setForm(f => ({ ...f, recipient_type: opt.type }))}
+              className={`p-4 rounded-xl border-2 text-center transition-all ${
+                form.recipient_type === opt.type
+                  ? `border-${colorClass}-500 bg-${colorClass}-50`
+                  : 'border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              <opt.icon className={`w-6 h-6 mx-auto mb-2 text-${colorClass}-600`} />
+              <p className="font-medium text-sm">{opt.label}</p>
+              <p className="text-xs text-slate-500">{opt.labelHi}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {form.recipient_type === 'class' && (
+        <div className="space-y-2">
+          <Label>Select Class (कक्षा चुनें)</Label>
+          <select
+            value={form.class_id}
+            onChange={(e) => setForm(f => ({ ...f, class_id: e.target.value }))}
+            className="w-full h-10 rounded-lg border border-slate-200 px-3"
+            required
+          >
+            <option value="">-- Select Class --</option>
+            {classes.map(cls => (
+              <option key={cls.id} value={cls.id}>{cls.name} - {cls.section}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {form.recipient_type === 'individual' && (
+        <div className="space-y-2">
+          <Label>Mobile Number</Label>
+          <Input
+            value={form.mobile}
+            onChange={(e) => setForm(f => ({ ...f, mobile: e.target.value }))}
+            placeholder="9876543210"
+            required
+          />
+        </div>
+      )}
+    </div>
   );
+
+  const CreditCostBanner = ({ form, costPerMsg }) => {
+    const est = estimateRecipients(form);
+    const totalCost = est * costPerMsg;
+    const hasEnough = creditBalance >= totalCost;
+    return (
+      <div className={`p-3 rounded-lg border ${hasEnough ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            <Coins className="w-4 h-4" />
+            <span>Est. Cost: <strong>{totalCost} credits</strong> (~{est} recipients × {costPerMsg} credit)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={hasEnough ? 'text-green-700' : 'text-red-700'}>
+              Balance: <strong>{creditBalance}</strong>
+            </span>
+            {!hasEnough && (
+              <Button size="sm" variant="outline" className="text-red-600 border-red-300 h-7 text-xs" onClick={() => navigate('/app/credit-system')}>
+                Buy Credits
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -226,343 +414,418 @@ export default function IntegratedCommunicationPage() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <MessageSquare className="w-8 h-8" />
-              Integrated Communication System
+              Communication Hub
             </h1>
             <p className="text-indigo-100 mt-2">
-              All Messages, One Platform, Zero Confusion
+              SMS, WhatsApp, Surveys — All in One Place
             </p>
           </div>
           <div className="hidden md:flex items-center gap-3">
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{analyticsData.totalSent.toLocaleString()}</p>
-              <p className="text-xs text-indigo-100">Total Sent</p>
+              <div className="flex items-center gap-1 justify-center">
+                <Wallet className="w-4 h-4" />
+                <p className="text-2xl font-bold">{creditLoading ? '...' : creditBalance}</p>
+              </div>
+              <p className="text-xs text-indigo-100">Credits Available</p>
             </div>
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">96.4%</p>
-              <p className="text-xs text-indigo-100">Delivery Rate</p>
-            </div>
+            <Button
+              onClick={() => navigate('/app/credit-system')}
+              className="bg-white/20 hover:bg-white/30 text-white border-0"
+            >
+              <CreditCard className="w-4 h-4 mr-2" /> Buy Credits
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-white hover:bg-white/10"
+              onClick={fetchCreditBalance}
+            >
+              <RefreshCw className={`w-4 h-4 ${creditLoading ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-12">
-          <TabsTrigger value="messages" className="flex items-center gap-2">
-            <Send className="w-4 h-4" /> Messages
+        <TabsList className="grid w-full grid-cols-4 h-12">
+          <TabsTrigger value="sms" className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4" /> SMS
           </TabsTrigger>
-          <TabsTrigger value="triggers" className="flex items-center gap-2">
-            <Zap className="w-4 h-4" /> Event Triggers
-          </TabsTrigger>
-          <TabsTrigger value="dlt" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" /> DLT Templates
+          <TabsTrigger value="whatsapp" className="flex items-center gap-2">
+            <Phone className="w-4 h-4" /> WhatsApp
           </TabsTrigger>
           <TabsTrigger value="surveys" className="flex items-center gap-2">
-            <ListChecks className="w-4 h-4" /> Surveys & Forms
+            <ListChecks className="w-4 h-4" /> Surveys
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" /> Analytics
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="messages" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <Card className="border-0 shadow-md">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Send className="w-5 h-5 text-indigo-600" /> Compose Message
-                  </h3>
-                  <form onSubmit={handleSendMessage} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Send To (किसको भेजें)</Label>
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { type: 'all_parents', icon: Users, label: 'All Parents', labelHi: 'सभी अभिभावक' },
-                          { type: 'class', icon: GraduationCap, label: 'By Class', labelHi: 'कक्षा अनुसार' },
-                          { type: 'individual', icon: Phone, label: 'Individual', labelHi: 'व्यक्तिगत' },
-                        ].map(opt => (
-                          <button
-                            key={opt.type}
-                            type="button"
-                            onClick={() => setMessageForm(f => ({ ...f, recipient_type: opt.type }))}
-                            className={`p-4 rounded-xl border-2 text-center transition-all ${
-                              messageForm.recipient_type === opt.type
-                                ? 'border-indigo-500 bg-indigo-50'
-                                : 'border-slate-200 hover:border-indigo-200'
-                            }`}
-                          >
-                            <opt.icon className="w-6 h-6 mx-auto mb-2 text-indigo-600" />
-                            <p className="font-medium text-sm">{opt.label}</p>
-                            <p className="text-xs text-slate-500">{opt.labelHi}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+        {/* ===== SMS TAB ===== */}
+        <TabsContent value="sms" className="mt-6">
+          <Tabs defaultValue="send" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="send" className="flex items-center gap-1"><Send className="w-3 h-3" /> Send SMS</TabsTrigger>
+              <TabsTrigger value="templates" className="flex items-center gap-1"><FileText className="w-3 h-3" /> DLT Templates</TabsTrigger>
+              <TabsTrigger value="history" className="flex items-center gap-1" onClick={fetchSmsHistory}><History className="w-3 h-3" /> History</TabsTrigger>
+            </TabsList>
 
-                    {messageForm.recipient_type === 'class' && (
-                      <div className="space-y-2">
-                        <Label>Select Class (कक्षा चुनें)</Label>
-                        <select
-                          value={messageForm.class_id}
-                          onChange={(e) => setMessageForm(f => ({ ...f, class_id: e.target.value }))}
-                          className="w-full h-10 rounded-lg border border-slate-200 px-3"
-                          required
-                        >
-                          <option value="">-- Select Class --</option>
-                          {classes.map(cls => (
-                            <option key={cls.id} value={cls.id}>{cls.name} - {cls.section}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+            <TabsContent value="send">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <Card className="border-0 shadow-md">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Send className="w-5 h-5 text-blue-600" /> Compose SMS
+                      </h3>
+                      <form onSubmit={handleSmsSubmit} className="space-y-4">
+                        <RecipientSelector form={messageForm} setForm={setMessageForm} colorClass="blue" />
 
-                    {messageForm.recipient_type === 'individual' && (
-                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Mobile Number</Label>
-                          <Input
-                            value={messageForm.mobile}
-                            onChange={(e) => setMessageForm(f => ({ ...f, mobile: e.target.value }))}
-                            placeholder="9876543210"
+                          <Label>Message (संदेश)</Label>
+                          <Textarea
+                            value={messageForm.message}
+                            onChange={(e) => setMessageForm(f => ({ ...f, message: e.target.value }))}
+                            placeholder="अपना SMS message यहाँ लिखें..."
+                            rows={4}
+                            required
                           />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Email (optional)</Label>
-                          <Input
-                            value={messageForm.email}
-                            onChange={(e) => setMessageForm(f => ({ ...f, email: e.target.value }))}
-                            placeholder="parent@email.com"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label>Channels (चैनल चुनें)</Label>
-                      <div className="flex flex-wrap gap-3">
-                        {[
-                          { key: 'sms', label: 'SMS', icon: MessageSquare, color: 'blue' },
-                          { key: 'email', label: 'Email', icon: Mail, color: 'purple' },
-                          { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, color: 'green' },
-                          { key: 'push', label: 'Push Notification', icon: Bell, color: 'orange' },
-                        ].map(ch => (
-                          <button
-                            key={ch.key}
-                            type="button"
-                            onClick={() => setMessageForm(f => ({
-                              ...f, channels: { ...f.channels, [ch.key]: !f.channels[ch.key] }
-                            }))}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                              messageForm.channels[ch.key]
-                                ? `border-${ch.color}-500 bg-${ch.color}-50 text-${ch.color}-700`
-                                : 'border-gray-200 text-gray-400'
-                            }`}
-                          >
-                            <ch.icon className="w-4 h-4" />
-                            <span className="text-sm font-medium">{ch.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {messageForm.channels.email && (
-                      <div className="space-y-2">
-                        <Label>Subject (विषय)</Label>
-                        <Input
-                          value={messageForm.subject}
-                          onChange={(e) => setMessageForm(f => ({ ...f, subject: e.target.value }))}
-                          placeholder="Email subject line..."
-                        />
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label>Message (संदेश)</Label>
-                      <Textarea
-                        value={messageForm.message}
-                        onChange={(e) => setMessageForm(f => ({ ...f, message: e.target.value }))}
-                        placeholder="अपना message यहाँ लिखें..."
-                        rows={4}
-                        required
-                      />
-                      <div className="flex justify-between text-xs text-slate-500">
-                        <span>{messageForm.message.length} characters</span>
-                        <span>{messageForm.message.length > 160 ? `${Math.ceil(messageForm.message.length / 160)} SMS parts` : '1 SMS'}</span>
-                      </div>
-                    </div>
-
-                    <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={sending}>
-                      {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                      Send Message भेजें
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-4">
-              <Card className="border-0 shadow-md">
-                <CardContent className="p-5">
-                  <h4 className="font-semibold text-gray-900 mb-3">📋 Quick Templates</h4>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'Fee Reminder', msg: 'Dear Parent, your child\'s fee of Rs.{amount} is pending. Please pay before {date}. - Schooltino' },
-                      { name: 'Holiday Notice', msg: 'Dear Parent, school will remain closed on {date} due to {reason}. - Schooltino' },
-                      { name: 'PTM Reminder', msg: 'Dear Parent, PTM is scheduled on {date} at {time}. Please attend. - Schooltino' },
-                      { name: 'Result Declaration', msg: 'Dear Parent, exam results are now available on Schooltino app. Check now!' },
-                    ].map((t, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setMessageForm(f => ({ ...f, message: t.msg }))}
-                        className="w-full p-3 rounded-lg text-left border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all"
-                      >
-                        <p className="font-medium text-sm text-gray-900">{t.name}</p>
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{t.msg}</p>
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-md bg-gradient-to-br from-indigo-50 to-purple-50">
-                <CardContent className="p-5">
-                  <h4 className="font-medium text-indigo-800 mb-2">💡 Tips</h4>
-                  <ul className="text-xs text-indigo-700 space-y-1">
-                    <li>• SMS 160 chars तक = 1 SMS cost</li>
-                    <li>• WhatsApp broadcast FREE है</li>
-                    <li>• Email में subject ज़रूर लिखें</li>
-                    <li>• Push notification सबसे fast है</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="triggers" className="mt-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Event-Based Notifications</h3>
-                <p className="text-sm text-gray-500">Automatic messages जो events पर trigger होते हैं</p>
-              </div>
-            </div>
-
-            <div className="grid gap-4">
-              {eventTriggers.map(trigger => (
-                <Card key={trigger.id} className="border-0 shadow-md">
-                  <CardContent className="p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${trigger.enabled ? 'bg-indigo-100' : 'bg-gray-100'}`}>
-                          <trigger.icon className={`w-6 h-6 ${trigger.enabled ? 'text-indigo-600' : 'text-gray-400'}`} />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{trigger.name}</h4>
-                          <p className="text-sm text-gray-500">{trigger.nameHi}</p>
-                          <div className="flex gap-1 mt-2">
-                            {Object.entries(trigger.channels).map(([ch, active]) => (
-                              <button
-                                key={ch}
-                                onClick={() => toggleTriggerChannel(trigger.id, ch)}
-                                className="cursor-pointer"
-                              >
-                                {channelBadge(ch.toUpperCase(), active)}
-                              </button>
-                            ))}
+                          <div className="flex justify-between text-xs text-slate-500">
+                            <span>{messageForm.message.length} characters</span>
+                            <span>{messageForm.message.length > 160 ? `${Math.ceil(messageForm.message.length / 160)} SMS parts` : '1 SMS'}</span>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Switch
-                          checked={trigger.enabled}
-                          onCheckedChange={() => toggleTrigger(trigger.id)}
-                        />
-                        <p className="text-xs text-gray-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {trigger.lastTriggered
-                            ? new Date(trigger.lastTriggered).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-                            : 'Never triggered'}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="dlt" className="mt-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">DLT Approved Templates</h3>
-                <p className="text-sm text-gray-500">TRAI DLT registered SMS templates manage करें</p>
-              </div>
-              <Button
-                onClick={() => { setEditingDlt(null); setDltForm({ templateId: '', senderId: 'SCHLTN', content: '', category: '' }); setShowDltDialog(true); }}
-                className="bg-indigo-600 hover:bg-indigo-700"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Add Template
-              </Button>
-            </div>
+                        <CreditCostBanner form={messageForm} costPerMsg={SMS_CREDIT_COST} />
 
-            <div className="grid gap-4">
-              {dltTemplates.map(template => (
-                <Card key={template.id} className="border-0 shadow-md">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className={template.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}>
-                            {template.status === 'approved' ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
-                            {template.status === 'approved' ? 'Approved' : 'Pending'}
-                          </Badge>
-                          <Badge variant="outline">{template.category}</Badge>
-                        </div>
-                        <p className="text-sm text-gray-800 mb-2">{template.content}</p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span>Template ID: {template.templateId}</span>
-                          <span>Sender: {template.senderId}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingDlt(template);
-                            setDltForm({ templateId: template.templateId, senderId: template.senderId, content: template.content, category: template.category });
-                            setShowDltDialog(true);
-                          }}
-                        >
-                          <Edit className="w-4 h-4" />
+                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={sending}>
+                          {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                          Send SMS ({SMS_CREDIT_COST} credit/msg)
                         </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteDlt(template.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <Card className="border-0 shadow-md bg-amber-50">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
-                  <div className="text-sm text-amber-800">
-                    <p className="font-medium">DLT Registration Required</p>
-                    <p>TRAI के अनुसार, सभी SMS templates को DLT portal पर register करना ज़रूरी है। बिना approved template के SMS भेजना संभव नहीं है।</p>
-                  </div>
+                      </form>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+                <div className="space-y-4">
+                  <Card className="border-0 shadow-md">
+                    <CardContent className="p-5">
+                      <h4 className="font-semibold text-gray-900 mb-3">📋 Quick Templates</h4>
+                      <div className="space-y-2">
+                        {(smsTemplates.length > 0 ? smsTemplates : [
+                          { id: 'fee_reminder', name: 'Fee Reminder', message: 'Dear Parent, your child\'s fee of Rs.{amount} is pending. Please pay before {date}. - Schooltino' },
+                          { id: 'holiday', name: 'Holiday Notice', message: 'Dear Parent, school will remain closed on {date} due to {reason}. - Schooltino' },
+                          { id: 'ptm', name: 'PTM Reminder', message: 'Dear Parent, PTM is scheduled on {date} at {time}. Please attend. - Schooltino' },
+                          { id: 'result', name: 'Result Declaration', message: 'Dear Parent, exam results are now available on Schooltino app. Check now!' },
+                        ]).map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => setMessageForm(f => ({ ...f, message: t.message, template: t.id }))}
+                            className={`w-full p-3 rounded-lg text-left border transition-all ${
+                              messageForm.template === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                            }`}
+                          >
+                            <p className="font-medium text-sm text-gray-900">{t.name}</p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{t.message}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-indigo-50">
+                    <CardContent className="p-5">
+                      <h4 className="font-medium text-blue-800 mb-2">💡 SMS Tips</h4>
+                      <ul className="text-xs text-blue-700 space-y-1">
+                        <li>• SMS 160 chars तक = 1 SMS cost</li>
+                        <li>• DLT approved templates use करें</li>
+                        <li>• Bulk SMS class-wise भेजें</li>
+                        <li>• Each SMS = {SMS_CREDIT_COST} credit</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="templates">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">DLT Approved Templates</h3>
+                    <p className="text-sm text-gray-500">TRAI DLT registered SMS templates manage करें</p>
+                  </div>
+                  <Button
+                    onClick={() => { setEditingDlt(null); setDltForm({ templateId: '', senderId: 'SCHLTN', content: '', category: '' }); setShowDltDialog(true); }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Template
+                  </Button>
+                </div>
+
+                <div className="grid gap-4">
+                  {dltTemplates.map(template => (
+                    <Card key={template.id} className="border-0 shadow-md">
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className={template.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}>
+                                {template.status === 'approved' ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
+                                {template.status === 'approved' ? 'Approved' : 'Pending'}
+                              </Badge>
+                              <Badge variant="outline">{template.category}</Badge>
+                            </div>
+                            <p className="text-sm text-gray-800 mb-2">{template.content}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>Template ID: {template.templateId}</span>
+                              <span>Sender: {template.senderId}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 ml-4">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingDlt(template);
+                                setDltForm({ templateId: template.templateId, senderId: template.senderId, content: template.content, category: template.category });
+                                setShowDltDialog(true);
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteDlt(template.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                <Card className="border-0 shadow-md bg-amber-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
+                      <div className="text-sm text-amber-800">
+                        <p className="font-medium">DLT Registration Required</p>
+                        <p>TRAI के अनुसार, सभी SMS templates को DLT portal पर register करना ज़रूरी है। बिना approved template के SMS भेजना संभव नहीं है।</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="history">
+              <Card className="border-0 shadow-md">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <History className="w-5 h-5 text-blue-600" /> SMS History
+                    </h3>
+                    <Button size="sm" variant="outline" onClick={fetchSmsHistory} disabled={smsHistoryLoading}>
+                      <RefreshCw className={`w-4 h-4 mr-1 ${smsHistoryLoading ? 'animate-spin' : ''}`} /> Refresh
+                    </Button>
+                  </div>
+                  {smsHistoryLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                    </div>
+                  ) : smsHistory.length > 0 ? (
+                    <div className="space-y-3">
+                      {smsHistory.map((log, idx) => (
+                        <div key={log.id || idx} className="p-4 rounded-lg border border-slate-200 hover:bg-slate-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge className={log.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+                              {log.status === 'sent' ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertCircle className="w-3 h-3 mr-1" />}
+                              {log.status || 'sent'}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {log.sent_at ? new Date(log.sent_at).toLocaleString('en-IN') : ''}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-800 line-clamp-2">{log.message}</p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                            <span>Recipients: {log.recipients_count || 0}</span>
+                            <span>Credits: {(log.recipients_count || 1) * SMS_CREDIT_COST}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-400">
+                      <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>No SMS history found</p>
+                      <p className="text-xs mt-1">Send your first SMS to see history here</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
+        {/* ===== WHATSAPP TAB ===== */}
+        <TabsContent value="whatsapp" className="mt-6">
+          <Tabs defaultValue="send" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="send" className="flex items-center gap-1"><Send className="w-3 h-3" /> Send WhatsApp</TabsTrigger>
+              <TabsTrigger value="templates" className="flex items-center gap-1"><FileText className="w-3 h-3" /> Templates</TabsTrigger>
+              <TabsTrigger value="history" className="flex items-center gap-1" onClick={fetchWhatsappHistory}><History className="w-3 h-3" /> History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="send">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <Card className="border-0 shadow-md">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Send className="w-5 h-5 text-green-600" /> Compose WhatsApp Message
+                      </h3>
+                      <form onSubmit={handleWhatsappSubmit} className="space-y-4">
+                        <RecipientSelector form={whatsappForm} setForm={setWhatsappForm} colorClass="green" />
+
+                        <div className="space-y-2">
+                          <Label>Message (संदेश)</Label>
+                          <Textarea
+                            value={whatsappForm.message}
+                            onChange={(e) => setWhatsappForm(f => ({ ...f, message: e.target.value }))}
+                            placeholder="अपना WhatsApp message यहाँ लिखें..."
+                            rows={4}
+                            required
+                          />
+                          <p className="text-xs text-slate-500">{whatsappForm.message.length} characters</p>
+                        </div>
+
+                        <CreditCostBanner form={whatsappForm} costPerMsg={WHATSAPP_CREDIT_COST} />
+
+                        <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={sending}>
+                          {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                          Send WhatsApp ({WHATSAPP_CREDIT_COST} credit/msg)
+                        </Button>
+                      </form>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-4">
+                  <Card className="border-0 shadow-md">
+                    <CardContent className="p-5">
+                      <h4 className="font-semibold text-gray-900 mb-3">📋 WhatsApp Templates</h4>
+                      <div className="space-y-2">
+                        {whatsappTemplates.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => setWhatsappForm(f => ({ ...f, message: t.message, template: t.id }))}
+                            className={`w-full p-3 rounded-lg text-left border transition-all ${
+                              whatsappForm.template === t.id ? 'border-green-500 bg-green-50' : 'border-slate-200 hover:border-green-300 hover:bg-green-50'
+                            }`}
+                          >
+                            <p className="font-medium text-sm text-gray-900">{t.name}</p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{t.message}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-emerald-50">
+                    <CardContent className="p-5">
+                      <h4 className="font-medium text-green-800 mb-2">💡 WhatsApp Tips</h4>
+                      <ul className="text-xs text-green-700 space-y-1">
+                        <li>• Emojis और formatting use करें</li>
+                        <li>• Images/documents भी भेज सकते हैं</li>
+                        <li>• Bulk broadcast class-wise करें</li>
+                        <li>• Each message = {WHATSAPP_CREDIT_COST} credit</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="templates">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {whatsappTemplates.map(t => (
+                  <Card key={t.id} className="border-0 shadow-md">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-green-100 text-green-700">
+                          <CheckCircle className="w-3 h-3 mr-1" /> Active
+                        </Badge>
+                        <Badge variant="outline">{t.name}</Badge>
+                      </div>
+                      <p className="text-sm text-gray-800 mb-3">{t.message}</p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-green-600"
+                        onClick={() => {
+                          setWhatsappForm(f => ({ ...f, message: t.message, template: t.id }));
+                          setActiveTab('whatsapp');
+                        }}
+                      >
+                        <Send className="w-3 h-3 mr-1" /> Use Template
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="history">
+              <Card className="border-0 shadow-md">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <History className="w-5 h-5 text-green-600" /> WhatsApp History
+                    </h3>
+                    <Button size="sm" variant="outline" onClick={fetchWhatsappHistory} disabled={whatsappHistoryLoading}>
+                      <RefreshCw className={`w-4 h-4 mr-1 ${whatsappHistoryLoading ? 'animate-spin' : ''}`} /> Refresh
+                    </Button>
+                  </div>
+                  {whatsappHistoryLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 animate-spin text-green-500" />
+                    </div>
+                  ) : whatsappHistory.length > 0 ? (
+                    <div className="space-y-3">
+                      {whatsappHistory.map((log, idx) => (
+                        <div key={log.id || idx} className="p-4 rounded-lg border border-slate-200 hover:bg-slate-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge className={log.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+                              {log.status === 'sent' ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertCircle className="w-3 h-3 mr-1" />}
+                              {log.status || 'sent'}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {log.sent_at ? new Date(log.sent_at).toLocaleString('en-IN') : ''}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-800 line-clamp-2">{log.message}</p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                            <span>Recipients: {log.recipients_count || 0}</span>
+                            <span>Credits: {(log.recipients_count || 1) * WHATSAPP_CREDIT_COST}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-400">
+                      <Phone className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>No WhatsApp history found</p>
+                      <p className="text-xs mt-1">Send your first WhatsApp message to see history here</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ===== SURVEYS TAB ===== */}
         <TabsContent value="surveys" className="mt-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -596,11 +859,7 @@ export default function IntegratedCommunicationPage() {
                         <Users className="w-4 h-4 text-indigo-500" />
                         <span className="text-sm font-medium text-indigo-600">{survey.responses} Responses</span>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setViewingSurvey(survey)}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => setViewingSurvey(survey)}>
                         <Eye className="w-4 h-4 mr-1" /> View
                       </Button>
                     </div>
@@ -611,6 +870,7 @@ export default function IntegratedCommunicationPage() {
           </div>
         </TabsContent>
 
+        {/* ===== ANALYTICS TAB ===== */}
         <TabsContent value="analytics" className="mt-6">
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -750,6 +1010,67 @@ export default function IntegratedCommunicationPage() {
         </TabsContent>
       </Tabs>
 
+      {/* Send Confirmation Dialog */}
+      <Dialog open={showSendConfirm} onOpenChange={setShowSendConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="w-5 h-5 text-indigo-600" />
+              Confirm Send
+            </DialogTitle>
+          </DialogHeader>
+          {pendingSend && (
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-50 rounded-xl space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Channel:</span>
+                  <span className="font-medium">{pendingSend.type === 'sms' ? 'SMS' : 'WhatsApp'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Est. Recipients:</span>
+                  <span className="font-medium">~{pendingSend.estRecipients}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Credit Cost:</span>
+                  <span className="font-bold text-indigo-600">{pendingSend.totalCost} credits</span>
+                </div>
+                <div className="flex justify-between text-sm border-t pt-2">
+                  <span className="text-gray-500">Your Balance:</span>
+                  <span className={`font-bold ${creditBalance >= pendingSend.totalCost ? 'text-green-600' : 'text-red-600'}`}>
+                    {creditBalance} credits
+                  </span>
+                </div>
+                {creditBalance < pendingSend.totalCost && (
+                  <div className="p-2 bg-red-50 rounded-lg text-xs text-red-700 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Insufficient credits! Please buy more.
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-indigo-50 rounded-lg">
+                <p className="text-xs text-indigo-700 line-clamp-3">{pendingSend.form.message}</p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={() => setShowSendConfirm(false)}>Cancel</Button>
+                {creditBalance >= pendingSend.totalCost ? (
+                  <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={confirmAndSend} disabled={sending}>
+                    {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                    Confirm & Send
+                  </Button>
+                ) : (
+                  <Button className="flex-1 bg-orange-600 hover:bg-orange-700" onClick={() => { setShowSendConfirm(false); navigate('/app/credit-system'); }}>
+                    <CreditCard className="w-4 h-4 mr-2" /> Buy Credits
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* DLT Template Dialog */}
       <Dialog open={showDltDialog} onOpenChange={setShowDltDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -803,7 +1124,7 @@ export default function IntegratedCommunicationPage() {
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setShowDltDialog(false)}>Cancel</Button>
-              <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={handleSaveDlt}>
+              <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={handleSaveDlt}>
                 {editingDlt ? 'Update Template' : 'Add Template'}
               </Button>
             </div>
@@ -811,6 +1132,7 @@ export default function IntegratedCommunicationPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Survey Create Dialog */}
       <Dialog open={showSurveyDialog} onOpenChange={setShowSurveyDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -916,6 +1238,7 @@ export default function IntegratedCommunicationPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Survey View Dialog */}
       <Dialog open={!!viewingSurvey} onOpenChange={() => setViewingSurvey(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -925,50 +1248,26 @@ export default function IntegratedCommunicationPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 bg-indigo-50 rounded-xl text-center">
-                  <p className="text-2xl font-bold text-indigo-600">{viewingSurvey.responses}</p>
-                  <p className="text-xs text-indigo-500">Responses</p>
+                  <p className="text-2xl font-bold text-indigo-600">{viewingSurvey.questions}</p>
+                  <p className="text-xs text-indigo-500">Questions</p>
                 </div>
                 <div className="p-3 bg-green-50 rounded-xl text-center">
-                  <p className="text-2xl font-bold text-green-600">{viewingSurvey.questions}</p>
-                  <p className="text-xs text-green-500">Questions</p>
+                  <p className="text-2xl font-bold text-green-600">{viewingSurvey.responses}</p>
+                  <p className="text-xs text-green-500">Responses</p>
                 </div>
                 <div className="p-3 bg-purple-50 rounded-xl text-center">
-                  <p className="text-2xl font-bold text-purple-600">
-                    {viewingSurvey.responses > 0 ? (Math.random() * 2 + 3).toFixed(1) : '0.0'}
-                  </p>
-                  <p className="text-xs text-purple-500">Avg Rating</p>
+                  <p className="text-2xl font-bold text-purple-600">{viewingSurvey.target}</p>
+                  <p className="text-xs text-purple-500">Target</p>
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <h5 className="font-medium text-gray-900">Response Distribution</h5>
-                {['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied'].map((label, i) => {
-                  const pct = [42, 31, 18, 9][i];
-                  return (
-                    <div key={label}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-700">{label}</span>
-                        <span className="text-gray-500">{pct}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className="bg-indigo-500 h-2.5 rounded-full"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="p-4 bg-slate-50 rounded-xl">
+                <h5 className="font-medium text-gray-900 mb-2">Response Summary</h5>
+                <p className="text-sm text-gray-600">
+                  {viewingSurvey.responses} responses collected from {viewingSurvey.target}.
+                  Survey {viewingSurvey.status === 'active' ? 'is currently active' : 'has been closed'}.
+                </p>
               </div>
-
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-600">Target: {viewingSurvey.target}</span>
-                <Badge className={viewingSurvey.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}>
-                  {viewingSurvey.status === 'active' ? 'Active' : 'Closed'}
-                </Badge>
-              </div>
-
-              <Button className="w-full" variant="outline" onClick={() => setViewingSurvey(null)}>Close</Button>
+              <Button variant="outline" className="w-full" onClick={() => setViewingSurvey(null)}>Close</Button>
             </div>
           )}
         </DialogContent>

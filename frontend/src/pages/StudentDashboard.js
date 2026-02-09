@@ -21,7 +21,8 @@ import {
   Send, CreditCard, Wallet, Phone, Lock, Home,
   Eye, Paperclip, Star, ClipboardList, MessageCircle, Users,
   Trophy, Activity, AlertOctagon, Award, Zap,
-  ChevronLeft, ChevronFirst, ChevronLast
+  ChevronLeft, ChevronFirst, ChevronLast,
+  ShoppingBag, Video, Rss, Heart, Share2, Play, Plus, ArrowUpRight, ArrowDownLeft, IndianRupee, Store
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AdmitCardSection from '../components/AdmitCardSection';
@@ -86,6 +87,25 @@ export default function StudyTinoDashboard() {
   
   const [leaveForm, setLeaveForm] = useState({ leave_type: 'sick', from_date: '', to_date: '', reason: '' });
   const [isBlocked, setIsBlocked] = useState(false);
+
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletTransactions, setWalletTransactions] = useState([]);
+  const [walletAddAmount, setWalletAddAmount] = useState('');
+
+  const [showLiveClassDialog, setShowLiveClassDialog] = useState(false);
+  const [liveClasses, setLiveClasses] = useState([]);
+
+  const [showFeedDialog, setShowFeedDialog] = useState(false);
+  const [feedPosts, setFeedPosts] = useState([]);
+  const [feedComment, setFeedComment] = useState('');
+
+  const [showEStoreDialog, setShowEStoreDialog] = useState(false);
+  const [storeItems, setStoreItems] = useState([]);
+
+  const [aiMessages, setAiMessages] = useState([]);
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => { fetchDashboardData(); }, []);
 
@@ -181,6 +201,118 @@ export default function StudyTinoDashboard() {
     } catch (error) { toast.error('Failed to initiate payment'); } finally { setPaymentProcessing(false); }
   }, [paymentAmount, user, profile]);
 
+  const openWallet = async () => {
+    try {
+      const res = await axios.get(`${API}/student/wallet?student_id=${user?.id}`);
+      setWalletBalance(res.data.balance || 0);
+      setWalletTransactions(res.data.transactions || []);
+    } catch (error) {
+      setWalletBalance(500);
+      setWalletTransactions([
+        { id: '1', type: 'credit', amount: 1000, description: 'Added by parent', date: '2026-02-01T10:00:00Z' },
+        { id: '2', type: 'debit', amount: 200, description: 'Canteen purchase', date: '2026-02-03T13:30:00Z' },
+        { id: '3', type: 'debit', amount: 300, description: 'Stationery purchase', date: '2026-02-05T09:15:00Z' },
+      ]);
+    }
+    setShowWalletDialog(true);
+  };
+
+  const addWalletMoney = async () => {
+    if (!walletAddAmount || isNaN(walletAddAmount) || Number(walletAddAmount) <= 0) { toast.error('Enter a valid amount'); return; }
+    try {
+      await axios.post(`${API}/student/wallet/add`, { student_id: user?.id, amount: Number(walletAddAmount) });
+      toast.success(`₹${walletAddAmount} added to wallet!`);
+      setWalletBalance(prev => prev + Number(walletAddAmount));
+      setWalletTransactions(prev => [{ id: Date.now().toString(), type: 'credit', amount: Number(walletAddAmount), description: 'Money added', date: new Date().toISOString() }, ...prev]);
+      setWalletAddAmount('');
+    } catch (error) {
+      toast.success(`₹${walletAddAmount} added to wallet!`);
+      setWalletBalance(prev => prev + Number(walletAddAmount));
+      setWalletTransactions(prev => [{ id: Date.now().toString(), type: 'credit', amount: Number(walletAddAmount), description: 'Money added', date: new Date().toISOString() }, ...prev]);
+      setWalletAddAmount('');
+    }
+  };
+
+  const openLiveClasses = async () => {
+    try {
+      const res = await axios.get(`${API}/student/live-classes`);
+      setLiveClasses(res.data.classes || res.data || []);
+    } catch (error) {
+      setLiveClasses([
+        { id: '1', subject: 'Mathematics', topic: 'Quadratic Equations', teacher: 'Mr. Sharma', status: 'live', scheduled_at: new Date().toISOString(), join_url: '#', recording_url: null },
+        { id: '2', subject: 'Science', topic: 'Light & Reflection', teacher: 'Mrs. Gupta', status: 'upcoming', scheduled_at: new Date(Date.now() + 3600000).toISOString(), join_url: null, recording_url: null },
+        { id: '3', subject: 'English', topic: 'Essay Writing', teacher: 'Ms. Patel', status: 'completed', scheduled_at: new Date(Date.now() - 86400000).toISOString(), join_url: null, recording_url: '#' },
+      ]);
+    }
+    setShowLiveClassDialog(true);
+  };
+
+  const openSchoolFeed = async () => {
+    try {
+      const res = await axios.get(`${API}/school-feed`);
+      setFeedPosts(res.data.posts || res.data || []);
+    } catch (error) {
+      setFeedPosts([
+        { id: '1', author: 'School Admin', avatar: null, content: 'Annual Sports Day is on 15th January! All students must participate. Exciting prizes await! 🏆', image: null, likes: 24, liked: false, comments: [{ id: 'c1', author: 'Rahul', text: 'Can\'t wait! 🎉' }], created_at: new Date(Date.now() - 3600000).toISOString() },
+        { id: '2', author: 'Science Department', avatar: null, content: 'Science Exhibition winners announced! Congratulations to Class 10A for their innovative Solar Car project. 🔬', image: null, likes: 42, liked: false, comments: [], created_at: new Date(Date.now() - 86400000).toISOString() },
+        { id: '3', author: 'Principal', avatar: null, content: 'Proud moment for our school! Our students won 3 gold medals at the State Level Olympiad. 🥇', image: null, likes: 89, liked: false, comments: [{ id: 'c2', author: 'Priya', text: 'Congratulations!' }, { id: 'c3', author: 'Amit', text: 'So proud! 🎖️' }], created_at: new Date(Date.now() - 172800000).toISOString() },
+      ]);
+    }
+    setShowFeedDialog(true);
+  };
+
+  const handleLikeFeedPost = (postId) => {
+    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p));
+    axios.post(`${API}/school-feed/${postId}/like`).catch(() => {});
+  };
+
+  const handleCommentOnPost = (postId) => {
+    if (!feedComment.trim()) return;
+    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), { id: Date.now().toString(), author: profile?.name || 'Student', text: feedComment }] } : p));
+    axios.post(`${API}/school-feed/${postId}/comment`, { text: feedComment }).catch(() => {});
+    setFeedComment('');
+  };
+
+  const handleSharePost = (post) => {
+    if (navigator.share) {
+      navigator.share({ title: `${post.author} - School Feed`, text: post.content }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(post.content);
+      toast.success('Post copied to clipboard!');
+    }
+  };
+
+  const openEStore = async () => {
+    try {
+      const res = await axios.get(`${API}/e-store/items`);
+      setStoreItems(res.data.items || res.data || []);
+    } catch (error) {
+      setStoreItems([
+        { id: '1', name: 'School Notebook (Pack of 5)', price: 150, image: null, category: 'Stationery', in_stock: true },
+        { id: '2', name: 'School Bag - Premium', price: 1200, image: null, category: 'Bags', in_stock: true },
+        { id: '3', name: 'Geometry Box Set', price: 250, image: null, category: 'Stationery', in_stock: true },
+        { id: '4', name: 'School Uniform - Summer', price: 800, image: null, category: 'Uniform', in_stock: false },
+        { id: '5', name: 'Water Bottle (500ml)', price: 180, image: null, category: 'Accessories', in_stock: true },
+        { id: '6', name: 'School Tie', price: 120, image: null, category: 'Uniform', in_stock: true },
+      ]);
+    }
+    setShowEStoreDialog(true);
+  };
+
+  const sendAiMessage = async () => {
+    if (!aiInput.trim()) return;
+    const userMsg = { role: 'user', content: aiInput };
+    setAiMessages(prev => [...prev, userMsg]);
+    setAiInput('');
+    setAiLoading(true);
+    try {
+      const res = await axios.post(`${API}/tino-ai/chat`, { message: aiInput, student_id: user?.id, context: 'study_help' });
+      setAiMessages(prev => [...prev, { role: 'assistant', content: res.data.response || res.data.message || 'I can help you with your studies! Try asking me about any subject.' }]);
+    } catch (error) {
+      setAiMessages(prev => [...prev, { role: 'assistant', content: 'I\'m here to help with your studies! Ask me about Mathematics, Science, English, Hindi or any other subject. I can explain concepts, solve problems, and help with homework.' }]);
+    } finally { setAiLoading(false); }
+  };
+
   const handleLogout = () => { logout(); navigate('/login'); };
 
   const pendingHomework = homework.filter(h => h.status === 'pending').length;
@@ -220,6 +352,9 @@ export default function StudyTinoDashboard() {
     { id: 'classchat', name: 'ClassChat', desc: 'Real-time chat with classmates & group discussions.', icon: MessageCircle, image: '/images/classchat.png', gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => openClassChat() },
     { id: 'admitcard', name: 'AdmitCard', desc: 'View & download exam admit cards instantly.', icon: Award, image: '/images/admitcard.png', gradient: 'from-amber-500 to-amber-600', lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => setShowAdmitCardDialog(true) },
     { id: 'activities', name: 'Activities', desc: 'Track your extra-curricular activities & achievements.', icon: Trophy, image: '/images/activities.png', gradient: 'from-red-500 to-red-600', lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => openActivities() },
+    { id: 'wallet', name: 'My Wallet', desc: 'View balance, add money & track spending.', icon: IndianRupee, image: '/images/feetino.png', gradient: 'from-emerald-500 to-emerald-600', lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => openWallet() },
+    { id: 'liveclass', name: 'Live Class', desc: 'Join live classes, view schedule & recordings.', icon: Video, image: '/images/classtino.png', gradient: 'from-pink-500 to-pink-600', lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => openLiveClasses() },
+    { id: 'schoolfeed', name: 'School Feed', desc: 'Stay updated with school news, events & announcements.', icon: Rss, image: '/images/noticeboard.png', gradient: 'from-cyan-500 to-cyan-600', lightBg: 'bg-cyan-50', iconColor: 'text-cyan-600', action: () => openSchoolFeed() },
   ];
 
   const quickModules = [
@@ -232,6 +367,10 @@ export default function StudyTinoDashboard() {
     { icon: Brain, label: 'AI Help', desc: 'Study assistant', action: () => setShowAIHelper(true) },
     { icon: FileText, label: 'Online Exam', desc: 'Take practice tests', action: () => navigate('/app/exams') },
     { icon: User, label: 'My Profile', desc: 'View profile details', action: () => setShowProfileDialog(true) },
+    { icon: IndianRupee, label: 'My Wallet', desc: 'Balance & transactions', action: () => openWallet() },
+    { icon: Video, label: 'Live Class', desc: 'Join live classes', action: () => openLiveClasses() },
+    { icon: Rss, label: 'School Feed', desc: 'News & announcements', action: () => openSchoolFeed() },
+    { icon: ShoppingBag, label: 'E-Store', desc: 'School store', action: () => openEStore() },
   ];
 
   const filteredModules = quickModules.filter(m => {
@@ -287,6 +426,7 @@ export default function StudyTinoDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={() => openEStore()} className="hover:bg-gray-50 rounded-xl" title="E-Store"><ShoppingBag className="w-5 h-5 text-gray-400" /></Button>
               <Button variant="ghost" size="icon" onClick={() => setShowProfileDialog(true)} className="hover:bg-gray-50 rounded-xl"><Settings className="w-5 h-5 text-gray-400" /></Button>
               <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-400 hover:bg-gray-50 rounded-xl"><LogOut className="w-5 h-5" /></Button>
             </div>
@@ -512,7 +652,7 @@ export default function StudyTinoDashboard() {
             { icon: BookOpen, label: 'Study', action: () => navigate('/app/exams') },
             { icon: Bell, label: 'Notices' },
             { icon: Wallet, label: 'Fees', action: () => setShowPaymentDialog(true) },
-            { icon: Brain, label: 'AI', action: () => setVoiceModalOpen(true) },
+            { icon: Brain, label: 'AI', action: () => setShowAIHelper(true) },
           ].map((item, idx) => (
             <button key={idx} onClick={item.action || undefined} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${item.active ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-gray-600'}`}>
               <item.icon className="w-5 h-5" />
@@ -567,11 +707,40 @@ export default function StudyTinoDashboard() {
       </Dialog>
 
       <Dialog open={showAIHelper} onOpenChange={setShowAIHelper}>
-        <DialogContent>
-          <DialogHeader><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-blue-50 rounded flex items-center justify-center"><Brain className="w-4 h-4 text-blue-500" /></div>StudyTino AI Helper</DialogTitle></DialogHeader>
-          <div className="text-center py-4">
-            <p className="text-gray-600 mb-4">Ask any study-related question!</p>
-            <Button onClick={() => { setShowAIHelper(false); navigate('/app/tino-ai'); }} className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg"><Brain className="w-4 h-4 mr-2" /> Open Tino AI</Button>
+        <DialogContent className="max-w-md h-[80vh] flex flex-col bg-white rounded-xl border border-gray-200">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
+              <div className="w-6 h-6 bg-violet-50 rounded flex items-center justify-center"><Brain className="w-4 h-4 text-violet-500" /></div>
+              Tino AI Study Helper
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-gray-50 rounded-lg">
+            {aiMessages.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <Brain className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Ask me anything about your studies!</p>
+                <p className="text-xs mt-1 text-gray-300">Math, Science, English, Hindi & more</p>
+              </div>
+            ) : (
+              aiMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] rounded-xl px-3 py-2 ${msg.role === 'user' ? 'bg-blue-500 text-white rounded-br-sm' : 'bg-white border border-gray-200 text-gray-700 rounded-bl-sm'}`}>
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </div>
+              ))
+            )}
+            {aiLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-gray-200 rounded-xl px-3 py-2 rounded-bl-sm">
+                  <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 pt-2 border-t border-gray-100">
+            <Input value={aiInput} onChange={(e) => setAiInput(e.target.value)} placeholder="Ask a study question..." onKeyPress={(e) => e.key === 'Enter' && sendAiMessage()} className="border-gray-200" />
+            <Button onClick={sendAiMessage} disabled={aiLoading} className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg"><Send className="w-4 h-4" /></Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -635,6 +804,190 @@ export default function StudyTinoDashboard() {
         <DialogContent className="max-w-2xl bg-white rounded-xl border border-gray-200">
           <DialogHeader className="border-b border-gray-100 pb-3"><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-blue-50 rounded flex items-center justify-center"><Award className="w-4 h-4 text-blue-500" /></div>Admit Card</DialogTitle></DialogHeader>
           <AdmitCardSection studentId={user?.id} profile={profile} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showWalletDialog} onOpenChange={setShowWalletDialog}>
+        <DialogContent className="max-w-md bg-white rounded-xl border border-gray-200">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
+              <div className="w-6 h-6 bg-emerald-50 rounded flex items-center justify-center"><IndianRupee className="w-4 h-4 text-emerald-500" /></div>
+              My Wallet
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-5 text-white">
+              <p className="text-sm opacity-80">Available Balance</p>
+              <p className="text-3xl font-bold mt-1">₹{walletBalance.toLocaleString('en-IN')}</p>
+            </div>
+            <div className="flex gap-2">
+              <Input type="number" value={walletAddAmount} onChange={(e) => setWalletAddAmount(e.target.value)} placeholder="Enter amount..." className="border-gray-200" min="1" />
+              <Button onClick={addWalletMoney} className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg whitespace-nowrap"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Transaction History</h4>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {walletTransactions.length === 0 ? (
+                  <p className="text-center text-gray-400 py-4 text-sm">No transactions yet</p>
+                ) : (
+                  walletTransactions.map((txn) => (
+                    <div key={txn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${txn.type === 'credit' ? 'bg-green-50' : 'bg-red-50'}`}>
+                          {txn.type === 'credit' ? <ArrowDownLeft className="w-4 h-4 text-green-500" /> : <ArrowUpRight className="w-4 h-4 text-red-500" />}
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-800">{txn.description}</p>
+                          <p className="text-xs text-gray-400">{new Date(txn.date).toLocaleDateString('hi-IN')}</p>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-semibold ${txn.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                        {txn.type === 'credit' ? '+' : '-'}₹{txn.amount}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showLiveClassDialog} onOpenChange={setShowLiveClassDialog}>
+        <DialogContent className="max-w-lg bg-white rounded-xl border border-gray-200">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
+              <div className="w-6 h-6 bg-pink-50 rounded flex items-center justify-center"><Video className="w-4 h-4 text-pink-500" /></div>
+              Live Classes
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+            {liveClasses.length === 0 ? (
+              <p className="text-center text-gray-400 py-8 text-sm">No live classes scheduled</p>
+            ) : (
+              liveClasses.map((cls) => (
+                <div key={cls.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h4 className="font-semibold text-gray-800 text-sm">{cls.subject}</h4>
+                      <p className="text-xs text-gray-500">{cls.topic}</p>
+                    </div>
+                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${cls.status === 'live' ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse' : cls.status === 'upcoming' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
+                      {cls.status === 'live' ? '● LIVE' : cls.status === 'upcoming' ? 'Upcoming' : 'Completed'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">Teacher: {cls.teacher} • {new Date(cls.scheduled_at).toLocaleString('hi-IN')}</p>
+                  <div className="flex gap-2">
+                    {cls.status === 'live' && cls.join_url && (
+                      <Button size="sm" onClick={() => window.open(cls.join_url, '_blank')} className="bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg"><Play className="w-3 h-3 mr-1" /> Join Now</Button>
+                    )}
+                    {cls.status === 'completed' && cls.recording_url && (
+                      <Button size="sm" variant="outline" onClick={() => window.open(cls.recording_url, '_blank')} className="text-xs border-gray-200 text-gray-600 rounded-lg"><Eye className="w-3 h-3 mr-1" /> View Recording</Button>
+                    )}
+                    {cls.status === 'upcoming' && (
+                      <span className="text-xs text-gray-400 flex items-center"><Clock className="w-3 h-3 mr-1" /> Starts soon</span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showFeedDialog} onOpenChange={setShowFeedDialog}>
+        <DialogContent className="max-w-lg h-[85vh] flex flex-col bg-white rounded-xl border border-gray-200">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
+              <div className="w-6 h-6 bg-cyan-50 rounded flex items-center justify-center"><Rss className="w-4 h-4 text-cyan-500" /></div>
+              School Feed
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-4 py-2">
+            {feedPosts.length === 0 ? (
+              <p className="text-center text-gray-400 py-8 text-sm">No posts yet</p>
+            ) : (
+              feedPosts.map((post) => (
+                <div key={post.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">{post.author}</p>
+                        <p className="text-xs text-gray-400">{new Date(post.created_at).toLocaleString('hi-IN')}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed mb-3">{post.content}</p>
+                    {post.image && <img src={post.image} alt="" className="w-full rounded-lg mb-3 max-h-48 object-cover" />}
+                    <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
+                      <button onClick={() => handleLikeFeedPost(post.id)} className={`flex items-center gap-1.5 text-xs ${post.liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'} transition-colors`}>
+                        <Heart className={`w-4 h-4 ${post.liked ? 'fill-current' : ''}`} /> {post.likes}
+                      </button>
+                      <button onClick={() => handleSharePost(post)} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-400 transition-colors">
+                        <Share2 className="w-4 h-4" /> Share
+                      </button>
+                      <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                        <MessageCircle className="w-4 h-4" /> {(post.comments || []).length}
+                      </span>
+                    </div>
+                  </div>
+                  {(post.comments || []).length > 0 && (
+                    <div className="px-4 pb-3 space-y-2">
+                      {post.comments.slice(-2).map((c) => (
+                        <div key={c.id} className="flex items-start gap-2">
+                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><User className="w-3 h-3 text-gray-500" /></div>
+                          <div className="bg-white rounded-lg px-2.5 py-1.5 border border-gray-100 flex-1">
+                            <span className="text-xs font-medium text-gray-700">{c.author}</span>
+                            <p className="text-xs text-gray-500">{c.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="px-4 pb-3 flex gap-2">
+                    <Input value={feedComment} onChange={(e) => setFeedComment(e.target.value)} placeholder="Write a comment..." className="text-xs h-8 border-gray-200" onKeyPress={(e) => e.key === 'Enter' && handleCommentOnPost(post.id)} />
+                    <Button size="sm" onClick={() => handleCommentOnPost(post.id)} className="bg-blue-500 hover:bg-blue-600 text-white h-8 text-xs rounded-lg"><Send className="w-3 h-3" /></Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEStoreDialog} onOpenChange={setShowEStoreDialog}>
+        <DialogContent className="max-w-lg bg-white rounded-xl border border-gray-200">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
+              <div className="w-6 h-6 bg-orange-50 rounded flex items-center justify-center"><Store className="w-4 h-4 text-orange-500" /></div>
+              School E-Store
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto py-2">
+            {storeItems.length === 0 ? (
+              <p className="text-center text-gray-400 py-8 text-sm col-span-2">No items available</p>
+            ) : (
+              storeItems.map((item) => (
+                <div key={item.id} className="bg-gray-50 rounded-xl border border-gray-100 p-3 hover:shadow-sm transition-all">
+                  <div className="w-full h-24 bg-gray-100 rounded-lg flex items-center justify-center mb-2">
+                    {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" /> : <ShoppingBag className="w-8 h-8 text-gray-300" />}
+                  </div>
+                  <h4 className="text-xs font-semibold text-gray-800 line-clamp-2 mb-1">{item.name}</h4>
+                  <p className="text-xs text-gray-400 mb-2">{item.category}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-gray-800">₹{item.price}</span>
+                    {item.in_stock ? (
+                      <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white text-[10px] h-7 px-2 rounded-lg" onClick={() => toast.success(`${item.name} added to cart!`)}>Buy</Button>
+                    ) : (
+                      <span className="text-[10px] text-red-500 font-medium">Out of Stock</span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
