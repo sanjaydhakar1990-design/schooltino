@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,35 +6,29 @@
 
 @layer base {
     :root {
-        /* EduNova Theme - Corporate Clean */
         --background: 0 0% 100%;
         --foreground: 222 47% 11%;
         --card: 0 0% 100%;
         --card-foreground: 222 47% 11%;
         --popover: 0 0% 100%;
         --popover-foreground: 222 47% 11%;
-        --primary: 217 91% 60%;
+        --primary: 222 47% 11%;
         --primary-foreground: 0 0% 100%;
         --secondary: 210 40% 96%;
         --secondary-foreground: 222 47% 11%;
         --muted: 210 40% 96%;
         --muted-foreground: 215 16% 47%;
-        --accent: 199 89% 48%;
-        --accent-foreground: 0 0% 100%;
+        --accent: 210 40% 96%;
+        --accent-foreground: 222 47% 11%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
-        --border: 214 32% 91%;
-        --input: 214 32% 91%;
-        --ring: 217 91% 60%;
-        --chart-1: 217 91% 60%;
-        --chart-2: 160 84% 39%;
-        --chart-3: 199 89% 48%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
+        --border: 220 13% 91%;
+        --input: 220 13% 91%;
+        --ring: 222 47% 11%;
         --radius: 0.5rem;
         --sidebar: 0 0% 100%;
         --sidebar-foreground: 222 47% 11%;
-        --sidebar-border: 214 32% 91%;
+        --sidebar-border: 220 13% 91%;
     }
 }
 
@@ -43,21 +37,18 @@
         @apply border-border;
     }
     body {
-        @apply bg-background text-foreground font-body antialiased;
-    }
-    h1, h2, h3, h4, h5, h6 {
-        @apply font-heading tracking-tight;
+        @apply bg-background text-foreground antialiased;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 }
 
-/* Custom scrollbar - subtle */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-    @apply bg-gray-50;
+    @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -68,41 +59,12 @@
     @apply bg-gray-300;
 }
 
-/* Mobile sidebar - hidden by default */
-@media (max-width: 1023px) {
-    .sidebar {
-        @apply -translate-x-full;
-    }
-    .sidebar.open {
-        @apply translate-x-0;
-    }
-}
-
-/* Sidebar overlay for mobile */
-.sidebar-overlay {
-    @apply fixed inset-0 bg-black/50 z-40 lg:hidden;
-}
-
-.sidebar-link {
-    @apply flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 rounded-lg mx-2;
-}
-
-.sidebar-link.active {
-    @apply bg-blue-50 text-blue-600 font-medium;
-}
-
-/* EduNova Stat Card */
 .stat-card {
-    @apply bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-200;
+    @apply bg-white border border-gray-200 rounded-lg p-4;
 }
 
-.stat-card:hover {
-    @apply border-blue-200 shadow-md;
-}
-
-/* EduNova Data Table */
 .data-table {
-    @apply w-full rounded-xl border border-gray-200 overflow-hidden bg-white;
+    @apply w-full border border-gray-200 overflow-hidden bg-white rounded-lg;
 }
 
 .data-table thead {
@@ -110,7 +72,7 @@
 }
 
 .data-table th {
-    @apply text-gray-600 font-semibold text-xs uppercase tracking-wider py-3 px-4 text-left;
+    @apply text-gray-600 font-medium text-xs uppercase tracking-wider py-3 px-4 text-left;
 }
 
 .data-table td {
@@ -118,100 +80,63 @@
 }
 
 .data-table tbody tr {
-    @apply hover:bg-blue-50/30 transition-colors;
+    @apply hover:bg-gray-50 transition-colors;
 }
 
 .data-table tbody tr:last-child td {
     @apply border-b-0;
 }
 
-/* EduNova Button styles */
 .btn-primary {
-    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm shadow-blue-500/20 rounded-xl px-5 py-2 font-medium transition-all text-sm;
+    @apply bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-4 py-2 font-medium text-sm;
 }
 
 .btn-secondary {
-    @apply bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg px-5 py-2 font-medium transition-all text-sm;
+    @apply bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg px-4 py-2 font-medium text-sm;
 }
 
-.btn-ghost {
-    @apply hover:bg-gray-100 text-gray-600 hover:text-gray-900 rounded-lg px-4 py-2 transition-all text-sm;
-}
-
-/* EduNova Status badges */
 .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
 }
 
 .badge-success {
-    @apply bg-emerald-50 text-emerald-600 border border-emerald-100;
+    @apply bg-green-50 text-green-700;
 }
 
 .badge-warning {
-    @apply bg-amber-50 text-amber-600 border border-amber-100;
+    @apply bg-amber-50 text-amber-700;
 }
 
 .badge-error {
-    @apply bg-rose-50 text-rose-600 border border-rose-100;
+    @apply bg-red-50 text-red-700;
 }
 
 .badge-info {
-    @apply bg-blue-50 text-blue-600 border border-blue-100;
+    @apply bg-blue-50 text-blue-700;
 }
 
-/* EduNova Input focus styles */
 input:focus, select:focus, textarea:focus {
-    @apply ring-2 ring-blue-400/20 border-blue-400 outline-none;
+    @apply ring-1 ring-gray-300 border-gray-400 outline-none;
 }
 
-/* EduNova Card Section Wrapper */
 .card-section {
-    @apply bg-white rounded-xl border border-gray-200 p-5;
+    @apply bg-white rounded-lg border border-gray-200 p-5;
 }
 
-.card-section-header {
-    @apply flex items-center justify-between mb-4 pb-3 border-b border-gray-100;
-}
-
-.card-section-title {
-    @apply text-base font-semibold text-gray-800;
-}
-
-/* EduNova Page Header */
 .page-header {
     @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6;
 }
 
 .page-header-title {
-    @apply text-xl font-bold text-gray-800;
+    @apply text-lg font-semibold text-gray-900;
 }
 
 .page-header-subtitle {
     @apply text-sm text-gray-500 mt-0.5;
 }
 
-/* EduNova Filter Bar */
-.filter-bar {
-    @apply flex flex-wrap items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 mb-5;
-}
-
-/* EduNova Stat Card (new) */
-.edu-stat-card {
-    @apply bg-white rounded-xl border border-gray-200 p-5 hover:shadow-sm transition-all cursor-pointer;
-}
-
-.edu-stat-card:hover {
-    @apply border-blue-200 shadow-md;
-}
-
-/* EduNova Module Card */
-.module-card {
-    @apply flex flex-col items-center justify-center p-4 rounded-xl bg-white border border-gray-200 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer;
-}
-
-/* EduNova Form styles */
 .form-section {
-    @apply bg-white rounded-xl border border-gray-200 p-6 space-y-4;
+    @apply bg-white rounded-lg border border-gray-200 p-6 space-y-4;
 }
 
 .form-label {
@@ -219,74 +144,50 @@ input:focus, select:focus, textarea:focus {
 }
 
 .form-input {
-    @apply w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all;
+    @apply w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:border-gray-400 outline-none transition-colors;
 }
 
-/* EduNova Action Button Row */
-.action-bar {
-    @apply flex flex-wrap items-center gap-2;
-}
-
-/* EduNova Empty State */
 .empty-state {
     @apply flex flex-col items-center justify-center py-16 text-gray-400;
 }
 
 .empty-state-icon {
-    @apply w-16 h-16 mb-4 opacity-40;
+    @apply w-12 h-12 mb-3 opacity-40;
 }
 
 .empty-state-title {
-    @apply text-lg font-semibold text-gray-600 mb-2;
+    @apply text-base font-medium text-gray-600 mb-1;
 }
 
 .empty-state-desc {
     @apply text-sm text-gray-400;
 }
 
-/* Page transitions */
-.page-enter {
-    opacity: 0;
-    transform: translateY(10px);
+.filter-bar {
+    @apply flex flex-wrap items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 mb-4;
 }
 
-.page-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 300ms ease-out, transform 300ms ease-out;
+.module-card {
+    @apply flex flex-col items-center justify-center p-3 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer;
 }
 
-/* Fade-in animation */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.2s ease-out;
 }
 
-/* Loading spinner */
 .spinner {
-    @apply animate-spin rounded-full border-2 border-gray-200 border-t-blue-500;
+    @apply animate-spin rounded-full border-2 border-gray-200 border-t-gray-600;
 }
 
-/* Priority indicators */
-.priority-urgent {
-    @apply border-l-4 border-l-rose-500;
-}
-
-.priority-high {
-    @apply border-l-4 border-l-amber-500;
-}
-
-.priority-normal {
-    @apply border-l-4 border-l-blue-500;
-}
-
-.priority-low {
-    @apply border-l-4 border-l-gray-300;
-}
+.priority-urgent { @apply border-l-4 border-l-red-500; }
+.priority-high { @apply border-l-4 border-l-amber-500; }
+.priority-normal { @apply border-l-4 border-l-blue-500; }
+.priority-low { @apply border-l-4 border-l-gray-300; }
 
 @layer base {
     [data-debug-wrapper="true"] {
@@ -294,381 +195,28 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* ==================== TINO AI ANIMATIONS ==================== */
+.animate-breathe { animation: breathe 3s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-/* Breathing animation for idle state */
-@keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.05); opacity: 1; }
-}
+.animate-pulse-fast { animation: pulse-fast 0.8s ease-in-out infinite; }
+@keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-/* Fast pulse for listening */
-@keyframes pulse-fast {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
+@keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* Speaking pulse */
-@keyframes pulse-speak {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.05); }
-  50% { transform: scale(0.98); }
-  75% { transform: scale(1.03); }
-}
+.tino-panel { @apply bg-white border border-gray-200 shadow-lg rounded-xl; }
 
-/* Slow spin for thinking */
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Ping animations for rings */
-@keyframes ping-slow {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-
-@keyframes ping-slower {
-  0% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(1.8); opacity: 0; }
-}
-
-/* Wave animations for speaking */
-@keyframes wave-expand-1 {
-  0% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(1.8); opacity: 0; }
-}
-
-@keyframes wave-expand-2 {
-  0% { transform: scale(1); opacity: 0.4; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-
-@keyframes wave-expand-3 {
-  0% { transform: scale(1); opacity: 0.2; }
-  100% { transform: scale(2.6); opacity: 0; }
-}
-
-/* Sound bar animations for listening */
-@keyframes sound-bar-1 {
-  0%, 100% { height: 12px; }
-  50% { height: 20px; }
-}
-
-@keyframes sound-bar-2 {
-  0%, 100% { height: 16px; }
-  50% { height: 8px; }
-}
-
-@keyframes sound-bar-3 {
-  0%, 100% { height: 8px; }
-  50% { height: 24px; }
-}
-
-/* Speaking bar animations */
-@keyframes speak-bar-1 {
-  0%, 100% { height: 8px; }
-  25% { height: 16px; }
-  50% { height: 10px; }
-  75% { height: 20px; }
-}
-
-@keyframes speak-bar-2 {
-  0%, 100% { height: 16px; }
-  33% { height: 8px; }
-  66% { height: 24px; }
-}
-
-@keyframes speak-bar-3 {
-  0%, 100% { height: 12px; }
-  50% { height: 6px; }
-}
-
-/* Animation classes */
-.animate-breathe {
-  animation: breathe 3s ease-in-out infinite;
-}
-
-.animate-pulse-fast {
-  animation: pulse-fast 0.8s ease-in-out infinite;
-}
-
-.animate-pulse-speak {
-  animation: pulse-speak 0.6s ease-in-out infinite;
-}
-
-.animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
-}
-
-.animate-ping-slow {
-  animation: ping-slow 2s ease-out infinite;
-}
-
-.animate-ping-slower {
-  animation: ping-slower 2.5s ease-out infinite 0.5s;
-}
-
-@keyframes ping-slowest {
-  0% { transform: scale(1); opacity: 0.4; }
-  100% { transform: scale(2); opacity: 0; }
-}
-
-.animate-ping-slowest {
-  animation: ping-slowest 3s ease-out infinite 1s;
-}
-
-.animate-wave-1 {
-  animation: wave-expand-1 1.5s ease-out infinite;
-}
-
-.animate-wave-2 {
-  animation: wave-expand-2 1.5s ease-out infinite 0.3s;
-}
-
-.animate-wave-3 {
-  animation: wave-expand-3 1.5s ease-out infinite 0.6s;
-}
-
-.animate-sound-bar-1 {
-  animation: sound-bar-1 0.4s ease-in-out infinite;
-}
-
-.animate-sound-bar-2 {
-  animation: sound-bar-2 0.5s ease-in-out infinite 0.1s;
-}
-
-.animate-sound-bar-3 {
-  animation: sound-bar-3 0.3s ease-in-out infinite 0.2s;
-}
-
-.animate-speak-bar-1 {
-  animation: speak-bar-1 0.5s ease-in-out infinite;
-}
-
-.animate-speak-bar-2 {
-  animation: speak-bar-2 0.4s ease-in-out infinite;
-}
-
-.animate-speak-bar-3 {
-  animation: speak-bar-3 0.6s ease-in-out infinite 0.15s;
-}
-
-/* Face speaking animation */
-@keyframes face-speak {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.01); }
-  50% { transform: scale(0.99); }
-  75% { transform: scale(1.01); }
-}
-
-.animate-face-speak {
-  animation: face-speak 0.3s ease-in-out infinite;
-}
-
-/* Lip sync glow animation */
-@keyframes lip-sync {
-  0%, 100% { opacity: 0.3; transform: translateX(-50%) scaleY(0.8); }
-  25% { opacity: 0.6; transform: translateX(-50%) scaleY(1.2); }
-  50% { opacity: 0.4; transform: translateX(-50%) scaleY(0.9); }
-  75% { opacity: 0.7; transform: translateX(-50%) scaleY(1.3); }
-}
-
-.animate-lip-sync {
-  animation: lip-sync 0.2s ease-in-out infinite;
-}
-
-/* Scale animations */
-.scale-102 {
-  transform: scale(1.02);
-}
-
-.scale-103 {
-  transform: scale(1.03);
-}
-
-/* ==================== AVATAR ANIMATIONS ==================== */
-
-/* Avatar idle breathing */
-@keyframes avatar-idle {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-3px) scale(1.01); }
-}
-
-.animate-avatar-idle {
-  animation: avatar-idle 3s ease-in-out infinite;
-}
-
-/* Avatar listening - excited bounce */
-@keyframes avatar-listen {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-5px) rotate(-1deg); }
-  75% { transform: translateY(-5px) rotate(1deg); }
-}
-
-.animate-avatar-listen {
-  animation: avatar-listen 0.6s ease-in-out infinite;
-}
-
-/* Avatar thinking - gentle sway */
-@keyframes avatar-think {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-2px) rotate(-2deg); }
-  66% { transform: translateY(-2px) rotate(2deg); }
-}
-
-.animate-avatar-think {
-  animation: avatar-think 1.5s ease-in-out infinite;
-}
-
-/* Avatar speaking - energetic movement with lip sync feel */
-@keyframes avatar-speak {
-  0%, 100% { transform: translateY(0) scale(1); }
-  10% { transform: translateY(-2px) scale(1.01); }
-  20% { transform: translateY(0) scale(0.99); }
-  30% { transform: translateY(-3px) scale(1.02); }
-  40% { transform: translateY(-1px) scale(1); }
-  50% { transform: translateY(-2px) scale(1.01); }
-  60% { transform: translateY(0) scale(0.99); }
-  70% { transform: translateY(-2px) scale(1.01); }
-  80% { transform: translateY(-1px) scale(1); }
-  90% { transform: translateY(-2px) scale(1.01); }
-}
-
-.animate-avatar-speak {
-  animation: avatar-speak 0.5s ease-in-out infinite;
-}
-
-/* Happy expression */
-@keyframes avatar-happy {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.05) rotate(2deg); }
-}
-
-.animate-avatar-happy {
-  animation: avatar-happy 0.4s ease-in-out;
-}
-
-/* Continuous listening pulse */
-@keyframes continuous-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
-  50% { box-shadow: 0 0 0 20px rgba(6, 182, 212, 0); }
-}
-
-.animate-continuous-pulse {
-  animation: continuous-pulse 2s ease-in-out infinite;
-}
-
-/* Meeting mode indicator */
-@keyframes meeting-mode {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-meeting-mode {
-  animation: meeting-mode 1s ease-in-out infinite;
-}
-
-/* Tino AI Panel Glassmorphism */
-.tino-panel {
-  @apply bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl;
-}
-
-.tino-panel-dark {
-  @apply bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl rounded-2xl;
-}
-
-
-/* ==================== PRINT STYLES ==================== */
 @media print {
-  /* Hide non-printable elements */
-  .print\\:hidden,
-  nav,
-  aside,
-  footer,
-  .no-print,
-  button:not(.print-btn),
-  [data-print="hide"] {
-    display: none !important;
-  }
-
-  /* Show print elements */
-  .print\\:block {
-    display: block !important;
-  }
-
-  /* Page setup */
-  @page {
-    size: A4;
-    margin: 10mm 15mm;
-  }
-
-  body {
-    font-size: 11pt;
-    line-height: 1.4;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
-
-  /* Force page break for answer key */
-  .page-break-before {
-    page-break-before: always !important;
-    break-before: page !important;
-  }
-
-  /* Calendar print layout */
-  .calendar-print-container {
-    page-break-inside: avoid;
-  }
-
-  /* Watermark background */
-  .calendar-watermark {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0.08;
-    z-index: -1;
-    width: 60%;
-    max-width: 400px;
-    pointer-events: none;
-  }
-
-  /* School header for print */
-  .school-print-header {
-    text-align: center;
-    border-bottom: 2px solid #333;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-  }
-
-  .school-print-header img {
-    max-height: 60px;
-  }
-
-  /* Grid layout for calendar months */
-  .calendar-months-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 8px !important;
-  }
-
-  /* Month card styling */
-  .month-card {
-    border: 1px solid #ddd !important;
-    padding: 8px !important;
-    page-break-inside: avoid;
-  }
-
-  /* Ensure colors print */
-  .bg-red-100, .bg-amber-100, .bg-blue-100, .bg-green-100 {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Page breaks */
-  .print-page-break {
-    page-break-after: always;
-  }
+    .print\\:hidden, nav, aside, footer, .no-print, button:not(.print-btn), [data-print="hide"] {
+        display: none !important;
+    }
+    .print\\:block { display: block !important; }
+    @page { size: A4; margin: 10mm 15mm; }
+    body {
+        font-size: 11pt;
+        line-height: 1.4;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .page-break-before { page-break-before: always !important; }
 }
