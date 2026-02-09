@@ -77,6 +77,9 @@ import CertificateGenerator from './pages/CertificateGenerator';
 import ExamReportCard from './pages/ExamReportCard';
 import TinoAICenter from './pages/AIJarvisCenter';
 import TinoAIAgent from './pages/TinoAIAgent';
+import SchoolFeedPage from './pages/SchoolFeedPage';
+import StudentWalletPage from './pages/StudentWalletPage';
+import EStorePage from './pages/EStorePage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -340,6 +343,10 @@ function AppRoutes() {
         <Route path="school-management" element={<SchoolManagementPage />} />
         <Route path="employee-management" element={<EmployeeManagementPage />} />
         <Route path="logo-settings" element={<LogoWatermarkSettings />} />
+        <Route path="school-feed" element={<SchoolFeedPage />} />
+        <Route path="student-wallet" element={<StudentWalletPage />} />
+        <Route path="e-store" element={<EStorePage />} />
+        <Route path="visitor-pass" element={<FrontOfficePage />} />
       </Route>
       
       {/* Old routes redirect to /app */}
