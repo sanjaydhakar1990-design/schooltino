@@ -53,10 +53,10 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     {
       id: 'team', label: 'Team',
       items: [
-        { path: '/app/employee-management', icon: Users, label: 'Staff', permKey: 'staff' },
+        { path: '/app/employee-management', icon: Users, label: 'Staff & Permissions', permKey: 'staff' },
         { path: '/app/leave', icon: Calendar, label: 'Leave', permKey: 'leave_management' },
         { path: '/app/salary', icon: Wallet, label: 'Salary', permKey: 'fees' },
-        { path: '/app/permission-manager', icon: Shield, label: 'Permissions', permKey: 'user_management', directorOnly: true },
+        { path: '/app/ai-staff-attendance', icon: Fingerprint, label: 'AI Attendance', permKey: 'attendance' },
       ]
     },
     {
@@ -66,13 +66,14 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         { path: '/app/accountant', icon: Calculator, label: 'Accountant', permKey: 'fees' },
         { path: '/app/student-wallet', icon: Wallet, label: 'Student Wallet', permKey: 'fees' },
         { path: '/app/e-store', icon: ShoppingBag, label: 'e-Store', permKey: 'fees' },
+        { path: '/app/tally-integration', icon: Globe, label: 'Tally Integration', permKey: 'fees', directorOnly: true },
       ]
     },
     {
       id: 'communicate', label: 'Communication',
       items: [
         { path: '/app/notices', icon: Bell, label: 'Notices', permKey: 'notices' },
-        { path: '/app/sms', icon: MessageSquare, label: 'SMS', permKey: 'sms_center' },
+        { path: '/app/sms', icon: MessageSquare, label: 'SMS & WhatsApp', permKey: 'sms_center' },
         { path: '/app/gallery', icon: Image, label: 'Gallery', permKey: 'gallery' },
         { path: '/app/complaints', icon: MessageSquare, label: 'Complaints', permKey: 'settings' },
       ]
@@ -90,9 +91,10 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       id: 'infra', label: 'Infrastructure',
       items: [
         { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance' },
-        { path: '/app/visitor-pass', icon: Shield, label: 'Visitor Pass', permKey: 'attendance' },
+        { path: '/app/visitor-pass', icon: Shield, label: 'Visit Management', permKey: 'attendance' },
         { path: '/app/health', icon: Heart, label: 'Health', permKey: 'attendance' },
         { path: '/app/biometric', icon: Fingerprint, label: 'Biometric', permKey: 'attendance' },
+        { path: '/app/multi-branch', icon: Building, label: 'Multi-Branch', permKey: 'settings', directorOnly: true },
         { path: '/app/cctv', icon: Video, label: 'CCTV', permKey: 'cctv' },
       ]
     },

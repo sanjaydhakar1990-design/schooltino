@@ -80,6 +80,8 @@ from routes.documents import router as documents_router
 from routes.bulk_import import router as bulk_import_router
 from routes.dual_credits import router as dual_credits_router
 from routes.syllabus_sync import router as syllabus_sync_router
+from routes.branches import router as branches_router
+from routes.staff_attendance import router as staff_attendance_router
 
 # ==================== MODELS ====================
 
@@ -12156,6 +12158,8 @@ api_router.include_router(bulk_import_router)
 api_router.include_router(dual_credits_router)
 api_router.include_router(syllabus_sync_router)
 
+api_router.include_router(branches_router)
+api_router.include_router(staff_attendance_router)
 app.include_router(api_router)
 
 # Mount static files for uploads and marketing materials

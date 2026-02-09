@@ -9,7 +9,7 @@ import {
   Fingerprint, Video, Image, MessageSquare,
   Calendar, Brain, Shield, Award,
   Calculator, Wrench, UserPlus,
-  Rss, ShoppingBag,
+  Rss, ShoppingBag, Building, Database, Scan, Globe,
   BarChart3, ChevronRight, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 
@@ -92,19 +92,19 @@ export default function DashboardPage() {
     {
       title: 'Administration',
       modules: [
-        { icon: UserCog, label: 'Staff', desc: 'Employee mgmt', path: '/app/employee-management', gradient: 'from-purple-500 to-violet-500' },
+        { icon: UserCog, label: 'Staff & Permissions', desc: 'Employee mgmt', path: '/app/employee-management', gradient: 'from-purple-500 to-violet-500' },
         { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fee-management', gradient: 'from-emerald-500 to-green-500' },
         { icon: Calculator, label: 'Accountant', desc: 'Finance tools', path: '/app/accountant', gradient: 'from-sky-500 to-blue-500' },
         { icon: Wallet, label: 'Student Wallet', desc: 'Digital wallet', path: '/app/student-wallet', gradient: 'from-violet-500 to-purple-500' },
         { icon: Calendar, label: 'Leave', desc: 'Leave tracking', path: '/app/leave', gradient: 'from-teal-500 to-cyan-500' },
-        { icon: Shield, label: 'Permissions', desc: 'Role manager', path: '/app/permission-manager', gradient: 'from-gray-500 to-slate-500' },
+        { icon: Database, label: 'Tally Integration', desc: 'Accounting sync', path: '/app/tally-integration', gradient: 'from-orange-500 to-red-500' },
       ],
     },
     {
       title: 'Communication & Tools',
       modules: [
         { icon: Bell, label: 'Notices', desc: 'Announcements', path: '/app/notices', gradient: 'from-orange-500 to-amber-500' },
-        { icon: MessageSquare, label: 'SMS Center', desc: 'Send messages', path: '/app/sms', gradient: 'from-sky-500 to-cyan-500' },
+        { icon: MessageSquare, label: 'SMS & WhatsApp', desc: 'Send messages', path: '/app/sms', gradient: 'from-sky-500 to-cyan-500' },
         { icon: Rss, label: 'School Feed', desc: 'Social feed', path: '/app/school-feed', gradient: 'from-blue-500 to-indigo-500' },
         { icon: Image, label: 'Gallery', desc: 'Photo albums', path: '/app/gallery', gradient: 'from-pink-500 to-rose-500' },
         { icon: ShoppingBag, label: 'e-Store', desc: 'School store', path: '/app/e-store', gradient: 'from-violet-500 to-fuchsia-500' },
@@ -116,8 +116,10 @@ export default function DashboardPage() {
       modules: [
         { icon: Brain, label: 'Tino AI', desc: 'AI assistant', path: '/app/tino-ai', gradient: 'from-indigo-500 to-violet-500' },
         { icon: Sparkles, label: 'AI Paper', desc: 'Auto papers', path: '/app/ai-paper', gradient: 'from-purple-500 to-pink-500' },
-        { icon: Bus, label: 'Transport', desc: 'GPS tracking', path: '/app/transport', gradient: 'from-orange-500 to-red-500' },
-        { icon: Shield, label: 'Visitor Pass', desc: 'Visitor mgmt', path: '/app/visitor-pass', gradient: 'from-green-500 to-emerald-500' },
+        { icon: Scan, label: 'AI Attendance', desc: 'Geo-facial scan', path: '/app/ai-staff-attendance', gradient: 'from-green-500 to-emerald-500' },
+        { icon: Bus, label: 'Transport', desc: 'NFC & GPS', path: '/app/transport', gradient: 'from-orange-500 to-red-500' },
+        { icon: Shield, label: 'Visit Mgmt', desc: 'OTP approval', path: '/app/visitor-pass', gradient: 'from-teal-500 to-cyan-500' },
+        { icon: Building, label: 'Multi-Branch', desc: 'Branch mgmt', path: '/app/multi-branch', gradient: 'from-blue-500 to-indigo-500' },
         { icon: Fingerprint, label: 'Biometric', desc: 'Bio attendance', path: '/app/biometric', gradient: 'from-slate-500 to-gray-600' },
         { icon: Video, label: 'CCTV', desc: 'Surveillance', path: '/app/cctv', gradient: 'from-red-500 to-rose-500' },
       ],

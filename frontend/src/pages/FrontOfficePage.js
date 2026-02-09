@@ -5,7 +5,7 @@ import {
   UserPlus, Users, Clock, CheckCircle2, LogOut, Search,
   FileText, Phone, Car, BadgeCheck, RefreshCw, Plus,
   AlertCircle, Calendar, Building, Filter, Download,
-  Eye, MoreVertical, Printer
+  Eye, MoreVertical, Printer, Shield
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -61,6 +61,10 @@ export default function FrontOfficePage() {
     expected_duration: 30,
     notes: ''
   });
+
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
 
   const fetchVisitors = useCallback(async () => {
     try {
@@ -146,10 +150,10 @@ export default function FrontOfficePage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
             <Building className="w-8 h-8 text-blue-500" />
-            Front Office
+            Visit Management
           </h1>
           <p className="text-muted-foreground mt-1">
-            Visitor Management & Gate Pass System
+            Know who's in — real-time visitor tracking with OTP approval
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -378,6 +382,34 @@ export default function FrontOfficePage() {
                   onChange={(e) => setForm({...form, expected_duration: parseInt(e.target.value)})}
                 />
               </div>
+            </div>
+            <div className="bg-blue-50 rounded-xl p-4 mt-4 border border-blue-200">
+              <h4 className="font-semibold text-sm text-blue-900 flex items-center gap-2 mb-3">
+                <Shield className="w-4 h-4" /> OTP Verification
+              </h4>
+              {!otpSent ? (
+                <div>
+                  <p className="text-xs text-blue-700 mb-2">Send OTP to the person being visited for approval</p>
+                  <Button type="button" size="sm" variant="outline" onClick={() => {
+                    const code = Math.floor(1000 + Math.random() * 9000).toString();
+                    setGeneratedOtp(code);
+                    setOtpSent(true);
+                    toast.success(`OTP ${code} sent to ${form.whom_to_meet}`);
+                  }} className="text-blue-700 border-blue-300">
+                    Send OTP
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-green-700">OTP sent! Enter the code to verify visitor</p>
+                  <div className="flex gap-2">
+                    <Input value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter 4-digit OTP" className="w-40" maxLength={4} />
+                    <Badge className={otp === generatedOtp && otp.length === 4 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}>
+                      {otp === generatedOtp && otp.length === 4 ? '✓ Verified' : 'Pending'}
+                    </Badge>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>

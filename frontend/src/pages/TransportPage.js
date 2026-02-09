@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import { 
   Bus, MapPin, Users, Phone, Car, Plus, RefreshCw,
   Route, Navigation, Clock, Search, Filter, Eye,
-  AlertCircle, CheckCircle2, Settings, User, Fuel
+  AlertCircle, CheckCircle2, Settings, User, Fuel,
+  Wifi, Bell, Smartphone
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -221,10 +222,11 @@ export default function TransportPage() {
       )}
 
       <Tabs defaultValue="tracking" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="tracking">Live Tracking</TabsTrigger>
           <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
           <TabsTrigger value="routes">Routes</TabsTrigger>
+          <TabsTrigger value="nfc-gps">NFC & GPS Tracking</TabsTrigger>
         </TabsList>
 
         {/* Live Tracking Tab */}
@@ -373,6 +375,99 @@ export default function TransportPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="nfc-gps" className="space-y-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-2">
+              <Wifi className="w-5 h-5 text-blue-600" />
+              NFC & GPS Transport Tracking
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">Board, tap, and track — school transport made easy. Students tap NFC-enabled ID cards on vehicle attender's phone.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3">
+                  <Smartphone className="w-5 h-5 text-blue-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900">NFC Tap Attendance</h4>
+                <p className="text-xs text-gray-500 mt-1">Students tap ID cards on attender's phone to mark boarding/drop-off attendance automatically</p>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3">
+                  <MapPin className="w-5 h-5 text-green-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900">Live GPS Tracking</h4>
+                <p className="text-xs text-gray-500 mt-1">Real-time GPS tracking of school buses. Parents can see exact bus location on map</p>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3">
+                  <Bell className="w-5 h-5 text-purple-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900">Instant Notifications</h4>
+                <p className="text-xs text-gray-500 mt-1">Parents get instant alerts when child boards/exits the bus. No costly hardware needed</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Today's NFC Boarding Log</h3>
+              <Badge variant="outline" className="text-xs">Live</Badge>
+            </div>
+            <div className="p-4">
+              <div className="text-center py-8 text-gray-400">
+                <Smartphone className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="font-medium">NFC Boarding System</p>
+                <p className="text-sm mt-1">Vehicle attenders will use their phones for NFC tap attendance</p>
+                <p className="text-xs mt-2 text-blue-500">Requires NFC-enabled devices and student ID cards</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-5">
+                <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                  <Navigation className="w-4 h-4 text-blue-500" /> GPS Device Setup
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">GPS Tracking Enabled</span>
+                    <Badge className="bg-green-100 text-green-700">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">Update Interval</span>
+                    <span className="text-sm font-medium">10 seconds</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">Geo-fence Alerts</span>
+                    <Badge className="bg-blue-100 text-blue-700">Enabled</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-5">
+                <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                  <Smartphone className="w-4 h-4 text-green-500" /> NFC Configuration
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">NFC Reader Mode</span>
+                    <Badge className="bg-blue-100 text-blue-700">Mobile Based</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">Card Format</span>
+                    <span className="text-sm font-medium">NTAG215</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">Auto-notification</span>
+                    <Badge className="bg-green-100 text-green-700">Enabled</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>

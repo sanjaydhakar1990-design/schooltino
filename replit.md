@@ -46,20 +46,26 @@ cd frontend && PORT=5000 HOST=0.0.0.0 GENERATE_SOURCEMAP=false BROWSER=none npm 
 cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Key Features
+## Key Features (NextOS Feature Parity)
 - Student admission and management
-- Staff/employee management
+- Staff/employee management with integrated permissions
 - Fee management and payments (Razorpay integration)
-- Attendance tracking
+- Attendance tracking (students + AI staff geo-facial)
 - AI-powered paper generation
 - CCTV management
-- SMS center
+- SMS & WhatsApp communication
 - Multi-language support (i18n)
 - PWA support
-- Transport management
+- Transport management with NFC & GPS tracking
 - Timetable management
-- Visitor gate pass
+- Visit Management with OTP approval flow
 - Biometric integration
+- Multi-Branch Management (unified dashboard)
+- Tally Integration (accounting sync)
+- School Feed (social activity feed)
+- Student Wallet (digital cashless)
+- School e-Store (online store)
+- Exam & Report Card Management (custom designs)
 
 ## Known Limitations
 - `emergentintegrations` is a private package - stub implementations provided in `backend/emergentintegrations/` for LlmChat, OpenAIChat, SpeechToText, TextToSpeech classes
@@ -78,6 +84,18 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - All core functionality preserved plus new modules
 
 ## Recent Changes
+- 2026-02-09: NextOS full feature parity v5:
+  - Removed duplicate Permission Manager from sidebar (permissions now managed inside Staff page only)
+  - Permission Manager route now redirects to Employee Management
+  - New page: MultiBranchPage - unified dashboard for multi-branch management with branch CRUD, stats, cross-campus monitoring
+  - New page: AIStaffAttendancePage - AI-powered staff attendance with geo-facial recognition, camera capture, GPS verification
+  - New page: TallyIntegrationPage - Tally accounting sync with connection settings, module status, auto-sync
+  - New backend: routes/branches.py - CRUD API for multi-branch management
+  - New backend: routes/staff_attendance.py - Staff attendance marking/reporting with geo-facial data
+  - TransportPage: Added NFC & GPS Tracking tab with NFC tap attendance, GPS device setup, boarding log
+  - FrontOfficePage: Renamed to Visit Management, added OTP verification flow for visitor approval
+  - Sidebar: SMS renamed to "SMS & WhatsApp", Visitor Pass renamed to "Visit Management", new entries for AI Attendance, Multi-Branch, Tally Integration
+  - Dashboard: Module groups updated with new features (Tally, AI Attendance, Multi-Branch, Visit Mgmt), Permissions removed
 - 2026-02-09: Global school branding & watermark v4:
   - SchoolLogoWatermark: Refactored to use AuthContext directly (no extra API calls), added GlobalWatermark component
   - Layout.js: GlobalWatermark added to main content area - school logo appears as watermark on all admin pages

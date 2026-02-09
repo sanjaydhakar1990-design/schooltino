@@ -28,7 +28,6 @@ import WebsiteIntegration from './pages/WebsiteIntegration';
 import LeaveManagement from './pages/LeaveManagement';
 import CCTVDashboard from './pages/CCTVDashboard';
 import SchoolAnalytics from './pages/SchoolAnalytics';
-import PermissionManager from './pages/PermissionManager';
 import SchoolRegistrationForm from './pages/SchoolRegistrationForm';
 import ZoomMeetings from './pages/ZoomMeetings';
 import SetupWizard from './pages/SetupWizard';
@@ -80,6 +79,9 @@ import TinoAIAgent from './pages/TinoAIAgent';
 import SchoolFeedPage from './pages/SchoolFeedPage';
 import StudentWalletPage from './pages/StudentWalletPage';
 import EStorePage from './pages/EStorePage';
+import MultiBranchPage from './pages/MultiBranchPage';
+import AIStaffAttendancePage from './pages/AIStaffAttendancePage';
+import TallyIntegrationPage from './pages/TallyIntegrationPage';
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -283,7 +285,7 @@ function AppRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="school-analytics" element={<SchoolAnalytics />} />
         <Route path="users" element={<Navigate to="/app/employee-management" replace />} />
-        <Route path="permission-manager" element={<PermissionManager />} />
+        <Route path="permission-manager" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="students" element={<StudentsPage />} />
         <Route path="staff" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="classes" element={<ClassesPage />} />
@@ -346,6 +348,9 @@ function AppRoutes() {
         <Route path="school-feed" element={<SchoolFeedPage />} />
         <Route path="student-wallet" element={<StudentWalletPage />} />
         <Route path="e-store" element={<EStorePage />} />
+        <Route path="multi-branch" element={<MultiBranchPage />} />
+        <Route path="ai-staff-attendance" element={<AIStaffAttendancePage />} />
+        <Route path="tally-integration" element={<TallyIntegrationPage />} />
         <Route path="visitor-pass" element={<FrontOfficePage />} />
       </Route>
       
