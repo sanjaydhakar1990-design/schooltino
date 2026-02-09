@@ -763,8 +763,10 @@ class PaperGenerateResponse(BaseModel):
     chapters_included: Optional[List[str]] = None
     questions: List[Dict[str, Any]]
     total_marks: int
+    actual_marks: Optional[int] = None
     time_duration: int
     created_at: str
+    marks_verified: Optional[bool] = None
 
 # Dashboard Stats
 class DashboardStats(BaseModel):
@@ -4215,15 +4217,12 @@ async def generate_paper(request: PaperGenerateRequest, current_user: dict = Dep
     if current_user["role"] not in ["director", "principal", "teacher", "exam_controller", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    openai_key = os.environ.get("OPENAI_API_KEY")
-    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
-    api_key = emergent_key or openai_key
+    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
     
-    if not api_key:
-        raise HTTPException(status_code=500, detail="API key not configured")
+    if not anthropic_api_key:
+        raise HTTPException(status_code=500, detail="Anthropic API key not configured. Add ANTHROPIC_API_KEY in Settings.")
     
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
         
         # Calculate marks distribution based on question types with proper percentages
         type_config = {
@@ -4598,14 +4597,15 @@ Return in this EXACT JSON format:
 GENERATE THE PAPER NOW! Return ONLY the JSON object above.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
 
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"paper-{str(uuid.uuid4())[:8]}",
-            system_message=system_prompt
-        ).with_model("openai", "gpt-4o-mini")
+        import anthropic
         
-        # ✅ IMPROVED USER MESSAGE - More explicit about marks
-        user_msg = UserMessage(text=f"""Generate a complete question paper with these EXACT requirements:
+        anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not anthropic_key:
+            raise HTTPException(status_code=500, detail="Anthropic API key not configured. Add ANTHROPIC_API_KEY in Settings.")
+        
+        client = anthropic.AsyncAnthropic(api_key=anthropic_key)
+        
+        user_msg_text = f"""Generate a complete question paper with these EXACT requirements:
 
 Subject: {request.subject}
 Class: {request.class_name}  
@@ -4623,8 +4623,15 @@ Example: If total marks = 20, and you have:
 - 1 Long × 4 marks = 4 marks
 Total = 10+6+4 = 20 marks ✓
 
-Generate the paper now in pure {request.language} language.""")
-        response = await chat.send_message(user_msg)
+Generate the paper now in pure {request.language} language."""
+        
+        claude_response = await client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=8000,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_msg_text}]
+        )
+        response = claude_response.content[0].text
         
         import json
         import re
@@ -4662,8 +4669,17 @@ Generate the paper now in pure {request.language} language.""")
 Please regenerate with the correct number of questions. Current distribution needs adjustment.
 Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no less."""
             
-            retry_msg = UserMessage(text=retry_prompt)
-            response = await chat.send_message(retry_msg)
+            retry_response = await client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=8000,
+                system=system_prompt,
+                messages=[
+                    {"role": "user", "content": user_msg_text},
+                    {"role": "assistant", "content": response},
+                    {"role": "user", "content": retry_prompt}
+                ]
+            )
+            response = retry_response.content[0].text
             
             json_match = re.search(r'\{[\s\S]*\}', response)
             if json_match:

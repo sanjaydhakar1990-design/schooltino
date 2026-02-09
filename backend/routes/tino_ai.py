@@ -1,7 +1,6 @@
 """
 Tino AI Command Center - Central AI Assistant for Schooltino
-Supports both Hindi and English, Voice and Text commands
-Can execute school management tasks through natural language
+Uses Sarvam API for cost-effective Hindi/English AI chat
 """
 
 import os
@@ -29,6 +28,7 @@ class TinoResponse(BaseModel):
     action_taken: Optional[str] = None
     suggestions: Optional[List[str]] = None
 
+
 TINO_SYSTEM_PROMPT = """You are AI Tino, a helpful text-only assistant for SchoolTino ERP system.
 
 STRICT RULES:
@@ -37,7 +37,7 @@ STRICT RULES:
 3. You can ONLY provide information, answer questions, and give suggestions
 4. Always respond in the SAME language as the user's query
    - Hindi query -> Pure Hindi response
-   - English query -> Pure English response  
+   - English query -> Pure English response
    - Hinglish -> Hinglish response
 
 What You Can Do:
@@ -52,13 +52,11 @@ What You Can Do:
 What You CANNOT Do:
 1. Open any forms or dashboards
 2. Update, delete, or modify any data
-3. Execute system commands
-4. Control the application
-5. Make changes to records
+3. Execute system commands or control the application
 
 Response Format:
 - Keep responses concise and helpful (max 200 words)
-- If user asks you to perform an action, politely tell them to use the dashboard manually
+- If user asks to perform an action, politely tell them to use the dashboard manually
 - Use the school context data provided to give accurate information
 - Be friendly and professional"""
 
@@ -138,11 +136,11 @@ async def get_school_context(school_id: str) -> dict:
 
 @router.post("/chat", response_model=TinoResponse)
 async def chat_with_tino(request: TinoMessage):
-    """Chat with AI Tino using OpenAI API"""
+    """Chat with AI Tino using Sarvam API"""
     try:
         message_lower = request.message.lower()
         blocked_keywords = [
-            'form kholo', 'open form', 'admission kholo', 'kholo', 
+            'form kholo', 'open form', 'admission kholo',
             'data update', 'update karo', 'form fill', 'fill karo',
             'record update', 'delete karo', 'remove karo',
         ]
@@ -160,11 +158,11 @@ async def chat_with_tino(request: TinoMessage):
                     action_taken="blocked_system_command"
                 )
         
-        openai_api_key = os.environ.get("OPENAI_API_KEY")
+        sarvam_api_key = os.environ.get("SARVAM_API_KEY")
         
-        if not openai_api_key:
+        if not sarvam_api_key:
             return TinoResponse(
-                response="AI service not configured. Please add your OpenAI API key in Settings to enable Tino AI." if request.language == 'en' else "AI service configure nahi hai. Tino AI enable karne ke liye Settings mein OpenAI API key add karein.",
+                response="AI service not configured. Please add Sarvam API key in Settings." if request.language == 'en' else "AI service configure nahi hai. Settings mein Sarvam API key add karein.",
                 action_taken="no_api_key"
             )
         
@@ -184,45 +182,69 @@ School Data:
 - Recent Notices: {', '.join(context.get('recent_notices', [])) or 'None'}
 """
         
-        from openai import AsyncOpenAI
-        client = AsyncOpenAI(api_key=openai_api_key)
+        system_prompt = f"""{TINO_SYSTEM_PROMPT}
+
+Current School Context:
+{context_str}"""
         
-        messages = [
-            {"role": "system", "content": TINO_SYSTEM_PROMPT},
-            {"role": "system", "content": f"Current School Context:\n{context_str}"},
-            {"role": "user", "content": request.message}
-        ]
+        import httpx
         
-        response = await client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            max_tokens=1000,
-            temperature=0.7
-        )
-        
-        ai_response = response.choices[0].message.content or "No response generated."
-        
-        suggestions = []
-        if context.get('fee_defaulters', 0) > 0:
-            suggestions.append("Fee defaulters ki list dekhein")
-        if context.get('pending_leaves', 0) > 0:
-            suggestions.append("Pending leave requests approve karein")
-        if context.get('today_attendance', {}).get('total_marked', 0) == 0:
-            suggestions.append("Aaj ki attendance mark karein")
-        
-        default_suggestions = [
-            "Aaj ki fee collection batao",
-            "Attendance summary dikhao",
-            "Is mahine ki summary do"
-        ]
-        suggestions.extend([s for s in default_suggestions if s not in suggestions][:2])
-        
-        return TinoResponse(
-            response=ai_response,
-            data=context,
-            suggestions=suggestions[:4],
-            action_taken="openai_response"
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.sarvam.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {sarvam_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "sarvam-m",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": request.message}
+                    ],
+                    "max_tokens": 1000,
+                    "temperature": 0.7
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                print(f"Sarvam API error: {response.status_code} - {response.text}")
+                return TinoResponse(
+                    response="AI service temporarily unavailable. Please try again." if request.language == 'en' else "AI service abhi available nahi hai. Phir try karein.",
+                    action_taken="api_error"
+                )
+            
+            data = response.json()
+            ai_response = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            
+            if not ai_response:
+                return TinoResponse(
+                    response="No response received from AI." if request.language == 'en' else "AI se koi response nahi aaya.",
+                    action_taken="empty_response"
+                )
+            
+            suggestions = []
+            if context.get('fee_defaulters', 0) > 0:
+                suggestions.append("Fee defaulters ki list dekhein")
+            if context.get('pending_leaves', 0) > 0:
+                suggestions.append("Pending leave requests approve karein")
+            if context.get('today_attendance', {}).get('total_marked', 0) == 0:
+                suggestions.append("Aaj ki attendance mark karein")
+            
+            default_suggestions = [
+                "Aaj ki fee collection batao",
+                "Attendance summary dikhao",
+                "Is mahine ki summary do"
+            ]
+            suggestions.extend([s for s in default_suggestions if s not in suggestions][:2])
+            
+            return TinoResponse(
+                response=ai_response,
+                data=context,
+                suggestions=suggestions[:4],
+                action_taken="sarvam_response"
+            )
         
     except Exception as e:
         print(f"Tino AI Error: {e}")
