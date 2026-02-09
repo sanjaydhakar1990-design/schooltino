@@ -38,7 +38,11 @@ const AdmitCardManagementFixed = () => {
     show_signature: true,
     show_seal: true,
     signature_authority: 'principal',
-    enable_studytino_download: true
+    enable_studytino_download: true,
+    fee_requirement_type: 'percentage',
+    enable_online_payment: true,
+    fee_deadline: '',
+    auto_activate_after_deadline: false
   });
 
   const [exams, setExams] = useState([]);
@@ -58,6 +62,10 @@ const AdmitCardManagementFixed = () => {
   const [showBulkBoardDialog, setShowBulkBoardDialog] = useState(false);
   const [selectedBoardExam, setSelectedBoardExam] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showActivationDialog, setShowActivationDialog] = useState(false);
+  const [activationExamId, setActivationExamId] = useState('');
+  const [students, setStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
 
   const [examForm, setExamForm] = useState({
     exam_name: '',
@@ -127,7 +135,17 @@ const AdmitCardManagementFixed = () => {
       const token = localStorage.getItem('token');
       await axios.post(`${API}/api/admit-card/settings`, {
         school_id: schoolId,
-        ...settings
+        min_fee_percentage: settings.min_fee_percentage,
+        require_fee_clearance: settings.require_fee_clearance,
+        show_photo: settings.show_photo,
+        show_signature: settings.show_signature,
+        show_seal: settings.show_seal,
+        signature_authority: settings.signature_authority,
+        enable_studytino_download: settings.enable_studytino_download,
+        fee_requirement_type: settings.fee_requirement_type,
+        enable_online_payment: settings.enable_online_payment,
+        fee_deadline: settings.fee_deadline,
+        auto_activate_after_deadline: settings.auto_activate_after_deadline
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -310,6 +328,61 @@ const AdmitCardManagementFixed = () => {
     }));
   };
 
+  const fetchStudentsForActivation = async (examId) => {
+    setLoadingStudents(true);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.get(`${API}/api/admit-card/download-status/${schoolId}/${examId}`, { headers });
+      const studentsRes = await axios.get(`${API}/api/students?school_id=${schoolId}`, { headers });
+      const allStudents = studentsRes.data || [];
+      const downloadedIds = (res.data?.students || []).map(s => s.student_id);
+      const enriched = allStudents.map(s => ({
+        ...s,
+        hasAdmitCard: downloadedIds.includes(s.id)
+      }));
+      setStudents(enriched);
+    } catch (err) {
+      toast.error('Students load नहीं हो पाए');
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const activateForCashPayment = async (studentId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/api/admit-card/admin-activate`, {
+        school_id: schoolId,
+        student_id: studentId,
+        exam_id: activationExamId,
+        activated_by: user?.id || user?.name,
+        reason: 'Cash payment received at school'
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Admit card activated!');
+      fetchStudentsForActivation(activationExamId);
+    } catch (err) {
+      toast.error('Activation failed');
+    }
+  };
+
+  const bulkActivate = async (studentIds) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/api/admit-card/bulk-admin-activate`, {
+        school_id: schoolId,
+        exam_id: activationExamId,
+        student_ids: studentIds,
+        activated_by: user?.id || user?.name,
+        reason: 'Cash payment received at school - bulk activation'
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(`${studentIds.length} students activated!`);
+      fetchStudentsForActivation(activationExamId);
+    } catch (err) {
+      toast.error('Bulk activation failed');
+    }
+  };
+
   const examTypes = [
     { value: 'unit_test', label: 'Unit Test', icon: '📝' },
     { value: 'quarterly', label: 'Quarterly', icon: '📚' },
@@ -433,7 +506,7 @@ const AdmitCardManagementFixed = () => {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Button size="sm" variant="outline">
                     <Printer className="w-4 h-4 mr-1" />
                     Print
@@ -441,6 +514,19 @@ const AdmitCardManagementFixed = () => {
                   <Button size="sm" className="bg-green-600 hover:bg-green-700">
                     <Send className="w-4 h-4 mr-1" />
                     Publish
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                    onClick={() => {
+                      setActivationExamId(exam.id);
+                      fetchStudentsForActivation(exam.id);
+                      setShowActivationDialog(true);
+                    }}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Cash Activate
                   </Button>
                 </div>
               </div>
@@ -706,20 +792,127 @@ const AdmitCardManagementFixed = () => {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Settings</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              Admit Card Settings
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
-              <Label>Minimum Fee Percentage (%)</Label>
-              <Input
-                type="number"
-                value={settings.min_fee_percentage}
-                onChange={(e) => setSettings({...settings, min_fee_percentage: parseFloat(e.target.value) || 0})}
-              />
+              <Label className="text-sm font-semibold mb-2 block">Fee Requirement Type</Label>
+              <div className="space-y-2">
+                {[
+                  { value: 'all_clear', label: 'Full fee payment required', desc: 'पूरी fees clear होनी चाहिए' },
+                  { value: 'percentage', label: 'Minimum percentage required', desc: 'Minimum % fees जमा होनी चाहिए' },
+                  { value: 'no_requirement', label: 'No fee requirement', desc: 'बिना fees के admit card मिलेगा' }
+                ].map(opt => (
+                  <label key={opt.value} className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${settings.fee_requirement_type === opt.value ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <input
+                      type="radio"
+                      name="fee_requirement_type"
+                      value={opt.value}
+                      checked={settings.fee_requirement_type === opt.value}
+                      onChange={(e) => setSettings({...settings, fee_requirement_type: e.target.value})}
+                      className="mt-1"
+                    />
+                    <div>
+                      <div className="font-medium text-sm">{opt.label}</div>
+                      <div className="text-xs text-gray-500">{opt.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
             </div>
-            <Button onClick={saveSettings} className="w-full">
+
+            {settings.fee_requirement_type === 'percentage' && (
+              <div>
+                <Label className="text-sm font-semibold mb-2 block">Minimum Fee Percentage: {settings.min_fee_percentage}%</Label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={settings.min_fee_percentage}
+                  onChange={(e) => setSettings({...settings, min_fee_percentage: parseInt(e.target.value)})}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={settings.min_fee_percentage}
+                  onChange={(e) => setSettings({...settings, min_fee_percentage: Math.min(100, Math.max(0, parseFloat(e.target.value) || 0))})}
+                  className="mt-2 w-24"
+                />
+              </div>
+            )}
+
+            <div>
+              <Label className="text-sm font-semibold mb-2 block">Fee Deadline</Label>
+              <Input
+                type="date"
+                value={settings.fee_deadline}
+                onChange={(e) => setSettings({...settings, fee_deadline: e.target.value})}
+              />
+              <p className="text-xs text-gray-500 mt-1">इस date तक fees जमा करनी होगी</p>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <div className="font-medium text-sm">Auto-activate after deadline</div>
+                <div className="text-xs text-gray-500">Deadline के बाद सभी admit cards auto-activate</div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.auto_activate_after_deadline}
+                  onChange={(e) => setSettings({...settings, auto_activate_after_deadline: e.target.checked})}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <div className="font-medium text-sm">Enable StudyTino Download</div>
+                <div className="text-xs text-gray-500">Students StudyTino से download कर सकें</div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.enable_studytino_download}
+                  onChange={(e) => setSettings({...settings, enable_studytino_download: e.target.checked})}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <div className="font-medium text-sm">Enable Online Payment</div>
+                <div className="text-xs text-gray-500">Online payment से fees जमा करने की सुविधा</div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.enable_online_payment}
+                  onChange={(e) => setSettings({...settings, enable_online_payment: e.target.checked})}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <Button onClick={saveSettings} className="w-full bg-indigo-600 hover:bg-indigo-700">
+              <CheckCircle className="w-4 h-4 mr-2" />
               Save Settings
             </Button>
           </div>
@@ -748,6 +941,56 @@ const AdmitCardManagementFixed = () => {
             fetchData();
           }}
         />
+      )}
+
+      {/* Cash Payment Activation Dialog */}
+      {showActivationDialog && (
+        <Dialog open={showActivationDialog} onOpenChange={setShowActivationDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Cash Payment - Admit Card Activation</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-gray-500 mb-4">
+              Cash से fee जमा करने वाले students का admit card यहाँ से activate करें
+            </p>
+            {loadingStudents ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin" />
+              </div>
+            ) : (
+              <div className="max-h-[400px] overflow-y-auto space-y-2">
+                {students.filter(s => !s.hasAdmitCard).length === 0 ? (
+                  <p className="text-center text-gray-500 py-4">सभी students के admit cards already active हैं</p>
+                ) : (
+                  students.filter(s => !s.hasAdmitCard).map(student => (
+                    <div key={student.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div className="font-medium">{student.name}</div>
+                        <div className="text-xs text-gray-500">{student.student_id} • {student.class_name || student.class_id}</div>
+                      </div>
+                      <Button size="sm" onClick={() => activateForCashPayment(student.id)} className="bg-green-600 hover:bg-green-700 text-white">
+                        <CheckCircle className="w-4 h-4 mr-1" /> Activate
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+            <div className="flex justify-between mt-4 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowActivationDialog(false)}>Close</Button>
+              <Button 
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+                onClick={() => {
+                  const pendingIds = students.filter(s => !s.hasAdmitCard).map(s => s.id);
+                  if (pendingIds.length > 0) bulkActivate(pendingIds);
+                }}
+                disabled={students.filter(s => !s.hasAdmitCard).length === 0}
+              >
+                Bulk Activate All Pending
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

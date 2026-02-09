@@ -197,7 +197,8 @@ export default function EmployeeManagementPage() {
     create_login: true,
     password: '',
     role: 'teacher',
-    custom_permissions: null
+    custom_permissions: null,
+    can_teach: false
   });
   
   const [showPermissions, setShowPermissions] = useState(false);
@@ -290,7 +291,8 @@ export default function EmployeeManagementPage() {
       create_login: true,
       password: '',
       role: 'teacher',
-      custom_permissions: null
+      custom_permissions: null,
+      can_teach: false
     });
     setEditingEmployee(null);
     setShowPermissions(false);
@@ -316,7 +318,8 @@ export default function EmployeeManagementPage() {
       create_login: employee.has_login || false,
       password: '',
       role: employee.role || 'teacher',
-      custom_permissions: employee.permissions || null
+      custom_permissions: employee.permissions || null,
+      can_teach: employee.can_teach || false
     });
     setEditingEmployee(employee);
     setShowForm(true);
@@ -661,6 +664,11 @@ export default function EmployeeManagementPage() {
                     {emp.role && (
                       <div className="text-xs text-gray-500 mt-1 capitalize">{emp.role}</div>
                     )}
+                    {emp.can_teach && (
+                      <div className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                        <GraduationCap className="w-3 h-3" /> Can Teach
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -698,6 +706,19 @@ export default function EmployeeManagementPage() {
                           <Key className="w-4 h-4" />
                         </Button>
                       )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="text-indigo-600"
+                        onClick={() => {
+                          openEditForm(emp);
+                          setActiveFormTab('login');
+                          setShowPermissions(true);
+                        }}
+                        title="Manage Permissions"
+                      >
+                        <Shield className="w-4 h-4" />
+                      </Button>
                       {/* Delete Button - Admin/Director only */}
                       {(user?.role === 'director' || user?.role === 'admin') && emp.role !== 'director' && (
                         <Button 
@@ -1137,6 +1158,22 @@ export default function EmployeeManagementPage() {
                 <div className="space-y-4 animate-in fade-in">
                   <h4 className="font-semibold text-slate-800 border-b pb-2">🔐 Login Access (लॉगिन एक्सेस)</h4>
                   
+                  {/* Can Also Teach - for non-teacher roles */}
+                  {!['teacher', 'senior_teacher', 'sports_teacher', 'music_teacher', 'computer_teacher', 'yoga_teacher'].includes(formData.designation) && (
+                    <label className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg cursor-pointer border border-amber-200">
+                      <input
+                        type="checkbox"
+                        checked={formData.can_teach}
+                        onChange={e => setFormData(f => ({ ...f, can_teach: e.target.checked }))}
+                        className="w-5 h-5 rounded"
+                      />
+                      <div>
+                        <div className="font-medium text-amber-800">Can Also Teach (कक्षा भी ले सकते हैं)</div>
+                        <div className="text-sm text-amber-600">Enable this if this staff member should also appear in teacher lists for class assignment</div>
+                      </div>
+                    </label>
+                  )}
+
                   {/* Role Selection */}
                   <div>
                     <Label>System Role * (सिस्टम भूमिका)</Label>

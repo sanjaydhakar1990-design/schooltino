@@ -570,6 +570,7 @@ class UnifiedEmployeeCreate(BaseModel):
     password: Optional[str] = None  # Default: mobile number
     role: str = "teacher"  # Role for permissions
     custom_permissions: Optional[Dict[str, bool]] = None  # Override default permissions
+    can_teach: bool = False
     
     # Validator to convert empty strings to None for all optional fields
     @validator('*', pre=True)
@@ -599,6 +600,7 @@ class UnifiedEmployeeResponse(BaseModel):
     user_id: Optional[str] = None
     role: Optional[str] = None
     permissions: Optional[Dict[str, bool]] = None
+    can_teach: bool = False
 
 # Attendance Models
 class AttendanceCreate(BaseModel):
@@ -2800,15 +2802,25 @@ DESIGNATION_ROLE_MAP = {
     "vice_principal": "principal",
     "teacher": "teacher",
     "senior_teacher": "teacher",
+    "hod": "teacher",
+    "sports_teacher": "teacher",
+    "music_teacher": "teacher",
+    "computer_teacher": "teacher",
+    "yoga_teacher": "teacher",
+    "counselor": "teacher",
     "accountant": "admin_staff",
     "clerk": "clerk",
     "admin_staff": "admin_staff",
+    "receptionist": "admin_staff",
+    "transport_incharge": "admin_staff",
+    "hostel_warden": "admin_staff",
     "librarian": "teacher",
     "lab_assistant": "teacher",
     "peon": "peon",
     "driver": "peon",
     "security": "peon",
-    "sweeper": "peon"
+    "sweeper": "peon",
+    "nurse": "peon"
 }
 
 @api_router.post("/employees", response_model=UnifiedEmployeeResponse)
@@ -2866,7 +2878,8 @@ async def create_unified_employee(
         "has_login": employee.create_login,
         "user_id": None,
         "role": role,
-        "permissions": permissions
+        "permissions": permissions,
+        "can_teach": employee.can_teach
     }
     
     user_id = None
@@ -2888,7 +2901,8 @@ async def create_unified_employee(
             "is_active": True,
             "employee_id": employee_id,
             "staff_id": staff_data["id"],
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "can_teach": employee.can_teach
         }
         await db.users.insert_one(user_data)
         user_id = user_data["id"]
@@ -2936,6 +2950,21 @@ async def get_employees(
     employees = await db.staff.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     
     return [UnifiedEmployeeResponse(**emp) for emp in employees]
+
+@api_router.get("/employees/teaching-staff/{school_id}")
+async def get_teaching_staff(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all staff who can teach (teachers + anyone with can_teach=True)"""
+    query = {
+        "school_id": school_id,
+        "is_active": True,
+        "$or": [
+            {"designation": {"$regex": "teacher", "$options": "i"}},
+            {"role": "teacher"},
+            {"can_teach": True}
+        ]
+    }
+    staff = await db.staff.find(query, {"_id": 0}).to_list(500)
+    return staff
 
 @api_router.get("/employees/{employee_id}", response_model=UnifiedEmployeeResponse)
 async def get_employee(employee_id: str, current_user: dict = Depends(get_current_user)):
@@ -2990,7 +3019,8 @@ async def update_employee(
         "salary": employee.salary,
         "role": role,
         "permissions": permissions,
-        "has_login": employee.create_login
+        "has_login": employee.create_login,
+        "can_teach": employee.can_teach
     }
     
     await db.staff.update_one(
@@ -3007,7 +3037,8 @@ async def update_employee(
                 "email": employee.email,
                 "mobile": employee.mobile,
                 "role": role,
-                "permissions": permissions
+                "permissions": permissions,
+                "can_teach": employee.can_teach
             }
             if employee.password:
                 user_update["password"] = bcrypt.hashpw(employee.password.encode(), bcrypt.gensalt()).decode()
