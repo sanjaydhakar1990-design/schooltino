@@ -85,6 +85,7 @@ from routes.branches import router as branches_router
 from routes.staff_attendance import router as staff_attendance_router
 from routes.e_store import router as e_store_router
 from routes.integrations import router as integrations_router
+from routes.school_feed import router as school_feed_router
 
 # ==================== MODELS ====================
 
@@ -12166,6 +12167,7 @@ api_router.include_router(branches_router)
 api_router.include_router(staff_attendance_router)
 api_router.include_router(e_store_router)
 api_router.include_router(integrations_router)
+api_router.include_router(school_feed_router)
 app.include_router(api_router)
 
 # Mount static files for uploads and marketing materials

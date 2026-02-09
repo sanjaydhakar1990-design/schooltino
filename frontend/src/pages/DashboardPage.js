@@ -76,7 +76,7 @@ export default function DashboardPage() {
     { icon: IndianRupee, label: 'Collect Fee', path: '/app/fee-management', color: 'bg-emerald-500', lightBg: 'bg-emerald-50', textColor: 'text-emerald-600' },
     { icon: Bell, label: 'Send Notice', path: '/app/notices', color: 'bg-orange-500', lightBg: 'bg-orange-50', textColor: 'text-orange-600' },
     { icon: FileText, label: 'Create Exam', path: '/app/exam-report', color: 'bg-pink-500', lightBg: 'bg-pink-50', textColor: 'text-pink-600' },
-    { icon: MessageSquare, label: 'Send SMS', path: '/app/sms', color: 'bg-indigo-500', lightBg: 'bg-indigo-50', textColor: 'text-indigo-600' },
+    { icon: MessageSquare, label: 'Send SMS', path: '/app/integrated-comm', color: 'bg-indigo-500', lightBg: 'bg-indigo-50', textColor: 'text-indigo-600' },
   ];
 
   const moduleGroups = [
@@ -95,7 +95,7 @@ export default function DashboardPage() {
         { icon: CalendarCheck, label: 'Attendance', desc: 'Track attendance', path: '/app/attendance', gradient: 'from-teal-500 to-emerald-500' },
         { icon: Clock, label: 'Timetable', desc: 'Schedule classes', path: '/app/timetable-management', gradient: 'from-indigo-500 to-blue-500' },
         { icon: FileText, label: 'Exams & Reports', desc: 'Exam & grading', path: '/app/exam-report', gradient: 'from-pink-500 to-rose-500' },
-        { icon: BookMarked, label: 'Homework', desc: 'Assign & grade', path: '/app/homework', gradient: 'from-teal-500 to-green-500' },
+        { icon: FileText, label: 'Admit Cards', desc: 'Student cards', path: '/app/admit-cards', gradient: 'from-teal-500 to-green-500' },
         { icon: Award, label: 'Certificates', desc: 'Generate certs', path: '/app/certificates', gradient: 'from-amber-500 to-orange-500' },
       ],
     },
@@ -122,7 +122,6 @@ export default function DashboardPage() {
         { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fee-management', gradient: 'from-emerald-500 to-green-500' },
         { icon: Calculator, label: 'Accountant', desc: 'Finance tools', path: '/app/accountant', gradient: 'from-sky-500 to-blue-500' },
         { icon: CreditCard, label: 'Credit System', desc: 'Credits & plans', path: '/app/credit-system', gradient: 'from-amber-500 to-orange-500' },
-        { icon: Wallet, label: 'Student Wallet', desc: 'Digital wallet', path: '/app/student-wallet', gradient: 'from-violet-500 to-purple-500' },
         { icon: ShoppingBag, label: 'e-Store', desc: 'School store', path: '/app/e-store', gradient: 'from-fuchsia-500 to-pink-500' },
         { icon: Globe, label: 'Tally Integration', desc: 'Accounting sync', path: '/app/tally-integration', gradient: 'from-orange-500 to-red-500' },
       ],
@@ -131,8 +130,7 @@ export default function DashboardPage() {
       title: 'Communication',
       modules: [
         { icon: Bell, label: 'Notices', desc: 'Announcements', path: '/app/notices', gradient: 'from-orange-500 to-amber-500' },
-        { icon: MessageSquare, label: 'SMS & WhatsApp', desc: 'Send messages', path: '/app/sms', gradient: 'from-sky-500 to-cyan-500' },
-        { icon: MessageSquare, label: 'Integrated Comms', desc: 'All-in-one comms', path: '/app/integrated-comm', gradient: 'from-blue-500 to-indigo-500' },
+        { icon: MessageSquare, label: 'Communication Hub', desc: 'SMS & WhatsApp', path: '/app/integrated-comm', gradient: 'from-sky-500 to-cyan-500' },
         { icon: Rss, label: 'School Feed', desc: 'Social feed', path: '/app/school-feed', gradient: 'from-blue-500 to-indigo-500' },
         { icon: Image, label: 'Gallery', desc: 'Photo albums', path: '/app/gallery', gradient: 'from-pink-500 to-rose-500' },
         { icon: Calendar, label: 'Calendar', desc: 'School events', path: '/app/school-calendar', gradient: 'from-emerald-500 to-teal-500' },
@@ -141,7 +139,6 @@ export default function DashboardPage() {
     {
       title: 'AI & Tools',
       modules: [
-        { icon: Brain, label: 'Tino AI', desc: 'AI assistant', path: '/app/tino-ai', gradient: 'from-indigo-500 to-violet-500' },
         { icon: Sparkles, label: 'AI Paper', desc: 'Auto papers', path: '/app/ai-paper', gradient: 'from-purple-500 to-pink-500' },
         { icon: Image, label: 'Event Designer', desc: 'Design assets', path: '/app/event-designer', gradient: 'from-rose-500 to-pink-500' },
       ],
@@ -162,7 +159,6 @@ export default function DashboardPage() {
     {
       title: 'Platform & Integrations',
       modules: [
-        { icon: Smartphone, label: 'Mobile App', desc: '6-role app', path: '/app/mobile-app', gradient: 'from-sky-500 to-blue-500' },
         { icon: Link2, label: 'Integrations', desc: '20+ integrations', path: '/app/integrations', gradient: 'from-violet-500 to-purple-500' },
         { icon: Globe, label: 'Website', desc: 'No-code website', path: '/app/website', gradient: 'from-emerald-500 to-green-500' },
       ],

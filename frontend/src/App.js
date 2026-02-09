@@ -214,7 +214,7 @@ function AppRoutes() {
         <Route path="setup-guide" element={<SetupGuidePage />} />
         <Route path="school-calendar" element={<SchoolCalendarPage />} />
         <Route path="complaints" element={<ComplaintFeedbackPage />} />
-        <Route path="prayer-system" element={<PrayerSystemPage />} />
+        <Route path="prayer-system" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="event-designer" element={<EventDesignerPage />} />
         <Route path="family-portal" element={<FamilyPortalPage />} />
         <Route path="payment-settings" element={<Navigate to="/app/school-management" replace />} />
@@ -223,7 +223,7 @@ function AppRoutes() {
         <Route path="employee-management" element={<EmployeeManagementPage />} />
         <Route path="logo-settings" element={<LogoWatermarkSettings />} />
         <Route path="school-feed" element={<SchoolFeedPage />} />
-        <Route path="student-wallet" element={<StudentWalletPage />} />
+        <Route path="student-wallet" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="e-store" element={<EStorePage />} />
         <Route path="multi-branch" element={<MultiBranchPage />} />
         <Route path="ai-staff-attendance" element={<AIStaffAttendancePage />} />
@@ -235,7 +235,7 @@ function AppRoutes() {
         <Route path="integrations" element={<IntegrationsHubPage />} />
         <Route path="credit-system" element={<CreditSystemPage />} />
         <Route path="admission-crm" element={<AdmissionCRMPage />} />
-        <Route path="homework" element={<HomeworkPage />} />
+        <Route path="homework" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="digital-library" element={<DigitalLibraryPage />} />
         <Route path="inventory" element={<InventoryPage />} />
         <Route path="hostel" element={<HostelPage />} />

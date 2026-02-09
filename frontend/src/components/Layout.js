@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Bell, Search, MapPin, Phone, Mail, Hash, GraduationCap, Brain, CreditCard, Send, X } from 'lucide-react';
+import { Menu, Bell, Search, MapPin, Phone, Mail, Hash, GraduationCap, Brain, CreditCard, Send, X, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
@@ -77,6 +77,7 @@ export const Layout = () => {
   const [chatLoading, setChatLoading] = useState(false);
   const [creditBalance, setCreditBalance] = useState(null);
   const [showCreditDropdown, setShowCreditDropdown] = useState(false);
+  const [pendingComplaintsCount, setPendingComplaintsCount] = useState(0);
   const chatEndRef = useRef(null);
   const { user, schoolData } = useAuth();
   const navigate = useNavigate();
@@ -108,6 +109,8 @@ export const Layout = () => {
     }
   }, [schoolLogo]);
 
+  const isAdminRole = ['director', 'principal', 'vice_principal', 'admin'].includes(user?.role);
+
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!user?.id || !user?.school_id) return;
@@ -122,11 +125,24 @@ export const Layout = () => {
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
       }
+
+      if (isAdminRole) {
+        try {
+          const token = localStorage.getItem('token');
+          const complaintsRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/complaints/school/${user.school_id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const complaintsStats = complaintsRes.data?.stats || {};
+          setPendingComplaintsCount(complaintsStats.pending || 0);
+        } catch (err) {
+          setPendingComplaintsCount(0);
+        }
+      }
     };
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
-  }, [user?.id, user?.school_id, user?.role]);
+  }, [user?.id, user?.school_id, user?.role, isAdminRole]);
 
   useEffect(() => {
     const fetchCreditBalance = async () => {
@@ -317,18 +333,30 @@ export const Layout = () => {
                   className="relative p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   <Bell className="w-5 h-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                  {(unreadCount + (isAdminRole ? pendingComplaintsCount : 0)) > 0 && (
+                    <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1">{(unreadCount + (isAdminRole ? pendingComplaintsCount : 0)) > 9 ? '9+' : (unreadCount + (isAdminRole ? pendingComplaintsCount : 0))}</span>
                   )}
                 </button>
                 {showNotifications && (
                   <div className="absolute right-0 top-full mt-2 w-80 max-h-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
                     <div className="p-3 border-b border-gray-100 flex items-center justify-between">
                       <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
-                      <span className="text-xs text-gray-500">{unreadCount} unread</span>
+                      <span className="text-xs text-gray-500">{unreadCount + (isAdminRole && pendingComplaintsCount > 0 ? 1 : 0)} unread</span>
                     </div>
                     <div className="overflow-y-auto max-h-72">
-                      {notifications.length === 0 ? (
+                      {isAdminRole && pendingComplaintsCount > 0 && (
+                        <div
+                          onClick={() => { setShowNotifications(false); navigate('/app/complaints'); }}
+                          className="p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors bg-amber-50"
+                        >
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                            <p className="text-sm font-medium text-gray-900">{pendingComplaintsCount} new complaint{pendingComplaintsCount !== 1 ? 's' : ''}</p>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1 ml-6">Click to view and resolve pending complaints</p>
+                        </div>
+                      )}
+                      {notifications.length === 0 && !(isAdminRole && pendingComplaintsCount > 0) ? (
                         <div className="p-6 text-center text-gray-500 text-sm">No notifications</div>
                       ) : (
                         notifications.slice(0, 20).map(notif => (

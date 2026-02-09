@@ -544,7 +544,6 @@ export default function EmployeeManagementPage() {
 
   const openProfileView = (emp) => {
     setSelectedProfile(emp);
-    setShowProfile(true);
   };
 
   const printProfile = (emp) => {
@@ -609,7 +608,7 @@ export default function EmployeeManagementPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
@@ -664,213 +663,280 @@ export default function EmployeeManagementPage() {
         ))}
       </div>
 
-      {/* ==================== TAB: ALL STAFF ==================== */}
-      {activePageTab === 'staff' && (<>
-      {/* Filters */}
-      <div className="bg-white rounded-xl border p-4 mb-6">
-        <div className="flex flex-wrap gap-3">
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              placeholder="Search by name, ID, email, mobile..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            />
+      {/* ==================== TAB: ALL STAFF - SPLIT VIEW ==================== */}
+      {activePageTab === 'staff' && (
+      <div className="flex gap-4" style={{ height: 'calc(100vh - 220px)' }}>
+        {/* LEFT PANEL - Staff List (~40%) */}
+        <div className="w-2/5 flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="p-3 border-b border-gray-100 space-y-2">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Search staff..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSearch()}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select
+                className="flex-1 border rounded-lg px-2 py-1.5 text-xs bg-white"
+                value={filterDesignation}
+                onChange={e => { setFilterDesignation(e.target.value); setTimeout(handleSearch, 100); }}
+              >
+                <option value="">All Roles</option>
+                {designations.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+              <select
+                className="border rounded-lg px-2 py-1.5 text-xs bg-white"
+                value={filterHasLogin}
+                onChange={e => { setFilterHasLogin(e.target.value); setTimeout(handleSearch, 100); }}
+              >
+                <option value="">All</option>
+                <option value="true">Login</option>
+                <option value="false">No Login</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-between text-xs text-gray-500 px-1">
+              <span>{employees.length} staff members</span>
+              <span className="text-green-600">{employees.filter(e => e.has_login).length} active</span>
+            </div>
           </div>
-          <select
-            className="border rounded-lg px-3 py-2"
-            value={filterDesignation}
-            onChange={e => setFilterDesignation(e.target.value)}
-          >
-            <option value="">All Designations</option>
-            {designations.map(d => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
-          <select
-            className="border rounded-lg px-3 py-2"
-            value={filterHasLogin}
-            onChange={e => setFilterHasLogin(e.target.value)}
-          >
-            <option value="">Login Status</option>
-            <option value="true">Has Login</option>
-            <option value="false">No Login</option>
-          </select>
-          <Button onClick={handleSearch} variant="outline">
-            <Search className="w-4 h-4 mr-1" /> Search
-          </Button>
-        </div>
-      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 rounded-xl p-4">
-          <div className="text-2xl font-bold text-blue-700">{employees.length}</div>
-          <div className="text-sm text-blue-600">Total Employees</div>
-        </div>
-        <div className="bg-green-50 rounded-xl p-4">
-          <div className="text-2xl font-bold text-green-700">
-            {employees.filter(e => e.has_login).length}
-          </div>
-          <div className="text-sm text-green-600">With Login</div>
-        </div>
-        <div className="bg-amber-50 rounded-xl p-4">
-          <div className="text-2xl font-bold text-amber-700">
-            {employees.filter(e => e.designation?.toLowerCase().includes('teacher')).length}
-          </div>
-          <div className="text-sm text-amber-600">Teachers</div>
-        </div>
-        <div className="bg-purple-50 rounded-xl p-4">
-          <div className="text-2xl font-bold text-purple-700">
-            {employees.filter(e => !e.designation?.toLowerCase().includes('teacher')).length}
-          </div>
-          <div className="text-sm text-purple-600">Other Staff</div>
-        </div>
-      </div>
-
-      {/* Employee List */}
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Employee</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Designation</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Contact</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Login</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {employees.map(emp => (
-                <tr key={emp.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => openProfileView(emp)}>
-                      {emp.photo_url ? (
-                        <img src={emp.photo_url} alt={emp.name} className="w-10 h-10 rounded-full object-cover border-2 border-blue-200" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                          {emp.name?.charAt(0)?.toUpperCase()}
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-medium text-blue-700 hover:underline">{emp.name}</div>
-                        <div className="text-xs text-gray-500">{emp.employee_id}</div>
-                      </div>
+          <div className="flex-1 overflow-y-auto">
+            {employees.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 p-6">
+                <Users className="w-10 h-10 mb-2" />
+                <p className="text-sm">No staff found</p>
+              </div>
+            ) : (
+              employees.map(emp => (
+                <div
+                  key={emp.id}
+                  onClick={() => openProfileView(emp)}
+                  className={`flex items-center gap-3 px-3 py-3 cursor-pointer border-b border-gray-50 transition-all hover:bg-blue-50/50 ${
+                    selectedProfile?.id === emp.id
+                      ? 'bg-blue-50 border-l-[3px] border-l-blue-500'
+                      : 'border-l-[3px] border-l-transparent'
+                  }`}
+                >
+                  {emp.photo_url ? (
+                    <img src={emp.photo_url} alt={emp.name} className="w-10 h-10 rounded-full object-cover border-2 border-blue-200 flex-shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm flex-shrink-0">
+                      {emp.name?.charAt(0)?.toUpperCase()}
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="text-sm font-medium">{emp.designation}</div>
-                    {emp.department && <div className="text-xs text-gray-500">{emp.department}</div>}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="text-sm flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-gray-400" /> {emp.mobile}
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center gap-1">
-                      <Mail className="w-3 h-3" /> {emp.email}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm text-gray-900 truncate">{emp.name}</div>
+                    <div className="text-xs text-gray-500 truncate">{emp.designation}{emp.department ? ' • ' + emp.department : ''}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     {emp.has_login ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                        <UserCheck className="w-3 h-3" /> Active
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px]">
+                        <UserCheck className="w-2.5 h-2.5" /> Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
-                        <UserX className="w-3 h-3" /> No Login
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-[10px]">
+                        <UserX className="w-2.5 h-2.5" /> Off
                       </span>
                     )}
-                    {emp.role && (
-                      <div className="text-xs text-gray-500 mt-1 capitalize">{emp.role}</div>
-                    )}
-                    {emp.can_teach && (
-                      <div className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                        <GraduationCap className="w-3 h-3" /> Can Teach
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" className="text-blue-600" onClick={() => openProfileView(emp)} title="View Profile">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => openEditForm(emp)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-blue-600"
-                        onClick={() => {
-                          setSelectedEmployeeForID(emp);
-                          setShowIDCard(true);
-                        }}
-                        title="Print ID Card"
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT PANEL - Staff Profile (~60%) */}
+        <div className="w-3/5 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          {!selectedProfile ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+              <User className="w-16 h-16 mb-3 text-gray-300" />
+              <p className="text-lg font-medium text-gray-400">Select a staff member to view profile</p>
+              <p className="text-sm text-gray-300 mt-1">Click on any staff from the list</p>
+            </div>
+          ) : (
+            <div className="h-full overflow-y-auto">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 text-white">
+                <div className="flex items-start gap-5">
+                  {selectedProfile.photo_url ? (
+                    <img src={selectedProfile.photo_url} alt={selectedProfile.name} className="w-24 h-24 rounded-full object-cover border-4 border-white/40 shadow-lg flex-shrink-0" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold border-4 border-white/30 flex-shrink-0">
+                      {selectedProfile.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-xl font-bold truncate">{selectedProfile.name}</h2>
+                    <p className="text-blue-100 text-sm">{selectedProfile.designation}{selectedProfile.department ? ' • ' + selectedProfile.department : ''}</p>
+                    <p className="text-blue-200 text-xs mt-0.5">{selectedProfile.employee_id}</p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {selectedProfile.has_login ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-100 rounded-full text-xs">
+                          <UserCheck className="w-3 h-3" /> Login Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/15 text-white/70 rounded-full text-xs">
+                          <UserX className="w-3 h-3" /> No Login
+                        </span>
+                      )}
+                      {selectedProfile.role && (
+                        <span className="px-2 py-0.5 bg-white/15 text-white/80 rounded-full text-xs capitalize">{selectedProfile.role}</span>
+                      )}
+                      {selectedProfile.can_teach && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-100 rounded-full text-xs">
+                          <GraduationCap className="w-3 h-3" /> Can Teach
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        size="sm"
+                        className="bg-white text-blue-700 hover:bg-blue-50 gap-1 h-8 text-xs"
+                        onClick={() => openEditForm(selectedProfile)}
                       >
-                        <CreditCard className="w-4 h-4" />
+                        <Edit2 className="w-3 h-3" /> Edit
                       </Button>
-                      {emp.has_login ? (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-red-600"
-                          onClick={() => toggleLogin(emp, false)}
-                        >
-                          <Key className="w-4 h-4" />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs"
+                        onClick={() => printProfile(selectedProfile)}
+                      >
+                        <Printer className="w-3 h-3" /> Print
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs"
+                        onClick={() => { setSelectedEmployeeForID(selectedProfile); setShowIDCard(true); }}
+                      >
+                        <CreditCard className="w-3 h-3" /> ID Card
+                      </Button>
+                      {selectedProfile.has_login ? (
+                        <Button size="sm" variant="outline" className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, false)}>
+                          <Key className="w-3 h-3" /> Disable Login
                         </Button>
                       ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-green-600"
-                          onClick={() => toggleLogin(emp, true)}
-                        >
-                          <Key className="w-4 h-4" />
+                        <Button size="sm" variant="outline" className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, true)}>
+                          <Key className="w-3 h-3" /> Enable Login
                         </Button>
                       )}
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-indigo-600"
-                        onClick={() => {
-                          openEditForm(emp);
-                          setActiveFormTab('login');
-                          setShowPermissions(true);
-                        }}
-                        title="Manage Permissions"
-                      >
-                        <Shield className="w-4 h-4" />
-                      </Button>
-                      {/* Delete Button - Admin/Director only */}
-                      {(user?.role === 'director' || user?.role === 'admin') && emp.role !== 'director' && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => openDeleteDialog(emp)}
-                          title="Delete Permanently"
-                        >
-                          <Trash2 className="w-4 h-4" />
+                      {(user?.role === 'director' || user?.role === 'admin') && selectedProfile.role !== 'director' && (
+                        <Button size="sm" variant="outline" className="border-red-300/50 text-red-200 hover:bg-red-500/20 gap-1 h-8 text-xs" onClick={() => openDeleteDialog(selectedProfile)}>
+                          <Trash2 className="w-3 h-3" /> Delete
                         </Button>
                       )}
                     </div>
-                  </td>
-                </tr>
-              ))}
-              {employees.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                    No employees found. Click &quot;Add Employee&quot; to add one.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                    <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2 text-sm">
+                      <Phone className="w-4 h-4" /> Contact
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-500">Mobile</span><span className="font-medium">{selectedProfile.mobile || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-medium text-xs">{selectedProfile.email || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Address</span><span className="font-medium text-xs text-right max-w-[60%]">{selectedProfile.address || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">City</span><span className="font-medium">{selectedProfile.city || '-'}</span></div>
+                      {selectedProfile.emergency_contact && (
+                        <div className="flex justify-between"><span className="text-gray-500">Emergency</span><span className="font-medium text-red-600">{selectedProfile.emergency_contact}</span></div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                    <h4 className="font-semibold text-purple-800 mb-3 flex items-center gap-2 text-sm">
+                      <User className="w-4 h-4" /> Personal Info
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-500">Gender</span><span className="font-medium capitalize">{selectedProfile.gender || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">DOB</span><span className="font-medium">{selectedProfile.dob || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Blood Group</span><span className="font-medium">{selectedProfile.blood_group || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Father</span><span className="font-medium">{selectedProfile.father_name || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Joining Date</span><span className="font-medium">{selectedProfile.joining_date || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Qualification</span><span className="font-medium">{selectedProfile.qualification || '-'}</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                    <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2 text-sm">
+                      <CreditCard className="w-4 h-4" /> Identity Documents
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-500">Aadhar</span><span className="font-medium">{selectedProfile.aadhar_no || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">PAN</span><span className="font-medium">{selectedProfile.pan_number || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">UAN (EPF)</span><span className="font-medium">{selectedProfile.uan_number || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Voter ID</span><span className="font-medium">{selectedProfile.voter_id || '-'}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                    <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2 text-sm">
+                      <Wallet className="w-4 h-4" /> Bank & Salary
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-500">Salary</span><span className="font-bold text-green-700">{selectedProfile.salary ? '₹' + selectedProfile.salary : '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Bank</span><span className="font-medium">{selectedProfile.bank_name || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Account</span><span className="font-medium">{selectedProfile.bank_account_no || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">IFSC</span><span className="font-medium">{selectedProfile.ifsc_code || '-'}</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                  <h4 className="font-semibold text-indigo-800 mb-3 flex items-center gap-2 text-sm">
+                    <Shield className="w-4 h-4" /> Permissions
+                  </h4>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
+                      <button
+                        key={key}
+                        onClick={() => applyPresetToEmployee(selectedProfile.id, key)}
+                        className="px-2 py-1 rounded-md text-xs border bg-white hover:bg-indigo-50 hover:border-indigo-300 transition-all"
+                        title={preset.description}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(ALL_PERMISSIONS).map(([key, perm]) => {
+                      const profilePerms = permissionsData[selectedProfile.id] || selectedProfile.permissions || {};
+                      const isOn = profilePerms[key] || false;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => toggleSinglePermission(selectedProfile.id, key, isOn)}
+                          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-all ${
+                            isOn
+                              ? 'bg-green-50 border-green-300 text-green-700'
+                              : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'
+                          }`}
+                        >
+                          {isOn ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                          {perm.icon} {perm.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      </>)}
+      )}
 
       {/* ==================== TAB: PERMISSIONS ==================== */}
       {activePageTab === 'permissions' && (
@@ -1630,172 +1696,6 @@ export default function EmployeeManagementPage() {
         />
       )}
 
-      {/* Full Profile View Modal */}
-      {showProfile && selectedProfile && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="min-h-screen flex items-start justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-2xl p-6 text-white relative">
-                <button 
-                  onClick={() => setShowProfile(false)}
-                  className="absolute top-4 right-4 text-white/80 hover:text-white bg-white/20 rounded-full p-2"
-                >
-                  <XCircle className="w-5 h-5" />
-                </button>
-                <div className="flex items-center gap-6">
-                  {selectedProfile.photo_url ? (
-                    <img src={selectedProfile.photo_url} alt={selectedProfile.name} className="w-24 h-24 rounded-full object-cover border-4 border-white/50 shadow-lg" />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold border-4 border-white/30">
-                      {selectedProfile.name?.charAt(0)?.toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <h2 className="text-2xl font-bold">{selectedProfile.name}</h2>
-                    <p className="text-blue-100">{selectedProfile.designation} {selectedProfile.department ? '• ' + selectedProfile.department : ''}</p>
-                    <p className="text-blue-200 text-sm mt-1">{selectedProfile.employee_id}</p>
-                    <div className="flex gap-2 mt-3">
-                      <Button 
-                        size="sm" 
-                        className="bg-white text-blue-700 hover:bg-blue-50 gap-1"
-                        onClick={() => { setShowProfile(false); openEditForm(selectedProfile); }}
-                      >
-                        <Edit2 className="w-3 h-3" /> Edit
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="border-white/50 text-white hover:bg-white/20 gap-1"
-                        onClick={() => printProfile(selectedProfile)}
-                      >
-                        <Printer className="w-3 h-3" /> Print Profile
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="border-white/50 text-white hover:bg-white/20 gap-1"
-                        onClick={() => { setSelectedEmployeeForID(selectedProfile); setShowIDCard(true); }}
-                      >
-                        <CreditCard className="w-3 h-3" /> ID Card
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                    <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2"><Phone className="w-4 h-4" /> Contact (संपर्क)</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Mobile</span><span className="font-medium">{selectedProfile.mobile || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-medium">{selectedProfile.email || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Address</span><span className="font-medium">{selectedProfile.address || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">City</span><span className="font-medium">{selectedProfile.city || '-'}</span></div>
-                      {selectedProfile.emergency_contact && (
-                        <div className="flex justify-between"><span className="text-gray-500">Emergency</span><span className="font-medium text-red-600">{selectedProfile.emergency_contact}</span></div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                    <h4 className="font-semibold text-purple-800 mb-3 flex items-center gap-2"><User className="w-4 h-4" /> Personal (व्यक्तिगत)</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Gender</span><span className="font-medium capitalize">{selectedProfile.gender || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">DOB</span><span className="font-medium">{selectedProfile.dob || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Blood Group</span><span className="font-medium">{selectedProfile.blood_group || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Father</span><span className="font-medium">{selectedProfile.father_name || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Joining Date</span><span className="font-medium">{selectedProfile.joining_date || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Qualification</span><span className="font-medium">{selectedProfile.qualification || '-'}</span></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                    <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2"><CreditCard className="w-4 h-4" /> Identity Documents (पहचान)</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Aadhar</span><span className="font-medium">{selectedProfile.aadhar_no || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">PAN</span><span className="font-medium">{selectedProfile.pan_number || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">UAN (EPF)</span><span className="font-medium">{selectedProfile.uan_number || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Voter ID</span><span className="font-medium">{selectedProfile.voter_id || '-'}</span></div>
-                    </div>
-                  </div>
-
-                  <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-                    <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2"><Wallet className="w-4 h-4" /> Bank & Salary (बैंक)</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Salary</span><span className="font-bold text-green-700">₹{selectedProfile.salary || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Bank</span><span className="font-medium">{selectedProfile.bank_name || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Account</span><span className="font-medium">{selectedProfile.bank_account_no || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">IFSC</span><span className="font-medium">{selectedProfile.ifsc_code || '-'}</span></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
-                  <h4 className="font-semibold text-indigo-800 mb-3 flex items-center gap-2">
-                    <Shield className="w-4 h-4" /> Permissions (अनुमतियाँ)
-                    <span className="text-xs font-normal text-indigo-500 ml-2">Click to toggle</span>
-                  </h4>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
-                      <button
-                        key={key}
-                        onClick={() => applyPresetToEmployee(selectedProfile.id, key)}
-                        className="px-2 py-1 rounded text-xs border bg-white hover:bg-indigo-100 hover:border-indigo-300 transition-all"
-                        title={preset.description}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(ALL_PERMISSIONS).map(([key, perm]) => {
-                      const profilePerms = permissionsData[selectedProfile.id] || selectedProfile.permissions || {};
-                      const isOn = profilePerms[key] || false;
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => toggleSinglePermission(selectedProfile.id, key, isOn)}
-                          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs border transition-all ${
-                            isOn 
-                              ? 'bg-green-100 border-green-300 text-green-700' 
-                              : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'
-                          }`}
-                        >
-                          {isOn ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                          {perm.icon} {perm.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2">
-                    {selectedProfile.has_login ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-                        <UserCheck className="w-4 h-4" /> Login Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                        <UserX className="w-4 h-4" /> No Login
-                      </span>
-                    )}
-                    {selectedProfile.role && (
-                      <span className="text-sm text-gray-500 capitalize">Role: {selectedProfile.role}</span>
-                    )}
-                  </div>
-                  <Button variant="outline" onClick={() => setShowProfile(false)}>
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && deleteEmployee && (

@@ -96,6 +96,14 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - All core functionality preserved plus new modules
 
 ## Recent Changes
+- 2026-02-09: NextOS UI/UX overhaul & page fixes v9:
+  - Sidebar: Removed Student Wallet, Homework, Prayer System, Complaints from admin. Added AI Paper Generator under "AI & Tools". Event Designer moved to Communication. Settings link added.
+  - StudentsPage: Split-view layout (40% list / 60% profile). Dual photos (Profile + AI Attendance). Printable editable profile with 5 info sections. Click student to view full profile inline.
+  - EmployeeManagementPage: Same split-view layout. Staff list on left, full profile on right with permissions display. Print and edit from profile.
+  - SchoolFeedPage: Complete rewrite with real post creation, photo upload (FormData), like/comment/share, delete. New backend route school_feed.py with all CRUD endpoints.
+  - ComplaintFeedbackPage: Admin can only view/resolve complaints (no create). Complaints appear in notification bell. Non-admin users can still create complaints.
+  - Dashboard: Cleaned up module groups - removed Homework, Student Wallet, duplicate SMS, Tino AI, Mobile App. Fixed paths.
+  - App.js: Homework/Student Wallet/Prayer System routes redirect to dashboard. AI Paper route preserved.
 - 2026-02-09: Comprehensive portal separation & feature overhaul v8:
   - Portal Separation: TeachTino now has Homework, School Feed, Exam & Reports, Live Classes tabs; StudyTino now has Wallet, Live Classes, School Feed (like/share/comment), E-Store
   - Sidebar: Removed Tino AI & Mobile App; merged SMS into Communication Hub; reordered groups by usage frequency

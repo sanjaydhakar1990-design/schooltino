@@ -98,6 +98,9 @@ export default function StudentsPage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileStudent, setProfileStudent] = useState(null);
   
+  // Split view state
+  const [splitViewStudent, setSplitViewStudent] = useState(null);
+  
   // Photo capture states
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
@@ -1845,148 +1848,116 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
         </DialogContent>
       </Dialog>
 
-      {/* Filters */}
-      <div className="flex gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <Input
-            placeholder="Search by name or Student ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-            data-testid="search-input"
-          />
-        </div>
-        <select
-          value={selectedClass}
-          onChange={(e) => setSelectedClass(e.target.value)}
-          className="h-10 rounded-lg border border-slate-200 px-3 min-w-[150px]"
-          data-testid="filter-class"
-        >
-          <option value="">All Classes</option>
-          {classes.map(cls => (
-            <option key={cls.id} value={cls.id}>
-              {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="active" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="active">
-            <User className="w-4 h-4 mr-2" />
-            Active ({students.length})
-          </TabsTrigger>
-          <TabsTrigger value="suspended">
-            <Ban className="w-4 h-4 mr-2" />
-            Suspended ({suspendedStudents.length})
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Active Students */}
-        <TabsContent value="active">
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="spinner w-10 h-10" />
+      {/* Split View Layout */}
+      <div className="flex gap-4" style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }}>
+        {/* Left Panel - Student List (~40% width) */}
+        <div className="w-2/5 flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="p-3 border-b border-gray-100 space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search by name or ID..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 text-sm"
+                data-testid="search-input"
+              />
             </div>
-          ) : students.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
-              <User className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">{t('no_data')}</p>
-            </div>
-          ) : (
-            <div className="data-table">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-20">Photo</TableHead>
-                    <TableHead>Student ID</TableHead>
-                    <TableHead>{t('student_name')}</TableHead>
-                    <TableHead>{t('class_section')}</TableHead>
-                    <TableHead>{t('father_name')}</TableHead>
-                    <TableHead>{t('mobile')}</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>{t('actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full h-9 rounded-lg border border-slate-200 px-3 text-sm"
+              data-testid="filter-class"
+            >
+              <option value="">All Classes</option>
+              {classes.map(cls => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Tabs defaultValue="active" className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="mx-3 mt-2 shrink-0">
+              <TabsTrigger value="active" className="text-xs gap-1">
+                <User className="w-3.5 h-3.5" />
+                Active ({students.length})
+              </TabsTrigger>
+              <TabsTrigger value="suspended" className="text-xs gap-1">
+                <Ban className="w-3.5 h-3.5" />
+                Suspended ({suspendedStudents.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="active" className="flex-1 overflow-y-auto p-2 mt-0">
+              {loading ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                </div>
+              ) : students.length === 0 ? (
+                <div className="text-center py-10">
+                  <User className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400">{t('no_data')}</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
                   {students.map((student) => (
-                    <TableRow key={student.id} data-testid={`student-row-${student.id}`}>
-                      <TableCell>
-                        <div 
-                          className="w-14 h-14 rounded-lg bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-blue-400 hover:shadow-md transition-all"
-                          onClick={() => openStudentProfile(student)}
-                        >
-                          {student.photo_url ? (
-                            <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-7 h-7 text-slate-400" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm font-medium">{student.student_id || student.admission_no}</TableCell>
-                      <TableCell>
-                        <button 
-                          onClick={() => openStudentProfile(student)}
-                          className="font-medium text-blue-700 hover:text-blue-900 hover:underline cursor-pointer bg-transparent border-none p-0 text-left"
-                        >
-                          {student.name}
-                        </button>
-                      </TableCell>
-                      <TableCell>
-                        <span className="badge badge-info">
-                          {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''}
-                        </span>
-                      </TableCell>
-                      <TableCell>{student.father_name}</TableCell>
-                      <TableCell>{student.mobile}</TableCell>
-                      <TableCell>
-                        <span className={`badge ${getStatusBadge(student.status)}`}>
+                    <div
+                      key={student.id}
+                      onClick={() => setSplitViewStudent(student)}
+                      className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all group ${
+                        splitViewStudent?.id === student.id
+                          ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
+                          : 'border-2 border-transparent hover:bg-slate-50 hover:border-blue-200'
+                      }`}
+                      data-testid={`student-row-${student.id}`}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {student.photo_url ? (
+                          <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-slate-900 truncate">{student.name}</p>
+                        <p className="text-xs text-slate-500 truncate">
+                          {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''} {student.father_name ? `| ${student.father_name}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          student.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                          student.status === 'suspended' ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
                           {student.status}
                         </span>
-                      </TableCell>
-                      <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
+                            <button className="p-1 rounded hover:bg-slate-200 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                              <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
+                            </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openStudentProfile(student)}>
                               <Eye className="w-4 h-4 mr-2 text-blue-600" />
-                              View Profile
+                              View Full Profile
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(student)}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => {
-                                setIdCardStudent(student);
-                                setShowIDCard(true);
-                              }}
-                            >
+                            <DropdownMenuItem onClick={() => { setIdCardStudent(student); setShowIDCard(true); }}>
                               <CreditCard className="w-4 h-4 mr-2 text-blue-600" />
                               View ID Card
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => viewCredentials(student)}
-                            >
+                            <DropdownMenuItem onClick={() => viewCredentials(student)}>
                               <Key className="w-4 h-4 mr-2 text-purple-600" />
                               Share Login Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => {
-                                setNewStudentCredentials({
-                                  student_id: student.student_id || student.id,
-                                  name: student.name
-                                });
-                                setShowFaceEnrollment(true);
-                              }}
-                            >
+                            <DropdownMenuItem onClick={() => { setNewStudentCredentials({ student_id: student.student_id || student.id, name: student.name }); setShowFaceEnrollment(true); }}>
                               <Camera className="w-4 h-4 mr-2 text-emerald-600" />
                               Face Enrollment
                             </DropdownMenuItem>
@@ -1996,10 +1967,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                               Suspend
                             </DropdownMenuItem>
                             {['director', 'principal'].includes(user?.role) && (
-                              <DropdownMenuItem 
-                                onClick={() => handleMarkLeft(student.id)}
-                                className="text-rose-600"
-                              >
+                              <DropdownMenuItem onClick={() => handleMarkLeft(student.id)} className="text-rose-600">
                                 <LogOut className="w-4 h-4 mr-2" />
                                 Mark as Left (TC)
                               </DropdownMenuItem>
@@ -2007,10 +1975,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                             {(user?.role === 'director' || user?.role === 'admin') && (
                               <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  onClick={() => openDeleteDialog(student)}
-                                  className="text-red-600 bg-red-50 hover:bg-red-100"
-                                >
+                                <DropdownMenuItem onClick={() => openDeleteDialog(student)} className="text-red-600 bg-red-50 hover:bg-red-100">
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete Permanently
                                 </DropdownMenuItem>
@@ -2018,69 +1983,289 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </TabsContent>
+                </div>
+              )}
+            </TabsContent>
 
-        {/* Suspended Students */}
-        <TabsContent value="suspended">
-          {suspendedStudents.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
-              <Ban className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">No suspended students</p>
-            </div>
-          ) : (
-            <div className="data-table">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student ID</TableHead>
-                    <TableHead>{t('student_name')}</TableHead>
-                    <TableHead>{t('class_section')}</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>{t('actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <TabsContent value="suspended" className="flex-1 overflow-y-auto p-2 mt-0">
+              {suspendedStudents.length === 0 ? (
+                <div className="text-center py-10">
+                  <Ban className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400">No suspended students</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
                   {suspendedStudents.map((student) => (
-                    <TableRow key={student.id} className="bg-amber-50">
-                      <TableCell className="font-mono text-sm">{student.student_id || student.admission_no}</TableCell>
-                      <TableCell className="font-medium">{student.name}</TableCell>
-                      <TableCell>
-                        <span className="badge badge-warning">
-                          {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-amber-700">
-                          {suspendReasons[student.suspension_reason] || student.suspension_reason}
-                        </span>
-                      </TableCell>
-                      <TableCell>
+                    <div
+                      key={student.id}
+                      onClick={() => setSplitViewStudent(student)}
+                      className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all group ${
+                        splitViewStudent?.id === student.id
+                          ? 'bg-amber-50 border-2 border-amber-400 shadow-sm'
+                          : 'border-2 border-transparent hover:bg-amber-50/50 hover:border-amber-200'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {student.photo_url ? (
+                          <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-5 h-5 text-amber-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-slate-900 truncate">{student.name}</p>
+                        <p className="text-xs text-amber-600 truncate">
+                          {student.class_name} | {suspendReasons[student.suspension_reason] || student.suspension_reason || 'Suspended'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">suspended</span>
                         {['director', 'principal'].includes(user?.role) && (
                           <Button
                             size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-700"
-                            onClick={() => handleUnsuspend(student.id)}
+                            className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => { e.stopPropagation(); handleUnsuspend(student.id); }}
                           >
-                            <RefreshCw className="w-4 h-4 mr-1" />
+                            <RefreshCw className="w-3 h-3 mr-1" />
                             Unsuspend
                           </Button>
                         )}
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Right Panel - Student Profile (~60% width) */}
+        <div className="w-3/5 bg-white rounded-xl border border-gray-100 shadow-sm overflow-y-auto">
+          {!splitViewStudent ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400">
+              <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                <User className="w-10 h-10 text-slate-300" />
+              </div>
+              <p className="text-lg font-medium text-slate-500">Select a student to view profile</p>
+              <p className="text-sm mt-1 text-slate-400">Click on any student from the left panel</p>
+            </div>
+          ) : (
+            <div className="p-6 space-y-5">
+              {/* Profile Header with Dual Photos */}
+              <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                <div className="flex items-start gap-6">
+                  <div className="flex gap-4">
+                    <div className="text-center">
+                      <div className="w-24 h-24 rounded-xl bg-white border-3 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
+                        {splitViewStudent.photo_url ? (
+                          <img src={splitViewStudent.photo_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-12 h-12 text-slate-300" />
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1.5 font-medium">Profile Photo</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-24 h-24 rounded-xl bg-white border-3 border-emerald-300 shadow-lg flex items-center justify-center overflow-hidden">
+                        {splitViewStudent.face_photo_url ? (
+                          <img src={splitViewStudent.face_photo_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="flex flex-col items-center">
+                            <Camera className="w-8 h-8 text-slate-300" />
+                            <span className="text-xs text-slate-300 mt-1">No AI Photo</span>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-emerald-600 mt-1.5 font-medium">AI Attendance</p>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-slate-900">{splitViewStudent.name}</h2>
+                    <p className="text-slate-500 mt-1">
+                      {splitViewStudent.student_id || splitViewStudent.admission_no} | {splitViewStudent.class_name}{splitViewStudent.section ? ` - ${splitViewStudent.section}` : ''}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                        splitViewStudent.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                        splitViewStudent.status === 'suspended' ? 'bg-amber-100 text-amber-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {splitViewStudent.status?.toUpperCase()}
+                      </span>
+                      {splitViewStudent.blood_group && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 font-medium">{splitViewStudent.blood_group}</span>
+                      )}
+                    </div>
+                    <div className="flex gap-2 mt-4 flex-wrap">
+                      <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => printStudentProfile(splitViewStudent)}>
+                        <Printer className="w-3.5 h-3.5" /> Print
+                      </Button>
+                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs" onClick={() => handleEdit(splitViewStudent)}>
+                        <Edit className="w-3.5 h-3.5" /> Edit
+                      </Button>
+                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-blue-600" onClick={() => { setIdCardStudent(splitViewStudent); setShowIDCard(true); }}>
+                        <CreditCard className="w-3.5 h-3.5" /> ID Card
+                      </Button>
+                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-purple-600" onClick={() => viewCredentials(splitViewStudent)}>
+                        <Key className="w-3.5 h-3.5" /> Credentials
+                      </Button>
+                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-emerald-600" onClick={() => { setNewStudentCredentials({ student_id: splitViewStudent.student_id || splitViewStudent.id, name: splitViewStudent.name }); setShowFaceEnrollment(true); }}>
+                        <Camera className="w-3.5 h-3.5" /> Face Enroll
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section: Personal Info */}
+              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-semibold text-sm flex items-center gap-2">
+                  <User className="w-4 h-4" /> Personal Information
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
+                  {[
+                    ['Name', splitViewStudent.name],
+                    ['Student ID', splitViewStudent.student_id || splitViewStudent.admission_no],
+                    ['Class', splitViewStudent.class_name],
+                    ['Section', splitViewStudent.section || 'A'],
+                    ['Gender', splitViewStudent.gender],
+                    ['DOB', splitViewStudent.dob],
+                    ['Blood Group', splitViewStudent.blood_group],
+                    ['Admission Date', splitViewStudent.admission_date],
+                    ['Category', splitViewStudent.category],
+                    ['Caste', splitViewStudent.caste],
+                    ['Sub Caste', splitViewStudent.sub_caste],
+                    ['Religion', splitViewStudent.religion],
+                    ['Nationality', splitViewStudent.nationality],
+                    ['Mother Tongue', splitViewStudent.mother_tongue],
+                    ['Birth Place', splitViewStudent.birth_place],
+                    ['Identification Mark', splitViewStudent.identification_mark],
+                    ['RTE Status', splitViewStudent.rte_status ? 'Yes' : 'No'],
+                    ['Aadhar No', splitViewStudent.aadhar_no],
+                    ['Scholar No', splitViewStudent.scholar_no],
+                    ['PEN Number', splitViewStudent.pen_number],
+                    ['SSSMID', splitViewStudent.sssmid],
+                    ['Samagra Family ID', splitViewStudent.samagra_family_id],
+                    ['Jan Aadhar No', splitViewStudent.jan_aadhar_no],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section: Family & Contact */}
+              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold text-sm flex items-center gap-2">
+                  <Users className="w-4 h-4" /> Family & Contact
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
+                  {[
+                    ['Father Name', splitViewStudent.father_name],
+                    ['Father Occupation', splitViewStudent.father_occupation],
+                    ['Father Qualification', splitViewStudent.father_qualification],
+                    ['Mother Name', splitViewStudent.mother_name],
+                    ['Mother Occupation', splitViewStudent.mother_occupation],
+                    ['Mother Qualification', splitViewStudent.mother_qualification],
+                    ['Guardian Name', splitViewStudent.guardian_name],
+                    ['Guardian Relation', splitViewStudent.guardian_relation],
+                    ['Guardian Mobile', splitViewStudent.guardian_mobile],
+                    ['Guardian Occupation', splitViewStudent.guardian_occupation],
+                    ['Annual Income', splitViewStudent.annual_income],
+                    ['Mobile', splitViewStudent.mobile],
+                    ['Parent Phone', splitViewStudent.parent_phone],
+                    ['Email', splitViewStudent.email],
+                    ['Address', splitViewStudent.address],
+                    ['Emergency Contact', splitViewStudent.emergency_contact],
+                    ['Emergency Name', splitViewStudent.emergency_contact_name],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section: Bank Details */}
+              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-500 text-white font-semibold text-sm flex items-center gap-2">
+                  <Wallet className="w-4 h-4" /> Bank Details (Scholarship)
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
+                  {[
+                    ['Bank Name', splitViewStudent.bank_name],
+                    ['Account No', splitViewStudent.bank_account_no],
+                    ['IFSC Code', splitViewStudent.ifsc_code],
+                    ['Branch', splitViewStudent.bank_branch],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![splitViewStudent.bank_name, splitViewStudent.bank_account_no].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No bank details recorded</div>
+                )}
+              </div>
+
+              {/* Section: Transport & Medical */}
+              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold text-sm flex items-center gap-2">
+                  <Bus className="w-4 h-4" /> Transport & Medical
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
+                  {[
+                    ['Transport Mode', splitViewStudent.transport_mode],
+                    ['Bus Route', splitViewStudent.bus_route],
+                    ['Bus Stop', splitViewStudent.bus_stop],
+                    ['Pickup Point', splitViewStudent.pickup_point],
+                    ['Medical Conditions', splitViewStudent.medical_conditions],
+                    ['Allergies', splitViewStudent.allergies],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![splitViewStudent.transport_mode, splitViewStudent.bus_route, splitViewStudent.medical_conditions, splitViewStudent.allergies].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No transport or medical details recorded</div>
+                )}
+              </div>
+
+              {/* Section: Previous Education */}
+              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-500 text-white font-semibold text-sm flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4" /> Previous Education
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
+                  {[
+                    ['Previous School', splitViewStudent.previous_school],
+                    ['Previous Class', splitViewStudent.previous_class],
+                    ['Previous Percentage', splitViewStudent.previous_percentage],
+                    ['TC Number', splitViewStudent.tc_number],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![splitViewStudent.previous_school, splitViewStudent.previous_class, splitViewStudent.tc_number].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No previous education details recorded</div>
+                )}
+              </div>
             </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
 
       {/* Face Enrollment Modal */}
       {showFaceEnrollment && newStudentCredentials && (

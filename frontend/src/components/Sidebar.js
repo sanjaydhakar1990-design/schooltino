@@ -41,23 +41,22 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       ]
     },
     {
+      id: 'admission', label: 'Students & Admission',
+      items: [
+        { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
+        { path: '/app/admission-crm', icon: Target, label: 'Admission CRM', permKey: 'students' },
+        { path: '/app/marketing', icon: Megaphone, label: 'Marketing', permKey: 'students' },
+      ]
+    },
+    {
       id: 'academic', label: 'Academic',
       items: [
         { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes' },
         { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance' },
         { path: '/app/timetable-management', icon: Clock, label: 'Timetable', permKey: 'attendance' },
         { path: '/app/exam-report', icon: FileText, label: 'Exams & Reports', permKey: 'attendance' },
-        { path: '/app/homework', icon: BookMarked, label: 'Homework', permKey: 'attendance' },
         { path: '/app/certificates', icon: Award, label: 'Certificates', permKey: 'students' },
         { path: '/app/admit-cards', icon: FileText, label: 'Admit Cards', permKey: 'attendance' },
-      ]
-    },
-    {
-      id: 'admission', label: 'Students & Admission',
-      items: [
-        { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
-        { path: '/app/admission-crm', icon: Target, label: 'Admission CRM', permKey: 'students' },
-        { path: '/app/marketing', icon: Megaphone, label: 'Marketing', permKey: 'students' },
       ]
     },
     {
@@ -83,7 +82,6 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         { path: '/app/fee-management', icon: Wallet, label: 'Fee Management', permKey: 'fees' },
         { path: '/app/accountant', icon: Calculator, label: 'Accountant', permKey: 'fees' },
         { path: '/app/credit-system', icon: CreditCard, label: 'Credit System', permKey: 'fees' },
-        { path: '/app/student-wallet', icon: Wallet, label: 'Student Wallet', permKey: 'fees' },
         { path: '/app/e-store', icon: ShoppingBag, label: 'e-Store', permKey: 'fees' },
         { path: '/app/tally-integration', icon: Globe, label: 'Tally Integration', permKey: 'fees', directorOnly: true },
       ]
@@ -94,7 +92,13 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         { path: '/app/notices', icon: Bell, label: 'Notices', permKey: 'notices' },
         { path: '/app/integrated-comm', icon: MessageSquare, label: 'Communication Hub', permKey: 'sms_center' },
         { path: '/app/gallery', icon: Image, label: 'Gallery', permKey: 'gallery' },
-        { path: '/app/complaints', icon: MessageSquare, label: 'Complaints', permKey: 'settings' },
+        { path: '/app/event-designer', icon: Image, label: 'Event Designer', permKey: 'ai_content' },
+      ]
+    },
+    {
+      id: 'ai_tools', label: 'AI & Tools',
+      items: [
+        { path: '/app/ai-paper', icon: Brain, label: 'AI Paper Generator', permKey: 'ai_content' },
       ]
     },
     {
@@ -116,11 +120,10 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         { path: '/app/school-management', icon: Building, label: 'School Profile', permKey: 'settings', directorOnly: true },
         { path: '/app/setup-wizard', icon: Wrench, label: 'Setup Wizard', permKey: 'settings', directorOnly: true },
         { path: '/app/logo-settings', icon: Image, label: 'Logo & Branding', permKey: 'settings', directorOnly: true },
-        { path: '/app/prayer-system', icon: Music, label: 'Prayer System', permKey: 'settings' },
         { path: '/app/website', icon: Globe, label: 'Website', permKey: 'website_integration' },
         { path: '/app/integrations', icon: Link2, label: 'Integrations', permKey: 'dashboard' },
         { path: '/app/school-calendar', icon: Calendar, label: 'Calendar', permKey: 'settings' },
-        { path: '/app/event-designer', icon: Image, label: 'Event Designer', permKey: 'ai_content' },
+        { path: '/app/settings', icon: Settings, label: 'Settings', permKey: 'settings', directorOnly: true },
       ]
     },
   ];
