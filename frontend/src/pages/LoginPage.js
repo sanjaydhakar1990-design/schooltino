@@ -1,176 +1,146 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Loader2, Crown, GraduationCap, Users, CalendarCheck, Wallet, Shield, Bus, Brain, MessageSquare, Smartphone, BarChart3, BookOpen, Fingerprint, CheckCircle2, ArrowRight, Rss, ShoppingBag, Building2, FileText, Globe, Layers } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Crown, GraduationCap, Users, Wallet, Shield, Brain, MessageSquare, Smartphone, BarChart3, BookOpen, Fingerprint, CheckCircle2, ArrowRight, Globe, Layers, Lock, Zap, Cloud, Cpu } from 'lucide-react';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-const featureShowcase = [
-  {
-    icon: Rss,
-    title: 'School Feed',
-    tagline: 'A digital window to schooling\u2014watch them grow, guide them better.',
-    desc: 'Share daily moments, announcements, and activities with parents in one personalized, interactive feed.',
+const k12Tabs = [
+  { id: 'enrollment', label: 'Enrollment Conversion', icon: Users },
+  { id: 'admissions', label: 'Amplify Admissions', icon: BarChart3 },
+  { id: 'attendance', label: 'Digitalise Attendance', icon: Fingerprint },
+  { id: 'finance', label: 'Paperless Finance', icon: Wallet },
+  { id: 'website', label: 'No-Code Website', icon: Globe },
+  { id: 'dashboard', label: 'Unified Dashboard', icon: Layers },
+  { id: 'testbuilder', label: 'AI-driven Test Builder', icon: Brain },
+  { id: 'assignment', label: 'Smart Assignment', icon: BookOpen },
+  { id: 'edtech', label: 'EdTech Tools', icon: GraduationCap },
+  { id: 'content', label: 'Interactive Content', icon: Smartphone },
+];
+
+const k12Features = {
+  enrollment: {
+    title: 'Online Admissions. Streamlined from Enquiry to Enrollment.',
+    desc: 'Create & analyse campaigns anytime to complete admissions faster \u2014 all from one centralised dashboard.',
     bullets: [
-      'Share photos and videos of classroom activities with parents',
-      'Teachers and students can comment and engage with posts instantly',
-      'Record and organize classroom activities with ease',
+      '24/7 online admission forms - accessible from anywhere',
+      'Ensure safety with OTP security for both walk-in & online enquiries',
+      'Record & track prospective enrollments through a smart follow-up mechanism',
+      'Simplify with a fully configurable multi-tier process',
+      'Hassle-free fee collection with integrated payment gateways',
     ],
     gradient: 'from-blue-500 to-cyan-400',
     bgGradient: 'from-blue-50 to-cyan-50',
-    iconBg: 'bg-blue-500',
   },
-  {
-    icon: Wallet,
-    title: 'Student Wallet',
-    tagline: 'Tap, pay, and track\u2014no more cash chaos',
-    desc: 'Parents can recharge a digital wallet for their children, which schools can use for regular fees, event fees, activities, or any ad-hoc charges.',
+  admissions: {
+    title: 'Boost Admissions with Built-In SEO & Smart Digital Campaign Tools',
+    desc: 'Launch impactful digital campaigns with a comprehensive dashboard, built-in SEO tools and real-time prospect tracking.',
     bullets: [
-      'Rechargeable wallet managed by parents',
-      'Ideal for school trips, events, and small fees',
-      'Secure and trackable transactions',
-      'Enables cashless school operations',
+      'Create & launch custom campaigns instantly',
+      'Auto-capture leads from every channel & campaign',
+      'Boost reach with bulk campaign blasts',
+      'Track leads in real time with follow-up insights',
     ],
     gradient: 'from-purple-500 to-pink-400',
     bgGradient: 'from-purple-50 to-pink-50',
-    iconBg: 'bg-purple-500',
   },
-  {
-    icon: Fingerprint,
-    title: 'AI-Powered Staff Attendance',
-    tagline: 'Smile, scan, and start\u2014AI takes the roll call',
-    desc: 'Marking attendance is now effortless and accurate. With AI-driven facial recognition and geo-verification, staff can check in via their mobile phones.',
+  attendance: {
+    title: 'Smarter Attendance. Safer Campus.',
+    desc: 'Accurately mark attendance with location and face verification \u2014 without hardware, without hassle.',
     bullets: [
-      'Uses mobile-based geo-facial recognition',
-      'Eliminates the need for RFID or biometric hardware',
-      'Geo-fencing ensures attendance authenticity',
-      'Data automatically synced and stored securely',
+      'Mobile-based geo-facial recognition',
+      'No RFID or biometric devices required',
+      'Geo-fencing for authentic check-ins',
+      'Auto-synced & secure attendance logs',
     ],
     gradient: 'from-teal-500 to-emerald-400',
     bgGradient: 'from-teal-50 to-emerald-50',
-    iconBg: 'bg-teal-500',
   },
-  {
-    icon: Bus,
-    title: 'NFC & GPS Tracking for Transport',
-    tagline: 'Board, tap, and track\u2014school transport made easy',
-    desc: 'Students simply tap their NFC-enabled ID cards on vehicle attender\'s phone to mark attendance during boarding. Combined with real-time GPS tracking.',
+  finance: {
+    title: 'Smart Fees Collection & Tally Integrated Accounting',
+    desc: 'Simplify collections with configurable setups, flexible concessions, digital payments, and features that are easy & transparent.',
     bullets: [
-      'Attendance via NFC tap on mobile',
-      'Live GPS tracking of school buses',
-      'Instant notifications to parents',
-      'No costly hardware installation',
+      'Online & walk-in payment support',
+      'Customizable fee heads & categories',
+      'Fully tailored fee reports',
+      'Smart pay with auto sibling concessions',
     ],
     gradient: 'from-orange-500 to-amber-400',
     bgGradient: 'from-orange-50 to-amber-50',
-    iconBg: 'bg-orange-500',
   },
-  {
-    icon: Building2,
-    title: 'Multi-Branch Management',
-    tagline: 'Unify, monitor, and lead\u2014stay smartly synced',
-    desc: 'Manage all your branches with a single login. Get a unified view of operations across locations\u2014whether it\'s attendance, fees, academics, or transport.',
+  website: {
+    title: 'Personalise Templates That Fit Your Brand.',
+    desc: 'Build a unique, SEO-ready website and social media assets that showcase your institute\'s identity.',
     bullets: [
-      'Unified dashboard for all branches',
-      'Cross-campus performance monitoring',
-      'Centralized fee and attendance tracking',
-      'Simplified reporting and decision-making',
+      'Use customizable, ready-made templates \u2014 no coding needed',
+      'Launch a professional, SEO-optimised site in minutes',
+      'Custom banners for promotions & lead capture',
+      'Social media-ready posts with designer templates',
     ],
     gradient: 'from-indigo-500 to-blue-400',
     bgGradient: 'from-indigo-50 to-blue-50',
-    iconBg: 'bg-indigo-500',
   },
-  {
-    icon: FileText,
-    title: 'Exam & Report Card Management',
-    tagline: 'Conduct, compute, and release\u2014results in minutes',
-    desc: 'Build your exam framework the way you want it. Whether it\'s by Term, Assessment, Subject, Activity, or Rubric\u2014you design, grade, and report exactly as needed.',
+  dashboard: {
+    title: 'Attendance. Performance. Discipline. 360\u00b0 Student Analytics',
+    desc: 'Get a complete overview of every student, from academics to attendance, and soft skills \u2014 all in one place.',
     bullets: [
-      'Supports custom exam hierarchies',
-      'Customizable report card designs',
-      'Auto-calculate totals, averages, or weighted scores',
-      'Publish digital report cards easily',
+      'Gain a 360\u00b0 view of student information at a glance',
+      'Monitor student attributes & discipline records',
+      'Access & compare examination performance across the years',
+      'Track attendance trends and spot irregularities instantly',
     ],
     gradient: 'from-pink-500 to-rose-400',
     bgGradient: 'from-pink-50 to-rose-50',
-    iconBg: 'bg-pink-500',
   },
-  {
-    icon: Shield,
-    title: 'Visit Management',
-    tagline: 'Know who\'s in\u2014real-time visitor tracking',
-    desc: 'Digitally manage and monitor all visitor entries and exits\u2014parents, vendors, or guests. Keep your school safe with a seamless visitor log and approval system.',
+  testbuilder: {
+    title: 'Assess Smarter. Adapt Better. Perform Higher.',
+    desc: 'Create personalised, intelligent assessments in minutes \u2014 designed for next gen classrooms.',
     bullets: [
-      'Secure visitor entry with OTP & approval flow',
-      'Real-time tracking of in-and-out logs',
-      'Print visitor badges on arrival',
-      'Full history available for audits',
+      '650,000+ question bank organised by difficulty, depth & Bloom\'s Taxonomy levels',
+      'AI-powered proctoring for secure online exams',
+      'Instantly generate question papers for online, offline, or hybrid examinations',
     ],
     gradient: 'from-emerald-500 to-green-400',
     bgGradient: 'from-emerald-50 to-green-50',
-    iconBg: 'bg-emerald-500',
   },
-  {
-    icon: ShoppingBag,
-    title: 'School Online e-Store',
-    tagline: 'No lines, no rush\u2014just seamless school shopping',
-    desc: 'From books to uniforms, create a custom e-store for your school. No code required. Parents can place orders online and receive items directly via the school store.',
+  assignment: {
+    title: 'Homework Reinvented. Feedback Made Easy.',
+    desc: 'Streamline homework & classwork effortlessly. Monitor submissions, keep parents informed, & provide feedback.',
     bullets: [
-      'No-code store setup',
-      'Secure online payments',
-      'Easy order tracking',
-      'Direct delivery to students',
+      'Assign tasks with attachments, notes, and deadlines',
+      'Enable real-time parent notifications',
+      'Track statuses like "Turned In", "Returned" or "Feedback Given"',
+      'Evaluate and grade online with helpful feedback tools',
     ],
     gradient: 'from-violet-500 to-purple-400',
     bgGradient: 'from-violet-50 to-purple-50',
-    iconBg: 'bg-violet-500',
   },
-  {
-    icon: MessageSquare,
-    title: 'Integrated Communication System',
-    tagline: 'All Messages, One Platform, Zero Confusion',
-    desc: 'Automate alerts and engage your school community effortlessly with multi-channel communication.',
+  edtech: {
+    title: 'Curriculum-Aligned Digital Learning Tools',
+    desc: 'From immersive labs to art rooms \u2014 equip students with tools that turn complex lessons into memorable learning experiences.',
     bullets: [
-      'Event-based SMS, email, notifications & WhatsApp',
-      'DLT-approved SMS templates',
-      'Built-in surveys & observation forms',
+      'Use simulations for Maths, Science, English & Social Studies',
+      'Explore the Organism Encyclopedia and Periodic Table interactively',
+      'Access tools like the 2D Graph Plotter, Log Table, and Abacus',
+      'Teach art and creativity with drawing & painting tools',
     ],
     gradient: 'from-sky-500 to-blue-400',
     bgGradient: 'from-sky-50 to-blue-50',
-    iconBg: 'bg-sky-500',
   },
-  {
-    icon: Smartphone,
-    title: 'Unified Mobile App',
-    tagline: 'One app. All roles. Total convenience',
-    desc: 'The mobile app goes beyond routine tasks\u2014it\'s a single app for all school stakeholders.',
+  content: {
+    title: 'Personalised Learning Paths for Every Student',
+    desc: 'Tailor digital learning to meet the needs of diverse learners. With immersive learning tools make every classroom experience impactful.',
     bullets: [
-      'Admin/Management monitor fees and key operations anytime',
-      'Teachers manage lectures, planning, homework, and exams',
-      'Parents handle daily school tasks with ease',
-      'Students access all their learning in one place',
+      'Customise lessons by learning level or style',
+      'Interactive content keeps students engaged',
+      'Track progress with real-time analytics',
+      'AI-powered recommendations for each student',
     ],
     gradient: 'from-rose-500 to-pink-400',
     bgGradient: 'from-rose-50 to-pink-50',
-    iconBg: 'bg-rose-500',
   },
-  {
-    icon: Globe,
-    title: 'Integrations',
-    tagline: 'Integrate to Innovate\u2014The Smart Way',
-    desc: 'Seamless integrations with industry-standard tools and platforms to extend your school\'s capabilities.',
-    bullets: [
-      'Tally integration for financial sync',
-      'Razorpay & payment gateway support',
-      'WhatsApp & SMS API integrations',
-      'Biometric device connectivity',
-    ],
-    gradient: 'from-amber-500 to-yellow-400',
-    bgGradient: 'from-amber-50 to-yellow-50',
-    iconBg: 'bg-amber-500',
-  },
-];
+};
 
 const stats = [
   { value: '21,000+', label: 'Institutions Empowered', icon: GraduationCap },
@@ -195,6 +165,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '', name: '' });
   const [studentForm, setStudentForm] = useState({ student_id: '', password: '', mobile: '', dob: '' });
   const [studentLoginMethod, setStudentLoginMethod] = useState('id');
+  const [activeFeatureTab, setActiveFeatureTab] = useState('enrollment');
 
   const handleSecretClick = () => {
     const newCount = secretClickCount + 1;
@@ -357,7 +328,8 @@ export default function LoginPage() {
             </div>
             <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
               <a href="#features" className="hover:text-white transition-colors">Features</a>
-              <a href="#stats" className="hover:text-white transition-colors">About</a>
+              <a href="/teachtino" className="hover:text-white transition-colors">TeachTino</a>
+              <a href="/studytino" className="hover:text-white transition-colors">StudyTino</a>
               <a href="#login" className="px-5 py-2 bg-white/10 backdrop-blur rounded-lg hover:bg-white/20 transition-colors border border-white/20 text-white">Request Demo</a>
             </div>
           </nav>
@@ -368,16 +340,16 @@ export default function LoginPage() {
                 <Sparkle /> Cloud-Based School ERP
               </div>
               <h1 className="text-4xl lg:text-6xl font-extrabold leading-tight mb-6">
-                The Brain of an{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">EdTech.</span>
+                The Launchpad of{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">21st-Century Skills.</span>
                 <br />
-                The Soul of an{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">Educator.</span>
+                The Takeoff for{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">Smart Future.</span>
               </h1>
               <p className="text-lg text-white/70 leading-relaxed mb-8 max-w-lg">
-                A cloud-based, AI-powered School ERP that simplifies everything — from admissions and fees to exams and transport. Go paperless, automate workflows, and manage your school anytime, anywhere.
+                Reboot schools with advanced K-12 Suite. Boost school's real potential by automating finance, academic, administrative, management, human resource, inventory, transport, and operational requirements.
               </p>
-              <p className="text-sm font-semibold text-white/50 mb-6">Built for today. Ready for tomorrow.</p>
+              <p className="text-sm font-semibold text-white/50 mb-6">Schooltino &middot; TeachTino &middot; StudyTino — One Platform, All Connected.</p>
               <div className="flex flex-wrap gap-4">
                 <a href="#login" className="px-8 py-3.5 bg-white text-gray-900 rounded-xl font-semibold text-sm hover:bg-gray-100 transition-all shadow-lg shadow-white/10 flex items-center gap-2">
                   Get Started <ArrowRight className="w-4 h-4" />
@@ -514,60 +486,98 @@ export default function LoginPage() {
         </div>
       </div>
 
+      <div className="py-16 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"><Lock className="w-5 h-5 text-white" /></div>
+                <span className="text-sm font-semibold text-gray-700">Secure & Integrated</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center"><Zap className="w-5 h-5 text-white" /></div>
+                <span className="text-sm font-semibold text-gray-700">User-friendly</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center"><Cloud className="w-5 h-5 text-white" /></div>
+                <span className="text-sm font-semibold text-gray-700">Cloud-first</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center"><Cpu className="w-5 h-5 text-white" /></div>
+                <span className="text-sm font-semibold text-gray-700">AI-enabled</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Integrated Intelligence</p>
+          <div className="text-center mb-10">
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Be Your Own Pilot</p>
             <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900">
-              Cloud-First School ERP
+              Navigate Your Space Station
             </h2>
             <p className="text-gray-500 mt-3 max-w-2xl mx-auto text-lg">
-              Everything you need to run a modern school, powered by AI and built for the cloud.
+              360° aerial view with AI-powered tools for full throttle school management.
             </p>
           </div>
 
-          <div className="space-y-20">
-            {featureShowcase.map((feature, idx) => {
-              const isReversed = idx % 2 !== 0;
-              return (
-                <div key={idx} className={`flex flex-col ${isReversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} gap-10 lg:gap-16 items-center`}>
-                  <div className="flex-1 w-full">
-                    <div className={`relative rounded-3xl overflow-hidden bg-gradient-to-br ${feature.bgGradient} p-8 lg:p-12 aspect-[4/3] flex items-center justify-center`}>
-                      <div className="absolute inset-0 opacity-5">
-                        <div className={`absolute top-6 right-6 w-32 h-32 bg-gradient-to-br ${feature.gradient} rounded-full blur-2xl`}></div>
-                        <div className={`absolute bottom-6 left-6 w-40 h-40 bg-gradient-to-br ${feature.gradient} rounded-full blur-3xl`}></div>
-                      </div>
-                      <div className="relative z-10 w-full">
-                        <FeatureIllustration feature={feature} index={idx} />
-                      </div>
-                    </div>
-                  </div>
+          <div className="flex flex-wrap justify-center gap-2 mb-12 bg-gray-50 rounded-2xl p-3 border border-gray-100">
+            {k12Tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveFeatureTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  activeFeatureTab === tab.id
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
+                    : 'text-gray-600 hover:bg-white hover:shadow-sm'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
+          </div>
 
-                  <div className="flex-1 w-full">
-                    <div className={`w-12 h-12 rounded-xl ${feature.iconBg} flex items-center justify-center mb-5 shadow-lg`}>
-                      <feature.icon className="w-6 h-6 text-white" />
+          {(() => {
+            const feature = k12Features[activeFeatureTab];
+            const tabInfo = k12Tabs.find(t => t.id === activeFeatureTab);
+            return (
+              <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center animate-fade-in">
+                <div className="flex-1 w-full">
+                  <div className={`relative rounded-3xl overflow-hidden bg-gradient-to-br ${feature.bgGradient} p-8 lg:p-12 aspect-[4/3] flex items-center justify-center`}>
+                    <div className="absolute inset-0 opacity-5">
+                      <div className={`absolute top-6 right-6 w-32 h-32 bg-gradient-to-br ${feature.gradient} rounded-full blur-2xl`}></div>
+                      <div className={`absolute bottom-6 left-6 w-40 h-40 bg-gradient-to-br ${feature.gradient} rounded-full blur-3xl`}></div>
                     </div>
-                    <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{feature.title}</h3>
-                    <p className={`text-lg font-medium mb-4 text-transparent bg-clip-text bg-gradient-to-r ${feature.gradient}`}>
-                      {feature.tagline}
-                    </p>
-                    <p className="text-gray-600 leading-relaxed mb-6">{feature.desc}</p>
-                    <ul className="space-y-3 mb-8">
-                      {feature.bullets.map((bullet, bIdx) => (
-                        <li key={bIdx} className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-600 text-sm">{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <a href="#login" className="inline-flex items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors group">
-                      Learn more <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </a>
+                    <div className="relative z-10 w-full">
+                      <K12Illustration tabId={activeFeatureTab} />
+                    </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="flex-1 w-full">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-5 shadow-lg`}>
+                    {tabInfo && <tabInfo.icon className="w-6 h-6 text-white" />}
+                  </div>
+                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed mb-6 text-lg">{feature.desc}</p>
+                  <ul className="space-y-3 mb-8">
+                    {feature.bullets.map((bullet, bIdx) => (
+                      <li key={bIdx} className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-gray-600">{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <a href="#login" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all group">
+                    Learn more <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </a>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -603,20 +613,21 @@ export default function LoginPage() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-300">Product</h4>
+              <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-300">Product Suite</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#stats" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#login" className="hover:text-white transition-colors">Login</a></li>
+                <li><a href="#login" className="hover:text-white transition-colors">Schooltino (Admin)</a></li>
+                <li><a href="/teachtino" className="hover:text-white transition-colors">TeachTino (Teachers)</a></li>
+                <li><a href="/studytino" className="hover:text-white transition-colors">StudyTino (Students & Parents)</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">K-12 Suite</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-300">Modules</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Student Management</li>
-                <li>Fee Management</li>
-                <li>Attendance Tracking</li>
-                <li>Transport & GPS</li>
+                <li>Admissions & Enrollment</li>
+                <li>Fee Management & Razorpay</li>
+                <li>AI Attendance & Exams</li>
+                <li>Transport & GPS Tracking</li>
               </ul>
             </div>
             <div>
@@ -637,37 +648,38 @@ export default function LoginPage() {
   );
 }
 
-function FeatureIllustration({ feature, index }) {
-  const illustrations = [
-    () => (
-      <div className="space-y-4">
-        <div className="bg-white rounded-2xl shadow-lg p-4 max-w-xs mx-auto">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center"><span className="text-white text-xs font-bold">AB</span></div>
-            <div><div className="h-3 w-24 bg-gray-200 rounded"></div><div className="h-2 w-16 bg-gray-100 rounded mt-1"></div></div>
-          </div>
-          <div className="h-32 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl mb-3 flex items-center justify-center"><Rss className="w-10 h-10 text-blue-400" /></div>
-          <div className="flex gap-4"><div className="h-2 w-12 bg-gray-100 rounded"></div><div className="h-2 w-12 bg-gray-100 rounded"></div><div className="h-2 w-12 bg-gray-100 rounded"></div></div>
-        </div>
-        <div className="bg-white rounded-xl shadow-md p-3 max-w-[200px] mx-auto -mt-2 ml-8">
-          <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-green-400"></div><div className="h-2 w-20 bg-gray-200 rounded"></div></div>
-        </div>
-      </div>
-    ),
-    () => (
-      <div className="bg-white rounded-2xl shadow-lg p-6 max-w-xs mx-auto">
-        <div className="flex items-center justify-between mb-4"><span className="text-sm font-bold text-gray-800">Student Wallet</span><span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span></div>
-        <div className="text-3xl font-extrabold text-gray-900 mb-1">&#8377;2,450</div>
-        <div className="text-xs text-gray-400 mb-4">Available Balance</div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-purple-50 rounded-xl p-3 text-center"><div className="text-sm font-bold text-purple-700">&#8377;500</div><div className="text-[10px] text-purple-500">Recharge</div></div>
-          <div className="bg-pink-50 rounded-xl p-3 text-center"><div className="text-sm font-bold text-pink-700">&#8377;150</div><div className="text-[10px] text-pink-500">Spent Today</div></div>
-        </div>
-      </div>
-    ),
-    () => (
+function K12Illustration({ tabId }) {
+  const illustrations = {
+    enrollment: () => (
       <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Staff Attendance</div>
+        <div className="text-sm font-bold text-gray-800 mb-3">Online Admissions</div>
+        <div className="space-y-2 mb-3">
+          {['Enquiry Received', 'Form Submitted', 'Fee Paid', 'Enrolled'].map((step, i) => (
+            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-blue-50">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${i < 3 ? 'bg-blue-500' : 'bg-gray-300'}`}>{i + 1}</div>
+              <span className="text-xs text-gray-700">{step}</span>
+              {i < 3 && <CheckCircle2 className="w-3.5 h-3.5 text-green-500 ml-auto" />}
+            </div>
+          ))}
+        </div>
+        <div className="text-center text-[10px] text-blue-600 font-medium">4 Steps to Complete Admission</div>
+      </div>
+    ),
+    admissions: () => (
+      <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
+        <div className="text-sm font-bold text-gray-800 mb-3">Campaign Dashboard</div>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="bg-purple-50 rounded-xl p-3 text-center"><div className="text-lg font-bold text-purple-700">1,247</div><div className="text-[10px] text-purple-500">Total Leads</div></div>
+          <div className="bg-pink-50 rounded-xl p-3 text-center"><div className="text-lg font-bold text-pink-700">89%</div><div className="text-[10px] text-pink-500">Conversion</div></div>
+        </div>
+        <div className="h-16 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl flex items-end px-2 pb-2 gap-1">
+          {[40, 60, 45, 80, 65, 90, 75].map((h, i) => <div key={i} className="flex-1 bg-gradient-to-t from-purple-500 to-pink-400 rounded-t" style={{height: `${h}%`}}></div>)}
+        </div>
+      </div>
+    ),
+    attendance: () => (
+      <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
+        <div className="text-sm font-bold text-gray-800 mb-3">Smart Attendance</div>
         <div className="space-y-3">
           {['Rahul S.', 'Priya M.', 'Amit K.'].map((name, i) => (
             <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
@@ -676,34 +688,38 @@ function FeatureIllustration({ feature, index }) {
             </div>
           ))}
         </div>
+        <div className="mt-3 flex items-center gap-2 text-[10px] text-teal-600"><Fingerprint className="w-3.5 h-3.5" /> Geo-facial verified</div>
       </div>
     ),
-    () => (
+    finance: () => (
       <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Bus Tracking</div>
-        <div className="h-32 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl mb-3 flex items-center justify-center relative">
-          <Bus className="w-10 h-10 text-orange-500" />
-          <div className="absolute top-2 right-2 flex items-center gap-1 bg-white rounded-full px-2 py-0.5 shadow-sm"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div><span className="text-[10px] font-medium">Live</span></div>
+        <div className="text-sm font-bold text-gray-800 mb-3">Fee Collection</div>
+        <div className="text-2xl font-extrabold text-gray-900 mb-1">&#8377;12,45,000</div>
+        <div className="text-xs text-gray-400 mb-3">Total Collected This Month</div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-orange-50 rounded-xl p-3 text-center"><div className="text-sm font-bold text-orange-700">&#8377;8.5L</div><div className="text-[10px] text-orange-500">Online</div></div>
+          <div className="bg-amber-50 rounded-xl p-3 text-center"><div className="text-sm font-bold text-amber-700">&#8377;3.9L</div><div className="text-[10px] text-amber-500">Walk-in</div></div>
         </div>
-        <div className="flex justify-between text-xs text-gray-500"><span>Route: A-12</span><span className="text-orange-600 font-medium">ETA: 8 min</span></div>
       </div>
     ),
-    () => (
+    website: () => (
       <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Branch Overview</div>
-        <div className="space-y-2">
-          {['Main Campus', 'East Branch', 'West Branch'].map((name, i) => (
-            <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50">
-              <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-indigo-500" /><span className="text-xs font-medium text-gray-700">{name}</span></div>
-              <span className="text-xs text-indigo-600 font-semibold">{[450, 320, 280][i]}</span>
-            </div>
+        <div className="text-sm font-bold text-gray-800 mb-3">Website Builder</div>
+        <div className="bg-indigo-50 rounded-xl p-4 mb-3 text-center">
+          <Globe className="w-8 h-8 text-indigo-500 mx-auto mb-2" />
+          <div className="text-xs font-semibold text-indigo-700">www.yourschool.edu</div>
+          <div className="text-[10px] text-indigo-500 mt-1">SEO Optimized & Live</div>
+        </div>
+        <div className="flex gap-2">
+          {['Home', 'About', 'Admissions', 'Gallery'].map((p, i) => (
+            <div key={i} className="flex-1 bg-gray-50 rounded-lg p-1.5 text-center text-[9px] text-gray-600">{p}</div>
           ))}
         </div>
       </div>
     ),
-    () => (
+    dashboard: () => (
       <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Report Card</div>
+        <div className="text-sm font-bold text-gray-800 mb-3">Student 360°</div>
         <div className="space-y-2">
           {[['Mathematics', 'A+', 95], ['Science', 'A', 88], ['English', 'A+', 92]].map(([sub, grade, marks], i) => (
             <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
@@ -714,78 +730,73 @@ function FeatureIllustration({ feature, index }) {
             </div>
           ))}
         </div>
+        <div className="mt-3 text-center text-[10px] text-gray-500">Attendance: 94% | Discipline: Excellent</div>
       </div>
     ),
-    () => (
+    testbuilder: () => (
       <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Visitor Log</div>
-        <div className="space-y-2">
-          {[['Parent Visit', '10:30 AM', 'green'], ['Vendor', '11:15 AM', 'blue'], ['Guest', '02:00 PM', 'amber']].map(([type, time, color], i) => (
+        <div className="text-sm font-bold text-gray-800 mb-3">AI Test Builder</div>
+        <div className="bg-emerald-50 rounded-xl p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2"><Brain className="w-4 h-4 text-emerald-500" /><span className="text-xs font-semibold text-emerald-700">650,000+ Questions</span></div>
+          <div className="flex gap-1">
+            {['Easy', 'Medium', 'Hard'].map((d, i) => (
+              <span key={i} className={`text-[9px] px-2 py-0.5 rounded-full ${['bg-green-100 text-green-600', 'bg-yellow-100 text-yellow-600', 'bg-red-100 text-red-600'][i]}`}>{d}</span>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          {['Class 10 - Maths Final', 'Class 8 - Science Mid-Term'].map((p, i) => (
             <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-              <div className="flex items-center gap-2"><Shield className={`w-4 h-4 text-${color}-500`} /><span className="text-xs text-gray-700">{type}</span></div>
-              <span className="text-[10px] text-gray-400">{time}</span>
+              <span className="text-[10px] text-gray-700">{p}</span>
+              <span className="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded">Ready</span>
             </div>
           ))}
         </div>
       </div>
     ),
-    () => (
+    assignment: () => (
       <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">School Store</div>
-        <div className="grid grid-cols-2 gap-2">
-          {[['Notebooks', '&#8377;120'], ['Uniform', '&#8377;850'], ['Books', '&#8377;450'], ['Bag', '&#8377;1,200']].map(([item, price], i) => (
-            <div key={i} className="bg-violet-50 rounded-xl p-3 text-center">
-              <ShoppingBag className="w-5 h-5 text-violet-500 mx-auto mb-1" />
-              <div className="text-[10px] font-medium text-gray-700">{item}</div>
-              <div className="text-xs font-bold text-violet-700" dangerouslySetInnerHTML={{__html: price}}></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-    () => (
-      <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Communication Hub</div>
+        <div className="text-sm font-bold text-gray-800 mb-3">Homework Tracker</div>
         <div className="space-y-2">
-          {[['SMS Sent', '1,247', 'sky'], ['WhatsApp', '856', 'green'], ['Email', '432', 'blue']].map(([channel, count, color], i) => (
-            <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-              <div className="flex items-center gap-2"><MessageSquare className={`w-4 h-4 text-${color}-500`} /><span className="text-xs text-gray-700">{channel}</span></div>
-              <span className="text-xs font-bold text-gray-900">{count}</span>
+          {[['Math Worksheet', 'Turned In', 'green'], ['Science Lab', 'Pending', 'amber'], ['English Essay', 'Feedback Given', 'blue']].map(([title, status, color], i) => (
+            <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2"><BookOpen className={`w-4 h-4 text-${color}-500`} /><span className="text-xs text-gray-700">{title}</span></div>
+              <span className={`text-[9px] bg-${color}-100 text-${color}-600 px-2 py-0.5 rounded-full`}>{status}</span>
             </div>
           ))}
         </div>
       </div>
     ),
-    () => (
+    edtech: () => (
       <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Mobile App</div>
-        <div className="grid grid-cols-3 gap-2">
-          {[['Admin', Users], ['Teacher', BookOpen], ['Parent', Users], ['Student', GraduationCap], ['Guard', Shield], ['Driver', Bus]].map(([role, Icon], i) => (
-            <div key={i} className="bg-rose-50 rounded-xl p-2 text-center">
-              <Icon className="w-4 h-4 text-rose-500 mx-auto mb-1" />
-              <div className="text-[9px] font-medium text-gray-600">{role}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-    () => (
-      <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
-        <div className="text-sm font-bold text-gray-800 mb-3">Integrations</div>
+        <div className="text-sm font-bold text-gray-800 mb-3">Digital Learning</div>
         <div className="grid grid-cols-2 gap-2">
-          {[['Tally', 'bg-amber-100 text-amber-700'], ['Razorpay', 'bg-blue-100 text-blue-700'], ['WhatsApp', 'bg-green-100 text-green-700'], ['Biometric', 'bg-purple-100 text-purple-700']].map(([name, cls], i) => (
+          {[['Virtual Lab', 'bg-sky-50 text-sky-600'], ['Periodic Table', 'bg-blue-50 text-blue-600'], ['Graph Plotter', 'bg-cyan-50 text-cyan-600'], ['Art Studio', 'bg-teal-50 text-teal-600']].map(([name, cls], i) => (
             <div key={i} className={`rounded-xl p-3 text-center ${cls}`}>
-              <Globe className="w-5 h-5 mx-auto mb-1" />
+              <GraduationCap className="w-5 h-5 mx-auto mb-1" />
               <div className="text-[10px] font-bold">{name}</div>
             </div>
           ))}
         </div>
       </div>
     ),
-  ];
+    content: () => (
+      <div className="bg-white rounded-2xl shadow-lg p-5 max-w-xs mx-auto">
+        <div className="text-sm font-bold text-gray-800 mb-3">Learning Paths</div>
+        <div className="space-y-2">
+          {[['Adaptive Math', 85, 'rose'], ['Science Explorer', 72, 'pink'], ['Language Arts', 90, 'fuchsia']].map(([title, progress, color], i) => (
+            <div key={i} className="p-2.5 rounded-lg bg-gray-50">
+              <div className="flex justify-between mb-1"><span className="text-xs text-gray-700">{title}</span><span className="text-[10px] text-gray-500">{progress}%</span></div>
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className={`h-full bg-gradient-to-r from-${color}-500 to-pink-400 rounded-full`} style={{width:`${progress}%`}}></div></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  };
 
-  const IllustrationComp = illustrations[index] || illustrations[0];
-  return <IllustrationComp />;
+  const Comp = illustrations[tabId] || illustrations.enrollment;
+  return <Comp />;
 }
 
 function Sparkle() {

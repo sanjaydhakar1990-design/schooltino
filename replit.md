@@ -67,18 +67,24 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - Core school management features work fully
 
 ## Design Philosophy
-- NextOS-inspired modern professional design
-- Blue/purple gradient hero sections and sidebar
-- Colored gradient icon backgrounds on module cards
-- Modern rounded-2xl cards with shadow effects
+- NextOS K-12 Suite inspired design with tabbed feature navigation
+- Blue/purple gradient hero sections and sidebar across all portals
+- 10-tab feature showcase: Enrollment, Admissions, Attendance, Finance, Website, Dashboard, Test Builder, Assignment, EdTech, Content
+- "Secure & Integrated, User-friendly, Cloud-first, AI-enabled" circular infographic
+- School branding bar in Layout header: logo, name, address, contact, registration number, board type
 - Dark sidebar with glass-effect search and translucent styles
-- Stats sections with trend indicators
-- Feature landing page on login with 12 feature cards
+- Three connected portals: Schooltino (Admin), TeachTino (Teachers), StudyTino (Students/Parents)
+- Same school data shared across all portals via AuthContext schoolData
 - All core functionality preserved plus new modules
 
 ## Recent Changes
+- 2026-02-09: K-12 Suite redesign v3:
+  - LoginPage: Tabbed feature navigation (10 tabs) matching NextOS K-12 Suite, K12Illustration component per tab, hero tagline "The Launchpad of 21st-Century Skills", circular infographic with 4 pillars, portal links in nav and footer
+  - Layout header: School branding gradient bar with logo, name, full address, phone, email, registration number, board type badge
+  - AuthContext: studentLogin now fetches schoolData for StudyTino portal
+  - TeachTino & StudyTino: Unified blue/purple gradient theme, back-to-Schooltino links
+  - Footer: Product Suite section with all 3 portal links, updated module descriptions
 - 2026-02-09: NextOS exact-match redesign v2:
-  - LoginPage: Exact NextOS arrangement - hero section with login card, stats section with icons (21K+ institutions, 300+ engineers), 11 large alternating left/right feature showcase cards with CSS illustrations, bullet points, taglines. CTA section and full 4-column footer.
   - DashboardPage: Systematic module groups (Academic, Administration, Communication & Tools, AI & Infrastructure), stat cards with trend arrows, quick actions in card section, setup wizard CTA banner
   - craco.config.js: Re-enabled hot reload with WebSocket config for Replit iframe preview fix
   - Sidebar: Dark blue gradient, school logo, glass-effect search, translucent nav items, gradient user avatar
