@@ -96,6 +96,12 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - All core functionality preserved plus new modules
 
 ## Recent Changes
+- 2026-02-09: UI cleanup & profile enhancement v7:
+  - Removed duplicate profile: Profile now only accessible from sidebar top (clickable NavLink), removed from sidebar bottom and header top-right
+  - School name made bigger in header (text-xl)
+  - EmployeeManagementPage: Added page-level tabs (All Staff, Permissions, Quick Actions), full staff profile modal with printable layout, clickable names, eye icon view, permissions management directly in profile
+  - StudentsPage: Added comprehensive student profile modal with all data sections, clickable names/photos, View Profile in dropdown, larger photo display (w-14), print profile feature
+  - Notification bell already works across all admin pages via Layout component
 - 2026-02-09: NextOS full feature parity v6 (comprehensive overhaul):
   - 9 new feature pages: CreditSystemPage, AdmissionCRMPage, HomeworkPage, DigitalLibraryPage, InventoryPage, HostelPage, LiveClassesPage, CourseManagementPage, MarketingCampaignPage
   - ExamReportCard enhanced from 3 to 6 tabs: Marks Entry, Results, Reports, Exam Hierarchy, Design, Grading

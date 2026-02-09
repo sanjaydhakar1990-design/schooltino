@@ -162,7 +162,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         <X className="w-4 h-4 text-white/70" />
       </button>
 
-      <div className="p-4 border-b border-white/10">
+      <NavLink to="/app/profile" onClick={handleNavClick} className="block p-4 border-b border-white/10 hover:bg-white/5 transition-colors">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 flex-shrink-0">
             {user?.photo_url ? (
@@ -180,7 +180,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
             </div>
           )}
         </div>
-      </div>
+      </NavLink>
 
       {!isCollapsed && (
         <div className="px-4 pt-4 pb-2">
@@ -217,10 +217,6 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       </nav>
 
       <div className="p-3 border-t border-white/10">
-        <NavLink to="/app/profile" onClick={handleNavClick} className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-xl hover:bg-white/5 transition-colors text-xs text-white/50`}>
-          <Settings className="w-3.5 h-3.5" />
-          {!isCollapsed && <span>Edit Profile</span>}
-        </NavLink>
         <button onClick={handleLogout} className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 text-xs text-white/50 hover:bg-white/5 rounded-xl transition-colors`}>
           <LogOut className="w-3.5 h-3.5" />
           {!isCollapsed && <span>Sign out</span>}

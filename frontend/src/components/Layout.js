@@ -157,7 +157,7 @@ export const Layout = () => {
                   </div>
                 )}
                 <div>
-                  <h1 className="text-sm lg:text-base font-bold leading-tight">{schoolName || 'Schooltino'}</h1>
+                  <h1 className="text-base lg:text-xl font-bold leading-tight tracking-tight">{schoolName || 'Schooltino'}</h1>
                   {schoolData?.address && (
                     <p className="text-[10px] lg:text-xs text-blue-200 leading-tight truncate max-w-[200px] lg:max-w-none">
                       {schoolData.address}{schoolData.city ? `, ${schoolData.city}` : ''}{schoolData.state ? `, ${schoolData.state}` : ''}{schoolData.pincode ? ` - ${schoolData.pincode}` : ''}
@@ -234,9 +234,6 @@ export const Layout = () => {
                   </div>
                 )}
               </div>
-              <button onClick={() => navigate('/app/profile')} className="w-9 h-9 gradient-card-blue rounded-xl flex items-center justify-center shadow-sm">
-                <span className="text-white text-sm font-semibold">{user?.name?.charAt(0) || 'U'}</span>
-              </button>
             </div>
           </header>
         </div>

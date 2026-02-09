@@ -94,6 +94,10 @@ export default function StudentsPage() {
   const [credentialsStudent, setCredentialsStudent] = useState(null);
   const [showBulkCredentialsDialog, setShowBulkCredentialsDialog] = useState(false);
   
+  // Profile view states
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileStudent, setProfileStudent] = useState(null);
+  
   // Photo capture states
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
@@ -505,6 +509,109 @@ Note: First login पर password change करें।`;
     const text = generateCredentialsText(student);
     await navigator.clipboard.writeText(text);
     toast.success('Credentials copied!');
+  };
+
+  const openStudentProfile = (student) => {
+    setProfileStudent(student);
+    setShowProfileModal(true);
+  };
+
+  const printStudentProfile = (student) => {
+    const s = student;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Popup blocked - please allow popups');
+      return;
+    }
+    const photoHtml = s.photo_url 
+      ? `<img src="${s.photo_url}" style="width:120px;height:140px;object-fit:cover;border-radius:8px;border:2px solid #1e40af;" />`
+      : `<div style="width:120px;height:140px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;color:#94a3b8;border:2px solid #1e40af;">👤</div>`;
+    
+    const row = (label, value) => value ? `<tr><td style="padding:6px 12px;font-weight:600;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;width:200px;">${label}</td><td style="padding:6px 12px;border:1px solid #e2e8f0;">${value}</td></tr>` : '';
+    const sectionHeader = (title, emoji) => `<tr><td colspan="2" style="padding:10px 12px;font-weight:700;font-size:14px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:white;border:1px solid #1e40af;">${emoji} ${title}</td></tr>`;
+    
+    const html = `<!DOCTYPE html><html><head><title>Student Profile - ${s.name}</title>
+<style>@page{size:A4;margin:15mm}body{font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;margin:0;padding:20px}
+.header{text-align:center;margin-bottom:20px;border-bottom:3px solid #1e40af;padding-bottom:15px}
+table{width:100%;border-collapse:collapse;margin-bottom:15px;font-size:13px}
+.print-btn{position:fixed;top:10px;right:10px;padding:10px 20px;background:#1e40af;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px}
+@media print{.print-btn{display:none}}</style></head>
+<body>
+<button class="print-btn" onclick="window.print()">🖨️ Print</button>
+<div class="header">
+${photoHtml}
+<h1 style="margin:10px 0 5px;color:#1e40af;font-size:24px;">${s.name}</h1>
+<p style="color:#64748b;margin:0;">Student ID: ${s.student_id || s.admission_no || 'N/A'} | Class: ${s.class_name || 'N/A'}${s.section ? ' - ' + s.section : ''}</p>
+</div>
+<table>
+${sectionHeader('Basic Information (मूल जानकारी)', '📋')}
+${row('Name (नाम)', s.name)}
+${row('Student ID', s.student_id || s.admission_no)}
+${row('Class (कक्षा)', s.class_name)}
+${row('Section', s.section)}
+${row('Gender (लिंग)', s.gender)}
+${row('Date of Birth (जन्म तिथि)', s.dob)}
+${row('Blood Group (रक्त समूह)', s.blood_group)}
+${row('Admission Date (प्रवेश तिथि)', s.admission_date)}
+${row('Category (श्रेणी)', s.category)}
+${row('Caste (जाति)', s.caste)}
+${row('Religion (धर्म)', s.religion)}
+${row('Nationality', s.nationality)}
+${row('Mother Tongue', s.mother_tongue)}
+${row('Birth Place', s.birth_place)}
+${row('Identification Mark', s.identification_mark)}
+${row('RTE Status', s.rte_status ? 'Yes' : 'No')}
+${sectionHeader('Identity Documents (पहचान दस्तावेज़)', '🆔')}
+${row('Aadhar No (आधार नं.)', s.aadhar_no)}
+${row('Scholar No (विद्यार्थी क्रमांक)', s.scholar_no)}
+${row('PEN Number', s.pen_number)}
+${row('SSSMID', s.sssmid)}
+${row('Samagra Family ID', s.samagra_family_id)}
+${row('Jan Aadhar No', s.jan_aadhar_no)}
+${sectionHeader('Family Information (पारिवारिक जानकारी)', '👨‍👩‍👦')}
+${row('Father Name (पिता का नाम)', s.father_name)}
+${row('Father Occupation', s.father_occupation)}
+${row('Father Qualification', s.father_qualification)}
+${row('Mother Name (माता का नाम)', s.mother_name)}
+${row('Mother Occupation', s.mother_occupation)}
+${row('Mother Qualification', s.mother_qualification)}
+${row('Guardian Name', s.guardian_name)}
+${row('Guardian Relation', s.guardian_relation)}
+${row('Guardian Mobile', s.guardian_mobile)}
+${row('Guardian Occupation', s.guardian_occupation)}
+${row('Annual Income', s.annual_income)}
+${sectionHeader('Contact Information (संपर्क जानकारी)', '📞')}
+${row('Mobile (मोबाइल)', s.mobile)}
+${row('Parent Phone', s.parent_phone)}
+${row('Email', s.email)}
+${row('Address (पता)', s.address)}
+${row('Emergency Contact', s.emergency_contact)}
+${row('Emergency Contact Name', s.emergency_contact_name)}
+${sectionHeader('Bank Details - Scholarship (बैंक विवरण)', '🏦')}
+${row('Bank Name', s.bank_name)}
+${row('Account No', s.bank_account_no)}
+${row('IFSC Code', s.ifsc_code)}
+${row('Branch', s.bank_branch)}
+${sectionHeader('Transport (परिवहन)', '🚌')}
+${row('Transport Mode', s.transport_mode)}
+${row('Bus Route', s.bus_route)}
+${row('Bus Stop', s.bus_stop)}
+${row('Pickup Point', s.pickup_point)}
+${sectionHeader('Medical (चिकित्सा)', '🏥')}
+${row('Medical Conditions', s.medical_conditions)}
+${row('Allergies', s.allergies)}
+${sectionHeader('Previous Education (पूर्व शिक्षा)', '🎓')}
+${row('Previous School', s.previous_school)}
+${row('Previous Class', s.previous_class)}
+${row('Previous Percentage', s.previous_percentage)}
+${row('TC Number', s.tc_number)}
+</table>
+<div style="text-align:center;margin-top:30px;color:#94a3b8;font-size:11px;">
+Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
+</div>
+</body></html>`;
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   const handleEdit = (student) => {
@@ -1808,16 +1915,26 @@ Note: First login पर password change करें।`;
                   {students.map((student) => (
                     <TableRow key={student.id} data-testid={`student-row-${student.id}`}>
                       <TableCell>
-                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+                        <div 
+                          className="w-14 h-14 rounded-lg bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-blue-400 hover:shadow-md transition-all"
+                          onClick={() => openStudentProfile(student)}
+                        >
                           {student.photo_url ? (
                             <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <User className="w-5 h-5 text-slate-400" />
+                            <User className="w-7 h-7 text-slate-400" />
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="font-mono text-sm font-medium">{student.student_id || student.admission_no}</TableCell>
-                      <TableCell className="font-medium">{student.name}</TableCell>
+                      <TableCell>
+                        <button 
+                          onClick={() => openStudentProfile(student)}
+                          className="font-medium text-blue-700 hover:text-blue-900 hover:underline cursor-pointer bg-transparent border-none p-0 text-left"
+                        >
+                          {student.name}
+                        </button>
+                      </TableCell>
                       <TableCell>
                         <span className="badge badge-info">
                           {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''}
@@ -1838,6 +1955,10 @@ Note: First login पर password change करें।`;
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openStudentProfile(student)}>
+                              <Eye className="w-4 h-4 mr-2 text-blue-600" />
+                              View Profile
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(student)}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit Details
@@ -2064,6 +2185,252 @@ Note: First login पर password change करें।`;
                   )}
                   Delete Permanently
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Full Profile Modal */}
+      <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <User className="w-6 h-6 text-blue-600" />
+              Student Profile (विद्यार्थी प्रोफ़ाइल)
+            </DialogTitle>
+          </DialogHeader>
+          
+          {profileStudent && (
+            <div className="space-y-4">
+              {/* Photo & Basic Header */}
+              <div className="text-center bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                <div className="flex justify-center mb-3">
+                  <div className="w-28 h-28 rounded-xl bg-white border-4 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
+                    {profileStudent.photo_url ? (
+                      <img src={profileStudent.photo_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-14 h-14 text-slate-300" />
+                    )}
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900">{profileStudent.name}</h2>
+                <p className="text-slate-500 mt-1">
+                  {profileStudent.student_id || profileStudent.admission_no} | {profileStudent.class_name}{profileStudent.section ? ` - ${profileStudent.section}` : ''}
+                </p>
+                <span className={`inline-block mt-2 badge ${getStatusBadge(profileStudent.status)}`}>
+                  {profileStudent.status}
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 flex-wrap justify-center">
+                <Button size="sm" className="gap-2" onClick={() => printStudentProfile(profileStudent)}>
+                  <Printer className="w-4 h-4" /> Print Profile
+                </Button>
+                <Button size="sm" variant="outline" className="gap-2" onClick={() => { setShowProfileModal(false); handleEdit(profileStudent); }}>
+                  <Edit className="w-4 h-4" /> Edit
+                </Button>
+                <Button size="sm" variant="outline" className="gap-2 text-blue-600" onClick={() => { setShowProfileModal(false); setIdCardStudent(profileStudent); setShowIDCard(true); }}>
+                  <CreditCard className="w-4 h-4" /> ID Card
+                </Button>
+              </div>
+
+              {/* Section: Basic Info */}
+              <div className="rounded-xl border border-blue-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  📋 Basic Information (मूल जानकारी)
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+                  {[
+                    ['Name (नाम)', profileStudent.name],
+                    ['Student ID', profileStudent.student_id || profileStudent.admission_no],
+                    ['Class (कक्षा)', profileStudent.class_name],
+                    ['Section', profileStudent.section || 'A'],
+                    ['Gender (लिंग)', profileStudent.gender],
+                    ['DOB (जन्म तिथि)', profileStudent.dob],
+                    ['Blood Group (रक्त समूह)', profileStudent.blood_group],
+                    ['Admission Date (प्रवेश तिथि)', profileStudent.admission_date],
+                    ['Category (श्रेणी)', profileStudent.category],
+                    ['Caste (जाति)', profileStudent.caste],
+                    ['Sub Caste', profileStudent.sub_caste],
+                    ['Religion (धर्म)', profileStudent.religion],
+                    ['Nationality', profileStudent.nationality],
+                    ['Mother Tongue', profileStudent.mother_tongue],
+                    ['Birth Place', profileStudent.birth_place],
+                    ['Identification Mark', profileStudent.identification_mark],
+                    ['RTE Status', profileStudent.rte_status ? 'Yes' : 'No'],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section: Identity Docs */}
+              <div className="rounded-xl border border-amber-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-amber-600 to-amber-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  🆔 Identity Documents (पहचान दस्तावेज़)
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+                  {[
+                    ['Aadhar No (आधार नं.)', profileStudent.aadhar_no],
+                    ['Scholar No (विद्यार्थी क्रमांक)', profileStudent.scholar_no],
+                    ['PEN Number', profileStudent.pen_number],
+                    ['SSSMID', profileStudent.sssmid],
+                    ['Samagra Family ID', profileStudent.samagra_family_id],
+                    ['Jan Aadhar No', profileStudent.jan_aadhar_no],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![profileStudent.aadhar_no, profileStudent.scholar_no, profileStudent.pen_number, profileStudent.sssmid].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No identity documents recorded</div>
+                )}
+              </div>
+
+              {/* Section: Family Info */}
+              <div className="rounded-xl border border-green-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-green-600 to-green-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  👨‍👩‍👦 Family Information (पारिवारिक जानकारी)
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+                  {[
+                    ['Father Name (पिता)', profileStudent.father_name],
+                    ['Father Occupation', profileStudent.father_occupation],
+                    ['Father Qualification', profileStudent.father_qualification],
+                    ['Mother Name (माता)', profileStudent.mother_name],
+                    ['Mother Occupation', profileStudent.mother_occupation],
+                    ['Mother Qualification', profileStudent.mother_qualification],
+                    ['Guardian Name', profileStudent.guardian_name],
+                    ['Guardian Relation', profileStudent.guardian_relation],
+                    ['Guardian Mobile', profileStudent.guardian_mobile],
+                    ['Guardian Occupation', profileStudent.guardian_occupation],
+                    ['Annual Income', profileStudent.annual_income],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section: Contact */}
+              <div className="rounded-xl border border-purple-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-purple-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  📞 Contact Information (संपर्क जानकारी)
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+                  {[
+                    ['Mobile (मोबाइल)', profileStudent.mobile],
+                    ['Parent Phone', profileStudent.parent_phone],
+                    ['Email', profileStudent.email],
+                    ['Address (पता)', profileStudent.address],
+                    ['Emergency Contact', profileStudent.emergency_contact],
+                    ['Emergency Contact Name', profileStudent.emergency_contact_name],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section: Bank */}
+              <div className="rounded-xl border border-teal-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  🏦 Bank Details - Scholarship (बैंक विवरण)
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+                  {[
+                    ['Bank Name', profileStudent.bank_name],
+                    ['Account No', profileStudent.bank_account_no],
+                    ['IFSC Code', profileStudent.ifsc_code],
+                    ['Branch', profileStudent.bank_branch],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![profileStudent.bank_name, profileStudent.bank_account_no].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No bank details recorded</div>
+                )}
+              </div>
+
+              {/* Section: Transport */}
+              <div className="rounded-xl border border-orange-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  🚌 Transport (परिवहन)
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+                  {[
+                    ['Transport Mode', profileStudent.transport_mode],
+                    ['Bus Route', profileStudent.bus_route],
+                    ['Bus Stop', profileStudent.bus_stop],
+                    ['Pickup Point', profileStudent.pickup_point],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![profileStudent.transport_mode, profileStudent.bus_route].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No transport details recorded</div>
+                )}
+              </div>
+
+              {/* Section: Medical */}
+              <div className="rounded-xl border border-red-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  🏥 Medical Information (चिकित्सा)
+                </div>
+                <div className="grid grid-cols-2 gap-px bg-slate-200">
+                  {[
+                    ['Medical Conditions', profileStudent.medical_conditions],
+                    ['Allergies', profileStudent.allergies],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![profileStudent.medical_conditions, profileStudent.allergies].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No medical information recorded</div>
+                )}
+              </div>
+
+              {/* Section: Previous Education */}
+              <div className="rounded-xl border border-indigo-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
+                  🎓 Previous Education (पूर्व शिक्षा)
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+                  {[
+                    ['Previous School', profileStudent.previous_school],
+                    ['Previous Class', profileStudent.previous_class],
+                    ['Previous Percentage', profileStudent.previous_percentage],
+                    ['TC Number', profileStudent.tc_number],
+                  ].filter(([, v]) => v).map(([label, value], i) => (
+                    <div key={i} className="bg-white p-3">
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="font-medium text-sm text-slate-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {![profileStudent.previous_school, profileStudent.previous_class, profileStudent.tc_number].some(Boolean) && (
+                  <div className="bg-white p-3 text-center text-sm text-slate-400">No previous education details recorded</div>
+                )}
               </div>
             </div>
           )}
