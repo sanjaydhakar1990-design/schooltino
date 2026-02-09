@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Bell, Search, MapPin, Phone, Mail, Hash, GraduationCap } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
+import { GlobalWatermark } from './SchoolLogoWatermark';
 
 const breadcrumbMap = {
   '/app/dashboard': 'Dashboard',
@@ -160,8 +161,9 @@ export const Layout = () => {
           </header>
         </div>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto relative">
+          <GlobalWatermark />
+          <div className="p-4 md:p-6 lg:p-8 relative z-10">
             <Outlet />
           </div>
         </main>

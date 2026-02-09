@@ -19,6 +19,7 @@ import {
   DoorOpen, Bus, Heart, Fingerprint, Video, Image, Globe, History
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -48,7 +49,7 @@ const MODULES = {
 
 export default function UnifiedPortal() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, schoolData } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [permissions, setPermissions] = useState({});
@@ -197,17 +198,41 @@ export default function UnifiedPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" data-testid="unified-portal">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative" data-testid="unified-portal">
+      <GlobalWatermark />
+      <header className="sticky top-0 z-50 relative" style={{zIndex: 50}}>
+        {schoolData && (
+          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white px-4 py-1.5">
+            <div className="max-w-7xl mx-auto flex items-center justify-between text-[10px]">
+              <div className="flex items-center gap-2">
+                {(schoolData.logo_url || schoolData.logo) && (
+                  <img src={schoolData.logo_url || schoolData.logo} alt="" className="w-6 h-6 rounded object-cover" />
+                )}
+                <span className="font-medium">{schoolData.name}</span>
+                {schoolData.address && <span className="hidden lg:inline text-blue-200">| {schoolData.address}{schoolData.city ? `, ${schoolData.city}` : ''}</span>}
+              </div>
+              <div className="hidden md:flex items-center gap-3 text-blue-200">
+                {schoolData.phone && <span>{schoolData.phone}</span>}
+                {schoolData.email && <span>{schoolData.email}</span>}
+                {schoolData.registration_number && <span>Reg: {schoolData.registration_number}</span>}
+                {schoolData.board_type && <span className="bg-white/10 px-1.5 py-0.5 rounded text-white font-semibold">{schoolData.board_type}</span>}
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <School className="w-6 h-6 text-white" />
-              </div>
+              {schoolData?.logo_url || schoolData?.logo ? (
+                <img src={schoolData.logo_url || schoolData.logo} alt="" className="w-10 h-10 rounded-xl object-cover bg-white/10 p-0.5" />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <School className="w-6 h-6 text-white" />
+                </div>
+              )}
               <div>
-                <h1 className="font-bold text-lg text-white">Schooltino Portal</h1>
+                <h1 className="font-bold text-lg text-white">{schoolData?.name || 'TeachTino Portal'}</h1>
                 <div className="flex items-center gap-2">
                   <Badge className={`${getRoleBadgeColor()} text-white text-xs`}>
                     {getRoleLabel()}
@@ -260,6 +285,7 @@ export default function UnifiedPortal() {
               </Button>
             </div>
           </div>
+        </div>
         </div>
       </header>
 

@@ -1,43 +1,16 @@
-/**
- * SchoolLogoWatermark Component
- * Adds school logo as background watermark
- * Used in: Notices, Admit Cards, Calendar, Reports
- */
-
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-const API = process.env.REACT_APP_BACKEND_URL;
+import { useAuth } from '../context/AuthContext';
 
 export default function SchoolLogoWatermark({ 
-  schoolId, 
-  opacity = 0.08, 
-  size = 'large', // 'small', 'medium', 'large', 'full'
-  position = 'center', // 'center', 'top-right', 'bottom-right', 'top-left', 'bottom-left'
+  opacity = 0.06, 
+  size = 'large',
+  position = 'center',
   className = '',
-  children 
+  children,
+  logoOverride = null
 }) {
-  const [logoUrl, setLogoUrl] = useState(null);
-  
-  useEffect(() => {
-    const fetchSchoolLogo = async () => {
-      if (!schoolId) return;
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get(`${API}/api/schools/${schoolId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.data?.logo_url) {
-          setLogoUrl(res.data.logo_url);
-        }
-      } catch (error) {
-        console.log('Could not fetch school logo:', error);
-      }
-    };
-    fetchSchoolLogo();
-  }, [schoolId]);
+  const { schoolData } = useAuth();
+  const logoUrl = logoOverride || schoolData?.logo_url || schoolData?.logo;
 
-  // Size classes
   const sizeClasses = {
     small: 'w-24 h-24',
     medium: 'w-48 h-48',
@@ -45,7 +18,6 @@ export default function SchoolLogoWatermark({
     full: 'w-full h-full max-w-[80%] max-h-[80%]'
   };
 
-  // Position classes
   const positionClasses = {
     center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
     'top-right': 'top-4 right-4',
@@ -56,7 +28,6 @@ export default function SchoolLogoWatermark({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Watermark */}
       {logoUrl && (
         <div 
           className={`absolute ${positionClasses[position]} pointer-events-none z-0`}
@@ -70,8 +41,6 @@ export default function SchoolLogoWatermark({
           />
         </div>
       )}
-      
-      {/* Content */}
       <div className="relative z-10">
         {children}
       </div>
@@ -79,16 +48,33 @@ export default function SchoolLogoWatermark({
   );
 }
 
-// Watermark Settings Component for School Settings
+export function GlobalWatermark() {
+  const { schoolData } = useAuth();
+  const logoUrl = schoolData?.logo_url || schoolData?.logo;
+
+  if (!logoUrl) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+      <img 
+        src={logoUrl} 
+        alt="" 
+        className="w-[500px] h-[500px] object-contain"
+        style={{ opacity: 0.04 }}
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
 export function WatermarkSettings({ settings, onChange }) {
   return (
     <div className="bg-gray-50 rounded-lg p-4 space-y-4">
       <h4 className="font-medium text-gray-700 flex items-center gap-2">
-        🖼️ Logo Watermark Settings
+        Logo Watermark Settings
       </h4>
       
       <div className="grid grid-cols-2 gap-4">
-        {/* Enable Watermark */}
         <div className="col-span-2">
           <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-white border hover:bg-indigo-50">
             <input
@@ -99,16 +85,15 @@ export function WatermarkSettings({ settings, onChange }) {
             />
             <div>
               <span className="font-medium">Enable Logo Watermark</span>
-              <p className="text-xs text-gray-500">Logo har document mein background mein dikhega</p>
+              <p className="text-xs text-gray-500">Logo will appear as background on all pages</p>
             </div>
           </label>
         </div>
         
         {settings?.watermark_enabled && (
           <>
-            {/* Opacity */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Opacity / पारदर्शिता</label>
+              <label className="text-sm font-medium text-gray-700">Opacity</label>
               <input
                 type="range"
                 min="0.03"
@@ -125,48 +110,45 @@ export function WatermarkSettings({ settings, onChange }) {
               </div>
             </div>
             
-            {/* Size */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Size / आकार</label>
+              <label className="text-sm font-medium text-gray-700">Size</label>
               <select
                 value={settings?.watermark_size || 'large'}
                 onChange={(e) => onChange({ ...settings, watermark_size: e.target.value })}
                 className="w-full h-10 rounded-md border border-gray-200 px-3 text-sm"
               >
-                <option value="small">Small (छोटा)</option>
-                <option value="medium">Medium (मध्यम)</option>
-                <option value="large">Large (बड़ा)</option>
-                <option value="full">Full Page (पूरा पेज)</option>
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+                <option value="full">Full Page</option>
               </select>
             </div>
             
-            {/* Position */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Position / स्थान</label>
+              <label className="text-sm font-medium text-gray-700">Position</label>
               <select
                 value={settings?.watermark_position || 'center'}
                 onChange={(e) => onChange({ ...settings, watermark_position: e.target.value })}
                 className="w-full h-10 rounded-md border border-gray-200 px-3 text-sm"
               >
-                <option value="center">Center (बीच में)</option>
-                <option value="top-right">Top Right (ऊपर दाएं)</option>
-                <option value="bottom-right">Bottom Right (नीचे दाएं)</option>
-                <option value="top-left">Top Left (ऊपर बाएं)</option>
-                <option value="bottom-left">Bottom Left (नीचे बाएं)</option>
+                <option value="center">Center</option>
+                <option value="top-right">Top Right</option>
+                <option value="bottom-right">Bottom Right</option>
+                <option value="top-left">Top Left</option>
+                <option value="bottom-left">Bottom Left</option>
               </select>
             </div>
             
-            {/* Apply To */}
             <div className="col-span-2">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Apply To / इन पर लगाएं:</label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Apply To:</label>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { key: 'notices', label: '📢 Notices' },
-                  { key: 'admit_cards', label: '🎫 Admit Cards' },
-                  { key: 'calendar', label: '📅 Calendar' },
-                  { key: 'fee_receipts', label: '🧾 Fee Receipts' },
-                  { key: 'reports', label: '📊 Reports' },
-                  { key: 'certificates', label: '🏆 Certificates' },
+                  { key: 'notices', label: 'Notices' },
+                  { key: 'admit_cards', label: 'Admit Cards' },
+                  { key: 'calendar', label: 'Calendar' },
+                  { key: 'fee_receipts', label: 'Fee Receipts' },
+                  { key: 'reports', label: 'Reports' },
+                  { key: 'certificates', label: 'Certificates' },
                 ].map(item => (
                   <label 
                     key={item.key}

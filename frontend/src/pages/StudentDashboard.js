@@ -26,6 +26,7 @@ import {
 import { toast } from 'sonner';
 import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
 import AdmitCardSection from '../components/AdmitCardSection';
+import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const ITEMS_PER_PAGE = 5;
@@ -49,7 +50,7 @@ const loadRazorpayScript = () => {
 };
 
 export default function StudyTinoDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, schoolData } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -256,17 +257,35 @@ export default function StudyTinoDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" data-testid="studytino-dashboard">
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
+    <div className="min-h-screen bg-gray-50 relative" data-testid="studytino-dashboard">
+      <GlobalWatermark />
+      <header className="sticky top-0 z-50 relative" style={{zIndex: 50}}>
+        {schoolData && (
+          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white px-4 py-1.5">
+            <div className="max-w-5xl mx-auto flex items-center justify-between text-[10px]">
+              <span className="font-medium truncate">{schoolData.name}</span>
+              <div className="hidden sm:flex items-center gap-3 text-blue-200">
+                {schoolData.phone && <span>{schoolData.phone}</span>}
+                {schoolData.email && <span>{schoolData.email}</span>}
+                {schoolData.board_type && <span className="bg-white/10 px-1.5 py-0.5 rounded text-white font-semibold">{schoolData.board_type}</span>}
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                <School className="w-5 h-5 text-blue-600" />
-              </div>
+              {(schoolData?.logo_url || schoolData?.logo) ? (
+                <img src={schoolData.logo_url || schoolData.logo} alt="" className="w-10 h-10 rounded-xl object-cover border border-blue-100" />
+              ) : (
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                  <School className="w-5 h-5 text-blue-600" />
+                </div>
+              )}
               <div>
-                <h1 className="font-semibold text-gray-800 text-sm">{profile?.school_name || 'Schooltino'}</h1>
-                <p className="text-xs text-gray-400">{profile?.class_name || 'Class'}</p>
+                <h1 className="font-semibold text-gray-800 text-sm">{schoolData?.name || profile?.school_name || 'StudyTino'}</h1>
+                <p className="text-xs text-gray-400">{profile?.class_name || 'Class'} | {profile?.student_name || user?.name || 'Student'}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -275,6 +294,7 @@ export default function StudyTinoDashboard() {
               <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-400 hover:bg-gray-50 rounded-xl"><LogOut className="w-5 h-5" /></Button>
             </div>
           </div>
+        </div>
         </div>
       </header>
 

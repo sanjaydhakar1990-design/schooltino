@@ -78,6 +78,12 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 - All core functionality preserved plus new modules
 
 ## Recent Changes
+- 2026-02-09: Global school branding & watermark v4:
+  - SchoolLogoWatermark: Refactored to use AuthContext directly (no extra API calls), added GlobalWatermark component
+  - Layout.js: GlobalWatermark added to main content area - school logo appears as watermark on all admin pages
+  - StudentDashboard: Added GlobalWatermark, school branding gradient bar (name, phone, email, board type), school logo in header
+  - UnifiedPortal (TeachTino): Added GlobalWatermark, school branding gradient bar with full details (logo, name, address, phone, email, reg number, board type)
+  - All three portals now show consistent school branding with logo, name, and contact info in headers
 - 2026-02-09: K-12 Suite redesign v3:
   - LoginPage: Tabbed feature navigation (10 tabs) matching NextOS K-12 Suite, K12Illustration component per tab, hero tagline "The Launchpad of 21st-Century Skills", circular infographic with 4 pillars, portal links in nav and footer
   - Layout header: School branding gradient bar with logo, name, full address, phone, email, registration number, board type badge
