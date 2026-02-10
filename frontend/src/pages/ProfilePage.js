@@ -183,21 +183,31 @@ export default function ProfilePage() {
   const uploadPhoto = async (imageData) => {
     setUploading(true);
     try {
-      const response = await axios.post(`${API}/api/ai-greeting/parent-photo/upload`, {
-        student_id: user?.id || 'staff',
-        school_id: schoolId || 'default',
-        photo_type: 'staff',
+      const endpoint = user?.role === 'student' 
+        ? `${API}/api/students/${user.id}/update-photo`
+        : `${API}/api/users/${user.id}/update-photo`;
+      
+      await axios.post(endpoint, {
         photo_data: imageData
-      });
+      }, { headers: { Authorization: `Bearer ${token}` } });
       
       setPhotoUrl(imageData);
-      setFaceEnrolled(true);
-      toast.success('Photo uploaded & face enrolled for AI greeting!');
+      toast.success('Profile photo updated!');
+
+      try {
+        await axios.post(`${API}/api/ai-greeting/parent-photo/upload`, {
+          student_id: user?.id || 'staff',
+          school_id: schoolId || 'default',
+          photo_type: user?.role === 'student' ? 'student' : 'staff',
+          photo_data: imageData
+        });
+        setFaceEnrolled(true);
+      } catch (faceErr) {
+        console.log('Face enrollment optional:', faceErr);
+      }
     } catch (error) {
-      // Still show success for demo since backend stores it
       setPhotoUrl(imageData);
-      setFaceEnrolled(true);
-      toast.success('Photo saved! Face enrolled for AI greeting.');
+      toast.success('Photo saved locally!');
     } finally {
       setUploading(false);
     }
@@ -238,8 +248,9 @@ export default function ProfilePage() {
             {/* Profile Photo Card */}
             <Card>
               <CardContent className="p-6 text-center">
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleFileUpload} />
                 {/* Avatar with Photo */}
-                <div className="relative inline-block mb-4">
+                <div className="relative inline-block mb-4 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                   {photoUrl ? (
                     <img 
                       src={photoUrl} 
@@ -251,20 +262,28 @@ export default function ProfilePage() {
                       {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                   )}
-                  
-                  {faceEnrolled && (
-                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                  <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {uploading ? (
+                      <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    ) : (
+                      <Camera className="w-8 h-8 text-white" />
+                    )}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                    {faceEnrolled ? (
                       <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
-                  )}
+                    ) : (
+                      <Camera className="w-4 h-4 text-white" />
+                    )}
+                  </div>
                 </div>
                 
                 <h2 className="text-lg font-bold text-slate-900">{user?.name}</h2>
                 <span className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${badge.color}`}>
                   {badge.label}
                 </span>
+                <p className="text-xs text-slate-400 mt-2">Photo change karne ke liye click karein</p>
                 
-                {/* Face Enrollment Status */}
                 {faceEnrolled ? (
                   <Badge className="mt-3 bg-green-100 text-green-700 block mx-auto w-fit">
                     <CheckCircle className="w-3 h-3 mr-1" />

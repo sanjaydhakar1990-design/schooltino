@@ -1730,22 +1730,32 @@ function AIPaperGeneratorTab() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="font-medium">Language</Label>
-              <div className="flex gap-2">
-                {['english', 'hindi'].map(lang => (
+              <Label className="font-medium">Paper Language (भाषा माध्यम)</Label>
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { value: 'english', label: 'English Medium', icon: '🇬🇧' },
+                  { value: 'hindi', label: 'Hindi Medium (हिंदी)', icon: '🇮🇳' },
+                  { value: 'bilingual', label: 'Bilingual (द्विभाषी)', icon: '🔄' }
+                ].map(lang => (
                   <button
-                    key={lang}
-                    onClick={() => setPaperForm(prev => ({ ...prev, language: lang }))}
-                    className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                      paperForm.language === lang
-                        ? 'bg-blue-600 text-white'
+                    key={lang.value}
+                    onClick={() => setPaperForm(prev => ({ ...prev, language: lang.value }))}
+                    className={`px-4 py-2 rounded-lg text-sm transition-all flex items-center gap-2 ${
+                      paperForm.language === lang.value
+                        ? 'bg-blue-600 text-white shadow-md'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    {lang === 'english' ? 'English' : 'Hindi'}
+                    <span>{lang.icon}</span>
+                    {lang.label}
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-gray-400">
+                {paperForm.language === 'hindi' ? 'Paper puri tarah Hindi me generate hoga' : 
+                 paperForm.language === 'bilingual' ? 'Questions English + Hindi dono me honge' : 
+                 'Paper will be generated fully in English'}
+              </p>
             </div>
           </div>
 

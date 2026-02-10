@@ -2059,6 +2059,79 @@ async def upload_school_photo(school_id: str, file: UploadFile = File(...), phot
     return {"message": "Photo uploaded", "url": photo_url, "type": photo_type}
 
 
+# ==================== STUDENT/STAFF PHOTO UPDATE ====================
+class ProfilePhotoRequest(BaseModel):
+    photo_data: str
+
+@api_router.post("/students/{student_id}/update-photo")
+async def update_student_photo(student_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin", "teacher", "student"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    student = await db.students.find_one({"id": student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    if request.photo_data.startswith("data:image"):
+        import base64 as b64mod
+        header, data = request.photo_data.split(",", 1)
+        ext = "jpg"
+        if "png" in header:
+            ext = "png"
+        file_name = f"student_{student_id}_{uuid.uuid4().hex[:8]}.{ext}"
+        os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
+        file_path = UPLOAD_DIR / "images" / file_name
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(b64mod.b64decode(data))
+        photo_url = f"/api/uploads/images/{file_name}"
+    else:
+        photo_url = request.photo_data
+    await db.students.update_one({"id": student_id}, {"$set": {"photo_url": photo_url}})
+    return {"message": "Photo updated", "photo_url": photo_url}
+
+@api_router.post("/staff/{staff_id}/update-photo")
+async def update_staff_photo(staff_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"] and current_user.get("id") != staff_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    employee = await db.employees.find_one({"id": staff_id})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    if request.photo_data.startswith("data:image"):
+        import base64 as b64mod
+        header, data = request.photo_data.split(",", 1)
+        ext = "jpg"
+        if "png" in header:
+            ext = "png"
+        file_name = f"staff_{staff_id}_{uuid.uuid4().hex[:8]}.{ext}"
+        os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
+        file_path = UPLOAD_DIR / "images" / file_name
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(b64mod.b64decode(data))
+        photo_url = f"/api/uploads/images/{file_name}"
+    else:
+        photo_url = request.photo_data
+    await db.employees.update_one({"id": staff_id}, {"$set": {"photo_url": photo_url}})
+    return {"message": "Photo updated", "photo_url": photo_url}
+
+@api_router.post("/users/{user_id}/update-photo")
+async def update_user_photo(user_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
+    if current_user.get("id") != user_id and current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if request.photo_data.startswith("data:image"):
+        import base64 as b64mod
+        header, data = request.photo_data.split(",", 1)
+        ext = "jpg"
+        if "png" in header:
+            ext = "png"
+        file_name = f"user_{user_id}_{uuid.uuid4().hex[:8]}.{ext}"
+        os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
+        file_path = UPLOAD_DIR / "images" / file_name
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(b64mod.b64decode(data))
+        photo_url = f"/api/uploads/images/{file_name}"
+    else:
+        photo_url = request.photo_data
+    await db.users.update_one({"id": user_id}, {"$set": {"photo_url": photo_url}})
+    return {"message": "Photo updated", "photo_url": photo_url}
+
 # ==================== LOGO UPDATE ENDPOINT ====================
 class LogoUpdateRequest(BaseModel):
     logo_url: str
@@ -4316,6 +4389,16 @@ LANGUAGE REQUIREMENT - STRICTLY HINDI:
 - Use proper Hindi scientific terms (e.g., 'ऑक्सीजन' not 'Oxygen', 'प्रकाश संश्लेषण' not 'Photosynthesis')
 - Example Hindi question: "प्रकाश संश्लेषण की प्रक्रिया को समझाइए।"
 - Example Hindi answer: "प्रकाश संश्लेषण वह प्रक्रिया है जिसमें पौधे सूर्य के प्रकाश का उपयोग करके..."
+"""
+        elif request.language == "bilingual":
+            lang_instruction = """
+LANGUAGE REQUIREMENT - BILINGUAL (ENGLISH + HINDI):
+- Write EVERY question in BOTH English AND Hindi
+- Format each question as: "English question / हिंदी में प्रश्न"
+- Write ALL answers in BOTH English AND Hindi
+- Write ALL MCQ options in BOTH languages
+- Example: "Explain the process of photosynthesis. / प्रकाश संश्लेषण की प्रक्रिया को समझाइए।"
+- Example answer: "Photosynthesis is the process... / प्रकाश संश्लेषण वह प्रक्रिया है..."
 """
         else:
             lang_instruction = """

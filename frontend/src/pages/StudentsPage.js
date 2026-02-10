@@ -97,6 +97,8 @@ export default function StudentsPage() {
   // Profile view states
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileStudent, setProfileStudent] = useState(null);
+  const [uploadingProfilePhoto, setUploadingProfilePhoto] = useState(false);
+  const profilePhotoInputRef = useRef(null);
   
   // Split view state
   const [splitViewStudent, setSplitViewStudent] = useState(null);
@@ -311,6 +313,33 @@ export default function StudentsPage() {
 
   const removePhoto = () => {
     setCapturedPhoto(null);
+  };
+
+  const handleProfilePhotoUpload = async (e, studentId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Photo size 5MB se kam honi chahiye');
+      return;
+    }
+    setUploadingProfilePhoto(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(`${API}/students/${studentId}/update-photo`, {
+          photo_data: event.target.result
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        setProfileStudent(prev => ({ ...prev, photo_url: response.data.photo_url }));
+        fetchStudents();
+        toast.success('Photo upload ho gayi!');
+      } catch (error) {
+        toast.error('Photo upload fail hua. Please try again.');
+      } finally {
+        setUploadingProfilePhoto(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -2372,15 +2401,28 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
           
           {profileStudent && (
             <div className="space-y-4">
+              <input type="file" ref={profilePhotoInputRef} className="hidden" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleProfilePhotoUpload(e, profileStudent.id)} />
               {/* Photo & Basic Header */}
               <div className="text-center bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-100">
                 <div className="flex justify-center mb-3">
-                  <div className="w-28 h-28 rounded-xl bg-white border-4 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
-                    {profileStudent.photo_url ? (
-                      <img src={profileStudent.photo_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-14 h-14 text-slate-300" />
-                    )}
+                  <div className="relative group cursor-pointer" onClick={() => profilePhotoInputRef.current?.click()}>
+                    <div className="w-28 h-28 rounded-xl bg-white border-4 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
+                      {profileStudent.photo_url ? (
+                        <img src={profileStudent.photo_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-14 h-14 text-slate-300" />
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      {uploadingProfilePhoto ? (
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      ) : (
+                        <Camera className="w-8 h-8 text-white" />
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                      <Camera className="w-4 h-4 text-white" />
+                    </div>
                   </div>
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900">{profileStudent.name}</h2>
