@@ -6,7 +6,7 @@
  * - Employee ID Card generation
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -16,7 +16,7 @@ import {
   Users, Plus, Search, Edit2, Trash2, UserCheck, UserX, Key,
   Shield, Loader2, Phone, Mail, Building, Award, Calendar,
   IndianRupee, CheckCircle, XCircle, Settings, Eye, EyeOff, CreditCard, Printer,
-  FileUp, Heart, Briefcase, GraduationCap, MapPin, User, Wallet
+  FileUp, Heart, Briefcase, GraduationCap, MapPin, User, Wallet, Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
 import EmployeeIDCard from '../components/EmployeeIDCard';
@@ -140,12 +140,16 @@ export default function EmployeeManagementPage() {
   
   // Form Tab state
   const [activeFormTab, setActiveFormTab] = useState('basic');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const photoInputRef = useRef(null);
+  const profilePhotoInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
     // Basic Info
     name: '',
     mobile: '',
     email: '',
+    photo_url: '',
     designation: 'teacher',
     department: '',
     joining_date: new Date().toISOString().split('T')[0],
@@ -279,11 +283,81 @@ export default function EmployeeManagementPage() {
     fetchEmployees();
   };
 
+  const handlePhotoUpload = async (file, employeeId = null) => {
+    if (!file) return;
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('Photo size must be under 5MB');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    
+    setUploadingPhoto(true);
+    try {
+      const token = localStorage.getItem('token');
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('school_id', schoolId);
+      
+      const res = await axios.post(`${API}/api/upload/photo`, fd, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const photoUrl = res.data?.url || res.data?.photo_url;
+      
+      if (employeeId) {
+        await axios.put(`${API}/api/employees/${employeeId}`, 
+          { photo_url: photoUrl, school_id: schoolId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success('Photo updated!');
+        fetchEmployees();
+        if (selectedProfile?.id === employeeId) {
+          setSelectedProfile(prev => ({ ...prev, photo_url: photoUrl }));
+        }
+      } else {
+        setFormData(prev => ({ ...prev, photo_url: photoUrl }));
+        toast.success('Photo uploaded!');
+      }
+    } catch (error) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Url = e.target.result;
+        if (employeeId) {
+          try {
+            const token = localStorage.getItem('token');
+            await axios.put(`${API}/api/employees/${employeeId}`, 
+              { photo_url: base64Url, school_id: schoolId },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success('Photo updated!');
+            fetchEmployees();
+            if (selectedProfile?.id === employeeId) {
+              setSelectedProfile(prev => ({ ...prev, photo_url: base64Url }));
+            }
+          } catch (err) {
+            toast.error('Failed to save photo');
+          }
+        } else {
+          setFormData(prev => ({ ...prev, photo_url: base64Url }));
+          toast.success('Photo ready!');
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
       mobile: '',
       email: '',
+      photo_url: '',
       address: '',
       designation: 'teacher',
       department: '',
@@ -311,6 +385,7 @@ export default function EmployeeManagementPage() {
       name: employee.name || '',
       mobile: employee.mobile || '',
       email: employee.email || '',
+      photo_url: employee.photo_url || '',
       address: employee.address || '',
       designation: employee.designation || 'teacher',
       department: employee.department || '',
@@ -764,14 +839,31 @@ export default function EmployeeManagementPage() {
           ) : (
             <div className="h-full overflow-y-auto">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 text-white">
+                <input 
+                  type="file" 
+                  ref={profilePhotoInputRef} 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files[0] && selectedProfile?.id) {
+                      handlePhotoUpload(e.target.files[0], selectedProfile.id);
+                    }
+                    e.target.value = '';
+                  }}
+                />
                 <div className="flex items-start gap-5">
-                  {selectedProfile.photo_url ? (
-                    <img src={selectedProfile.photo_url} alt={selectedProfile.name} className="w-24 h-24 rounded-full object-cover border-4 border-white/40 shadow-lg flex-shrink-0" />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold border-4 border-white/30 flex-shrink-0">
-                      {selectedProfile.name?.charAt(0)?.toUpperCase()}
+                  <div className="relative flex-shrink-0 group cursor-pointer" onClick={() => profilePhotoInputRef.current?.click()}>
+                    {selectedProfile.photo_url ? (
+                      <img src={selectedProfile.photo_url} alt={selectedProfile.name} className="w-24 h-24 rounded-full object-cover border-4 border-white/40 shadow-lg" />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold border-4 border-white/30">
+                        {selectedProfile.name?.charAt(0)?.toUpperCase()}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      {uploadingPhoto ? <Loader2 className="w-6 h-6 animate-spin" /> : <Camera className="w-6 h-6" />}
                     </div>
-                  )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-xl font-bold truncate">{selectedProfile.name}</h2>
                     <p className="text-blue-100 text-sm">{selectedProfile.designation}{selectedProfile.department ? ' • ' + selectedProfile.department : ''}</p>
@@ -1148,6 +1240,29 @@ export default function EmployeeManagementPage() {
               {activeFormTab === 'basic' && (
                 <div className="space-y-4 animate-in fade-in">
                   <h4 className="font-semibold text-slate-800 border-b pb-2">📋 Basic Information (मूल जानकारी)</h4>
+                  <div className="flex items-center gap-4 mb-2">
+                    <input type="file" ref={photoInputRef} className="hidden" accept="image/*" onChange={(e) => { if (e.target.files[0]) handlePhotoUpload(e.target.files[0]); e.target.value = ''; }} />
+                    <div 
+                      className="relative w-20 h-20 rounded-full border-2 border-dashed border-blue-300 flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group flex-shrink-0"
+                      onClick={() => photoInputRef.current?.click()}
+                    >
+                      {formData.photo_url ? (
+                        <img src={formData.photo_url} alt="Staff" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <Camera className="w-8 h-8 text-blue-400 group-hover:text-blue-600" />
+                      )}
+                      {uploadingPhoto && <div className="absolute inset-0 rounded-full bg-white/70 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-blue-600" /></div>}
+                      {formData.photo_url && (
+                        <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Camera className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-sm text-slate-500">
+                      <p className="font-medium text-slate-700">Staff Photo</p>
+                      <p>Click to upload (Max 5MB)</p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label>Name * (नाम)</Label>

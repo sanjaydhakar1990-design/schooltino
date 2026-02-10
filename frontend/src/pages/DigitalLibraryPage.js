@@ -98,7 +98,7 @@ export default function DigitalLibraryPage() {
       const [booksRes, ebooksRes, issuesRes] = await Promise.all([
         axios.get(`${API}/library/books?school_id=${schoolId}`, { headers }).catch(() => null),
         axios.get(`${API}/library/ebooks?school_id=${schoolId}`, { headers }).catch(() => null),
-        axios.get(`${API}/library/issues?school_id=${schoolId}`, { headers }).catch(() => null),
+        axios.get(`${API}/library/issued?school_id=${schoolId}`, { headers }).catch(() => null),
       ]);
       if (booksRes?.data?.length > 0) setBooks(booksRes.data);
       if (ebooksRes?.data?.length > 0) setEbooks(ebooksRes.data);

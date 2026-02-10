@@ -2007,6 +2007,28 @@ async def update_school(school_id: str, school: SchoolCreate, current_user: dict
     updated = await db.schools.find_one({"id": school_id}, {"_id": 0})
     return SchoolResponse(**updated)
 
+@api_router.post("/upload/photo")
+async def upload_generic_photo(file: UploadFile = File(...), school_id: str = Form(""), current_user: dict = Depends(get_current_user)):
+    """Upload a generic photo (staff, student, etc) and return URL"""
+    if current_user["role"] not in ["director", "admin", "principal", "vice_principal", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not authorized to upload photos")
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if file.content_type and file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Only image files (JPEG, PNG, WebP, GIF) are allowed")
+    os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
+    file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    if file_ext.lower() not in ["jpg", "jpeg", "png", "webp", "gif"]:
+        raise HTTPException(status_code=400, detail="Invalid file extension")
+    file_name = f"photo_{school_id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+    file_path = UPLOAD_DIR / "images" / file_name
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size must be under 5MB")
+    async with aiofiles.open(file_path, 'wb') as f:
+        await f.write(content)
+    photo_url = f"/api/uploads/images/{file_name}"
+    return {"url": photo_url, "photo_url": photo_url}
+
 @api_router.post("/schools/{school_id}/upload-photo")
 async def upload_school_photo(school_id: str, file: UploadFile = File(...), photo_type: str = "logo", current_user: dict = Depends(get_current_user)):
     """Upload school logo or main photo"""

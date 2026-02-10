@@ -14,8 +14,9 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '../components/ui/dialog';
-import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X, ToggleLeft, Link } from 'lucide-react';
+import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X, ToggleLeft, Link, Eye, EyeOff, Move, ZoomIn, RotateCcw, Save, CreditCard, FileText, Bell, Calendar as CalendarIcon, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
+import { Slider } from '../components/ui/slider';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -42,6 +43,28 @@ export default function SettingsPage() {
   const [removingLogoBg, setRemovingLogoBg] = useState(false);
   const logoInputRef = useRef(null);
 
+  const [watermarkSettings, setWatermarkSettings] = useState({
+    size: 50,
+    opacity: 15,
+    position: 'center',
+    offsetX: 0,
+    offsetY: 0,
+    rotation: 0,
+    enabled: true
+  });
+
+  const [applyTo, setApplyTo] = useState({
+    idCards: true,
+    notices: true,
+    calendar: true,
+    appHeader: true,
+    certificates: true,
+    feeBills: true,
+    appIcon: true
+  });
+
+  const [savingWatermark, setSavingWatermark] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -64,7 +87,6 @@ export default function SettingsPage() {
     { key: 'digital_library', label: 'Digital Library' },
     { key: 'live_classes', label: 'Live Classes' },
     { key: 'fee_management', label: 'Fee Management' },
-    { key: 'notices', label: 'Notices' },
     { key: 'communication_hub', label: 'Communication Hub' },
     { key: 'transport', label: 'Transport' },
     { key: 'inventory', label: 'Inventory' },
@@ -89,27 +111,34 @@ export default function SettingsPage() {
   const [savingModules, setSavingModules] = useState(false);
 
   const loadModuleVisibility = async () => {
+    const defaults = defaultVisibility();
+    let loaded = null;
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API}/settings/module-visibility`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data && Object.keys(response.data).length > 0) {
-        setModuleVisibility(response.data);
-        localStorage.setItem('module_visibility_settings', JSON.stringify(response.data));
-        return;
+        loaded = response.data;
       }
     } catch (error) {
       console.log('Backend module visibility not available, using local');
     }
-    try {
-      const saved = localStorage.getItem('module_visibility_settings');
-      if (saved) {
-        setModuleVisibility(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.error('Failed to load module visibility');
+    if (!loaded) {
+      try {
+        const saved = localStorage.getItem('module_visibility_settings');
+        if (saved) loaded = JSON.parse(saved);
+      } catch (e) {}
     }
+    const merged = { ...defaults };
+    if (loaded) {
+      Object.keys(loaded).forEach(key => {
+        merged[key] = { ...defaults[key], ...loaded[key] };
+      });
+    }
+    setModuleVisibility(merged);
+    localStorage.setItem('module_visibility_settings', JSON.stringify(merged));
+    window.dispatchEvent(new Event('module_visibility_changed'));
   };
 
   const toggleModule = (moduleKey, portal) => {
@@ -179,6 +208,12 @@ export default function SettingsPage() {
       });
       if (response.data?.logo_url) {
         setLogoUrl(response.data.logo_url);
+      }
+      if (response.data?.watermark_settings) {
+        setWatermarkSettings(prev => ({ ...prev, ...response.data.watermark_settings }));
+      }
+      if (response.data?.logo_apply_to) {
+        setApplyTo(prev => ({ ...prev, ...response.data.logo_apply_to }));
       }
     } catch (error) {
       console.error('Failed to fetch school logo');
@@ -288,6 +323,40 @@ export default function SettingsPage() {
       setRemovingLogoBg(false);
     }
   };
+
+  const saveWatermarkSettings = async () => {
+    setSavingWatermark(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (logoUrl) {
+        await axios.post(`${API}/schools/${schoolId}/update-logo`, {
+          logo_url: logoUrl
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      await axios.post(`${API}/schools/${schoolId}/watermark-settings`, {
+        watermark_settings: watermarkSettings,
+        logo_apply_to: applyTo
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Watermark settings saved successfully!');
+    } catch (error) {
+      console.error('Save watermark error:', error);
+      toast.error('Failed to save watermark settings');
+    } finally {
+      setSavingWatermark(false);
+    }
+  };
+
+  const positionOptions = [
+    { value: 'center', label: 'Center', icon: '⬛' },
+    { value: 'top-left', label: 'Top Left', icon: '↖' },
+    { value: 'top-right', label: 'Top Right', icon: '↗' },
+    { value: 'bottom-left', label: 'Bottom Left', icon: '↙' },
+    { value: 'bottom-right', label: 'Bottom Right', icon: '↘' }
+  ];
 
   const handleSignatureUpload = async (e) => {
     const file = e.target.files[0];
@@ -474,149 +543,284 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* School Logo Upload - Director/Principal only */}
+      {/* School Logo & Watermark Settings - Director/Principal only */}
       {(user?.role === 'director' || user?.role === 'principal') && (
         <div className="stat-card border-2 border-indigo-100 bg-gradient-to-r from-indigo-50 to-white">
-          <div className="flex items-center gap-3 mb-4">
-            <Camera className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-lg font-semibold text-slate-900">🏫 School Logo Upload</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Camera className="w-5 h-5 text-indigo-600" />
+              <h2 className="text-lg font-semibold text-slate-900">School Logo & Watermark Settings</h2>
+            </div>
+            <Button
+              onClick={saveWatermarkSettings}
+              disabled={savingWatermark}
+              className="bg-indigo-600 hover:bg-indigo-700"
+              data-testid="save-watermark-settings"
+            >
+              {savingWatermark ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+              Save All Settings
+            </Button>
           </div>
-          <p className="text-sm text-slate-500 mb-4">
-            School ka logo upload karein - AI automatically background remove kar dega. Ye logo Calendar, Notice, Admit Card sab jagah dikhega.
-          </p>
-          
-          <div className="flex items-start gap-6">
-            {/* Logo Preview */}
-            <div className="shrink-0">
-              <div className="w-32 h-32 border-2 border-dashed border-indigo-300 rounded-xl flex items-center justify-center overflow-hidden bg-white relative">
-                {logoUrl ? (
-                  <>
-                    <img src={logoUrl} alt="School Logo" className="w-full h-full object-contain p-2" />
-                    <button 
-                      onClick={() => setLogoUrl(null)}
-                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-center">
-                    <Camera className="w-10 h-10 text-slate-300 mx-auto mb-1" />
-                    <span className="text-xs text-slate-400">No Logo</span>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Logo Upload & Apply Settings */}
+            <div className="space-y-6">
+              {/* Logo Upload Card */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <Image className="w-5 h-5 text-indigo-600" />
+                  School Logo
+                </h3>
+
+                <div className="flex flex-col items-center mb-4">
+                  <div className="w-40 h-40 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center overflow-hidden bg-slate-50 relative">
+                    {logoUrl ? (
+                      <>
+                        <img src={logoUrl} alt="School Logo" className="w-full h-full object-contain p-2" />
+                        <button
+                          onClick={() => setLogoUrl(null)}
+                          className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center">
+                        <Image className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                        <span className="text-sm text-slate-400">No Logo</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+
+                <div className="space-y-3">
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {uploadingLogo ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-2" />
+                    )}
+                    {logoUrl ? 'Change Logo' : 'Upload Logo'}
+                  </Button>
+
+                  {logoUrl && (
+                    <Button
+                      onClick={handleAIRemoveLogoBg}
+                      disabled={removingLogoBg || uploadingLogo}
+                      variant="outline"
+                      className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
+                    >
+                      {removingLogoBg ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 mr-2" />
+                      )}
+                      AI Remove Background
+                    </Button>
+                  )}
+                </div>
+
+                <p className="text-xs text-slate-500 mt-3">
+                  PNG/JPG format, Max 5MB. Square logos work best.
+                </p>
+              </div>
+
+              {/* Logo Apply Settings */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-base font-semibold text-slate-900 mb-4">
+                  Logo Apply Settings
+                </h3>
+                <p className="text-sm text-slate-500 mb-4">
+                  Select where the logo should appear
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { key: 'idCards', label: 'ID Cards', icon: CreditCard },
+                    { key: 'notices', label: 'Notices', icon: Bell },
+                    { key: 'calendar', label: 'Calendar', icon: CalendarIcon },
+                    { key: 'appHeader', label: 'App Header', icon: SettingsIcon },
+                    { key: 'certificates', label: 'Certificates', icon: FileText },
+                    { key: 'feeBills', label: 'Fee Bills', icon: FileText },
+                    { key: 'appIcon', label: 'App Icon', icon: Smartphone }
+                  ].map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setApplyTo(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
+                        className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                          applyTo[item.key]
+                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                            : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                        }`}
+                        data-testid={`apply-${item.key}`}
+                      >
+                        {applyTo[item.key] ? (
+                          <Check className="w-4 h-4 text-indigo-600" />
+                        ) : (
+                          <Icon className="w-4 h-4" />
+                        )}
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-            
-            {/* Upload Controls */}
-            <div className="flex-1 space-y-3">
-              {/* Upload Button */}
-              <div>
-                <input
-                  ref={logoInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                />
-                <Button 
-                  onClick={() => logoInputRef.current?.click()}
-                  disabled={uploadingLogo}
-                  variant="outline"
-                  className="w-full"
+
+            {/* Right Column - Watermark Preview & Controls */}
+            <div className="space-y-6">
+              {/* Watermark Preview */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <Eye className="w-5 h-5 text-indigo-600" />
+                  Watermark Preview
+                </h3>
+
+                <div
+                  className="w-full h-48 bg-white border-2 border-slate-200 rounded-lg relative overflow-hidden"
+                  style={{ backgroundColor: '#f8fafc' }}
                 >
-                  {uploadingLogo ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Upload className="w-4 h-4 mr-2" />
-                  )}
-                  {logoUrl ? 'Change Logo' : 'Upload Logo'}
-                </Button>
-              </div>
-              
-              {/* AI Background Remove Button */}
-              {logoUrl && (
-                <Button 
-                  onClick={handleAIRemoveLogoBg}
-                  disabled={removingLogoBg || uploadingLogo}
-                  variant="outline"
-                  className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
-                >
-                  {removingLogoBg ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Sparkles className="w-4 h-4 mr-2" />
-                  )}
-                  ✨ AI Remove Background
-                </Button>
-              )}
-              
-              {/* Tips */}
-              <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
-                <p className="font-medium mb-1">💡 Tips:</p>
-                <ul className="space-y-0.5 text-blue-600">
-                  <li>• PNG/JPG format, Max 5MB</li>
-                  <li>• Square logo best results deta hai</li>
-                  <li>• AI automatically background hata dega</li>
-                </ul>
-              </div>
-              
-              {/* Logo Apply Options - BUTTONS instead of checkboxes */}
-              {logoUrl && (
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-3 border border-indigo-200 mt-3">
-                  <p className="font-medium text-indigo-800 text-xs mb-2">📍 Logo Apply Settings:</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button 
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs hover:bg-indigo-700 transition-all"
-                      onClick={() => toast.success('✅ Logo set on ID Cards!')}
-                      data-testid="set-logo-idcard-btn"
-                    >
-                      🪪 Set to ID Cards
-                    </button>
-                    <button 
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-purple-600 text-white rounded-lg text-xs hover:bg-purple-700 transition-all"
-                      onClick={() => toast.success('✅ Logo set as Watermark!')}
-                      data-testid="set-logo-watermark-btn"
-                    >
-                      🖼️ Set as Watermark
-                    </button>
-                    <button 
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition-all"
-                      onClick={() => toast.success('✅ Logo set on Notices!')}
-                      data-testid="set-logo-notices-btn"
-                    >
-                      📢 Set on Notices
-                    </button>
-                    <button 
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600 text-white rounded-lg text-xs hover:bg-orange-700 transition-all"
-                      onClick={() => toast.success('✅ Logo set on Calendar!')}
-                      data-testid="set-logo-calendar-btn"
-                    >
-                      📅 Set on Calendar
-                    </button>
-                    <button 
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-slate-700 text-white rounded-lg text-xs hover:bg-slate-800 transition-all col-span-2"
-                      onClick={() => toast.success('✅ Logo set on App Header!')}
-                      data-testid="set-logo-header-btn"
-                    >
-                      🏠 Set on App Header (School Name ke saath)
-                    </button>
+                  <div className="absolute inset-0 p-4">
+                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-2">Sample Document</div>
+                    <div className="h-2 w-3/4 bg-slate-200 rounded mb-2"></div>
+                    <div className="h-2 w-1/2 bg-slate-200 rounded mb-4"></div>
+                    <div className="h-2 w-full bg-slate-100 rounded mb-1"></div>
+                    <div className="h-2 w-full bg-slate-100 rounded mb-1"></div>
+                    <div className="h-2 w-2/3 bg-slate-100 rounded"></div>
                   </div>
-                  <p className="text-[10px] text-green-600 mt-2 font-medium">
-                    ✅ Logo automatically sab jagah show ho raha hai by default!
-                  </p>
-                  
-                  {/* Advanced Watermark Settings Link */}
-                  <a 
-                    href="/app/logo-settings"
-                    className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg"
-                    data-testid="advanced-watermark-settings-link"
-                  >
-                    ⚙️ Advanced Watermark Settings
-                    <span className="text-xs opacity-80">(Size, Position, Visibility)</span>
-                  </a>
+
+                  {logoUrl && watermarkSettings.enabled && (
+                    <div
+                      className="absolute pointer-events-none"
+                      style={{
+                        width: `${watermarkSettings.size}%`,
+                        height: `${watermarkSettings.size}%`,
+                        opacity: watermarkSettings.opacity / 100,
+                        transform: `translate(${watermarkSettings.offsetX}%, ${watermarkSettings.offsetY}%) rotate(${watermarkSettings.rotation}deg)`,
+                        ...(watermarkSettings.position === 'center' && { top: '50%', left: '50%', transform: `translate(-50%, -50%) translate(${watermarkSettings.offsetX}%, ${watermarkSettings.offsetY}%) rotate(${watermarkSettings.rotation}deg)` }),
+                        ...(watermarkSettings.position === 'top-left' && { top: '10%', left: '10%' }),
+                        ...(watermarkSettings.position === 'top-right' && { top: '10%', right: '10%' }),
+                        ...(watermarkSettings.position === 'bottom-left' && { bottom: '10%', left: '10%' }),
+                        ...(watermarkSettings.position === 'bottom-right' && { bottom: '10%', right: '10%' })
+                      }}
+                    >
+                      <img src={logoUrl} alt="Watermark" className="w-full h-full object-contain" />
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* Watermark Controls */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-slate-900">
+                    Watermark Controls
+                  </h3>
+                  <button
+                    onClick={() => setWatermarkSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      watermarkSettings.enabled
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {watermarkSettings.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {watermarkSettings.enabled ? 'On' : 'Off'}
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="flex items-center gap-2">
+                        <ZoomIn className="w-4 h-4 text-slate-500" />
+                        Size
+                      </Label>
+                      <span className="text-sm font-medium text-indigo-600">{watermarkSettings.size}%</span>
+                    </div>
+                    <Slider
+                      value={[watermarkSettings.size]}
+                      onValueChange={(v) => setWatermarkSettings(prev => ({ ...prev, size: v[0] }))}
+                      min={10}
+                      max={100}
+                      step={5}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-slate-500" />
+                        Opacity / Visibility
+                      </Label>
+                      <span className="text-sm font-medium text-indigo-600">{watermarkSettings.opacity}%</span>
+                    </div>
+                    <Slider
+                      value={[watermarkSettings.opacity]}
+                      onValueChange={(v) => setWatermarkSettings(prev => ({ ...prev, opacity: v[0] }))}
+                      min={5}
+                      max={50}
+                      step={5}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="flex items-center gap-2 mb-2">
+                      <Move className="w-4 h-4 text-slate-500" />
+                      Position
+                    </Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {positionOptions.map(pos => (
+                        <button
+                          key={pos.value}
+                          onClick={() => setWatermarkSettings(prev => ({ ...prev, position: pos.value }))}
+                          className={`p-2 rounded-lg border-2 text-center transition-all ${
+                            watermarkSettings.position === pos.value
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                              : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <span className="text-lg">{pos.icon}</span>
+                          <div className="text-xs mt-1">{pos.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setWatermarkSettings({
+                      size: 50,
+                      opacity: 15,
+                      position: 'center',
+                      offsetX: 0,
+                      offsetY: 0,
+                      rotation: 0,
+                      enabled: true
+                    })}
+                    className="w-full"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset to Default
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

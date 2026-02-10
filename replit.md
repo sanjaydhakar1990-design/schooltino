@@ -8,7 +8,12 @@ Schooltino is a comprehensive, AI-powered school management platform inspired by
 - Reduced from 85+ pages to ~30 clean pages
 - Simplified sidebar from 40+ items to 20 flat navigation items (no groups)
 - Removed: Prayer System, Hostel, E-Store, Health Module, Website Integration, Mobile App page, Voice Assistant, multiple duplicate dashboards/pages, Tally Integration, Storage Backup, and ~55 other legacy pages
-- Created: AIToolsPage (consolidated Event Designer + AI Paper + Calendar AI), CCTVPage (standalone module)
+- Created: AIToolsPage (2 tabs: AI Content Studio with 5 sub-tabs + Event Designer with templates/styles/preview), CCTVPage (standalone module)
+- **AI Tools rebuilt**: AI Content Studio (Admission Pamphlet, Topper Banner, Event Poster, Activity Banner, AI Writer) + Event Designer (templates, styles, design preview, print/download/WhatsApp share)
+- **Logo & Watermark Settings**: Full watermark controls (size, opacity, position, enable/disable) + logo apply-to settings (ID Cards, Notices, Calendar, App Header, Certificates, Fee Bills, App Icon) + visual watermark preview
+- **Staff Photo Upload**: Camera icon overlay on profile view + photo upload in add/edit form + backend /api/upload/photo endpoint with auth/validation
+- **Digital Library fixed**: Corrected API endpoint mismatch (issues → issued)
+- **Removed Notices** from MODULE_LIST (no sidebar item for it)
 - Moved 55 legacy pages to `frontend/src/pages/legacy/`
 - Updated routes: `/app/staff`, `/app/fees`, `/app/admissions`, `/app/exams`, `/app/timetable`, `/app/library`, `/app/communication`, `/app/calendar`, `/app/analytics`, `/app/ai-tools`, `/app/cctv`
 - Clean Layout with school branding header (logo + name + contact info)
