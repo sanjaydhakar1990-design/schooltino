@@ -1,57 +1,87 @@
 # Schooltino - Smart School Management System
 
 ## Overview
-Schooltino is a comprehensive, AI-powered school management platform designed to automate and streamline all aspects of school operations, from student and staff management to finance, attendance, and communication. It aims to provide a secure, integrated, and user-friendly experience, embracing cloud-first and AI-enabled principles. The platform includes a full suite of features supporting student admissions, marketing campaigns, fee management, AI-powered attendance and paper generation, and extensive communication tools, with dedicated portals for Admin, Teachers, and Students/Parents.
+Schooltino is a comprehensive, AI-powered school management platform inspired by NextOS K-12 Suite. It features a clean, simplified architecture with ~25 core modules across three portals (SchoolTino Admin, TeachTino Teachers, StudyTino Students/Parents). The platform covers student/staff management, finance, attendance, communication, and AI tools.
+
+## Recent Changes (Feb 2026)
+- **MAJOR REBUILD (Option B)**: Fresh start rebuild to match NextOS K-12 style
+- Reduced from 85+ pages to ~30 clean pages
+- Simplified sidebar from 40+ items to 20 flat navigation items (no groups)
+- Removed: Prayer System, Hostel, E-Store, Health Module, Website Integration, Mobile App page, Voice Assistant, multiple duplicate dashboards/pages, Tally Integration, Storage Backup, and ~55 other legacy pages
+- Created: AIToolsPage (consolidated Event Designer + AI Paper + Calendar AI), CCTVPage (standalone module)
+- Moved 55 legacy pages to `frontend/src/pages/legacy/`
+- Updated routes: `/app/staff`, `/app/fees`, `/app/admissions`, `/app/exams`, `/app/timetable`, `/app/library`, `/app/communication`, `/app/calendar`, `/app/analytics`, `/app/ai-tools`, `/app/cctv`
+- Clean Layout with school branding header (logo + name + contact info)
+- Removed GlobalWatermark from Layout (cleaner look)
+- Removed CreditCard dropdown from header
 
 ## User Preferences
-I prefer detailed explanations.
-I want iterative development.
-Ask before making major changes.
+- Prefers detailed explanations
+- Wants iterative development
+- Ask before making major changes
+- NextOS-style clean, simple UI
+- Per-student subscription pricing model planned
+- Credit system discussion paused - focus on UI/UX
 
 ## System Architecture
 
 ### UI/UX Decisions
-The design is inspired by the NextOS K-12 Suite, featuring a blue/purple gradient theme for hero sections and sidebars across all portals (Schooltino Admin, TeachTino, StudyTino). Key elements include:
-- Tabbed feature navigation on login pages and within modules.
-- Dark sidebar with a glass-effect search and translucent styles.
-- Consistent school branding in headers with logo, name, address, contact, and registration details.
-- Systematic module groups on dashboards (Academic, Administration, Communication & Tools, AI & Infrastructure).
-- Use of Radix UI and Shadcn/ui patterns for UI components.
-- Global watermark of the school logo on admin pages.
+NextOS K-12 inspired design:
+- Clean flat sidebar navigation (20 items max, no nested groups)
+- Dark gradient sidebar (slate-900 to indigo-950)
+- School branding header: logo, name, address, contact, registration
+- Card-based module layout on dashboard
+- Tino AI chat floating panel (accessible from header)
+- Notification bell in header
 
-### Technical Implementations
-- **Frontend**: React 19 with Create React App + CRACO, styled using Tailwind CSS.
-- **Backend**: Python FastAPI, utilizing JWT-based authentication.
-- **Database**: MongoDB with Motor async driver.
-- **API Proxy**: Frontend development server proxies `/api` requests to the backend using `setupProxy.js`.
-- **Core Functionality**:
-    - **Multi-portal System**: Three interconnected portals (Schooltino, TeachTino, StudyTino) sharing school data via `AuthContext`.
-    - **Feature Parity**: Comprehensive feature set covering admission, finance, HR, academics, communication, and AI tools.
-    - **AI Integration**: AI-powered features for chat, paper generation, and staff geo-facial attendance.
-    - **Credit System**: Integrated credit management for AI features and communication, with Razorpay for recharge.
-    - **PWA Support**: Progressive Web App capabilities across all portals.
-    - **Modular Design**: Features are structured into logical groups and toggleable modules.
+### Portal Structure
+1. **SchoolTino** (Admin - `/app/*`) - 22 modules:
+   Dashboard, Students, Staff, Classes, Attendance, Fees, Admissions, Exams, Timetable, Library, Homework, Live Classes, Communication, Front Office, Transport, Calendar, Analytics, AI Tools, CCTV, Inventory (optional), Multi-Branch, Settings
 
-### Feature Specifications
-- **Admission & CRM**: Student admission, lead tracking, follow-ups, campaign analytics.
-- **Staff Management**: Employee management with integrated permissions and AI staff geo-facial attendance.
-- **Finance**: Fee management, online payments (Razorpay), Tally integration, Student Wallet.
-- **Academics**: Exam & Report Card management (6 tabs), Homework & Assignment, Timetable, Digital Library, Live Classes, Course Management.
-- **Communication**: SMS & WhatsApp integration, event triggers, surveys, School Feed (social activity).
-- **AI & Tools**: AI Paper Generator, Tino AI Chat, Biometric integration.
-- **Infrastructure**: CCTV management, Transport management (NFC & GPS), Inventory, Hostel Management, Visit Management (OTP approval), Multi-Branch Management.
-- **E-commerce**: School e-Store.
+2. **TeachTino** (Teachers - `/portal`) - 10 modules:
+   Dashboard, Classes, Attendance, Homework, Exams, Live Classes, Timetable, Feed, Leave, Profile
+
+3. **StudyTino** (Students - `/student-dashboard`) - 10 modules:
+   Dashboard, Attendance, Fees, Results, Homework, Live Classes, Timetable, Feed, Library, Profile
+
+### Technical Stack
+- **Frontend**: React 19 + Create React App + CRACO + Tailwind CSS
+- **Backend**: Python FastAPI + JWT authentication
+- **Database**: MongoDB with Motor async driver
+- **API Proxy**: setupProxy.js proxies `/api` to backend on port 8000
+- **UI Components**: Radix UI / Shadcn patterns
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **Notifications**: Sonner toast
+
+### File Structure
+```
+frontend/src/
+├── App.js (clean routing - ~30 routes)
+├── context/AuthContext.js (auth + school data)
+├── components/
+│   ├── Layout.js (header + sidebar + content shell)
+│   ├── Sidebar.js (20 flat nav items)
+│   └── ui/ (Radix/Shadcn components)
+├── pages/ (active ~30 pages)
+│   ├── AIToolsPage.js (consolidated: Paper + Event + Calendar)
+│   ├── CCTVPage.js (standalone CCTV integration)
+│   └── legacy/ (55+ removed pages - archived)
+backend/
+├── server.py (main FastAPI app)
+├── routes/ (modular API routes)
+└── core/database.py (MongoDB connection)
+```
+
+### Key Modules
+- **AI Tools**: Consolidated module with tabs for AI Paper Generator, Event Designer, Calendar AI
+- **CCTV Integration**: Standalone camera management module
+- **Settings**: Merged School Profile + Logo/Branding + Permissions (single page)
+- **Communication Hub**: Merged SMS + WhatsApp + Notices + Events
+- **Inventory**: Optional/toggleable module
 
 ## External Dependencies
 - **Database**: MongoDB
 - **Payment Gateway**: Razorpay
-- **AI/LLM Providers**:
-    - Sarvam API (for Tino AI Chat)
-    - Anthropic Claude API (for AI Paper Generator)
-- **External Integrations**:
-    - Tally (for accounting sync)
-    - WhatsApp API
-    - SMS Gateway Providers
-    - CCTV Systems
-    - GPS and NFC tracking hardware/software
-    - Various EdTech tools and content libraries
+- **AI/LLM Providers**: Sarvam API (Tino AI Chat), Anthropic Claude API (AI Paper)
+- **Planned**: Sarvam for AI Paper (replacing Claude), Google Gemini for Event Designer (free)
