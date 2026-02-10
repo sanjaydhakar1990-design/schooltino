@@ -151,7 +151,9 @@ If students recharge ₹20 each:
 # ══════════════════════════════════════════
 
 CREDIT_COSTS = {
-    # AI Features
+    # AI Features (3x markup over actual API cost)
+    "tino_ai_chat":          3,
+    "ai_paper_generate":     15,
     "ai_study_chat":         2,
     "ai_teacher_assistant":  3,
     "ai_auto_timetable":     10,
@@ -590,6 +592,80 @@ async def verify_personal_pack(req: PurchasePersonalPack):
         "credits_added": pack["credits"],
         "amount_paid": pack["price"]
     }
+
+async def deduct_credits_internal(user_id: str, school_id: str, feature: str, count: int = 1, description: str = ""):
+    """
+    Internal helper to deduct credits from code (not via API).
+    Returns dict with success, credits_used, warning, remaining info.
+    Same priority logic: personal first -> school -> soft limit.
+    """
+    cost_per_use = CREDIT_COSTS.get(feature, 1)
+    total_cost = cost_per_use * count
+
+    if total_cost == 0:
+        return {"success": True, "credits_used": 0, "message": "Free feature"}
+
+    personal = await db.personal_credits.find_one({
+        "user_id": user_id,
+        "school_id": school_id
+    })
+    school = await db.school_credits.find_one({"school_id": school_id})
+
+    personal_avail = personal.get("available_credits", 0) if personal else 0
+    school_avail = school.get("available_credits", 0) if school else 0
+
+    used_from_personal = 0
+    used_from_school = 0
+    warning = None
+
+    if personal_avail >= total_cost:
+        used_from_personal = total_cost
+        await db.personal_credits.update_one(
+            {"user_id": user_id, "school_id": school_id},
+            {"$inc": {"available_credits": -total_cost, "used_credits": total_cost}}
+        )
+        if personal_avail - total_cost <= 10:
+            warning = f"Only {personal_avail - total_cost} personal credits left! Recharge soon."
+    elif personal_avail + school_avail >= total_cost:
+        used_from_personal = personal_avail
+        used_from_school = total_cost - personal_avail
+        if personal:
+            await db.personal_credits.update_one(
+                {"user_id": user_id, "school_id": school_id},
+                {"$inc": {"available_credits": -used_from_personal, "used_credits": used_from_personal}}
+            )
+        await db.school_credits.update_one(
+            {"school_id": school_id},
+            {"$inc": {"available_credits": -used_from_school, "used_credits": used_from_school}}
+        )
+        warning = f"Personal credits finished. Used {used_from_school} from school pool."
+    else:
+        warning = f"Credits low! Personal: {personal_avail}, School: {school_avail}. Recharge needed!"
+
+    await db.credit_transactions.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "school_id": school_id,
+        "type": "usage",
+        "feature": feature,
+        "credits_used": total_cost,
+        "used_from_personal": used_from_personal,
+        "used_from_school": used_from_school,
+        "count": count,
+        "description": description or f"Used {feature}",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    return {
+        "success": True,
+        "credits_used": total_cost,
+        "used_from_personal": used_from_personal,
+        "used_from_school": used_from_school,
+        "remaining_personal": max(0, personal_avail - used_from_personal),
+        "remaining_school": max(0, school_avail - used_from_school),
+        "warning": warning
+    }
+
 
 # ══════════════════════════════════════════
 #  POST /dual-credits/use (DUAL PRIORITY)

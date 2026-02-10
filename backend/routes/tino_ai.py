@@ -1,6 +1,7 @@
 """
 Tino AI Command Center - Central AI Assistant for Schooltino
 Uses Sarvam API for cost-effective Hindi/English AI chat
+Credit integrated: 3 credits per chat (3x API cost markup)
 """
 
 import os
@@ -9,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List
 from core.database import db
+from routes.dual_credits import deduct_credits_internal
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -136,7 +138,13 @@ async def get_school_context(school_id: str) -> dict:
 
 @router.post("/chat", response_model=TinoResponse)
 async def chat_with_tino(request: TinoMessage):
-    """Chat with AI Tino using Sarvam API"""
+    """Chat with AI Tino using Sarvam API - requires user_id for credit deduction"""
+    if not request.user_id or not request.school_id:
+        return TinoResponse(
+            response="Please login to use Tino AI.",
+            action_taken="auth_required"
+        )
+    
     try:
         message_lower = request.message.lower()
         blocked_keywords = [
@@ -224,7 +232,17 @@ Current School Context:
                     action_taken="empty_response"
                 )
             
+            credit_result = await deduct_credits_internal(
+                user_id=request.user_id,
+                school_id=request.school_id,
+                feature="tino_ai_chat",
+                count=1,
+                description="Tino AI Chat"
+            )
+            
             suggestions = []
+            if credit_result and credit_result.get("warning"):
+                suggestions.append(credit_result["warning"])
             if context.get('fee_defaulters', 0) > 0:
                 suggestions.append("Fee defaulters ki list dekhein")
             if context.get('pending_leaves', 0) > 0:
@@ -239,9 +257,17 @@ Current School Context:
             ]
             suggestions.extend([s for s in default_suggestions if s not in suggestions][:2])
             
+            credits_info = {}
+            if credit_result:
+                credits_info = {
+                    "credits_used": credit_result.get("credits_used", 0),
+                    "remaining_personal": credit_result.get("remaining_personal", 0),
+                    "remaining_school": credit_result.get("remaining_school", 0)
+                }
+            
             return TinoResponse(
                 response=ai_response,
-                data=context,
+                data={**context, **credits_info},
                 suggestions=suggestions[:4],
                 action_taken="sarvam_response"
             )

@@ -209,7 +209,18 @@ export const Layout = () => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setChatMessages(prev => [...prev, { role: 'assistant', text: res.data?.response || 'No response' }]);
+      const aiText = res.data?.response || 'No response';
+      const creditsUsed = res.data?.data?.credits_used;
+      const creditInfo = creditsUsed ? `\n\n💳 ${creditsUsed} credits used` : '';
+      setChatMessages(prev => [...prev, { role: 'assistant', text: aiText + creditInfo }]);
+      if (creditsUsed && user?.school_id && user?.id) {
+        try {
+          const balRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/dual-credits/balance/${user.school_id}/${user.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setCreditBalance(balRes.data?.total_available ?? creditBalance);
+        } catch (_) {}
+      }
     } catch (err) {
       setChatMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, I could not process your request right now.' }]);
     } finally {
@@ -243,10 +254,10 @@ export const Layout = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {schoolLogo ? (
-                  <img src={schoolLogo} alt={schoolName} className="w-10 h-10 rounded-lg object-cover bg-white/10 p-0.5" />
+                  <img src={schoolLogo} alt={schoolName} className="w-12 h-12 rounded-lg object-cover bg-white/10 p-0.5" />
                 ) : (
-                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                    <GraduationCap className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center">
+                    <GraduationCap className="w-7 h-7 text-white" />
                   </div>
                 )}
                 <div>
@@ -258,19 +269,21 @@ export const Layout = () => {
                   )}
                 </div>
               </div>
-              <div className="hidden md:flex items-center gap-4 text-xs text-blue-200">
+              <div className="hidden md:flex flex-col items-end gap-0.5 text-[11px] text-blue-200">
                 {schoolData?.phone && (
                   <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{schoolData.phone}</span>
                 )}
                 {schoolData?.email && (
                   <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{schoolData.email}</span>
                 )}
-                {schoolData?.registration_number && (
-                  <span className="flex items-center gap-1"><Hash className="w-3 h-3" />Reg: {schoolData.registration_number}</span>
-                )}
-                {schoolData?.board_type && (
-                  <span className="bg-white/10 px-2 py-0.5 rounded text-white text-[10px] font-semibold">{schoolData.board_type}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {schoolData?.registration_number && (
+                    <span className="flex items-center gap-1"><Hash className="w-3 h-3" />Reg: {schoolData.registration_number}</span>
+                  )}
+                  {schoolData?.board_type && (
+                    <span className="bg-white/10 px-2 py-0.5 rounded text-white text-[10px] font-semibold">{schoolData.board_type}</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

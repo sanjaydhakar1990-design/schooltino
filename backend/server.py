@@ -79,7 +79,7 @@ from routes.tino_voice import router as tino_voice_router
 from routes.did_avatar import router as did_avatar_router
 from routes.documents import router as documents_router
 from routes.bulk_import import router as bulk_import_router
-from routes.dual_credits import router as dual_credits_router
+from routes.dual_credits import router as dual_credits_router, deduct_credits_internal
 from routes.syllabus_sync import router as syllabus_sync_router
 from routes.branches import router as branches_router
 from routes.staff_attendance import router as staff_attendance_router
@@ -4738,6 +4738,20 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
         # Save to DB
         await db.generated_papers.insert_one(paper_data)
         await log_audit(current_user["id"], "generate", "ai_papers", {"paper_id": paper_data["id"], "subject": request.subject})
+        
+        # Deduct credits (15 credits per paper - 3x markup over API cost)
+        school_id = current_user.get("school_id", "")
+        if school_id:
+            try:
+                await deduct_credits_internal(
+                    user_id=current_user["id"],
+                    school_id=school_id,
+                    feature="ai_paper_generate",
+                    count=1,
+                    description=f"AI Paper: {request.subject} - {request.class_name}"
+                )
+            except Exception as credit_err:
+                logging.warning(f"Credit deduction failed (paper still generated): {credit_err}")
         
         return PaperGenerateResponse(**paper_data)
         
