@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '../components/ui/dialog';
-import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X, ToggleLeft, Link, Building2, Palette, CreditCard } from 'lucide-react';
+import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X, ToggleLeft, Link } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -61,31 +61,17 @@ export default function SettingsPage() {
     { key: 'timetable', label: 'Timetable' },
     { key: 'exams_reports', label: 'Exams & Reports' },
     { key: 'homework', label: 'Homework' },
-    { key: 'certificates', label: 'Certificates' },
-    { key: 'admit_cards', label: 'Admit Cards' },
     { key: 'digital_library', label: 'Digital Library' },
     { key: 'live_classes', label: 'Live Classes' },
-    { key: 'courses', label: 'Courses' },
     { key: 'fee_management', label: 'Fee Management' },
-    { key: 'credit_system', label: 'Credit System' },
-    { key: 'student_wallet', label: 'Student Wallet' },
-    { key: 'e_store', label: 'e-Store' },
     { key: 'notices', label: 'Notices' },
     { key: 'communication_hub', label: 'Communication Hub' },
-    { key: 'gallery', label: 'Gallery' },
-    { key: 'complaints', label: 'Complaints' },
     { key: 'transport', label: 'Transport' },
-    { key: 'visit_management', label: 'Visit Management' },
     { key: 'inventory', label: 'Inventory' },
-    { key: 'hostel', label: 'Hostel' },
-    { key: 'health', label: 'Health' },
     { key: 'cctv', label: 'CCTV' },
-    { key: 'school_feed', label: 'School Feed' },
     { key: 'calendar', label: 'Calendar' },
-    { key: 'event_designer', label: 'Event Designer' },
-    { key: 'ai_paper', label: 'AI Paper' },
-    { key: 'prayer_system', label: 'Prayer System' },
-    { key: 'integrations', label: 'Integrations' },
+    { key: 'ai_tools', label: 'AI Tools' },
+    { key: 'analytics', label: 'Analytics' },
   ];
 
   const PORTALS = ['schooltino', 'teachtino', 'studytino'];
@@ -477,11 +463,11 @@ export default function SettingsPage() {
               </div>
             </div>
             <a 
-              href="/app/fee-payment/settings" 
+              href="/app/fees" 
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
             >
               <SettingsIcon className="w-4 h-4" />
-              Payment Settings
+              Go to Fee Management
             </a>
           </div>
         </div>
@@ -742,39 +728,6 @@ export default function SettingsPage() {
               />
               <p className="text-xs text-slate-400 mt-2">PNG/JPG, max 2MB</p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* School Setup Quick Links */}
-      {(user?.role === 'director' || user?.role === 'principal') && (
-        <div className="stat-card border-2 border-blue-100" data-testid="school-setup-section">
-          <div className="flex items-center gap-3 mb-4">
-            <Building2 className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-slate-900">School Setup (स्कूल सेटअप)</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="/app/school-management" className="flex items-center gap-3 p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all">
-              <School className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="font-semibold text-slate-900">School Profile</p>
-                <p className="text-xs text-slate-500">Name, Address, Board</p>
-              </div>
-            </a>
-            <a href="/app/logo-settings" className="flex items-center gap-3 p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all">
-              <Palette className="w-8 h-8 text-purple-600" />
-              <div>
-                <p className="font-semibold text-slate-900">Logo & Branding</p>
-                <p className="text-xs text-slate-500">Watermark, Logo Settings</p>
-              </div>
-            </a>
-            <a href="/app/fee-payment/settings" className="flex items-center gap-3 p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-green-400 hover:bg-green-50 transition-all">
-              <CreditCard className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="font-semibold text-slate-900">Payment Settings</p>
-                <p className="text-xs text-slate-500">Razorpay, UPI, Cash</p>
-              </div>
-            </a>
           </div>
         </div>
       )}

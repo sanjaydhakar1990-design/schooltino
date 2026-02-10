@@ -33,8 +33,8 @@ const PERMISSION_PRESETS = {
     permissions: { 
       dashboard: true, students: true, attendance: true, fees: true, 
       staff: true, reports: true, settings: true, user_management: true,
-      tino_brain: true, ai_tools: true, notices: true, transport: true,
-      cash_collection: true, admit_cards: true, calendar: true
+      ai_tools: true, notices: true, transport: true,
+      calendar: true
     }
   },
   principal: {
@@ -43,8 +43,8 @@ const PERMISSION_PRESETS = {
     permissions: { 
       dashboard: true, students: true, attendance: true, fees: true, 
       staff: true, reports: true, settings: false, user_management: false,
-      tino_brain: true, ai_tools: true, notices: true, transport: true,
-      cash_collection: false, admit_cards: true, calendar: true
+      ai_tools: true, notices: true, transport: true,
+      calendar: true
     }
   },
   teacher: {
@@ -53,8 +53,8 @@ const PERMISSION_PRESETS = {
     permissions: { 
       dashboard: true, students: true, attendance: true, reports: false, 
       settings: false, fees: false, staff: false, user_management: false,
-      tino_brain: true, ai_tools: true, notices: true, transport: false,
-      cash_collection: false, admit_cards: true, calendar: true
+      ai_tools: true, notices: true, transport: false,
+      calendar: true
     }
   },
   accountant: {
@@ -63,8 +63,8 @@ const PERMISSION_PRESETS = {
     permissions: { 
       dashboard: true, fees: true, reports: true, students: true, 
       attendance: false, settings: false, staff: false, user_management: false,
-      tino_brain: false, ai_tools: false, notices: true, transport: false,
-      cash_collection: true, admit_cards: true, calendar: false
+      ai_tools: false, notices: true, transport: false,
+      calendar: false
     }
   },
   front_office: {
@@ -73,8 +73,8 @@ const PERMISSION_PRESETS = {
     permissions: { 
       dashboard: true, students: true, attendance: false, fees: false, 
       reports: false, settings: false, staff: false, user_management: false,
-      tino_brain: false, ai_tools: false, notices: true, transport: false,
-      cash_collection: false, admit_cards: false, calendar: true
+      ai_tools: false, notices: true, transport: false,
+      calendar: true
     }
   },
   transport_incharge: {
@@ -83,7 +83,7 @@ const PERMISSION_PRESETS = {
     permissions: { 
       dashboard: true, transport: true, students: true, attendance: false,
       fees: false, reports: false, settings: false, staff: false,
-      tino_brain: false, ai_tools: false, notices: true, cash_collection: false
+      ai_tools: false, notices: true
     }
   },
   view_only: {
@@ -102,14 +102,11 @@ const ALL_PERMISSIONS = {
   staff: { label: "Staff Management", icon: "👥" },
   reports: { label: "Reports", icon: "📈" },
   settings: { label: "School Settings", icon: "⚙️" },
-  user_management: { label: "User/Login Management", icon: "🔐" },
-  tino_brain: { label: "Tino Brain AI", icon: "🧠" },
+  user_management: { label: "User Management", icon: "🔐" },
   ai_tools: { label: "AI Tools", icon: "🤖" },
   notices: { label: "Notices", icon: "📢" },
   transport: { label: "Transport", icon: "🚌" },
-  cash_collection: { label: "Cash Collection", icon: "💵" },
-  admit_cards: { label: "Admit Cards", icon: "🎫" },
-  calendar: { label: "Calendar/Events", icon: "📅" }
+  calendar: { label: "Calendar", icon: "📅" }
 };
 
 export default function EmployeeManagementPage() {
@@ -733,6 +730,11 @@ export default function EmployeeManagementPage() {
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-sm text-gray-900 truncate">{emp.name}</div>
                     <div className="text-xs text-gray-500 truncate">{emp.designation}{emp.department ? ' • ' + emp.department : ''}</div>
+                    <div className="text-[11px] text-gray-400 truncate">
+                      {emp.qualification && <span>{emp.qualification}</span>}
+                      {emp.qualification && emp.mobile && <span> • </span>}
+                      {emp.mobile && <span>📱 {emp.mobile}</span>}
+                    </div>
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     {emp.has_login ? (
@@ -793,7 +795,7 @@ export default function EmployeeManagementPage() {
                         </span>
                       )}
                     </div>
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex gap-2 mt-3 flex-wrap">
                       <Button
                         size="sm"
                         className="bg-white text-blue-700 hover:bg-blue-50 gap-1 h-8 text-xs"
@@ -804,7 +806,7 @@ export default function EmployeeManagementPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs"
+                        className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs"
                         onClick={() => printProfile(selectedProfile)}
                       >
                         <Printer className="w-3 h-3" /> Print
@@ -812,17 +814,17 @@ export default function EmployeeManagementPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs"
+                        className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs"
                         onClick={() => { setSelectedEmployeeForID(selectedProfile); setShowIDCard(true); }}
                       >
                         <CreditCard className="w-3 h-3" /> ID Card
                       </Button>
                       {selectedProfile.has_login ? (
-                        <Button size="sm" variant="outline" className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, false)}>
+                        <Button size="sm" variant="outline" className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, false)}>
                           <Key className="w-3 h-3" /> Disable Login
                         </Button>
                       ) : (
-                        <Button size="sm" variant="outline" className="border-white/50 text-white hover:bg-white/20 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, true)}>
+                        <Button size="sm" variant="outline" className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, true)}>
                           <Key className="w-3 h-3" /> Enable Login
                         </Button>
                       )}

@@ -2068,19 +2068,6 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       </div>
                       <p className="text-xs text-slate-500 mt-1.5 font-medium">Profile Photo</p>
                     </div>
-                    <div className="text-center">
-                      <div className="w-24 h-24 rounded-xl bg-white border-3 border-emerald-300 shadow-lg flex items-center justify-center overflow-hidden">
-                        {splitViewStudent.face_photo_url ? (
-                          <img src={splitViewStudent.face_photo_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="flex flex-col items-center">
-                            <Camera className="w-8 h-8 text-slate-300" />
-                            <span className="text-xs text-slate-300 mt-1">No AI Photo</span>
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-emerald-600 mt-1.5 font-medium">AI Attendance</p>
-                    </div>
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold text-slate-900">{splitViewStudent.name}</h2>
@@ -2111,9 +2098,6 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       </Button>
                       <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-purple-600" onClick={() => viewCredentials(splitViewStudent)}>
                         <Key className="w-3.5 h-3.5" /> Credentials
-                      </Button>
-                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-emerald-600" onClick={() => { setNewStudentCredentials({ student_id: splitViewStudent.student_id || splitViewStudent.id, name: splitViewStudent.name }); setShowFaceEnrollment(true); }}>
-                        <Camera className="w-3.5 h-3.5" /> Face Enroll
                       </Button>
                     </div>
                   </div>
