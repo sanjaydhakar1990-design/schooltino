@@ -18,9 +18,11 @@ import {
   Sparkles, FileImage, Trophy, Calendar, Megaphone,
   Loader2, Download, Copy, Check, Wand2, Image as ImageIcon, RefreshCw,
   Printer, PartyPopper, GraduationCap, Music, Heart,
-  Palette, Share2, MessageCircle, Image, Trash2
+  Palette, Share2, MessageCircle, Image, Trash2,
+  FileText, BookOpen, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
+import SYLLABUS_DATA from '../data/syllabusData';
 
 const API_CONTENT = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const API_EVENT = process.env.REACT_APP_BACKEND_URL;
@@ -1328,34 +1330,552 @@ function DesignPreview({ design, designType, selectedStyle, eventDetails, school
   );
 }
 
+function AIPaperGeneratorTab() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [generatedPaper, setGeneratedPaper] = useState(null);
+  const [showPaperDialog, setShowPaperDialog] = useState(false);
+  const [activeView, setActiveView] = useState('questions');
+
+  const [paperForm, setPaperForm] = useState({
+    board: 'CBSE',
+    class_name: '',
+    subject: '',
+    chapter: '',
+    chapters: [],
+    exam_name: 'Unit Test',
+    difficulty: 'medium',
+    question_types: ['mcq', 'short', 'long'],
+    total_marks: 50,
+    time_duration: 120,
+    language: 'english',
+    include_all_chapters: false
+  });
+
+  const boards = Object.keys(SYLLABUS_DATA).map(key => ({
+    value: key,
+    label: SYLLABUS_DATA[key].name
+  }));
+
+  const boardData = SYLLABUS_DATA[paperForm.board];
+  const classes = boardData ? Object.keys(boardData.classes) : [];
+  const classData = boardData?.classes[paperForm.class_name];
+  const subjects = classData ? Object.keys(classData.subjects) : [];
+  const chapters = classData?.subjects[paperForm.subject] || [];
+
+  const handleBoardChange = (board) => {
+    setPaperForm(prev => ({ ...prev, board, class_name: '', subject: '', chapter: '', chapters: [] }));
+  };
+
+  const handleClassChange = (class_name) => {
+    setPaperForm(prev => ({ ...prev, class_name, subject: '', chapter: '', chapters: [] }));
+  };
+
+  const handleSubjectChange = (subject) => {
+    setPaperForm(prev => ({ ...prev, subject, chapter: '', chapters: [] }));
+  };
+
+  const toggleChapter = (ch) => {
+    setPaperForm(prev => {
+      const exists = prev.chapters.includes(ch);
+      const newChapters = exists ? prev.chapters.filter(c => c !== ch) : [...prev.chapters, ch];
+      return { ...prev, chapters: newChapters, chapter: newChapters.join(', ') };
+    });
+  };
+
+  const selectAllChapters = () => {
+    setPaperForm(prev => ({
+      ...prev,
+      chapters: [...chapters],
+      chapter: chapters.join(', '),
+      include_all_chapters: true
+    }));
+  };
+
+  const clearChapters = () => {
+    setPaperForm(prev => ({ ...prev, chapters: [], chapter: '', include_all_chapters: false }));
+  };
+
+  const toggleQuestionType = (type) => {
+    setPaperForm(prev => {
+      const exists = prev.question_types.includes(type);
+      if (exists && prev.question_types.length === 1) return prev;
+      const newTypes = exists ? prev.question_types.filter(t => t !== type) : [...prev.question_types, type];
+      return { ...prev, question_types: newTypes };
+    });
+  };
+
+  const handleGenerate = async () => {
+    if (!paperForm.board || !paperForm.class_name || !paperForm.subject || !paperForm.chapter) {
+      toast.error('Please select Board, Class, Subject, and at least one Chapter');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_CONTENT}/ai/generate-paper`, paperForm, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGeneratedPaper(response.data);
+      setShowPaperDialog(true);
+      toast.success('Paper generated successfully!');
+    } catch (error) {
+      console.error('Paper generation error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to generate paper. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePrint = () => {
+    const printContent = document.getElementById('paper-print-content');
+    if (!printContent) return;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html><head><title>Question Paper - ${paperForm.subject} ${paperForm.class_name}</title>
+      <style>
+        body { font-family: 'Times New Roman', serif; margin: 20px; line-height: 1.6; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .header h1 { font-size: 18px; margin: 5px 0; }
+        .header p { font-size: 14px; margin: 2px 0; }
+        .section { margin: 15px 0; }
+        .section h3 { font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .question { margin: 10px 0; padding-left: 25px; text-indent: -25px; }
+        .question-marks { float: right; font-weight: bold; }
+        .options { padding-left: 40px; }
+        .option { margin: 3px 0; }
+        @media print { body { margin: 15mm; } }
+      </style></head><body>${printContent.innerHTML}</body></html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const questionTypeOptions = [
+    { value: 'mcq', label: 'MCQ (1 mark)' },
+    { value: 'fill_blank', label: 'Fill in Blanks (1 mark)' },
+    { value: 'short', label: 'Short Answer (2-3 marks)' },
+    { value: 'long', label: 'Long Answer (4-5 marks)' },
+    { value: 'diagram', label: 'Diagram Based (3 marks)' },
+    { value: 'hots', label: 'HOTS (4 marks)' }
+  ];
+
+  const examTypes = ['Unit Test', 'Half Yearly', 'Annual Exam', 'Weekly Test', 'Monthly Test', 'Pre-Board', 'Practice Paper'];
+  const difficultyLevels = ['easy', 'medium', 'hard', 'mixed'];
+  const marksOptions = [20, 25, 30, 40, 50, 60, 70, 75, 80, 100];
+  const durationOptions = [30, 45, 60, 90, 120, 150, 180];
+
+  const renderPaperContent = () => {
+    if (!generatedPaper) return null;
+    const paper = generatedPaper;
+    const questions = paper.questions || [];
+    const questionPaper = paper.question_paper;
+    const answerPaper = paper.answer_paper;
+
+    if (activeView === 'questions') {
+      if (questionPaper && questionPaper.sections) {
+        return (
+          <div id="paper-print-content">
+            <div className="header text-center mb-6 border-b-2 border-black pb-3">
+              <h1 className="text-xl font-bold">{questionPaper.header?.school_name || '__________ School'}</h1>
+              <p className="text-sm">{questionPaper.header?.exam_name} ({questionPaper.header?.academic_year})</p>
+              <div className="flex justify-between text-sm mt-2">
+                <span>Class: {questionPaper.header?.class}</span>
+                <span>Subject: {questionPaper.header?.subject}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Time: {questionPaper.header?.time}</span>
+                <span>Max Marks: {questionPaper.header?.max_marks}</span>
+              </div>
+            </div>
+            {questionPaper.general_instructions && (
+              <div className="mb-4 p-3 bg-gray-50 rounded text-sm">
+                <strong>General Instructions:</strong>
+                <ul className="list-disc pl-5 mt-1">
+                  {questionPaper.general_instructions.map((inst, i) => <li key={i}>{inst}</li>)}
+                </ul>
+              </div>
+            )}
+            {questionPaper.sections.map((section, si) => (
+              <div key={si} className="mb-6">
+                <h3 className="font-bold text-base border-b border-gray-300 pb-1 mb-3">{section.section_name} ({section.total_marks} marks)</h3>
+                {section.questions.map((q, qi) => (
+                  <div key={qi} className="mb-3 pl-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Q{q.q_no || qi + 1}. {q.question}</span>
+                      <span className="text-sm font-bold text-gray-600 ml-2 whitespace-nowrap">[{q.marks} marks]</span>
+                    </div>
+                    {q.options && (
+                      <div className="pl-6 mt-1 grid grid-cols-2 gap-1">
+                        {q.options.map((opt, oi) => <span key={oi} className="text-sm">{opt}</span>)}
+                      </div>
+                    )}
+                    {q.internal_choice && q.choice_question && (
+                      <p className="text-sm text-gray-500 pl-6 mt-1 italic">OR: {q.choice_question}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      return (
+        <div id="paper-print-content">
+          <div className="header text-center mb-6 border-b-2 border-black pb-3">
+            <h1 className="text-xl font-bold">__________ School</h1>
+            <p className="text-sm">{paper.exam_name || 'Examination'} (2025-2026)</p>
+            <div className="flex justify-between text-sm mt-2">
+              <span>Class: {paper.class_name}</span>
+              <span>Subject: {paper.subject}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>Time: {paper.time_duration} min</span>
+              <span>Max Marks: {paper.total_marks}</span>
+            </div>
+          </div>
+          {questions.map((q, i) => (
+            <div key={i} className="mb-3 pl-2">
+              <div className="flex justify-between">
+                <span className="font-medium">Q{q.q_no || i + 1}. {q.question}</span>
+                <span className="text-sm font-bold text-gray-600 ml-2 whitespace-nowrap">[{q.marks} marks]</span>
+              </div>
+              {q.options && (
+                <div className="pl-6 mt-1 grid grid-cols-2 gap-1">
+                  {q.options.map((opt, oi) => <span key={oi} className="text-sm">{opt}</span>)}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (activeView === 'answers') {
+      if (answerPaper && answerPaper.answers) {
+        return (
+          <div>
+            <h2 className="text-lg font-bold text-center mb-4 border-b-2 pb-2">ANSWER KEY / MARKING SCHEME</h2>
+            {answerPaper.answers.map((a, i) => (
+              <div key={i} className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex justify-between items-start">
+                  <span className="font-bold text-green-800">Q{a.q_no || i + 1}. [{a.marks} marks]</span>
+                  <span className="text-xs bg-green-200 px-2 py-0.5 rounded">{a.type}</span>
+                </div>
+                {a.correct_answer && <p className="mt-1 text-green-700 font-medium">Answer: {a.correct_answer}</p>}
+                {a.model_answer && <p className="mt-1 text-green-700">{a.model_answer}</p>}
+                {a.explanation && <p className="mt-1 text-sm text-gray-600 italic">{a.explanation}</p>}
+                {a.marking_points && (
+                  <ul className="mt-1 text-sm list-disc pl-5 text-gray-700">
+                    {a.marking_points.map((p, pi) => <li key={pi}>{p}</li>)}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      return (
+        <div>
+          <h2 className="text-lg font-bold text-center mb-4">ANSWER KEY</h2>
+          {questions.map((q, i) => (
+            <div key={i} className="mb-3 p-3 bg-green-50 rounded-lg border border-green-200">
+              <span className="font-bold text-green-800">Q{q.q_no || i + 1}.</span>
+              <p className="mt-1 text-green-700">{q.answer || q.correct_answer || 'Answer not available'}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-600" />
+            AI Paper Generator (Sarvam AI)
+          </CardTitle>
+          <p className="text-sm text-gray-500">Generate board-wise exam papers with latest 2025-26 syllabus. Supports MP Board, RBSE, and CBSE.</p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label className="font-medium">Board</Label>
+              <select
+                value={paperForm.board}
+                onChange={(e) => handleBoardChange(e.target.value)}
+                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
+              >
+                <option value="">Select Board</option>
+                {boards.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-medium">Class</Label>
+              <select
+                value={paperForm.class_name}
+                onChange={(e) => handleClassChange(e.target.value)}
+                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
+                disabled={!paperForm.board}
+              >
+                <option value="">Select Class</option>
+                {classes.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-medium">Subject</Label>
+              <select
+                value={paperForm.subject}
+                onChange={(e) => handleSubjectChange(e.target.value)}
+                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
+                disabled={!paperForm.class_name}
+              >
+                <option value="">Select Subject</option>
+                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-medium">Exam Type</Label>
+              <select
+                value={paperForm.exam_name}
+                onChange={(e) => setPaperForm(prev => ({ ...prev, exam_name: e.target.value }))}
+                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
+              >
+                {examTypes.map(e => <option key={e} value={e}>{e}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {paperForm.subject && chapters.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="font-medium">Chapters ({paperForm.chapters.length}/{chapters.length} selected)</Label>
+                <div className="flex gap-2">
+                  <button onClick={selectAllChapters} className="text-xs text-blue-600 hover:underline">Select All</button>
+                  <button onClick={clearChapters} className="text-xs text-red-500 hover:underline">Clear</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-3 bg-gray-50 rounded-lg border">
+                {chapters.map((ch, i) => (
+                  <button
+                    key={i}
+                    onClick={() => toggleChapter(ch)}
+                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                      paperForm.chapters.includes(ch)
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300 font-medium'
+                        : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-200 hover:bg-blue-50'
+                    }`}
+                  >
+                    <span className="mr-1 text-xs text-gray-400">{i + 1}.</span> {ch}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="font-medium">Total Marks</Label>
+              <select
+                value={paperForm.total_marks}
+                onChange={(e) => setPaperForm(prev => ({ ...prev, total_marks: parseInt(e.target.value) }))}
+                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
+              >
+                {marksOptions.map(m => <option key={m} value={m}>{m} Marks</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-medium">Time Duration</Label>
+              <select
+                value={paperForm.time_duration}
+                onChange={(e) => setPaperForm(prev => ({ ...prev, time_duration: parseInt(e.target.value) }))}
+                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
+              >
+                {durationOptions.map(d => <option key={d} value={d}>{d} minutes ({d/60} hrs)</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-medium">Difficulty</Label>
+              <select
+                value={paperForm.difficulty}
+                onChange={(e) => setPaperForm(prev => ({ ...prev, difficulty: e.target.value }))}
+                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
+              >
+                {difficultyLevels.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="font-medium">Question Types</Label>
+              <div className="flex flex-wrap gap-2">
+                {questionTypeOptions.map(qt => (
+                  <button
+                    key={qt.value}
+                    onClick={() => toggleQuestionType(qt.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
+                      paperForm.question_types.includes(qt.value)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {qt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-medium">Language</Label>
+              <div className="flex gap-2">
+                {['english', 'hindi'].map(lang => (
+                  <button
+                    key={lang}
+                    onClick={() => setPaperForm(prev => ({ ...prev, language: lang }))}
+                    className={`px-4 py-2 rounded-lg text-sm transition-all ${
+                      paperForm.language === lang
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {lang === 'english' ? 'English' : 'Hindi'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 pt-2">
+            <Button
+              onClick={handleGenerate}
+              disabled={loading || !paperForm.board || !paperForm.class_name || !paperForm.subject || !paperForm.chapter}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Generating Paper...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate Paper
+                </>
+              )}
+            </Button>
+            {paperForm.board && paperForm.class_name && paperForm.subject && (
+              <span className="text-sm text-gray-500">
+                {SYLLABUS_DATA[paperForm.board]?.name} | {paperForm.class_name} | {paperForm.subject} | {paperForm.chapters.length} chapters
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={showPaperDialog} onOpenChange={setShowPaperDialog}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              Generated Paper - {generatedPaper?.subject} ({generatedPaper?.class_name})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveView('questions')}
+                  className={`px-4 py-2 rounded-md text-sm transition-all ${
+                    activeView === 'questions' ? 'bg-white shadow text-blue-700 font-medium' : 'text-gray-600'
+                  }`}
+                >
+                  Question Paper
+                </button>
+                <button
+                  onClick={() => setActiveView('answers')}
+                  className={`px-4 py-2 rounded-md text-sm transition-all ${
+                    activeView === 'answers' ? 'bg-white shadow text-green-700 font-medium' : 'text-gray-600'
+                  }`}
+                >
+                  Answer Key
+                </button>
+              </div>
+              <div className="ml-auto flex gap-2">
+                <Button onClick={handlePrint} variant="outline" size="sm">
+                  <Printer className="w-4 h-4 mr-1" /> Print
+                </Button>
+                <Button
+                  onClick={() => {
+                    const el = document.getElementById('paper-print-content');
+                    if (el) {
+                      navigator.clipboard.writeText(el.innerText);
+                      toast.success('Copied to clipboard!');
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Copy className="w-4 h-4 mr-1" /> Copy
+                </Button>
+              </div>
+            </div>
+            {generatedPaper && (
+              <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                <span className="bg-blue-50 px-2 py-1 rounded">Board: {paperForm.board}</span>
+                <span className="bg-green-50 px-2 py-1 rounded">Marks: {generatedPaper.total_marks} ({generatedPaper.marks_verified ? 'Verified' : `Actual: ${generatedPaper.actual_marks}`})</span>
+                <span className="bg-purple-50 px-2 py-1 rounded">Questions: {generatedPaper.questions?.length || 0}</span>
+              </div>
+            )}
+            <div className="border rounded-lg p-4 bg-white text-sm" style={{ fontFamily: "'Times New Roman', serif" }}>
+              {renderPaperContent()}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 const AIToolsPage = () => {
-  const [mainTab, setMainTab] = useState('content-studio');
+  const [mainTab, setMainTab] = useState('paper-generator');
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">AI Tools</h1>
-        <p className="text-sm text-gray-500 mt-1">AI-powered tools for content creation and event design</p>
+        <p className="text-sm text-gray-500 mt-1">AI-powered tools for paper generation, content creation and event design</p>
       </div>
 
       <Tabs value={mainTab} onValueChange={setMainTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 h-auto p-1">
-          <TabsTrigger value="content-studio" className="py-3 text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <Sparkles className="w-5 h-5 mr-2" />
-            AI Content Studio
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+          <TabsTrigger value="paper-generator" className="py-3 text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <FileText className="w-4 h-4 mr-1.5" />
+            AI Paper Generator
           </TabsTrigger>
-          <TabsTrigger value="event-designer" className="py-3 text-base data-[state=active]:bg-pink-600 data-[state=active]:text-white">
-            <Palette className="w-5 h-5 mr-2" />
+          <TabsTrigger value="event-designer" className="py-3 text-sm data-[state=active]:bg-pink-600 data-[state=active]:text-white">
+            <Palette className="w-4 h-4 mr-1.5" />
             Event Designer
+          </TabsTrigger>
+          <TabsTrigger value="content-studio" className="py-3 text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <Sparkles className="w-4 h-4 mr-1.5" />
+            AI Content Studio
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="content-studio">
-          <AIContentStudioTab />
+        <TabsContent value="paper-generator">
+          <AIPaperGeneratorTab />
         </TabsContent>
 
         <TabsContent value="event-designer">
           <EventDesignerTab />
+        </TabsContent>
+
+        <TabsContent value="content-studio">
+          <AIContentStudioTab />
         </TabsContent>
       </Tabs>
     </div>

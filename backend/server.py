@@ -742,17 +742,18 @@ class AuditLogResponse(BaseModel):
 
 # AI Paper Generator Models
 class PaperGenerateRequest(BaseModel):
+    board: str = "CBSE"
     subject: str
     class_name: str
-    chapter: str  # Can be single chapter or comma-separated multiple chapters
-    chapters: Optional[List[str]] = None  # New: List of specific chapters to include
-    exam_name: Optional[str] = None  # Exam name like "Half Yearly", "Unit Test"
-    difficulty: str  # easy, medium, hard, mixed
-    question_types: List[str]  # mcq, short, long, fill_blank
+    chapter: str
+    chapters: Optional[List[str]] = None
+    exam_name: Optional[str] = None
+    difficulty: str
+    question_types: List[str]
     total_marks: int
-    time_duration: int  # in minutes
+    time_duration: int
     language: str = "english"
-    include_all_chapters: bool = False  # If true, include all chapters of subject
+    include_all_chapters: bool = False
 
 class PaperGenerateResponse(BaseModel):
     id: str
@@ -4239,10 +4240,10 @@ async def generate_paper(request: PaperGenerateRequest, current_user: dict = Dep
     if current_user["role"] not in ["director", "principal", "teacher", "exam_controller", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
+    sarvam_api_key = os.environ.get("SARVAM_API_KEY")
     
-    if not anthropic_api_key:
-        raise HTTPException(status_code=500, detail="Anthropic API key not configured. Add ANTHROPIC_API_KEY in Settings.")
+    if not sarvam_api_key:
+        raise HTTPException(status_code=500, detail="Sarvam API key not configured. Add SARVAM_API_KEY in Settings.")
     
     try:
         
@@ -4619,13 +4620,7 @@ Return in this EXACT JSON format:
 GENERATE THE PAPER NOW! Return ONLY the JSON object above.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
 
-        import anthropic
-        
-        anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
-        if not anthropic_key:
-            raise HTTPException(status_code=500, detail="Anthropic API key not configured. Add ANTHROPIC_API_KEY in Settings.")
-        
-        client = anthropic.AsyncAnthropic(api_key=anthropic_key)
+        import httpx
         
         user_msg_text = f"""Generate a complete question paper with these EXACT requirements:
 
@@ -4643,17 +4638,35 @@ Example: If total marks = 20, and you have:
 - 10 MCQs × 1 mark = 10 marks
 - 2 Short × 3 marks = 6 marks  
 - 1 Long × 4 marks = 4 marks
-Total = 10+6+4 = 20 marks ✓
+Total = 10+6+4 = 20 marks
 
 Generate the paper now in pure {request.language} language."""
         
-        claude_response = await client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=8000,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_msg_text}]
-        )
-        response = claude_response.content[0].text
+        async with httpx.AsyncClient() as http_client:
+            sarvam_response = await http_client.post(
+                "https://api.sarvam.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {sarvam_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "sarvam-m",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_msg_text}
+                    ],
+                    "max_tokens": 8000,
+                    "temperature": 0.7
+                },
+                timeout=120.0
+            )
+            
+            if sarvam_response.status_code != 200:
+                logging.error(f"Sarvam API error: {sarvam_response.status_code} - {sarvam_response.text}")
+                raise HTTPException(status_code=500, detail="AI service temporarily unavailable. Please try again.")
+            
+            sarvam_data = sarvam_response.json()
+            response = sarvam_data.get("choices", [{}])[0].get("message", {}).get("content", "")
         
         import json
         import re
@@ -4686,22 +4699,33 @@ Generate the paper now in pure {request.language} language."""
             retry_count += 1
             logging.info(f"Paper marks mismatch: {actual_total} vs {request.total_marks}. Retry {retry_count}")
             
-            # Retry with more specific prompt
             retry_prompt = f"""The paper you generated has {actual_total} marks but I need EXACTLY {request.total_marks} marks.
 Please regenerate with the correct number of questions. Current distribution needs adjustment.
 Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no less."""
             
-            retry_response = await client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=8000,
-                system=system_prompt,
-                messages=[
-                    {"role": "user", "content": user_msg_text},
-                    {"role": "assistant", "content": response},
-                    {"role": "user", "content": retry_prompt}
-                ]
-            )
-            response = retry_response.content[0].text
+            async with httpx.AsyncClient() as http_client:
+                retry_resp = await http_client.post(
+                    "https://api.sarvam.ai/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {sarvam_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "sarvam-m",
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_msg_text},
+                            {"role": "assistant", "content": response},
+                            {"role": "user", "content": retry_prompt}
+                        ],
+                        "max_tokens": 8000,
+                        "temperature": 0.7
+                    },
+                    timeout=120.0
+                )
+                if retry_resp.status_code == 200:
+                    retry_data = retry_resp.json()
+                    response = retry_data.get("choices", [{}])[0].get("message", {}).get("content", "")
             
             json_match = re.search(r'\{[\s\S]*\}', response)
             if json_match:
