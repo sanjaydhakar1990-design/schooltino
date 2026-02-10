@@ -225,7 +225,7 @@ export const Layout = () => {
                   )}
                 </button>
                 {showNotifications && (
-                  <div className="absolute right-0 top-full mt-2 w-80 max-h-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                  <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-auto sm:top-full mt-2 sm:w-80 max-h-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
                     <div className="p-3 border-b border-gray-100 flex items-center justify-between">
                       <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
                       <span className="text-xs text-gray-500">{unreadCount} unread</span>
@@ -261,14 +261,14 @@ export const Layout = () => {
       </div>
 
       {showTinoChat && (
-        <div className="fixed bottom-4 right-4 w-80 sm:w-96 h-[480px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-[60] overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-4 sm:right-4 w-full sm:w-96 h-full sm:h-[480px] bg-white sm:rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-[60] overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white" style={{paddingTop: 'max(0.75rem, env(safe-area-inset-top))'}}>
             <div className="flex items-center gap-2">
               <Brain className="w-5 h-5" />
               <span className="font-semibold text-sm">Tino AI</span>
             </div>
-            <button onClick={() => setShowTinoChat(false)} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
-              <X className="w-4 h-4" />
+            <button onClick={() => setShowTinoChat(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+              <X className="w-5 h-5" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -292,7 +292,7 @@ export const Layout = () => {
             )}
             <div ref={chatEndRef} />
           </div>
-          <div className="p-3 border-t border-gray-200">
+          <div className="p-3 border-t border-gray-200 safe-bottom">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -300,12 +300,12 @@ export const Layout = () => {
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
                 placeholder="Type a message..."
-                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                className="flex-1 px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
               />
               <button
                 onClick={sendChatMessage}
                 disabled={chatLoading || !chatInput.trim()}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
               </button>

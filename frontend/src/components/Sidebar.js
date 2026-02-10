@@ -154,10 +154,10 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         ))}
       </nav>
 
-      <div className="p-3 border-t border-blue-100">
+      <div className="p-3 border-t border-blue-100 safe-bottom">
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 text-xs text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors`}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 text-xs text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors`}
         >
           <LogOut className="w-3.5 h-3.5" />
           {!isCollapsed && <span>Sign Out</span>}

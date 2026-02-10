@@ -295,6 +295,26 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(-2px);
 }
 
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+    .safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+@media (max-width: 640px) {
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
 @media print {
     .print\\:hidden, nav, aside, footer, .no-print, button:not(.print-btn), [data-print="hide"] {
         display: none !important;

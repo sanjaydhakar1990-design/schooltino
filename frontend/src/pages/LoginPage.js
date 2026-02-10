@@ -291,7 +291,7 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
       {showSuperAdmin && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 p-8 rounded-2xl w-full max-w-sm shadow-2xl">
@@ -326,16 +326,14 @@ export default function LoginPage() {
               </div>
               <span className="text-xl font-bold">Schooltino</span>
             </div>
-            <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
-              <a href="#features" className="hover:text-white transition-colors">Features</a>
-              <a href="/teachtino" className="hover:text-white transition-colors">TeachTino</a>
-              <a href="/studytino" className="hover:text-white transition-colors">StudyTino</a>
-              <a href="#login" className="px-5 py-2 bg-white/10 backdrop-blur rounded-lg hover:bg-white/20 transition-colors border border-white/20 text-white">Request Demo</a>
+            <div className="flex items-center gap-4 sm:gap-6 text-sm text-white/70">
+              <a href="#features" className="hidden sm:inline hover:text-white transition-colors">Features</a>
+              <a href="#login" className="px-4 py-2 bg-white/10 backdrop-blur rounded-lg hover:bg-white/20 transition-colors border border-white/20 text-white text-xs sm:text-sm">Sign In</a>
             </div>
           </nav>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center py-16 lg:py-24">
-            <div className="animate-fade-in">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center py-8 lg:py-24">
+            <div className="animate-fade-in order-2 lg:order-1 hidden lg:block">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur text-sm text-blue-200 mb-6 border border-white/10">
                 <Sparkle /> Cloud-Based School ERP
               </div>
@@ -360,8 +358,17 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div id="login" className="animate-slide-up">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-auto lg:ml-auto relative">
+            <div className="lg:hidden animate-fade-in order-1 text-center mb-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight mb-3">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">Smart School ERP</span>
+                {' '}for{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">Smart Future.</span>
+              </h1>
+              <p className="text-sm text-white/60 mb-2">Schooltino &middot; TeachTino &middot; StudyTino</p>
+            </div>
+
+            <div id="login" className="animate-slide-up order-2">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md mx-auto lg:ml-auto relative">
                 <div className="absolute -top-3 -right-3 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
                 {setupRequired ? (
                   <>
@@ -467,20 +474,20 @@ export default function LoginPage() {
 
       <div id="stats" className="py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 lg:mb-12">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Perseverance Personified</p>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900">Next-Gen EdTech Starts Here</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900">Next-Gen EdTech Starts Here</h2>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
             {stats.map((stat, idx) => (
-              <div key={idx} className="text-center p-8 rounded-2xl bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className={`w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
+              <div key={idx} className="text-center p-4 sm:p-8 rounded-2xl bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className={`w-10 h-10 sm:w-14 sm:h-14 mx-auto mb-3 sm:mb-4 rounded-xl sm:rounded-2xl flex items-center justify-center ${
                   idx === 0 ? 'gradient-card-blue' : idx === 1 ? 'gradient-card-teal' : idx === 2 ? 'gradient-card-purple' : 'gradient-card-orange'
                 }`}>
-                  <stat.icon className="w-7 h-7 text-white" />
+                  <stat.icon className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <div className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1">{stat.value}</div>
-                <div className="text-sm text-gray-500 font-medium">{stat.label}</div>
+                <div className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-gray-500 font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -490,22 +497,22 @@ export default function LoginPage() {
       <div className="py-16 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-3 sm:gap-4 mb-6">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"><Lock className="w-5 h-5 text-white" /></div>
-                <span className="text-sm font-semibold text-gray-700">Secure & Integrated</span>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0"><Lock className="w-4 h-4 sm:w-5 sm:h-5 text-white" /></div>
+                <span className="text-xs sm:text-sm font-semibold text-gray-700">Secure</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center"><Zap className="w-5 h-5 text-white" /></div>
-                <span className="text-sm font-semibold text-gray-700">User-friendly</span>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0"><Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" /></div>
+                <span className="text-xs sm:text-sm font-semibold text-gray-700">User-friendly</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center"><Cloud className="w-5 h-5 text-white" /></div>
-                <span className="text-sm font-semibold text-gray-700">Cloud-first</span>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center flex-shrink-0"><Cloud className="w-4 h-4 sm:w-5 sm:h-5 text-white" /></div>
+                <span className="text-xs sm:text-sm font-semibold text-gray-700">Cloud-first</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center"><Cpu className="w-5 h-5 text-white" /></div>
-                <span className="text-sm font-semibold text-gray-700">AI-enabled</span>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0"><Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-white" /></div>
+                <span className="text-xs sm:text-sm font-semibold text-gray-700">AI-enabled</span>
               </div>
             </div>
           </div>
@@ -514,29 +521,29 @@ export default function LoginPage() {
 
       <div id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Be Your Own Pilot</p>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900">
+          <div className="text-center mb-8 lg:mb-10">
+            <p className="text-xs sm:text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Be Your Own Pilot</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900">
               Navigate Your Space Station
             </h2>
-            <p className="text-gray-500 mt-3 max-w-2xl mx-auto text-lg">
+            <p className="text-gray-500 mt-2 sm:mt-3 max-w-2xl mx-auto text-sm sm:text-lg">
               360° aerial view with AI-powered tools for full throttle school management.
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-2 mb-12 bg-gray-50 rounded-2xl p-3 border border-gray-100">
+          <div className="flex overflow-x-auto gap-2 mb-8 lg:mb-12 bg-gray-50 rounded-2xl p-2 sm:p-3 border border-gray-100 -mx-4 sm:mx-0 scrollbar-hide">
             {k12Tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveFeatureTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                   activeFeatureTab === tab.id
                     ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
                     : 'text-gray-600 hover:bg-white hover:shadow-sm'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
@@ -582,10 +589,10 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="py-16 gradient-hero text-white">
+      <div className="py-12 sm:py-16 gradient-hero text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-extrabold mb-4">Ready to Transform Your School?</h2>
-          <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4">Ready to Transform Your School?</h2>
+          <p className="text-white/70 text-sm sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto">
             Join thousands of institutions already using our platform to simplify school management.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -601,7 +608,7 @@ export default function LoginPage() {
 
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg gradient-card-blue flex items-center justify-center">
