@@ -28,7 +28,7 @@ Schooltino is a comprehensive, AI-powered school management platform inspired by
 ### UI/UX Decisions
 NextOS K-12 inspired design:
 - Clean flat sidebar navigation (20 items max, no nested groups)
-- Dark gradient sidebar (slate-900 to indigo-950)
+- Light blue gradient sidebar (blue-50 to sky-50 to indigo-50) with blue-500 active state
 - School branding header: logo, name, address, contact, registration
 - Card-based module layout on dashboard
 - Tino AI chat floating panel (accessible from header)
