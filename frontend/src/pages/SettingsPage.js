@@ -521,23 +521,23 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Payment Settings Link - Redirect to Payment Settings Page */}
+      {/* Payment & Logo Settings - Link to Setup Wizard */}
       {(user?.role === 'director' || user?.role === 'principal') && (
-        <div className="stat-card border-2 border-green-100">
+        <div className="stat-card border-2 border-blue-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Wallet className="w-5 h-5 text-green-600" />
+              <Wallet className="w-5 h-5 text-blue-600" />
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">💳 Payment Settings (Razorpay, UPI, Cash)</h2>
-                <p className="text-sm text-slate-500">Online payment, UPI, Bank details, Cash collection settings</p>
+                <h2 className="text-lg font-semibold text-slate-900">Payment & Logo Settings</h2>
+                <p className="text-sm text-slate-500">Payment & Logo settings are in the Setup Wizard</p>
               </div>
             </div>
             <a 
-              href="/app/fees" 
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+              href="/app/setup-wizard" 
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
             >
               <SettingsIcon className="w-4 h-4" />
-              Go to Fee Management
+              Go to Setup Wizard
             </a>
           </div>
         </div>

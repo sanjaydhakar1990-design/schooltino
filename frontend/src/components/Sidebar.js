@@ -88,7 +88,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     <aside className={`fixed lg:relative top-0 left-0 h-screen ${isCollapsed ? 'w-[60px]' : 'w-[260px]'} z-50 lg:z-auto transform transition-all duration-200 shrink-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col bg-gradient-to-b from-blue-50 via-sky-50 to-indigo-50 border-r border-blue-100`}>
       <button
         onClick={onToggleCollapse}
-        className="hidden lg:flex absolute -right-3 top-6 w-6 h-6 bg-blue-500 rounded-full items-center justify-center text-white shadow-md hover:bg-blue-600 z-10 border-2 border-white"
+        className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 bg-blue-500 rounded-full items-center justify-center text-white shadow-md hover:bg-blue-600 z-10 border-2 border-white"
         title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}

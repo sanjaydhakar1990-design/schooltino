@@ -8,7 +8,9 @@ import { Label } from '../components/ui/label';
 import {
   School, MapPin, Phone, Globe, Building2, Users,
   Image, Share2, Check, ChevronRight, ChevronLeft,
-  Loader2, Save, SkipForward, Upload, Camera, X
+  Loader2, Save, SkipForward, Upload, Camera, X,
+  Wallet, CreditCard, Bell, Calendar as CalendarIcon,
+  FileText, Smartphone, Settings as SettingsIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,7 +21,8 @@ const STEPS = [
   { id: 'contact', title: 'Contact & Registration', subtitle: 'Phone, email aur registration details', icon: Phone },
   { id: 'details', title: 'School Details', subtitle: 'Type, medium aur capacity', icon: Building2 },
   { id: 'leadership', title: 'Leadership & About', subtitle: 'Principal aur school ki jaankari', icon: Users },
-  { id: 'logo', title: 'Logo & Branding', subtitle: 'School logo upload karein', icon: Image },
+  { id: 'logo', title: 'Logo & Branding Settings', subtitle: 'School logo upload aur apply settings', icon: Image },
+  { id: 'payment', title: 'Payment Settings', subtitle: 'Razorpay, UPI aur bank details', icon: Wallet },
   { id: 'social', title: 'Social Media', subtitle: 'Social media links', icon: Share2 },
 ];
 
@@ -38,6 +41,12 @@ export default function SetupWizard() {
     school_type: '', medium: '', shift: '', total_capacity: '', motto: '',
     principal_name: '', principal_message: '', about_school: '', vision: '', mission: '',
     logo_url: '',
+    logo_apply_to: {
+      idCards: true, notices: true, calendar: true, appHeader: true,
+      certificates: true, feeBills: true, appIcon: true
+    },
+    razorpay_key_id: '', razorpay_key_secret: '', upi_id: '', payment_mode: '',
+    bank_name: '', bank_account_no: '', bank_ifsc: '', bank_branch: '',
     facebook_url: '', instagram_url: '', youtube_url: '', whatsapp_number: ''
   });
 
@@ -65,6 +74,14 @@ export default function SetupWizard() {
           principal_name: d.principal_name || '', principal_message: d.principal_message || '',
           about_school: d.about_school || '', vision: d.vision || '', mission: d.mission || '',
           logo_url: d.logo_url || '',
+          logo_apply_to: d.logo_apply_to || {
+            idCards: true, notices: true, calendar: true, appHeader: true,
+            certificates: true, feeBills: true, appIcon: true
+          },
+          razorpay_key_id: d.razorpay_key_id || '', razorpay_key_secret: d.razorpay_key_secret || '',
+          upi_id: d.upi_id || '', payment_mode: d.payment_mode || '',
+          bank_name: d.bank_name || '', bank_account_no: d.bank_account_no || '',
+          bank_ifsc: d.bank_ifsc || '', bank_branch: d.bank_branch || '',
           facebook_url: d.facebook_url || '', instagram_url: d.instagram_url || '',
           youtube_url: d.youtube_url || '', whatsapp_number: d.whatsapp_number || ''
         }));
@@ -91,6 +108,16 @@ export default function SetupWizard() {
       setFormData(prev => ({ ...prev, logo_url: reader.result }));
     };
     reader.readAsDataURL(file);
+  };
+
+  const toggleApplyTo = (key) => {
+    setFormData(prev => ({
+      ...prev,
+      logo_apply_to: {
+        ...prev.logo_apply_to,
+        [key]: !prev.logo_apply_to[key]
+      }
+    }));
   };
 
   const saveCurrentStep = async () => {
@@ -253,7 +280,7 @@ export default function SetupWizard() {
         )}
 
         {currentStep === 4 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-start gap-6">
               <div className="shrink-0">
                 <div className="w-32 h-32 border-2 border-dashed border-blue-300 rounded-xl flex items-center justify-center overflow-hidden bg-slate-50">
@@ -288,10 +315,70 @@ export default function SetupWizard() {
                 </div>
               </div>
             </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <h3 className="text-sm font-semibold text-slate-900 mb-2">Logo Apply Settings</h3>
+              <p className="text-xs text-slate-500 mb-3">Select where the logo should appear</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'idCards', label: 'Set as ID Cards watermark', icon: CreditCard },
+                  { key: 'notices', label: 'Set on Notices', icon: Bell },
+                  { key: 'calendar', label: 'Set on Calendar', icon: CalendarIcon },
+                  { key: 'appHeader', label: 'Set on App Header (School Name ke saath)', icon: SettingsIcon },
+                  { key: 'certificates', label: 'Set on Certificates', icon: FileText },
+                  { key: 'feeBills', label: 'Set on Fee Bills', icon: FileText },
+                  { key: 'appIcon', label: 'Set as App Icon', icon: Smartphone }
+                ].map(item => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => toggleApplyTo(item.key)}
+                      className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left ${
+                        formData.logo_apply_to[item.key]
+                          ? 'border-blue-600 bg-blue-50 text-blue-700'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      {formData.logo_apply_to[item.key] ? (
+                        <Check className="w-4 h-4 text-blue-600 shrink-0" />
+                      ) : (
+                        <Icon className="w-4 h-4 shrink-0" />
+                      )}
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
         {currentStep === 5 && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {renderField('Razorpay Key ID', 'razorpay_key_id', 'text', 'rzp_live_xxxxxx')}
+              {renderField('Razorpay Key Secret', 'razorpay_key_secret', 'password', '••••••••')}
+              {renderField('UPI ID', 'upi_id', 'text', 'school@upi')}
+              {renderField('Payment Mode', 'payment_mode', 'text', '', [
+                { value: '', label: 'Select Payment Mode' },
+                { value: 'online', label: 'Online Only' },
+                { value: 'cash', label: 'Cash Only' },
+                { value: 'both', label: 'Both Online & Cash' }
+              ])}
+              {renderField('Bank Name', 'bank_name', 'text', 'e.g., State Bank of India')}
+              {renderField('Bank Account Number', 'bank_account_no', 'text', 'Account number')}
+              {renderField('IFSC Code', 'bank_ifsc', 'text', 'e.g., SBIN0001234')}
+              {renderField('Branch Name', 'bank_branch', 'text', 'Branch name')}
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+              <p className="font-medium mb-1">Note:</p>
+              <p>Payment settings will be used in Fee Management for online fee collection via Razorpay. UPI ID will be shown to parents for direct payment.</p>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 6 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {renderField('Facebook URL', 'facebook_url', 'url', 'https://facebook.com/school')}
             {renderField('Instagram URL', 'instagram_url', 'url', 'https://instagram.com/school')}

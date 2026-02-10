@@ -147,7 +147,7 @@ export const Layout = () => {
         <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0 transition-all duration-200">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0 transition-all duration-200 z-40">
         <Sidebar isOpen={true} onClose={() => {}} isCollapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
       <div className="lg:hidden">
