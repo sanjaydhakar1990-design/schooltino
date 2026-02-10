@@ -14,6 +14,10 @@ Schooltino is a comprehensive, AI-powered school management platform inspired by
 - Clean Layout with school branding header (logo + name + contact info)
 - Removed GlobalWatermark from Layout (cleaner look)
 - Removed CreditCard dropdown from header
+- **Module Toggle → Sidebar**: Settings module toggles now control sidebar visibility. Disabled modules hide from sidebar and dashboard module grid. Uses localStorage key `module_visibility_settings` with custom event `module_visibility_changed` for instant updates.
+- **Removed SchoolTino branding** from sidebar top (user request)
+- **Distinct portal icons**: SchoolTino (blue), TeachTino (green), StudyTino (purple) - used in login tabs and favicon (falls back to school logo if uploaded)
+- **Setup Wizard**: Rebuilt as 6-step form (Basic Info, Contact, Details, Leadership, Logo, Social Media) - no backend wizard API needed
 
 ## User Preferences
 - Prefers detailed explanations

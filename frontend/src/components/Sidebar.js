@@ -1,19 +1,39 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard, Users, GraduationCap, CalendarCheck,
-  Wallet, Sparkles, Settings, LogOut, X, Bus,
+  Wallet, Settings, LogOut, X, Bus,
   Clock, Brain, ChevronLeft, ChevronRight,
   BookOpen, Video, MessageSquare, Calendar,
   Shield, FileText, Building, Search, Package,
-  Tv, Target, Clipboard, BarChart3, Wrench
+  Tv, Target, Clipboard, BarChart3
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [moduleVisibility, setModuleVisibility] = useState({});
+
+  const loadModuleVisibility = useCallback(() => {
+    try {
+      const saved = localStorage.getItem('module_visibility_settings');
+      if (saved) setModuleVisibility(JSON.parse(saved));
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    loadModuleVisibility();
+    const handleStorage = (e) => {
+      if (e.key === 'module_visibility_settings') loadModuleVisibility();
+    };
+    const handleCustomEvent = () => loadModuleVisibility();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('module_visibility_changed', handleCustomEvent);
+    const interval = setInterval(loadModuleVisibility, 3000);
+    return () => { window.removeEventListener('storage', handleStorage); window.removeEventListener('module_visibility_changed', handleCustomEvent); clearInterval(interval); };
+  }, [loadModuleVisibility]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
   const isDirector = user?.role === 'director';
@@ -24,27 +44,34 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     if (window.innerWidth < 1024 && onClose) onClose();
   };
 
+  const isModuleEnabled = (moduleKey) => {
+    if (!moduleKey) return true;
+    const vis = moduleVisibility[moduleKey];
+    if (!vis) return true;
+    return vis.schooltino !== false;
+  };
+
   const navItems = [
-    { path: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/app/students', icon: Users, label: 'Students', permKey: 'students' },
-    { path: '/app/staff', icon: Users, label: 'Staff Management', permKey: 'staff' },
-    { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes' },
-    { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance' },
-    { path: '/app/fees', icon: Wallet, label: 'Fee Management', permKey: 'fees' },
+    { path: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard', moduleKey: 'dashboard' },
+    { path: '/app/students', icon: Users, label: 'Students', permKey: 'students', moduleKey: 'students' },
+    { path: '/app/staff', icon: Users, label: 'Staff Management', permKey: 'staff', moduleKey: 'staff' },
+    { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes', moduleKey: 'classes' },
+    { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance', moduleKey: 'attendance' },
+    { path: '/app/fees', icon: Wallet, label: 'Fee Management', permKey: 'fees', moduleKey: 'fee_management' },
     { path: '/app/admissions', icon: Target, label: 'Admissions', permKey: 'students' },
-    { path: '/app/exams', icon: FileText, label: 'Exams & Reports', permKey: 'attendance' },
-    { path: '/app/timetable', icon: Clock, label: 'Timetable', permKey: 'attendance' },
-    { path: '/app/library', icon: BookOpen, label: 'Digital Library' },
-    { path: '/app/homework', icon: Clipboard, label: 'Homework' },
-    { path: '/app/live-classes', icon: Tv, label: 'Live Classes' },
-    { path: '/app/communication', icon: MessageSquare, label: 'Communication Hub', permKey: 'sms_center' },
+    { path: '/app/exams', icon: FileText, label: 'Exams & Reports', permKey: 'attendance', moduleKey: 'exams_reports' },
+    { path: '/app/timetable', icon: Clock, label: 'Timetable', permKey: 'attendance', moduleKey: 'timetable' },
+    { path: '/app/library', icon: BookOpen, label: 'Digital Library', moduleKey: 'digital_library' },
+    { path: '/app/homework', icon: Clipboard, label: 'Homework', moduleKey: 'homework' },
+    { path: '/app/live-classes', icon: Tv, label: 'Live Classes', moduleKey: 'live_classes' },
+    { path: '/app/communication', icon: MessageSquare, label: 'Communication Hub', permKey: 'sms_center', moduleKey: 'communication_hub' },
     { path: '/app/front-office', icon: Shield, label: 'Front Office', permKey: 'attendance' },
-    { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance' },
-    { path: '/app/calendar', icon: Calendar, label: 'Calendar' },
-    { path: '/app/analytics', icon: BarChart3, label: 'Analytics', permKey: 'school_analytics' },
-    { path: '/app/ai-tools', icon: Brain, label: 'AI Tools', permKey: 'ai_content' },
-    { path: '/app/cctv', icon: Video, label: 'CCTV Integration', permKey: 'cctv' },
-    { path: '/app/inventory', icon: Package, label: 'Inventory', permKey: 'settings' },
+    { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance', moduleKey: 'transport' },
+    { path: '/app/calendar', icon: Calendar, label: 'Calendar', moduleKey: 'calendar' },
+    { path: '/app/analytics', icon: BarChart3, label: 'Analytics', permKey: 'school_analytics', moduleKey: 'analytics' },
+    { path: '/app/ai-tools', icon: Brain, label: 'AI Tools', permKey: 'ai_content', moduleKey: 'ai_tools' },
+    { path: '/app/cctv', icon: Video, label: 'CCTV Integration', permKey: 'cctv', moduleKey: 'cctv' },
+    { path: '/app/inventory', icon: Package, label: 'Inventory', permKey: 'settings', moduleKey: 'inventory' },
     { path: '/app/multi-branch', icon: Building, label: 'Multi-Branch', directorOnly: true },
     { path: '/app/settings', icon: Settings, label: 'Settings', directorOnly: true },
   ];
@@ -52,6 +79,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const filteredItems = navItems.filter(item => {
     if (item.directorOnly && !isDirector) return false;
     if (item.permKey && !hasPermission(item.permKey)) return false;
+    if (!isModuleEnabled(item.moduleKey)) return false;
     if (searchQuery) return item.label.toLowerCase().includes(searchQuery.toLowerCase());
     return true;
   });
@@ -69,21 +97,8 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         <X className="w-4 h-4 text-blue-400" />
       </button>
 
-      {!isCollapsed && (
-        <div className="p-4 border-b border-blue-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-slate-800 font-bold text-sm tracking-tight">SchoolTino</h2>
-              <p className="text-[10px] text-blue-400">School Management</p>
-            </div>
-          </div>
-        </div>
-      )}
 
-      <NavLink to="/app/profile" onClick={handleNavClick} className="block px-4 py-3 border-b border-blue-100 hover:bg-blue-50 transition-colors">
+      <NavLink to="/app/profile" onClick={handleNavClick} className="block px-4 py-3 mt-2 border-b border-blue-100 hover:bg-blue-50 transition-colors">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0">
             {user?.photo_url ? (

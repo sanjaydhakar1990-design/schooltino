@@ -285,9 +285,9 @@ export default function LoginPage() {
   }
 
   const tabs = [
-    { id: 'admin', label: 'Admin' },
-    { id: 'teacher', label: 'Teacher' },
-    { id: 'student', label: 'Student' },
+    { id: 'admin', label: 'Admin', icon: '/icon-schooltino.png' },
+    { id: 'teacher', label: 'Teacher', icon: '/icon-teachtino.png' },
+    { id: 'student', label: 'Student', icon: '/icon-studytino.png' },
   ];
 
   return (
@@ -393,7 +393,8 @@ export default function LoginPage() {
 
                     <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
                       {tabs.map(tab => (
-                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }} className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${activeTab === tab.id ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
+                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }} className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeTab === tab.id ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
+                          <img src={tab.icon} alt="" className="w-5 h-5 rounded" />
                           {tab.label}
                         </button>
                       ))}

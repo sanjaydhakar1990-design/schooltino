@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -76,28 +76,44 @@ export default function DashboardPage() {
     { icon: Brain, label: 'AI Tools', path: '/app/ai-tools', color: 'bg-indigo-500', lightBg: 'bg-indigo-50', textColor: 'text-indigo-600' },
   ];
 
-  const modules = [
-    { icon: Users, label: 'Students', desc: 'Student records & profiles', path: '/app/students', gradient: 'from-blue-500 to-blue-600' },
-    { icon: UserCog, label: 'Staff', desc: 'Employee management', path: '/app/staff', gradient: 'from-purple-500 to-violet-500' },
-    { icon: GraduationCap, label: 'Classes', desc: 'Class management', path: '/app/classes', gradient: 'from-cyan-500 to-blue-500' },
-    { icon: CalendarCheck, label: 'Attendance', desc: 'Track attendance', path: '/app/attendance', gradient: 'from-teal-500 to-emerald-500' },
-    { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fees', gradient: 'from-emerald-500 to-green-500' },
+  const [moduleVis, setModuleVis] = useState({});
+  const loadVis = useCallback(() => {
+    try {
+      const saved = localStorage.getItem('module_visibility_settings');
+      if (saved) setModuleVis(JSON.parse(saved));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    loadVis();
+    const h = () => loadVis();
+    window.addEventListener('module_visibility_changed', h);
+    return () => window.removeEventListener('module_visibility_changed', h);
+  }, [loadVis]);
+  const isEnabled = (key) => !key || !moduleVis[key] || moduleVis[key].schooltino !== false;
+
+  const allModules = [
+    { icon: Users, label: 'Students', desc: 'Student records & profiles', path: '/app/students', gradient: 'from-blue-500 to-blue-600', mk: 'students' },
+    { icon: UserCog, label: 'Staff', desc: 'Employee management', path: '/app/staff', gradient: 'from-purple-500 to-violet-500', mk: 'staff' },
+    { icon: GraduationCap, label: 'Classes', desc: 'Class management', path: '/app/classes', gradient: 'from-cyan-500 to-blue-500', mk: 'classes' },
+    { icon: CalendarCheck, label: 'Attendance', desc: 'Track attendance', path: '/app/attendance', gradient: 'from-teal-500 to-emerald-500', mk: 'attendance' },
+    { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fees', gradient: 'from-emerald-500 to-green-500', mk: 'fee_management' },
     { icon: Target, label: 'Admissions', desc: 'Admission & CRM', path: '/app/admissions', gradient: 'from-cyan-500 to-blue-500' },
-    { icon: FileText, label: 'Exams', desc: 'Exam & reports', path: '/app/exams', gradient: 'from-pink-500 to-rose-500' },
-    { icon: Clock, label: 'Timetable', desc: 'Schedule classes', path: '/app/timetable', gradient: 'from-indigo-500 to-blue-500' },
-    { icon: BookOpen, label: 'Library', desc: 'Digital library', path: '/app/library', gradient: 'from-purple-500 to-fuchsia-500' },
-    { icon: Clipboard, label: 'Homework', desc: 'Assignments', path: '/app/homework', gradient: 'from-amber-500 to-orange-500' },
-    { icon: Tv, label: 'Live Classes', desc: 'Online teaching', path: '/app/live-classes', gradient: 'from-red-500 to-rose-500' },
-    { icon: MessageSquare, label: 'Communication', desc: 'SMS & WhatsApp', path: '/app/communication', gradient: 'from-sky-500 to-cyan-500' },
+    { icon: FileText, label: 'Exams', desc: 'Exam & reports', path: '/app/exams', gradient: 'from-pink-500 to-rose-500', mk: 'exams_reports' },
+    { icon: Clock, label: 'Timetable', desc: 'Schedule classes', path: '/app/timetable', gradient: 'from-indigo-500 to-blue-500', mk: 'timetable' },
+    { icon: BookOpen, label: 'Library', desc: 'Digital library', path: '/app/library', gradient: 'from-purple-500 to-fuchsia-500', mk: 'digital_library' },
+    { icon: Clipboard, label: 'Homework', desc: 'Assignments', path: '/app/homework', gradient: 'from-amber-500 to-orange-500', mk: 'homework' },
+    { icon: Tv, label: 'Live Classes', desc: 'Online teaching', path: '/app/live-classes', gradient: 'from-red-500 to-rose-500', mk: 'live_classes' },
+    { icon: MessageSquare, label: 'Communication', desc: 'SMS & WhatsApp', path: '/app/communication', gradient: 'from-sky-500 to-cyan-500', mk: 'communication_hub' },
     { icon: Shield, label: 'Front Office', desc: 'Visitor management', path: '/app/front-office', gradient: 'from-teal-500 to-cyan-500' },
-    { icon: Bus, label: 'Transport', desc: 'Routes & GPS', path: '/app/transport', gradient: 'from-orange-500 to-red-500' },
-    { icon: Calendar, label: 'Calendar', desc: 'Events & schedule', path: '/app/calendar', gradient: 'from-emerald-500 to-teal-500' },
-    { icon: BarChart3, label: 'Analytics', desc: 'Reports & insights', path: '/app/analytics', gradient: 'from-blue-500 to-indigo-500' },
-    { icon: Brain, label: 'AI Tools', desc: 'Paper, Events, Calendar', path: '/app/ai-tools', gradient: 'from-purple-500 to-pink-500' },
-    { icon: Video, label: 'CCTV', desc: 'Camera monitoring', path: '/app/cctv', gradient: 'from-red-500 to-rose-500' },
-    { icon: Package, label: 'Inventory', desc: 'Stock management', path: '/app/inventory', gradient: 'from-slate-500 to-zinc-600' },
+    { icon: Bus, label: 'Transport', desc: 'Routes & GPS', path: '/app/transport', gradient: 'from-orange-500 to-red-500', mk: 'transport' },
+    { icon: Calendar, label: 'Calendar', desc: 'Events & schedule', path: '/app/calendar', gradient: 'from-emerald-500 to-teal-500', mk: 'calendar' },
+    { icon: BarChart3, label: 'Analytics', desc: 'Reports & insights', path: '/app/analytics', gradient: 'from-blue-500 to-indigo-500', mk: 'analytics' },
+    { icon: Brain, label: 'AI Tools', desc: 'Paper, Events, Calendar', path: '/app/ai-tools', gradient: 'from-purple-500 to-pink-500', mk: 'ai_tools' },
+    { icon: Video, label: 'CCTV', desc: 'Camera monitoring', path: '/app/cctv', gradient: 'from-red-500 to-rose-500', mk: 'cctv' },
+    { icon: Package, label: 'Inventory', desc: 'Stock management', path: '/app/inventory', gradient: 'from-slate-500 to-zinc-600', mk: 'inventory' },
     { icon: Building, label: 'Multi-Branch', desc: 'Branch management', path: '/app/multi-branch', gradient: 'from-blue-500 to-indigo-500' },
   ];
+  const modules = allModules.filter(m => isEnabled(m.mk));
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';

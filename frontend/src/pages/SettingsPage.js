@@ -122,6 +122,7 @@ export default function SettingsPage() {
     };
     setModuleVisibility(newVisibility);
     localStorage.setItem('module_visibility_settings', JSON.stringify(newVisibility));
+    window.dispatchEvent(new Event('module_visibility_changed'));
   };
 
   const saveModuleVisibility = async () => {

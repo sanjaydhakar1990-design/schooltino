@@ -59,18 +59,27 @@ export const Layout = () => {
   }, [schoolName]);
 
   useEffect(() => {
-    if (schoolLogo && (schoolLogo.startsWith('data:') || schoolLogo.startsWith('http') || schoolLogo.startsWith('/'))) {
+    const setFavicon = (href) => {
       try {
         const existingIcons = document.querySelectorAll("link[rel*='icon']");
         existingIcons.forEach(icon => icon.remove());
         const faviconLink = document.createElement('link');
         faviconLink.rel = 'icon';
         faviconLink.type = 'image/png';
-        faviconLink.href = schoolLogo;
+        faviconLink.href = href;
         document.head.appendChild(faviconLink);
       } catch (error) {}
+    };
+
+    if (schoolLogo && (schoolLogo.startsWith('data:') || schoolLogo.startsWith('http') || schoolLogo.startsWith('/'))) {
+      setFavicon(schoolLogo);
+    } else {
+      const role = user?.role;
+      if (role === 'teacher') setFavicon('/icon-teachtino.png');
+      else if (role === 'student') setFavicon('/icon-studytino.png');
+      else setFavicon('/icon-schooltino.png');
     }
-  }, [schoolLogo]);
+  }, [schoolLogo, user?.role]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
