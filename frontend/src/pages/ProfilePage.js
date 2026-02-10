@@ -185,7 +185,7 @@ export default function ProfilePage() {
     try {
       const endpoint = user?.role === 'student' 
         ? `${API}/api/students/${user.id}/update-photo`
-        : `${API}/api/users/${user.id}/update-photo`;
+        : `${API}/api/staff/${user.id}/update-photo`;
       
       await axios.post(endpoint, {
         photo_data: imageData

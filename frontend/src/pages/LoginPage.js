@@ -285,9 +285,9 @@ export default function LoginPage() {
   }
 
   const tabs = [
-    { id: 'admin', label: 'Admin', icon: '/icon-schooltino.png' },
-    { id: 'teacher', label: 'Teacher', icon: '/icon-teachtino.png' },
-    { id: 'student', label: 'Student', icon: '/icon-studytino.png' },
+    { id: 'admin', label: 'Admin', icon: '/icon-schooltino-192.png' },
+    { id: 'teacher', label: 'Teacher', icon: '/icon-teachtino-192.png' },
+    { id: 'student', label: 'Student', icon: '/icon-studytino-192.png' },
   ];
 
   return (

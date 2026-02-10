@@ -2065,6 +2065,8 @@ class ProfilePhotoRequest(BaseModel):
 
 @api_router.post("/students/{student_id}/update-photo")
 async def update_student_photo(student_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] == "student" and current_user.get("id") != student_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update other student's photo")
     if current_user["role"] not in ["director", "principal", "admin", "teacher", "student"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     student = await db.students.find_one({"id": student_id})

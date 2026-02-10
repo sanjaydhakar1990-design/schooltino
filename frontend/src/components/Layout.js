@@ -75,9 +75,9 @@ export const Layout = () => {
       setFavicon(schoolLogo);
     } else {
       const role = user?.role;
-      if (role === 'teacher') setFavicon('/icon-teachtino.png');
-      else if (role === 'student') setFavicon('/icon-studytino.png');
-      else setFavicon('/icon-schooltino.png');
+      if (role === 'teacher') setFavicon('/icon-teachtino-192.png');
+      else if (role === 'student') setFavicon('/icon-studytino-192.png');
+      else setFavicon('/icon-schooltino-192.png');
     }
   }, [schoolLogo, user?.role]);
 
