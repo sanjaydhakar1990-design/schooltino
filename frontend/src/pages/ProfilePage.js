@@ -61,6 +61,13 @@ export default function ProfilePage() {
     role: user?.role || ''
   });
 
+  useEffect(() => {
+    if (user?.photo_url) {
+      const url = user.photo_url.startsWith('http') ? user.photo_url : `${API}${user.photo_url}`;
+      setPhotoUrl(url);
+    }
+  }, [user]);
+
   const getRoleBadge = (role) => {
     const badges = {
       director: { color: 'bg-purple-100 text-purple-700', label: 'Director' },
@@ -183,9 +190,14 @@ export default function ProfilePage() {
   const uploadPhoto = async (imageData) => {
     setUploading(true);
     try {
-      const endpoint = user?.role === 'student' 
-        ? `${API}/api/students/${user.id}/update-photo`
-        : `${API}/api/staff/${user.id}/update-photo`;
+      let endpoint;
+      if (user?.role === 'student') {
+        endpoint = `${API}/api/students/${user.id}/update-photo`;
+      } else if (user?.role === 'director' || user?.role === 'principal' || user?.role === 'admin') {
+        endpoint = `${API}/api/users/${user.id}/update-photo`;
+      } else {
+        endpoint = `${API}/api/staff/${user.id}/update-photo`;
+      }
       
       await axios.post(endpoint, {
         photo_data: imageData

@@ -68,6 +68,7 @@ export default function SettingsPage() {
     { key: 'cctv', label: 'CCTV' },
     { key: 'calendar', label: 'Calendar' },
     { key: 'ai_tools', label: 'AI Tools' },
+    { key: 'tino_ai_chat', label: 'Tino AI Chat' },
     { key: 'analytics', label: 'Analytics' },
     { key: 'multi_branch', label: 'Multi-Branch' },
   ];
@@ -583,11 +584,14 @@ export default function SettingsPage() {
                         className="w-full h-10 rounded-lg border border-slate-200 px-3"
                         data-testid="school-board-select"
                       >
-                        <option value="CBSE">CBSE (NCERT)</option>
-                        <option value="NCERT">NCERT</option>
                         <option value="MPBSE">MP Board (MPBSE)</option>
+                        <option value="RBSE">Rajasthan Board (RBSE)</option>
+                        <option value="CBSE">CBSE</option>
                         <option value="ICSE">ICSE</option>
-                        <option value="State Board">State Board</option>
+                        <option value="UP Board">UP Board</option>
+                        <option value="Bihar Board">Bihar Board</option>
+                        <option value="CG Board">CG Board (CGBSE)</option>
+                        <option value="State Board">Other State Board</option>
                         <option value="IB">IB</option>
                       </select>
                     </div>

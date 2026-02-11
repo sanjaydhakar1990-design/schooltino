@@ -19,7 +19,7 @@ import {
   FileUp, Heart, Briefcase, GraduationCap, MapPin, User, Wallet, Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
-import EmployeeIDCard from '../components/EmployeeIDCard';
+import IDCardViewer from '../components/IDCardViewer';
 import BulkImport from '../components/BulkImport';
 import DocumentUpload from '../components/DocumentUpload';
 
@@ -570,7 +570,6 @@ export default function EmployeeManagementPage() {
       const token = localStorage.getItem('token');
       const cardDataList = [];
       
-      // Fetch all card data first
       for (const emp of employees) {
         try {
           const res = await axios.get(API + '/api/id-card/generate/' + (emp.role || 'teacher') + '/' + emp.id, {
@@ -579,7 +578,8 @@ export default function EmployeeManagementPage() {
           if (res.data?.id_card) {
             cardDataList.push({
               card: res.data.id_card,
-              school: res.data.school
+              school: res.data.school,
+              photo: res.data.photo || null
             });
           }
         } catch (e) {
@@ -599,18 +599,20 @@ export default function EmployeeManagementPage() {
       let cardsHtml = cardDataList.map(item => {
         const card = item.card;
         const sch = item.school;
+        const photo = item.photo;
         const roleColor = card.role_color || '#1e40af';
         const isHigher = card.is_higher_authority;
         const logoImg = sch?.logo_url ? '<div class="watermark"><img src="' + sch.logo_url + '" alt=""/></div>' : '';
         const headerLogo = sch?.logo_url ? '<div class="header-logo"><img src="' + sch.logo_url + '" alt=""/></div>' : '';
         const cardStyle = 'background:linear-gradient(135deg,' + roleColor + ' 0%,' + roleColor + 'cc 50%,' + roleColor + ' 100%);' + (isHigher ? 'border:2px solid #fbbf24;' : '');
         const cardTypeStyle = isHigher ? 'background:rgba(251,191,36,0.3);border:1px solid rgba(251,191,36,0.5);' : '';
+        const photoHtml = photo ? '<div class="photo"><img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:2mm;" /></div>' : '<div class="photo"><span>Photo</span></div>';
         
         return '<div class="id-card" style="' + cardStyle + '">' + logoImg + 
           '<div class="content"><div class="header">' + headerLogo +
           '<div class="header-text"><div class="school-name">' + (sch?.name || 'School') + '</div>' +
           '<div class="card-type" style="' + cardTypeStyle + '">' + card.card_type + '</div></div></div>' +
-          '<div class="body"><div class="photo"><span>Photo</span></div>' +
+          '<div class="body">' + photoHtml +
           '<div class="details"><div class="name">' + card.name + '</div>' +
           '<div class="detail-row"><span class="label">Designation:</span><span class="value">' + card.designation + (card.designation_hindi ? ' / ' + card.designation_hindi : '') + '</span></div>' +
           (card.department ? '<div class="detail-row"><span class="label">Dept:</span><span class="value">' + card.department + '</span></div>' : '') +
@@ -630,7 +632,7 @@ export default function EmployeeManagementPage() {
         '.header-logo{width:7mm;height:7mm;background:white;border-radius:50%;padding:0.5mm}.header-logo img{width:100%;height:100%;object-fit:contain;border-radius:50%}' +
         '.header-text{flex:1;text-align:center}.school-name{font-size:8pt;font-weight:bold;text-transform:uppercase}' +
         '.card-type{font-size:5pt;background:rgba(255,255,255,0.25);padding:0.5mm 2mm;border-radius:2mm;display:inline-block;margin-top:1mm}' +
-        '.body{display:flex;gap:2mm;flex:1}.photo{width:16mm;height:20mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;color:#999;font-size:6pt}' +
+        '.body{display:flex;gap:2mm;flex:1}.photo{width:16mm;height:20mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;color:#999;font-size:6pt;overflow:hidden;flex-shrink:0}' +
         '.details{flex:1;font-size:6pt}.name{font-size:9pt;font-weight:bold;color:#fef08a;margin-bottom:1mm}' +
         '.detail-row{margin-bottom:0.5mm}.label{opacity:0.8;width:18mm;display:inline-block}.value{font-weight:600}' +
         '.contact{background:rgba(255,255,255,0.2);padding:1mm;border-radius:1mm;margin-top:1mm;font-size:5.5pt}' +
@@ -1863,11 +1865,12 @@ export default function EmployeeManagementPage() {
         </div>
       )}
 
-      {/* Employee ID Card Modal */}
       {showIDCard && selectedEmployeeForID && (
-        <EmployeeIDCard 
-          employee={selectedEmployeeForID}
-          school={school}
+        <IDCardViewer
+          personId={selectedEmployeeForID.id}
+          personType="staff"
+          schoolId={schoolId}
+          isOpen={showIDCard}
           onClose={() => {
             setShowIDCard(false);
             setSelectedEmployeeForID(null);

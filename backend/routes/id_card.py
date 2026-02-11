@@ -160,6 +160,10 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
         )
         if photo_record:
             photo = photo_record.get("photo_data")
+        elif person.get("photo"):
+            photo = person.get("photo")
+        elif person.get("photo_url"):
+            photo = person.get("photo_url")
     else:
         # Staff photo
         photo_record = await db.staff_photos.find_one(
@@ -170,6 +174,8 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
             photo = photo_record.get("photo_data")
         elif person.get("photo"):
             photo = person.get("photo")
+        elif person.get("photo_url"):
+            photo = person.get("photo_url")
     
     # Build ID card data
     if person_type == "student":

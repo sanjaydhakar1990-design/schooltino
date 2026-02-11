@@ -54,6 +54,17 @@ export const Layout = () => {
   const schoolName = schoolData?.name || user?.school_name;
   const currentPage = breadcrumbMap[location.pathname] || 'Page';
 
+  const isTinoChatEnabled = () => {
+    try {
+      const saved = localStorage.getItem('module_visibility_settings');
+      if (saved) {
+        const vis = JSON.parse(saved);
+        if (vis.tino_ai_chat?.schooltino === false) return false;
+      }
+    } catch (e) {}
+    return true;
+  };
+
   useEffect(() => {
     if (schoolName) document.title = schoolName;
   }, [schoolName]);
@@ -186,13 +197,15 @@ export const Layout = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <button
-                  onClick={() => setShowTinoChat(!showTinoChat)}
-                  className="p-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors"
-                  title="Tino AI"
-                >
-                  <Brain className="w-4 h-4" />
-                </button>
+                {isTinoChatEnabled() && (
+                  <button
+                    onClick={() => setShowTinoChat(!showTinoChat)}
+                    className="p-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors"
+                    title="Tino AI"
+                  >
+                    <Brain className="w-4 h-4" />
+                  </button>
+                )}
                 <div className="relative notification-dropdown">
                   <button
                     onClick={() => setShowNotifications(!showNotifications)}

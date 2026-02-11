@@ -806,7 +806,6 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
       const activeStudents = students.filter(s => s.status === 'active');
       const cardDataList = [];
       
-      // Fetch all card data first
       for (const student of activeStudents) {
         try {
           const res = await axios.get(API + '/id-card/generate/student/' + student.id, {
@@ -815,7 +814,8 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
           if (res.data?.id_card) {
             cardDataList.push({
               card: res.data.id_card,
-              school: res.data.school
+              school: res.data.school,
+              photo: res.data.photo || null
             });
           }
         } catch (e) {
@@ -835,15 +835,17 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
       let cardsHtml = cardDataList.map(item => {
         const card = item.card;
         const sch = item.school;
+        const photo = item.photo;
         const logoImg = sch?.logo_url ? '<div class="watermark"><img src="' + sch.logo_url + '" alt=""/></div>' : '';
         const headerLogo = sch?.logo_url ? '<div class="header-logo"><img src="' + sch.logo_url + '" alt=""/></div>' : '';
         const parentPhone = card.parent_phone || card.phone || '';
+        const photoHtml = photo ? '<div class="photo"><img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:2mm;" /></div>' : '<div class="photo"><span>Photo</span></div>';
         
         return '<div class="id-card">' + logoImg + 
           '<div class="content"><div class="header">' + headerLogo +
           '<div class="header-text"><div class="school-name">' + (sch?.name || 'School') + '</div>' +
           '<div class="card-type">STUDENT ID CARD</div></div></div>' +
-          '<div class="body"><div class="photo"><span>Photo</span></div>' +
+          '<div class="body">' + photoHtml +
           '<div class="details"><div class="name">' + card.name + '</div>' +
           '<div class="detail-row"><span class="label">Class:</span><span class="value">' + (card.class || '') + '</span></div>' +
           '<div class="detail-row"><span class="label">Father:</span><span class="value">' + (card.father_name || '') + '</span></div>' +
@@ -862,7 +864,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
         '.header-logo{width:7mm;height:7mm;background:white;border-radius:50%;padding:0.5mm}.header-logo img{width:100%;height:100%;object-fit:contain;border-radius:50%}' +
         '.header-text{flex:1;text-align:center}.school-name{font-size:8pt;font-weight:bold;text-transform:uppercase}' +
         '.card-type{font-size:5pt;background:rgba(255,255,255,0.25);padding:0.5mm 2mm;border-radius:2mm;display:inline-block;margin-top:1mm}' +
-        '.body{display:flex;gap:2mm;flex:1}.photo{width:16mm;height:20mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;color:#999;font-size:6pt}' +
+        '.body{display:flex;gap:2mm;flex:1}.photo{width:16mm;height:20mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;color:#999;font-size:6pt;overflow:hidden;flex-shrink:0}' +
         '.details{flex:1;font-size:6pt}.name{font-size:9pt;font-weight:bold;color:#fef08a;margin-bottom:1mm}' +
         '.detail-row{margin-bottom:0.5mm}.label{opacity:0.8;width:12mm;display:inline-block}.value{font-weight:600}' +
         '.contact{background:rgba(255,255,255,0.2);padding:1mm;border-radius:1mm;margin-top:1mm;font-size:5.5pt}' +

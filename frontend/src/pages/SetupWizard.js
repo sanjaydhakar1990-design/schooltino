@@ -8,9 +8,9 @@ import { Label } from '../components/ui/label';
 import {
   School, MapPin, Phone, Globe, Building2, Users,
   Image, Share2, Check, ChevronRight, ChevronLeft,
-  Loader2, Save, SkipForward, Upload, Camera, X,
+  Loader2, Save, SkipForward, Upload, Camera, X, Plus,
   Wallet, CreditCard, Bell, Calendar as CalendarIcon,
-  FileText, Smartphone, Settings as SettingsIcon
+  FileText, Smartphone, Settings as SettingsIcon, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,16 +36,20 @@ export default function SetupWizard() {
   const logoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
-    name: '', address: '', city: '', state: '', pincode: '', board_type: 'CBSE',
+    name: '', address: '', city: '', state: '', pincode: '', board_type: 'MPBSE',
     phone: '', email: '', website_url: '', registration_number: '', established_year: '',
     school_type: '', medium: '', shift: '', total_capacity: '', motto: '',
+    school_start_time: '08:00', school_end_time: '14:00',
     principal_name: '', principal_message: '', about_school: '', vision: '', mission: '',
     logo_url: '',
+    logo_size: 100, logo_opacity: 100,
     logo_apply_to: {
       idCards: true, notices: true, calendar: true, appHeader: true,
       certificates: true, feeBills: true, appIcon: true
     },
-    razorpay_key_id: '', razorpay_key_secret: '', upi_id: '', payment_mode: '',
+    razorpay_key_id: '', razorpay_key_secret: '',
+    upi_ids: [{ name: 'Default UPI', upi_id: '' }],
+    payment_mode: '',
     bank_name: '', bank_account_no: '', bank_ifsc: '', bank_branch: '',
     facebook_url: '', instagram_url: '', youtube_url: '', whatsapp_number: ''
   });
@@ -78,8 +82,11 @@ export default function SetupWizard() {
             idCards: true, notices: true, calendar: true, appHeader: true,
             certificates: true, feeBills: true, appIcon: true
           },
+          school_start_time: d.school_start_time || '08:00', school_end_time: d.school_end_time || '14:00',
+          logo_size: d.logo_size || 100, logo_opacity: d.logo_opacity || 100,
           razorpay_key_id: d.razorpay_key_id || '', razorpay_key_secret: d.razorpay_key_secret || '',
-          upi_id: d.upi_id || '', payment_mode: d.payment_mode || '',
+          upi_ids: d.upi_ids || [{ name: 'Default UPI', upi_id: d.upi_id || '' }],
+          payment_mode: d.payment_mode || '',
           bank_name: d.bank_name || '', bank_account_no: d.bank_account_no || '',
           bank_ifsc: d.bank_ifsc || '', bank_branch: d.bank_branch || '',
           facebook_url: d.facebook_url || '', instagram_url: d.instagram_url || '',
@@ -225,9 +232,17 @@ export default function SetupWizard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {renderField('School Name *', 'name', 'text', 'Enter school name')}
             {renderField('Board Type', 'board_type', 'text', '', [
-              { value: 'CBSE', label: 'CBSE' }, { value: 'ICSE', label: 'ICSE' },
-              { value: 'State Board', label: 'State Board' }, { value: 'IB', label: 'IB' },
-              { value: 'IGCSE', label: 'IGCSE' }, { value: 'Other', label: 'Other' }
+              { value: 'MPBSE', label: 'MP Board (MPBSE)' },
+              { value: 'RBSE', label: 'Rajasthan Board (RBSE)' },
+              { value: 'CBSE', label: 'CBSE' },
+              { value: 'ICSE', label: 'ICSE' },
+              { value: 'UP Board', label: 'UP Board' },
+              { value: 'Bihar Board', label: 'Bihar Board' },
+              { value: 'CG Board', label: 'CG Board (CGBSE)' },
+              { value: 'State Board', label: 'Other State Board' },
+              { value: 'IB', label: 'IB' },
+              { value: 'IGCSE', label: 'IGCSE' },
+              { value: 'Other', label: 'Other' }
             ])}
             <div className="md:col-span-2">{renderField('Address', 'address', 'text', 'Full school address')}</div>
             {renderField('City', 'city', 'text', 'City name')}
@@ -262,6 +277,14 @@ export default function SetupWizard() {
             ])}
             {renderField('Total Capacity', 'total_capacity', 'number', 'e.g., 500')}
             <div className="md:col-span-2">{renderField('School Motto', 'motto', 'text', 'Your school motto or tagline')}</div>
+            <div className="md:col-span-2 border-t border-slate-200 pt-4 mt-2">
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">School Timing (स्कूल का समय)</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {renderField('School Start Time', 'school_start_time', 'time')}
+                {renderField('School End Time', 'school_end_time', 'time')}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">Ye timing attendance, timetable aur notifications mein use hogi</p>
+            </div>
           </div>
         )}
 
@@ -316,6 +339,31 @@ export default function SetupWizard() {
               </div>
             </div>
 
+            {logoPreview && (
+              <div className="border-t border-slate-200 pt-4">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">Logo Size & Transparency</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-slate-600">Size: {formData.logo_size}%</Label>
+                    <input type="range" min="30" max="200" value={formData.logo_size}
+                      onChange={(e) => setFormData(prev => ({ ...prev, logo_size: parseInt(e.target.value) }))}
+                      className="w-full mt-1 accent-blue-600" />
+                    <div className="flex justify-between text-xs text-slate-400"><span>30%</span><span>200%</span></div>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-slate-600">Transparency: {formData.logo_opacity}%</Label>
+                    <input type="range" min="10" max="100" value={formData.logo_opacity}
+                      onChange={(e) => setFormData(prev => ({ ...prev, logo_opacity: parseInt(e.target.value) }))}
+                      className="w-full mt-1 accent-blue-600" />
+                    <div className="flex justify-between text-xs text-slate-400"><span>10%</span><span>100%</span></div>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-center p-4 bg-slate-50 rounded-lg">
+                  <img src={logoPreview} alt="Preview" style={{ width: `${formData.logo_size}px`, opacity: formData.logo_opacity / 100 }} className="object-contain max-h-24" />
+                </div>
+              </div>
+            )}
+
             <div className="border-t border-slate-200 pt-4">
               <h3 className="text-sm font-semibold text-slate-900 mb-2">Logo Apply Settings</h3>
               <p className="text-xs text-slate-500 mb-3">Select where the logo should appear</p>
@@ -359,13 +407,59 @@ export default function SetupWizard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {renderField('Razorpay Key ID', 'razorpay_key_id', 'text', 'rzp_live_xxxxxx')}
               {renderField('Razorpay Key Secret', 'razorpay_key_secret', 'password', '••••••••')}
-              {renderField('UPI ID', 'upi_id', 'text', 'school@upi')}
               {renderField('Payment Mode', 'payment_mode', 'text', '', [
                 { value: '', label: 'Select Payment Mode' },
                 { value: 'online', label: 'Online Only' },
                 { value: 'cash', label: 'Cash Only' },
                 { value: 'both', label: 'Both Online & Cash' }
               ])}
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-900">UPI IDs (PhonePe, GPay, Paytm, etc.)</h3>
+                <Button type="button" variant="outline" size="sm" onClick={() => setFormData(prev => ({
+                  ...prev, upi_ids: [...(prev.upi_ids || []), { name: '', upi_id: '' }]
+                }))}>
+                  <Plus className="w-3 h-3 mr-1" /> Add UPI
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {(formData.upi_ids || []).map((upi, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <select value={upi.name} onChange={(e) => {
+                      const updated = [...formData.upi_ids];
+                      updated[idx] = { ...updated[idx], name: e.target.value };
+                      setFormData(prev => ({ ...prev, upi_ids: updated }));
+                    }} className="w-40 border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+                      <option value="">Select App</option>
+                      <option value="PhonePe">PhonePe</option>
+                      <option value="Google Pay">Google Pay (GPay)</option>
+                      <option value="Paytm">Paytm</option>
+                      <option value="BHIM UPI">BHIM UPI</option>
+                      <option value="Amazon Pay">Amazon Pay</option>
+                      <option value="WhatsApp Pay">WhatsApp Pay</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <Input value={upi.upi_id} placeholder="e.g., school@ybl"
+                      onChange={(e) => {
+                        const updated = [...formData.upi_ids];
+                        updated[idx] = { ...updated[idx], upi_id: e.target.value };
+                        setFormData(prev => ({ ...prev, upi_ids: updated }));
+                      }} className="flex-1" />
+                    {formData.upi_ids.length > 1 && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => {
+                        setFormData(prev => ({ ...prev, upi_ids: prev.upi_ids.filter((_, i) => i !== idx) }));
+                      }} className="text-red-500 hover:text-red-700 px-2">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
               {renderField('Bank Name', 'bank_name', 'text', 'e.g., State Bank of India')}
               {renderField('Bank Account Number', 'bank_account_no', 'text', 'Account number')}
               {renderField('IFSC Code', 'bank_ifsc', 'text', 'e.g., SBIN0001234')}
@@ -373,7 +467,7 @@ export default function SetupWizard() {
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
               <p className="font-medium mb-1">Note:</p>
-              <p>Payment settings will be used in Fee Management for online fee collection via Razorpay. UPI ID will be shown to parents for direct payment.</p>
+              <p>Payment settings will be used in Fee Management. Multiple UPI IDs parents ko different payment apps ka option dete hain.</p>
             </div>
           </div>
         )}
