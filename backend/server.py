@@ -557,29 +557,54 @@ class StaffResponse(BaseModel):
 
 # Unified Employee Model (Staff + User combined)
 class UnifiedEmployeeCreate(BaseModel):
-    # Personal Details
     name: str
     mobile: str
     email: EmailStr
     address: Optional[str] = None
     photo_url: Optional[str] = None
-    
-    # Employment Details
     school_id: str
-    designation: str  # teacher, accountant, librarian, peon, principal, admin_staff, clerk
+    designation: str
     department: Optional[str] = None
     qualification: Optional[str] = None
     joining_date: Optional[str] = None
     salary: Optional[float] = None
-    
-    # Login & Permissions
-    create_login: bool = True  # Whether to create login account
-    password: Optional[str] = None  # Default: mobile number
-    role: str = "teacher"  # Role for permissions
-    custom_permissions: Optional[Dict[str, bool]] = None  # Override default permissions
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+    blood_group: Optional[str] = None
+    marital_status: Optional[str] = None
+    father_name: Optional[str] = None
+    spouse_name: Optional[str] = None
+    nationality: Optional[str] = "Indian"
+    permanent_address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    aadhar_no: Optional[str] = None
+    pan_number: Optional[str] = None
+    uan_number: Optional[str] = None
+    esi_number: Optional[str] = None
+    voter_id: Optional[str] = None
+    driving_license: Optional[str] = None
+    specialization: Optional[str] = None
+    experience_years: Optional[str] = None
+    previous_employer: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_account_no: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    bank_branch: Optional[str] = None
+    salary_type: Optional[str] = "monthly"
+    pf_applicable: Optional[bool] = False
+    esi_applicable: Optional[bool] = False
+    tds_applicable: Optional[bool] = False
+    emergency_contact: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_relation: Optional[str] = None
+    create_login: bool = True
+    password: Optional[str] = None
+    role: str = "teacher"
+    custom_permissions: Optional[Dict[str, bool]] = None
     can_teach: bool = False
     
-    # Validator to convert empty strings to None for all optional fields
     @validator('*', pre=True)
     def empty_str_to_none(cls, v):
         if v == "":
@@ -600,6 +625,37 @@ class UnifiedEmployeeResponse(BaseModel):
     qualification: Optional[str] = None
     joining_date: Optional[str] = None
     salary: Optional[float] = None
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+    blood_group: Optional[str] = None
+    marital_status: Optional[str] = None
+    father_name: Optional[str] = None
+    spouse_name: Optional[str] = None
+    nationality: Optional[str] = None
+    permanent_address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    aadhar_no: Optional[str] = None
+    pan_number: Optional[str] = None
+    uan_number: Optional[str] = None
+    esi_number: Optional[str] = None
+    voter_id: Optional[str] = None
+    driving_license: Optional[str] = None
+    specialization: Optional[str] = None
+    experience_years: Optional[str] = None
+    previous_employer: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_account_no: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    bank_branch: Optional[str] = None
+    salary_type: Optional[str] = None
+    pf_applicable: Optional[bool] = False
+    esi_applicable: Optional[bool] = False
+    tds_applicable: Optional[bool] = False
+    emergency_contact: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_relation: Optional[str] = None
     is_active: bool = True
     created_at: Optional[str] = None
     has_login: bool = False
@@ -2184,7 +2240,7 @@ async def update_student_photo(student_id: str, request: ProfilePhotoRequest, cu
 async def update_staff_photo(staff_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
     if current_user["role"] not in ["director", "principal", "admin"] and current_user.get("id") != staff_id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    employee = await db.employees.find_one({"id": staff_id})
+    employee = await db.staff.find_one({"$or": [{"id": staff_id}, {"employee_id": staff_id}]})
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
     if request.photo_data.startswith("data:image"):
@@ -2201,7 +2257,13 @@ async def update_staff_photo(staff_id: str, request: ProfilePhotoRequest, curren
         photo_url = f"/api/uploads/images/{file_name}"
     else:
         photo_url = request.photo_data
-    await db.employees.update_one({"id": staff_id}, {"$set": {"photo_url": photo_url}})
+    await db.staff.update_one(
+        {"$or": [{"id": staff_id}, {"employee_id": staff_id}]},
+        {"$set": {"photo_url": photo_url}}
+    )
+    user_id = employee.get("user_id")
+    if user_id:
+        await db.users.update_one({"id": user_id}, {"$set": {"photo_url": photo_url}})
     return {"message": "Photo updated", "photo_url": photo_url}
 
 @api_router.post("/users/{user_id}/update-photo")
@@ -3055,7 +3117,6 @@ async def create_unified_employee(
     if employee.custom_permissions:
         permissions.update(employee.custom_permissions)
     
-    # Create staff record
     staff_data = {
         "id": str(uuid.uuid4()),
         "employee_id": employee_id,
@@ -3070,6 +3131,37 @@ async def create_unified_employee(
         "qualification": employee.qualification or "",
         "joining_date": employee.joining_date or datetime.now(timezone.utc).date().isoformat(),
         "salary": employee.salary,
+        "gender": employee.gender,
+        "dob": employee.dob,
+        "blood_group": employee.blood_group,
+        "marital_status": employee.marital_status,
+        "father_name": employee.father_name,
+        "spouse_name": employee.spouse_name,
+        "nationality": employee.nationality,
+        "permanent_address": employee.permanent_address,
+        "city": employee.city,
+        "state": employee.state,
+        "pincode": employee.pincode,
+        "aadhar_no": employee.aadhar_no,
+        "pan_number": employee.pan_number,
+        "uan_number": employee.uan_number,
+        "esi_number": employee.esi_number,
+        "voter_id": employee.voter_id,
+        "driving_license": employee.driving_license,
+        "specialization": employee.specialization,
+        "experience_years": employee.experience_years,
+        "previous_employer": employee.previous_employer,
+        "bank_name": employee.bank_name,
+        "bank_account_no": employee.bank_account_no,
+        "ifsc_code": employee.ifsc_code,
+        "bank_branch": employee.bank_branch,
+        "salary_type": employee.salary_type,
+        "pf_applicable": employee.pf_applicable,
+        "esi_applicable": employee.esi_applicable,
+        "tds_applicable": employee.tds_applicable,
+        "emergency_contact": employee.emergency_contact,
+        "emergency_contact_name": employee.emergency_contact_name,
+        "emergency_relation": employee.emergency_relation,
         "is_active": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "has_login": employee.create_login,
@@ -3202,7 +3294,6 @@ async def update_employee(
     if employee.custom_permissions:
         permissions.update(employee.custom_permissions)
     
-    # Update staff record
     update_data = {
         "name": employee.name,
         "mobile": employee.mobile,
@@ -3214,6 +3305,37 @@ async def update_employee(
         "qualification": employee.qualification,
         "joining_date": employee.joining_date,
         "salary": employee.salary,
+        "gender": employee.gender,
+        "dob": employee.dob,
+        "blood_group": employee.blood_group,
+        "marital_status": employee.marital_status,
+        "father_name": employee.father_name,
+        "spouse_name": employee.spouse_name,
+        "nationality": employee.nationality,
+        "permanent_address": employee.permanent_address,
+        "city": employee.city,
+        "state": employee.state,
+        "pincode": employee.pincode,
+        "aadhar_no": employee.aadhar_no,
+        "pan_number": employee.pan_number,
+        "uan_number": employee.uan_number,
+        "esi_number": employee.esi_number,
+        "voter_id": employee.voter_id,
+        "driving_license": employee.driving_license,
+        "specialization": employee.specialization,
+        "experience_years": employee.experience_years,
+        "previous_employer": employee.previous_employer,
+        "bank_name": employee.bank_name,
+        "bank_account_no": employee.bank_account_no,
+        "ifsc_code": employee.ifsc_code,
+        "bank_branch": employee.bank_branch,
+        "salary_type": employee.salary_type,
+        "pf_applicable": employee.pf_applicable,
+        "esi_applicable": employee.esi_applicable,
+        "tds_applicable": employee.tds_applicable,
+        "emergency_contact": employee.emergency_contact,
+        "emergency_contact_name": employee.emergency_contact_name,
+        "emergency_relation": employee.emergency_relation,
         "role": role,
         "permissions": permissions,
         "has_login": employee.create_login,

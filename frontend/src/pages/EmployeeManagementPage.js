@@ -298,55 +298,55 @@ export default function EmployeeManagementPage() {
     setUploadingPhoto(true);
     try {
       const token = localStorage.getItem('token');
+      
+      if (employeeId) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const base64Data = e.target.result;
+            const res = await axios.post(`${API}/api/staff/${employeeId}/update-photo`, 
+              { photo_data: base64Data },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const photoUrl = res.data?.photo_url || base64Data;
+            toast.success('Photo updated!');
+            fetchEmployees();
+            if (selectedProfile?.id === employeeId) {
+              setSelectedProfile(prev => ({ ...prev, photo_url: photoUrl }));
+            }
+          } catch (err) {
+            console.error('Photo update error:', err);
+            toast.error('Photo save nahi ho saka. Please try again.');
+          } finally {
+            setUploadingPhoto(false);
+          }
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+      
       const fd = new FormData();
       fd.append('file', file);
       fd.append('school_id', schoolId);
       
-      const res = await axios.post(`${API}/api/upload/photo`, fd, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-      });
-      
-      const photoUrl = res.data?.url || res.data?.photo_url;
-      
-      if (employeeId) {
-        await axios.put(`${API}/api/employees/${employeeId}`, 
-          { photo_url: photoUrl, school_id: schoolId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        toast.success('Photo updated!');
-        fetchEmployees();
-        if (selectedProfile?.id === employeeId) {
-          setSelectedProfile(prev => ({ ...prev, photo_url: photoUrl }));
-        }
-      } else {
+      try {
+        const res = await axios.post(`${API}/api/upload/photo`, fd, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+        });
+        const photoUrl = res.data?.url || res.data?.photo_url;
         setFormData(prev => ({ ...prev, photo_url: photoUrl }));
         toast.success('Photo uploaded!');
+      } catch (uploadErr) {
+        const reader2 = new FileReader();
+        reader2.onload = (e2) => {
+          setFormData(prev => ({ ...prev, photo_url: e2.target.result }));
+          toast.success('Photo ready!');
+        };
+        reader2.readAsDataURL(file);
       }
     } catch (error) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64Url = e.target.result;
-        if (employeeId) {
-          try {
-            const token = localStorage.getItem('token');
-            await axios.put(`${API}/api/employees/${employeeId}`, 
-              { photo_url: base64Url, school_id: schoolId },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            toast.success('Photo updated!');
-            fetchEmployees();
-            if (selectedProfile?.id === employeeId) {
-              setSelectedProfile(prev => ({ ...prev, photo_url: base64Url }));
-            }
-          } catch (err) {
-            toast.error('Failed to save photo');
-          }
-        } else {
-          setFormData(prev => ({ ...prev, photo_url: base64Url }));
-          toast.success('Photo ready!');
-        }
-      };
-      reader.readAsDataURL(file);
+      console.error('Photo error:', error);
+      toast.error('Photo upload failed');
     } finally {
       setUploadingPhoto(false);
     }
@@ -364,6 +364,37 @@ export default function EmployeeManagementPage() {
       qualification: '',
       joining_date: new Date().toISOString().split('T')[0],
       salary: '',
+      gender: 'male',
+      dob: '',
+      blood_group: '',
+      marital_status: '',
+      father_name: '',
+      spouse_name: '',
+      nationality: 'Indian',
+      permanent_address: '',
+      city: '',
+      state: '',
+      pincode: '',
+      aadhar_no: '',
+      pan_number: '',
+      uan_number: '',
+      esi_number: '',
+      voter_id: '',
+      driving_license: '',
+      specialization: '',
+      experience_years: '',
+      previous_employer: '',
+      bank_name: '',
+      bank_account_no: '',
+      ifsc_code: '',
+      bank_branch: '',
+      salary_type: 'monthly',
+      pf_applicable: false,
+      esi_applicable: false,
+      tds_applicable: false,
+      emergency_contact: '',
+      emergency_contact_name: '',
+      emergency_relation: '',
       create_login: true,
       password: '',
       role: 'teacher',
@@ -392,6 +423,37 @@ export default function EmployeeManagementPage() {
       qualification: employee.qualification || '',
       joining_date: employee.joining_date || '',
       salary: employee.salary || '',
+      gender: employee.gender || 'male',
+      dob: employee.dob || '',
+      blood_group: employee.blood_group || '',
+      marital_status: employee.marital_status || '',
+      father_name: employee.father_name || '',
+      spouse_name: employee.spouse_name || '',
+      nationality: employee.nationality || 'Indian',
+      permanent_address: employee.permanent_address || '',
+      city: employee.city || '',
+      state: employee.state || '',
+      pincode: employee.pincode || '',
+      aadhar_no: employee.aadhar_no || '',
+      pan_number: employee.pan_number || '',
+      uan_number: employee.uan_number || '',
+      esi_number: employee.esi_number || '',
+      voter_id: employee.voter_id || '',
+      driving_license: employee.driving_license || '',
+      specialization: employee.specialization || '',
+      experience_years: employee.experience_years || '',
+      previous_employer: employee.previous_employer || '',
+      bank_name: employee.bank_name || '',
+      bank_account_no: employee.bank_account_no || '',
+      ifsc_code: employee.ifsc_code || '',
+      bank_branch: employee.bank_branch || '',
+      salary_type: employee.salary_type || 'monthly',
+      pf_applicable: employee.pf_applicable || false,
+      esi_applicable: employee.esi_applicable || false,
+      tds_applicable: employee.tds_applicable || false,
+      emergency_contact: employee.emergency_contact || '',
+      emergency_contact_name: employee.emergency_contact_name || '',
+      emergency_relation: employee.emergency_relation || '',
       create_login: employee.has_login || false,
       password: '',
       role: employee.role || 'teacher',
