@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import './i18n';
@@ -41,6 +42,36 @@ import StudyTinoLoginPage from './pages/StudyTinoLoginPage';
 import StudentDashboard from './pages/StudentDashboard';
 
 import Layout from './components/Layout';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('App Error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc',padding:'20px'}}>
+          <div style={{textAlign:'center',maxWidth:'400px'}}>
+            <div style={{fontSize:'48px',marginBottom:'16px'}}>⚠️</div>
+            <h2 style={{fontSize:'20px',fontWeight:'bold',color:'#1e293b',marginBottom:'8px'}}>Something went wrong</h2>
+            <p style={{fontSize:'14px',color:'#64748b',marginBottom:'16px'}}>{this.state.error?.message || 'An unexpected error occurred'}</p>
+            <button onClick={() => { this.setState({ hasError: false, error: null }); window.location.href = '/app/dashboard'; }} style={{padding:'10px 24px',background:'#3b82f6',color:'white',border:'none',borderRadius:'8px',fontSize:'14px',fontWeight:'600',cursor:'pointer'}}>
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -157,19 +188,21 @@ function AppRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <LanguageProvider>
-          <AppRoutes />
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton
-            toastOptions={{ style: { fontFamily: 'Inter, sans-serif' } }}
-          />
-        </LanguageProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <LanguageProvider>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              richColors
+              closeButton
+              toastOptions={{ style: { fontFamily: 'Inter, sans-serif' } }}
+            />
+          </LanguageProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

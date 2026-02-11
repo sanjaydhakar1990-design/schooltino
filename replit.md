@@ -4,6 +4,10 @@
 Schooltino is a comprehensive, AI-powered school management platform inspired by NextOS K-12 Suite. It features a clean, simplified architecture with ~25 core modules across three portals (SchoolTino Admin, TeachTino Teachers, StudyTino Students/Parents). The platform covers student/staff management, finance, attendance, communication, and AI tools.
 
 ## Recent Changes (Feb 2026)
+- **ErrorBoundary Added**: React ErrorBoundary in App.js catches runtime crashes and shows friendly error page instead of blank white screen. Prevents "blank page" issue.
+- **ID Card System Enhanced**: IDCardViewer rewritten with 5 templates (Classic, Modern, Elegant, Minimal, Vertical), 8 color themes, field visibility controls (father/mother name, DOB, blood group, Samgra ID, etc.), settings panel with template/color/field toggles, persistent settings via localStorage ('id_card_settings'), proper print support for each template.
+- **Student Photo Upload Fixed**: Camera icon overlay on split-view student profile photo with hover effect, blue badge indicator, click-to-upload functionality. Uses splitPhotoInputRef, handleProfilePhotoUpload function.
+- **index.js Import Fix**: Changed `@/App` to `./App` and `@/index.css` to `./index.css` for safer imports (craco alias also exists).
 - **Module Management Enhanced**: Added Admissions CRM, Multi-Branch, and Front Office to MODULE_LIST with enable/disable toggles. Added moduleKey to sidebar entries so all modules can be hidden/shown via Settings.
 - **StudyTino Removed from Module Management**: Students should never access admin modules. Removed StudyTino column from module toggle table. Students use separate StudentDashboard with fixed modules.
 - **Teacher Approval System (TeachTino)**: Teacher actions (notices, etc.) now go through admin approval. Teachers submit requests → Admin gets notifications → Approve/Reject. Backend endpoints: POST /api/teacher/requests, GET /api/admin/teacher-requests, PUT /api/admin/teacher-requests/{id}. Teacher sees request status in "My Requests" section. Admin sees pending requests on Dashboard with approve/reject buttons.
