@@ -99,6 +99,7 @@ export default function StudentsPage() {
   const [profileStudent, setProfileStudent] = useState(null);
   const [uploadingProfilePhoto, setUploadingProfilePhoto] = useState(false);
   const profilePhotoInputRef = useRef(null);
+  const splitPhotoInputRef = useRef(null);
   
   // Split view state
   const [splitViewStudent, setSplitViewStudent] = useState(null);
@@ -330,7 +331,9 @@ export default function StudentsPage() {
         const response = await axios.post(`${API}/students/${studentId}/update-photo`, {
           photo_data: event.target.result
         }, { headers: { Authorization: `Bearer ${token}` } });
-        setProfileStudent(prev => ({ ...prev, photo_url: response.data.photo_url }));
+        const newPhotoUrl = response.data.photo_url;
+        setProfileStudent(prev => prev ? { ...prev, photo_url: newPhotoUrl } : prev);
+        setSplitViewStudent(prev => prev && prev.id === studentId ? { ...prev, photo_url: newPhotoUrl } : prev);
         fetchStudents();
         toast.success('Photo upload ho gayi!');
       } catch (error) {
@@ -2087,15 +2090,28 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
               <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-100">
                 <div className="flex items-start gap-6">
                   <div className="flex gap-4">
+                    <input type="file" ref={splitPhotoInputRef} className="hidden" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleProfilePhotoUpload(e, splitViewStudent.id)} />
                     <div className="text-center">
-                      <div className="w-24 h-24 rounded-xl bg-white border-3 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
-                        {splitViewStudent.photo_url ? (
-                          <img src={splitViewStudent.photo_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-12 h-12 text-slate-300" />
-                        )}
+                      <div className="relative group cursor-pointer" onClick={() => splitPhotoInputRef.current?.click()}>
+                        <div className="w-24 h-24 rounded-xl bg-white border-3 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
+                          {splitViewStudent.photo_url ? (
+                            <img src={splitViewStudent.photo_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-12 h-12 text-slate-300" />
+                          )}
+                        </div>
+                        <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          {uploadingProfilePhoto ? (
+                            <Loader2 className="w-6 h-6 text-white animate-spin" />
+                          ) : (
+                            <Camera className="w-6 h-6 text-white" />
+                          )}
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                          <Camera className="w-3.5 h-3.5 text-white" />
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 mt-1.5 font-medium">Profile Photo</p>
+                      <p className="text-xs text-slate-500 mt-1.5 font-medium">Click to upload</p>
                     </div>
                   </div>
                   <div className="flex-1">

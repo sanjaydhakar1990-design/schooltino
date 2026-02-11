@@ -9,7 +9,7 @@ import {
   Video, MessageSquare, Calendar, Brain, Shield,
   BarChart3, ChevronRight, ArrowUpRight, ArrowDownRight,
   Target, Package, Building, Tv,
-  BookOpen, Clipboard, Wrench, UserPlus, Sparkles
+  BookOpen, Clipboard, Wrench, UserPlus, AlertCircle
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -19,6 +19,7 @@ export default function DashboardPage() {
   const { schoolId, user, schoolData } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [teacherRequests, setTeacherRequests] = useState([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [moduleVis, setModuleVis] = useState({});
@@ -27,7 +28,9 @@ export default function DashboardPage() {
     try {
       const saved = localStorage.getItem('module_visibility_settings');
       if (saved) setModuleVis(JSON.parse(saved));
-    } catch {}
+    } catch (e) {
+      console.error('Error loading module visibility:', e);
+    }
   }, []);
 
   useEffect(() => {
@@ -36,6 +39,46 @@ export default function DashboardPage() {
     window.addEventListener('module_visibility_changed', h);
     return () => window.removeEventListener('module_visibility_changed', h);
   }, [loadVis]);
+
+  const fetchStats = useCallback(async () => {
+    if (!schoolId) {
+      setLoading(false);
+      return;
+    }
+    try {
+      setError(null);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/dashboard/stats?school_id=${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStats(response.data);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+      setStats({ total_students: 0, total_staff: 0, fee_collection_month: 0, attendance_today: { present: 0 }, pending_fees: 0 });
+    } finally {
+      setLoading(false);
+    }
+  }, [schoolId]);
+
+  const fetchTeacherRequests = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/admin/teacher-requests?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
+      setTeacherRequests(res.data || []);
+    } catch (e) {
+      console.error('Teacher requests fetch failed:', e);
+    }
+  }, []);
+
+  const fetchPendingCount = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/admin/pending-count`, { headers: { Authorization: `Bearer ${token}` } });
+      setPendingCount(res.data?.pending_requests || 0);
+    } catch (e) {
+      console.error('Pending count fetch failed:', e);
+    }
+  }, []);
 
   useEffect(() => {
     if (schoolId) {
@@ -47,34 +90,7 @@ export default function DashboardPage() {
     } else {
       setLoading(false);
     }
-  }, [schoolId]);
-
-  const fetchStats = async () => {
-    try {
-      const response = await axios.get(`${API}/dashboard/stats?school_id=${schoolId}`);
-      setStats(response.data);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTeacherRequests = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/admin/teacher-requests?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
-      setTeacherRequests(res.data || []);
-    } catch (e) {}
-  };
-
-  const fetchPendingCount = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/admin/pending-count`, { headers: { Authorization: `Bearer ${token}` } });
-      setPendingCount(res.data?.pending_requests || 0);
-    } catch (e) {}
-  };
+  }, [schoolId, user?.role, fetchStats, fetchTeacherRequests, fetchPendingCount]);
 
   const handleApproveRequest = async (reqId) => {
     try {
@@ -82,7 +98,9 @@ export default function DashboardPage() {
       await axios.put(`${API}/admin/teacher-requests/${reqId}`, { action: 'approved', note: 'Approved by admin' }, { headers: { Authorization: `Bearer ${token}` } });
       setTeacherRequests(prev => prev.filter(r => r.id !== reqId));
       setPendingCount(prev => Math.max(0, prev - 1));
-    } catch (e) {}
+    } catch (e) {
+      console.error('Approve failed:', e);
+    }
   };
 
   const handleRejectRequest = async (reqId) => {
@@ -91,13 +109,16 @@ export default function DashboardPage() {
       await axios.put(`${API}/admin/teacher-requests/${reqId}`, { action: 'rejected', note: 'Rejected by admin' }, { headers: { Authorization: `Bearer ${token}` } });
       setTeacherRequests(prev => prev.filter(r => r.id !== reqId));
       setPendingCount(prev => Math.max(0, prev - 1));
-    } catch (e) {}
+    } catch (e) {
+      console.error('Reject failed:', e);
+    }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <p className="text-sm text-gray-400">Loading dashboard...</p>
       </div>
     );
   }
@@ -117,12 +138,14 @@ export default function DashboardPage() {
     );
   }
 
+  const safeStats = stats || { total_students: 0, total_staff: 0, fee_collection_month: 0, attendance_today: { present: 0 }, pending_fees: 0 };
+
   const statCards = [
-    { label: 'Total Students', value: stats?.total_students || 0, icon: Users, gradient: 'from-blue-500 to-blue-600', trend: '+12%', trendUp: true },
-    { label: 'Total Staff', value: stats?.total_staff || 0, icon: UserCog, gradient: 'from-purple-500 to-purple-600', trend: '+5%', trendUp: true },
-    { label: 'Fee Collected', value: `\u20B9${((stats?.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee, gradient: 'from-emerald-500 to-teal-600', trend: '+18%', trendUp: true },
-    { label: 'Attendance Today', value: `${stats?.attendance_today?.present || 0}%`, icon: CalendarCheck, gradient: 'from-orange-500 to-amber-600', trend: '+2%', trendUp: true },
-    { label: 'Pending Fees', value: `\u20B9${((stats?.pending_fees || 0) / 1000).toFixed(0)}K`, icon: Wallet, gradient: 'from-red-500 to-rose-600', trend: '-8%', trendUp: false },
+    { label: 'Total Students', value: safeStats.total_students || 0, icon: Users, gradient: 'from-blue-500 to-blue-600', trend: '+12%', trendUp: true },
+    { label: 'Total Staff', value: safeStats.total_staff || 0, icon: UserCog, gradient: 'from-purple-500 to-purple-600', trend: '+5%', trendUp: true },
+    { label: 'Fee Collected', value: `₹${((safeStats.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee, gradient: 'from-emerald-500 to-teal-600', trend: '+18%', trendUp: true },
+    { label: 'Attendance Today', value: `${safeStats.attendance_today?.present || 0}%`, icon: CalendarCheck, gradient: 'from-orange-500 to-amber-600', trend: '+2%', trendUp: true },
+    { label: 'Pending Fees', value: `₹${((safeStats.pending_fees || 0) / 1000).toFixed(0)}K`, icon: Wallet, gradient: 'from-red-500 to-rose-600', trend: '-8%', trendUp: false },
   ];
 
   const quickActions = [

@@ -1,41 +1,284 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { Printer, Loader2, X, RotateCcw } from 'lucide-react';
+import { Printer, Loader2, RotateCcw, Settings2, Palette, Layout, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Role-based gradient colors with Higher Authority special styling
-const getRoleGradient = (roleColor, isHigherAuthority = false) => {
-  // Higher Authority gets premium gold-accented gradients
-  if (isHigherAuthority) {
-    const higherAuthorityMap = {
-      '#b91c1c': 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 30%, #dc2626 50%, #b91c1c 70%, #7f1d1d 100%)', // Dark Red - Director
-      '#dc2626': 'linear-gradient(135deg, #991b1b 0%, #dc2626 30%, #ef4444 50%, #dc2626 70%, #991b1b 100%)', // Red - Principal
-      '#ea580c': 'linear-gradient(135deg, #c2410c 0%, #ea580c 30%, #f97316 50%, #ea580c 70%, #c2410c 100%)', // Orange - VP
-      '#9333ea': 'linear-gradient(135deg, #7e22ce 0%, #9333ea 30%, #a855f7 50%, #9333ea 70%, #7e22ce 100%)', // Violet - Co-Director
-    };
-    return higherAuthorityMap[roleColor] || higherAuthorityMap['#b91c1c'];
+const ID_CARD_TEMPLATES = [
+  { id: 'classic', name: 'Classic', nameHi: 'क्लासिक', desc: 'Standard horizontal ID card' },
+  { id: 'modern', name: 'Modern', nameHi: 'मॉडर्न', desc: 'Clean modern design with side accent' },
+  { id: 'elegant', name: 'Elegant', nameHi: 'एलिगेंट', desc: 'Premium design with gold accents' },
+  { id: 'minimal', name: 'Minimal', nameHi: 'मिनिमल', desc: 'Simple clean layout' },
+  { id: 'vertical', name: 'Vertical', nameHi: 'वर्टिकल', desc: 'Portrait orientation ID card' },
+];
+
+const COLOR_THEMES = [
+  { id: 'blue', name: 'Blue', colors: ['#1e40af', '#3b82f6'] },
+  { id: 'green', name: 'Green', colors: ['#047857', '#10b981'] },
+  { id: 'red', name: 'Red', colors: ['#b91c1c', '#ef4444'] },
+  { id: 'purple', name: 'Purple', colors: ['#7e22ce', '#a855f7'] },
+  { id: 'indigo', name: 'Indigo', colors: ['#3730a3', '#6366f1'] },
+  { id: 'teal', name: 'Teal', colors: ['#0f766e', '#14b8a6'] },
+  { id: 'slate', name: 'Slate', colors: ['#334155', '#64748b'] },
+  { id: 'orange', name: 'Orange', colors: ['#c2410c', '#f97316'] },
+];
+
+const DEFAULT_SETTINGS = {
+  template: 'classic',
+  colorTheme: 'blue',
+  showBloodGroup: true,
+  showFatherName: true,
+  showMotherName: false,
+  showAddress: false,
+  showDOB: false,
+  showAdmissionNo: true,
+  showRollNo: true,
+  showPhone: true,
+  showEmergencyContact: true,
+  showDesignation: true,
+  showDepartment: true,
+  showEmpId: true,
+  showSamgraId: true,
+  showAadhar: false,
+  showValidUntil: true,
+  showSchoolPhone: true,
+  showSchoolAddress: true,
+  backSideContent: 'school_info',
+};
+
+const loadIDCardSettings = () => {
+  try {
+    const saved = localStorage.getItem('id_card_settings');
+    if (saved) return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+  } catch (e) {}
+  return DEFAULT_SETTINGS;
+};
+
+const saveIDCardSettings = (settings) => {
+  localStorage.setItem('id_card_settings', JSON.stringify(settings));
+};
+
+const getGradient = (theme, angle = 135) => {
+  const t = COLOR_THEMES.find(c => c.id === theme) || COLOR_THEMES[0];
+  return `linear-gradient(${angle}deg, ${t.colors[0]} 0%, ${t.colors[1]} 50%, ${t.colors[0]} 100%)`;
+};
+
+const renderClassicFront = (card, school, photo, settings, personType, gradient) => {
+  return `
+    <div class="id-card" style="width:85.6mm;height:54mm;background:${gradient};border-radius:3mm;overflow:hidden;position:relative;color:white;padding:3mm;box-sizing:border-box;">
+      ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.12;z-index:0;"><img src="${school.logo_url}" style="width:30mm;height:30mm;object-fit:contain;" /></div>` : ''}
+      <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:2mm;padding-bottom:2mm;border-bottom:0.3mm solid rgba(255,255,255,0.3);margin-bottom:2mm;">
+          ${school?.logo_url ? `<div style="width:8mm;height:8mm;background:white;border-radius:50%;padding:0.5mm;flex-shrink:0;"><img src="${school.logo_url}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" /></div>` : ''}
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:9pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;">${school?.name || 'School'}</div>
+            ${settings.showSchoolAddress && school?.address ? `<div style="font-size:5.5pt;opacity:0.85;margin-top:0.3mm;">${school.address}</div>` : ''}
+            <div style="font-size:6pt;background:rgba(255,255,255,0.25);padding:0.5mm 2mm;border-radius:2mm;display:inline-block;margin-top:0.8mm;font-weight:bold;">${card?.card_type || (personType === 'student' ? 'STUDENT ID CARD' : 'STAFF ID CARD')}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:3mm;flex:1;">
+          <div style="width:18mm;flex-shrink:0;">
+            <div style="width:18mm;height:22mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<span style="color:#999;font-size:7pt;">Photo</span>'}
+            </div>
+          </div>
+          <div style="flex:1;font-size:7pt;">
+            <div style="font-size:10pt;font-weight:bold;color:#fef08a;margin-bottom:1.5mm;">${card?.name || ''}</div>
+            ${personType === 'student' ? renderStudentDetails(card, settings) : renderStaffDetails(card, settings)}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;font-size:5pt;opacity:0.8;margin-top:auto;padding-top:1mm;">
+          <span>${settings.showSchoolPhone && school?.phone ? '📞 ' + school.phone : ''}</span>
+          <span>${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}</span>
+        </div>
+      </div>
+    </div>`;
+};
+
+const renderModernFront = (card, school, photo, settings, personType, gradient) => {
+  const t = COLOR_THEMES.find(c => c.id === settings.colorTheme) || COLOR_THEMES[0];
+  return `
+    <div class="id-card" style="width:85.6mm;height:54mm;background:white;border-radius:3mm;overflow:hidden;position:relative;color:#1e293b;box-sizing:border-box;display:flex;">
+      <div style="width:8mm;background:${gradient};flex-shrink:0;"></div>
+      <div style="flex:1;padding:3mm;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:2mm;padding-bottom:1.5mm;border-bottom:0.3mm solid #e2e8f0;margin-bottom:2mm;">
+          ${school?.logo_url ? `<div style="width:7mm;height:7mm;flex-shrink:0;"><img src="${school.logo_url}" style="width:100%;height:100%;object-fit:contain;border-radius:1mm;" /></div>` : ''}
+          <div style="flex:1;">
+            <div style="font-size:8pt;font-weight:bold;color:${t.colors[0]};">${school?.name || 'School'}</div>
+            ${settings.showSchoolAddress && school?.address ? `<div style="font-size:5pt;color:#94a3b8;">${school.address}</div>` : ''}
+          </div>
+          <div style="font-size:5.5pt;background:${t.colors[0]};color:white;padding:1mm 2mm;border-radius:1.5mm;font-weight:bold;">${personType === 'student' ? 'STUDENT' : 'STAFF'}</div>
+        </div>
+        <div style="display:flex;gap:3mm;flex:1;">
+          <div style="width:18mm;flex-shrink:0;">
+            <div style="width:18mm;height:22mm;background:#f1f5f9;border-radius:2mm;border:0.5mm solid ${t.colors[1]};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<span style="color:#999;font-size:7pt;">Photo</span>'}
+            </div>
+          </div>
+          <div style="flex:1;font-size:7pt;">
+            <div style="font-size:10pt;font-weight:bold;color:${t.colors[0]};margin-bottom:1.5mm;">${card?.name || ''}</div>
+            ${personType === 'student' ? renderStudentDetails(card, settings, t.colors[0]) : renderStaffDetails(card, settings, t.colors[0])}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:5pt;color:#94a3b8;margin-top:auto;padding-top:1mm;">
+          <span>${settings.showSchoolPhone && school?.phone ? '📞 ' + school.phone : ''}</span>
+          <span>${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}</span>
+        </div>
+      </div>
+    </div>`;
+};
+
+const renderElegantFront = (card, school, photo, settings, personType, gradient) => {
+  return `
+    <div class="id-card" style="width:85.6mm;height:54mm;background:${gradient};border-radius:3mm;overflow:hidden;position:relative;color:white;padding:3mm;box-sizing:border-box;border:1mm solid #fbbf24;">
+      ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.1;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
+      <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:2mm;padding-bottom:1.5mm;border-bottom:0.5mm solid #fbbf24;margin-bottom:2mm;">
+          ${school?.logo_url ? `<div style="width:9mm;height:9mm;background:white;border-radius:50%;padding:0.5mm;flex-shrink:0;border:0.5mm solid #fbbf24;"><img src="${school.logo_url}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" /></div>` : ''}
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:9pt;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#fef08a;">${school?.name || 'School'}</div>
+            ${settings.showSchoolAddress && school?.address ? `<div style="font-size:5.5pt;opacity:0.85;">${school.address}</div>` : ''}
+            <div style="font-size:6pt;background:rgba(251,191,36,0.3);border:0.3mm solid rgba(251,191,36,0.5);padding:0.5mm 3mm;border-radius:2mm;display:inline-block;margin-top:0.8mm;font-weight:bold;color:#fef08a;">${card?.card_type || (personType === 'student' ? '✦ STUDENT ID ✦' : '✦ STAFF ID ✦')}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:3mm;flex:1;">
+          <div style="width:18mm;flex-shrink:0;">
+            <div style="width:18mm;height:22mm;background:white;border-radius:2mm;border:0.5mm solid #fbbf24;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<span style="color:#999;font-size:7pt;">Photo</span>'}
+            </div>
+          </div>
+          <div style="flex:1;font-size:7pt;">
+            <div style="font-size:10pt;font-weight:bold;color:#fef08a;margin-bottom:1.5mm;">${card?.name || ''}</div>
+            ${personType === 'student' ? renderStudentDetails(card, settings) : renderStaffDetails(card, settings)}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:5pt;opacity:0.8;margin-top:auto;padding-top:1mm;border-top:0.3mm solid rgba(251,191,36,0.3);">
+          <span>${settings.showSchoolPhone && school?.phone ? '📞 ' + school.phone : ''}</span>
+          <span>${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}</span>
+        </div>
+      </div>
+    </div>`;
+};
+
+const renderMinimalFront = (card, school, photo, settings, personType, gradient) => {
+  const t = COLOR_THEMES.find(c => c.id === settings.colorTheme) || COLOR_THEMES[0];
+  return `
+    <div class="id-card" style="width:85.6mm;height:54mm;background:white;border-radius:3mm;overflow:hidden;position:relative;color:#1e293b;box-sizing:border-box;border:0.5mm solid #e2e8f0;">
+      <div style="height:2mm;background:${gradient};"></div>
+      <div style="padding:2.5mm 3mm;display:flex;flex-direction:column;height:calc(100% - 2mm);">
+        <div style="display:flex;align-items:center;gap:2mm;margin-bottom:2mm;">
+          ${school?.logo_url ? `<img src="${school.logo_url}" style="width:6mm;height:6mm;object-fit:contain;" />` : ''}
+          <span style="font-size:7pt;font-weight:bold;color:${t.colors[0]};">${school?.name || 'School'}</span>
+        </div>
+        <div style="display:flex;gap:3mm;flex:1;">
+          <div style="width:18mm;flex-shrink:0;">
+            <div style="width:18mm;height:22mm;background:#f8fafc;border-radius:2mm;border:0.3mm solid #e2e8f0;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<span style="color:#cbd5e1;font-size:7pt;">Photo</span>'}
+            </div>
+          </div>
+          <div style="flex:1;font-size:7pt;">
+            <div style="font-size:10pt;font-weight:bold;color:${t.colors[0]};margin-bottom:1mm;">${card?.name || ''}</div>
+            ${personType === 'student' ? renderStudentDetails(card, settings, t.colors[0]) : renderStaffDetails(card, settings, t.colors[0])}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:5pt;color:#94a3b8;margin-top:auto;padding-top:1mm;">
+          <span>${settings.showSchoolPhone && school?.phone ? '📞 ' + school.phone : ''}</span>
+          <span>${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}</span>
+        </div>
+      </div>
+    </div>`;
+};
+
+const renderVerticalFront = (card, school, photo, settings, personType, gradient) => {
+  return `
+    <div class="id-card" style="width:54mm;height:85.6mm;background:${gradient};border-radius:3mm;overflow:hidden;position:relative;color:white;padding:3mm;box-sizing:border-box;">
+      ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.1;z-index:0;"><img src="${school.logo_url}" style="width:30mm;height:30mm;object-fit:contain;" /></div>` : ''}
+      <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <div style="width:100%;padding-bottom:2mm;border-bottom:0.3mm solid rgba(255,255,255,0.3);margin-bottom:2mm;">
+          ${school?.logo_url ? `<div style="width:10mm;height:10mm;background:white;border-radius:50%;padding:0.5mm;margin:0 auto 1mm;"><img src="${school.logo_url}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" /></div>` : ''}
+          <div style="font-size:8pt;font-weight:bold;text-transform:uppercase;">${school?.name || 'School'}</div>
+          <div style="font-size:5.5pt;background:rgba(255,255,255,0.25);padding:0.5mm 2mm;border-radius:2mm;display:inline-block;margin-top:1mm;font-weight:bold;">${personType === 'student' ? 'STUDENT' : 'STAFF'}</div>
+        </div>
+        <div style="width:22mm;height:28mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:2mm;">
+          ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<span style="color:#999;font-size:7pt;">Photo</span>'}
+        </div>
+        <div style="font-size:10pt;font-weight:bold;color:#fef08a;margin-bottom:1.5mm;">${card?.name || ''}</div>
+        <div style="font-size:7pt;text-align:left;width:100%;">
+          ${personType === 'student' ? renderStudentDetails(card, settings) : renderStaffDetails(card, settings)}
+        </div>
+        <div style="font-size:5pt;opacity:0.8;margin-top:auto;width:100%;text-align:center;">
+          ${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}
+        </div>
+      </div>
+    </div>`;
+};
+
+const renderStudentDetails = (card, settings, labelColor) => {
+  const lc = labelColor || 'inherit';
+  const labelStyle = labelColor ? `color:${labelColor};opacity:1;` : 'opacity:0.7;';
+  let html = '';
+  html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Class:</span><span style="font-weight:600;">${card?.class || ''}</span></div>`;
+  if (settings.showRollNo && card?.roll_no) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Roll No:</span><span style="font-weight:600;">${card.roll_no}</span></div>`;
+  if (settings.showAdmissionNo && card?.admission_no) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Adm No:</span><span style="font-weight:600;">${card.admission_no}</span></div>`;
+  if (settings.showFatherName && card?.father_name) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Father:</span><span style="font-weight:600;">${card.father_name}</span></div>`;
+  if (settings.showMotherName && card?.mother_name) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Mother:</span><span style="font-weight:600;">${card.mother_name}</span></div>`;
+  if (settings.showDOB && card?.dob) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">DOB:</span><span style="font-weight:600;">${card.dob}</span></div>`;
+  if (settings.showBloodGroup && card?.blood_group) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Blood:</span><span style="font-weight:600;">${card.blood_group}</span></div>`;
+  if (settings.showSamgraId && card?.samgra_id) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Samgra:</span><span style="font-weight:600;">${card.samgra_id}</span></div>`;
+  if (settings.showAddress && card?.address) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Address:</span><span style="font-weight:600;font-size:6pt;">${card.address}</span></div>`;
+  if (settings.showPhone && (card?.parent_phone || card?.phone)) {
+    const phoneColor = labelColor ? `background:${labelColor}15;border:0.3mm solid ${labelColor}30;` : 'background:rgba(255,255,255,0.2);';
+    html += `<div style="${phoneColor}border-radius:1.5mm;padding:1mm 1.5mm;margin-top:1mm;font-size:6.5pt;"><span style="font-weight:bold;${labelColor ? `color:${labelColor};` : 'color:#fca5a5;'}">📞 Parent: </span><span style="font-weight:bold;">${card.parent_phone || card.phone}</span></div>`;
   }
-  
-  const colorMap = {
-    '#b91c1c': 'linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #b91c1c 100%)', // Dark Red - Director
-    '#dc2626': 'linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #dc2626 100%)', // Red - Principal
-    '#ea580c': 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #ea580c 100%)', // Orange - VP
-    '#9333ea': 'linear-gradient(135deg, #9333ea 0%, #a855f7 50%, #9333ea 100%)', // Violet - Co-Director
-    '#047857': 'linear-gradient(135deg, #047857 0%, #059669 50%, #047857 100%)', // Dark Green - Admin
-    '#1e40af': 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)', // Blue - Teacher
-    '#059669': 'linear-gradient(135deg, #059669 0%, #10b981 50%, #059669 100%)', // Green - Accountant
-    '#0891b2': 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #0891b2 100%)', // Cyan - Clerk
-    '#4f46e5': 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4f46e5 100%)', // Indigo - Librarian
-    '#64748b': 'linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #64748b 100%)', // Slate - Support
-    '#ca8a04': 'linear-gradient(135deg, #ca8a04 0%, #eab308 50%, #ca8a04 100%)', // Yellow - Driver
-    '#374151': 'linear-gradient(135deg, #374151 0%, #6b7280 50%, #374151 100%)', // Gray - Guard
-    '#78716c': 'linear-gradient(135deg, #78716c 0%, #a8a29e 50%, #78716c 100%)', // Stone - Helper
-    '#a16207': 'linear-gradient(135deg, #a16207 0%, #ca8a04 50%, #a16207 100%)', // Amber - Cook
-  };
-  return colorMap[roleColor] || 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)';
+  return html;
+};
+
+const renderStaffDetails = (card, settings, labelColor) => {
+  const lc = labelColor || 'inherit';
+  const labelStyle = labelColor ? `color:${labelColor};opacity:1;` : 'opacity:0.7;';
+  let html = '';
+  if (settings.showDesignation) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Desig:</span><span style="font-weight:600;">${card?.designation || ''}${card?.designation_hindi ? ' / ' + card.designation_hindi : ''}</span></div>`;
+  if (settings.showDepartment && card?.department) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Dept:</span><span style="font-weight:600;">${card.department}</span></div>`;
+  if (settings.showEmpId && card?.id_number) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Emp ID:</span><span style="font-weight:600;">${card.id_number}</span></div>`;
+  if (settings.showBloodGroup && card?.blood_group) html += `<div style="margin-bottom:1mm;"><span style="width:14mm;display:inline-block;${labelStyle}">Blood:</span><span style="font-weight:600;">${card.blood_group}</span></div>`;
+  if (settings.showPhone && card?.phone) {
+    const phoneColor = labelColor ? `background:${labelColor}15;border:0.3mm solid ${labelColor}30;` : 'background:rgba(255,255,255,0.2);';
+    html += `<div style="${phoneColor}border-radius:1.5mm;padding:1mm 1.5mm;margin-top:1mm;font-size:6.5pt;"><span style="font-weight:bold;${labelColor ? `color:${labelColor};` : 'color:#86efac;'}">📞 </span><span style="font-weight:bold;">${card.phone}</span></div>`;
+  }
+  if (settings.showEmergencyContact && card?.emergency_contact) {
+    const ecColor = labelColor ? `background:${labelColor}10;border:0.3mm solid ${labelColor}20;` : 'background:rgba(255,255,255,0.2);';
+    html += `<div style="${ecColor}border-radius:1.5mm;padding:1mm 1.5mm;margin-top:1mm;font-size:6.5pt;"><span style="font-weight:bold;${labelColor ? `color:${labelColor};` : 'color:#fca5a5;'}">🆘 Emergency: </span><span style="font-weight:bold;">${card.emergency_contact}</span></div>`;
+  }
+  return html;
+};
+
+const renderBack = (card, school, personType, settings, gradient) => {
+  const isVertical = settings.template === 'vertical';
+  const w = isVertical ? '54mm' : '85.6mm';
+  const h = isVertical ? '85.6mm' : '54mm';
+  return `
+    <div class="id-card-back" style="width:${w};height:${h};background:${gradient};border-radius:3mm;overflow:hidden;position:relative;color:white;box-sizing:border-box;display:flex;align-items:center;justify-content:center;">
+      ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.15;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
+      <div style="position:relative;z-index:1;text-align:center;padding:4mm;">
+        <div style="font-size:${isVertical ? '16pt' : '20pt'};font-weight:bold;letter-spacing:2px;margin-bottom:3mm;">${personType === 'student' ? 'STUDENT OF' : (card?.designation || 'STAFF')}</div>
+        ${personType !== 'student' && card?.designation_hindi ? `<div style="font-size:10pt;opacity:0.9;margin-bottom:2mm;">${card.designation_hindi}</div>` : ''}
+        ${personType !== 'student' ? '<div style="font-size:8pt;letter-spacing:3px;opacity:0.7;margin-bottom:2mm;">OF</div>' : ''}
+        <div style="font-size:${isVertical ? '10pt' : '12pt'};font-weight:bold;text-transform:uppercase;padding:0 4mm;line-height:1.4;">${school?.name || 'School Name'}</div>
+        ${settings.showSchoolAddress && school?.address ? `<div style="font-size:7pt;margin-top:3mm;opacity:0.8;max-width:90%;margin-left:auto;margin-right:auto;">${school.address}</div>` : ''}
+        ${settings.showSchoolPhone && school?.phone ? `<div style="font-size:8pt;margin-top:2mm;opacity:0.9;">📞 ${school.phone}</div>` : ''}
+        <div style="position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-size:6pt;opacity:0.6;">If found, please return to school</div>
+      </div>
+    </div>`;
+};
+
+const TEMPLATE_RENDERERS = {
+  classic: renderClassicFront,
+  modern: renderModernFront,
+  elegant: renderElegantFront,
+  minimal: renderMinimalFront,
+  vertical: renderVerticalFront,
 };
 
 export default function IDCardViewer({ 
@@ -47,7 +290,9 @@ export default function IDCardViewer({
 }) {
   const [loading, setLoading] = useState(true);
   const [cardData, setCardData] = useState(null);
-  const [showBack, setShowBack] = useState(false); // Toggle front/back
+  const [showBack, setShowBack] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState(loadIDCardSettings);
   const printRef = useRef();
 
   useEffect(() => {
@@ -77,204 +322,44 @@ export default function IDCardViewer({
     }
   };
 
+  const updateSetting = (key, value) => {
+    setSettings(prev => {
+      const updated = { ...prev, [key]: value };
+      saveIDCardSettings(updated);
+      return updated;
+    });
+  };
+
+  const gradient = getGradient(settings.colorTheme);
+
+  const getCardHtml = () => {
+    if (!cardData) return '';
+    const { id_card: card, school, photo } = cardData;
+    const renderer = TEMPLATE_RENDERERS[settings.template] || TEMPLATE_RENDERERS.classic;
+    return renderer(card, school, photo, settings, personType, gradient);
+  };
+
+  const getBackHtml = () => {
+    if (!cardData) return '';
+    const { id_card: card, school } = cardData;
+    return renderBack(card, school, personType, settings, gradient);
+  };
+
   const printCard = () => {
+    const isVertical = settings.template === 'vertical';
+    const pageSize = isVertical ? '54mm 85.6mm' : '85.6mm 54mm';
+    const html = showBack ? getBackHtml() : getCardHtml();
     const printWindow = window.open('', '_blank');
-    const card = cardData?.id_card;
-    const school = cardData?.school;
-    const photo = cardData?.photo;
-    const roleColor = card?.role_color || '#1e40af';
-    const isHigherAuthority = card?.is_higher_authority || false;
-
-    // Get gradient based on role
-    const gradientMap = {
-      '#b91c1c': isHigherAuthority ? 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 30%, #dc2626 50%, #b91c1c 70%, #7f1d1d 100%)' : 'linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #b91c1c 100%)',
-      '#dc2626': isHigherAuthority ? 'linear-gradient(135deg, #991b1b 0%, #dc2626 30%, #ef4444 50%, #dc2626 70%, #991b1b 100%)' : 'linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #dc2626 100%)',
-      '#ea580c': 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #ea580c 100%)',
-      '#9333ea': 'linear-gradient(135deg, #9333ea 0%, #a855f7 50%, #9333ea 100%)',
-      '#047857': 'linear-gradient(135deg, #047857 0%, #059669 50%, #047857 100%)',
-      '#1e40af': 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)',
-      '#059669': 'linear-gradient(135deg, #059669 0%, #10b981 50%, #059669 100%)',
-      '#0891b2': 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #0891b2 100%)',
-      '#4f46e5': 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4f46e5 100%)',
-      '#64748b': 'linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #64748b 100%)',
-      '#ca8a04': 'linear-gradient(135deg, #ca8a04 0%, #eab308 50%, #ca8a04 100%)',
-      '#374151': 'linear-gradient(135deg, #374151 0%, #6b7280 50%, #374151 100%)',
-    };
-    const gradient = gradientMap[roleColor] || gradientMap['#1e40af'];
-    
-    // Higher authority gets gold border
-    const borderStyle = isHigherAuthority ? '2px solid #fbbf24' : 'none';
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>ID Card - ${card?.name || 'Print'}</title>
-          <style>
-            @page { size: 85.6mm 54mm; margin: 0; }
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: Arial, sans-serif; 
-              display: flex; 
-              justify-content: center; 
-              align-items: center; 
-              min-height: 100vh;
-              background: #f0f0f0;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-            .id-card {
-              width: 85.6mm;
-              height: 54mm;
-              background: ${gradient};
-              border-radius: 8px;
-              overflow: hidden;
-              position: relative;
-              color: white;
-              padding: 3mm;
-              border: ${borderStyle};
-            }
-            .watermark {
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              opacity: 0.15;
-              width: 30mm;
-              height: 30mm;
-              z-index: 0;
-            }
-            .watermark img { width: 100%; height: 100%; object-fit: contain; }
-            .content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
-            .header {
-              display: flex;
-              align-items: center;
-              gap: 2mm;
-              padding-bottom: 2mm;
-              border-bottom: 0.3mm solid rgba(255,255,255,0.3);
-              margin-bottom: 2mm;
-            }
-            .header-logo {
-              width: 8mm;
-              height: 8mm;
-              background: white;
-              border-radius: 50%;
-              padding: 0.5mm;
-              flex-shrink: 0;
-            }
-            .header-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
-            .header-text { flex: 1; text-align: center; }
-            .school-name { font-size: 9pt; font-weight: bold; text-transform: uppercase; }
-            .school-address { font-size: 6pt; opacity: 0.9; margin-top: 0.5mm; }
-            .card-type { 
-              font-size: 6pt; 
-              background: ${isHigherAuthority ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.25)'}; 
-              padding: 0.5mm 2mm; 
-              border-radius: 2mm;
-              display: inline-block;
-              margin-top: 1mm;
-              font-weight: bold;
-              ${isHigherAuthority ? 'border: 0.3mm solid rgba(251,191,36,0.5);' : ''}
-            }
-            .body { display: flex; gap: 3mm; flex: 1; }
-            .photo-section { width: 18mm; flex-shrink: 0; }
-            .photo {
-              width: 18mm;
-              height: 22mm;
-              background: white;
-              border-radius: 2mm;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              overflow: hidden;
-            }
-            .photo img { width: 100%; height: 100%; object-fit: cover; }
-            .photo-placeholder { color: #999; font-size: 7pt; }
-            .details { flex: 1; font-size: 7pt; }
-            .name { font-size: 10pt; font-weight: bold; color: #fef08a; margin-bottom: 1.5mm; }
-            .detail-row { margin-bottom: 1mm; display: flex; }
-            .detail-label { width: 14mm; opacity: 0.8; }
-            .detail-value { flex: 1; font-weight: 600; }
-            .contact-box {
-              background: rgba(255,255,255,0.2);
-              padding: 1mm 1.5mm;
-              border-radius: 1.5mm;
-              margin-top: 1.5mm;
-              font-size: 6.5pt;
-            }
-            .contact-label { color: #fca5a5; font-weight: bold; }
-            .contact-value { font-weight: bold; }
-            .footer {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-end;
-              font-size: 5pt;
-              opacity: 0.8;
-              margin-top: auto;
-              padding-top: 1mm;
-            }
-            @media print {
-              body { background: white; }
-              .id-card { box-shadow: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="id-card">
-            ${school?.logo_url ? `<div class="watermark"><img src="${school.logo_url}" alt=""/></div>` : ''}
-            <div class="content">
-              <div class="header">
-                ${school?.logo_url ? `<div class="header-logo"><img src="${school.logo_url}" alt=""/></div>` : ''}
-                <div class="header-text">
-                  <div class="school-name">${school?.name || 'School Name'}</div>
-                  ${school?.address ? `<div class="school-address">${school.address}</div>` : ''}
-                  <div class="card-type">${card?.card_type || 'ID CARD'}</div>
-                </div>
-              </div>
-              <div class="body">
-                <div class="photo-section">
-                  <div class="photo">
-                    ${photo ? `<img src="${photo}" alt="${card?.name}"/>` : '<span class="photo-placeholder">Photo</span>'}
-                  </div>
-                </div>
-                <div class="details">
-                  <div class="name">${card?.name || ''}</div>
-                  ${personType === 'student' ? `
-                    <div class="detail-row">
-                      <span class="detail-label">Class:</span>
-                      <span class="detail-value">${card?.class || ''}</span>
-                    </div>
-                    ${card?.roll_no ? `<div class="detail-row"><span class="detail-label">Roll No:</span><span class="detail-value">${card.roll_no}</span></div>` : ''}
-                    ${card?.father_name ? `<div class="detail-row"><span class="detail-label">Father:</span><span class="detail-value">${card.father_name}</span></div>` : ''}
-                    ${card?.show_samgra_id && card?.samgra_id ? `<div class="detail-row"><span class="detail-label">Samgra ID:</span><span class="detail-value">${card.samgra_id}</span></div>` : ''}
-                    ${card?.blood_group ? `<div class="detail-row"><span class="detail-label">Blood:</span><span class="detail-value">${card.blood_group}</span></div>` : ''}
-                    ${card?.parent_phone || card?.phone ? `<div class="contact-box"><span class="contact-label">📞 Parent: </span><span class="contact-value">${card.parent_phone || card.phone}</span></div>` : ''}
-                  ` : `
-                    <div class="detail-row">
-                      <span class="detail-label">Designation:</span>
-                      <span class="detail-value">${card?.designation || ''} ${card?.designation_hindi ? '/ ' + card.designation_hindi : ''}</span>
-                    </div>
-                    ${card?.department ? `<div class="detail-row"><span class="detail-label">Dept:</span><span class="detail-value">${card.department}</span></div>` : ''}
-                    ${card?.id_number ? `<div class="detail-row"><span class="detail-label">Emp ID:</span><span class="detail-value">${card.id_number}</span></div>` : ''}
-                    ${card?.blood_group ? `<div class="detail-row"><span class="detail-label">Blood:</span><span class="detail-value">${card.blood_group}</span></div>` : ''}
-                    ${card?.phone ? `<div class="contact-box"><span class="contact-label">📞 Self: </span><span class="contact-value">${card.phone}</span></div>` : ''}
-                    ${card?.emergency_contact ? `<div class="contact-box" style="margin-top:1mm"><span class="contact-label">🆘 Emergency: </span><span class="contact-value">${card.emergency_contact}</span></div>` : ''}
-                  `}
-                </div>
-              </div>
-              <div class="footer">
-                <div>
-                  ${school?.phone ? `📞 ${school.phone}` : ''}
-                </div>
-                <div>Valid: ${card?.valid_until || new Date().getFullYear() + 1}</div>
-              </div>
-            </div>
-          </div>
-          <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); }</script>
-        </body>
-      </html>
-    `);
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>ID Card Print</title><style>@page{size:${pageSize};margin:0;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f0f0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{body{background:white;}}</style></head><body>${html}<script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`);
     printWindow.document.close();
+  };
+
+  const getPreviewStyle = () => {
+    const isVertical = settings.template === 'vertical';
+    return {
+      width: isVertical ? '215px' : '340px',
+      height: isVertical ? '340px' : '215px',
+    };
   };
 
   if (!isOpen) return null;
@@ -282,26 +367,17 @@ export default function IDCardViewer({
   const card = cardData?.id_card;
   const school = cardData?.school;
   const photo = cardData?.photo;
-  const roleColor = card?.role_color || '#1e40af';
-  const isHigherAuthority = card?.is_higher_authority || false;
-  const cardGradient = getRoleGradient(roleColor, isHigherAuthority);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md" data-testid="id-card-dialog">
+      <DialogContent className={`${showSettings ? 'max-w-3xl' : 'max-w-md'}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>{personType === 'student' ? 'Student' : 'Employee'} ID Card Preview</span>
-            <span 
-              className="text-xs px-2 py-1 rounded-full" 
-              style={{
-                background: roleColor, 
-                color: 'white',
-                border: isHigherAuthority ? '2px solid #fbbf24' : 'none'
-              }}
-            >
-              {card?.card_type?.replace(' ID CARD', '') || personType}
-            </span>
+            <span>{personType === 'student' ? 'Student' : 'Employee'} ID Card</span>
+            <Button size="sm" variant={showSettings ? 'default' : 'outline'} className="gap-1.5 h-7 text-xs" onClick={() => setShowSettings(!showSettings)}>
+              <Settings2 className="w-3.5 h-3.5" />
+              {showSettings ? 'Hide Settings' : 'Settings'}
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
@@ -310,317 +386,119 @@ export default function IDCardViewer({
             <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
           </div>
         ) : cardData ? (
-          <div ref={printRef}>
-            {/* Front/Back Toggle */}
-            <div className="flex justify-center mb-3">
-              <div className="inline-flex bg-slate-100 rounded-lg p-1">
-                <button
-                  onClick={() => setShowBack(false)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    !showBack ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Front Side
-                </button>
-                <button
-                  onClick={() => setShowBack(true)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    showBack ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Back Side
-                </button>
-              </div>
-            </div>
-
-            {/* ID Card Preview - Front */}
-            {!showBack && (
-            <div 
-              className="mx-auto rounded-xl overflow-hidden shadow-xl relative"
-              style={{
-                width: '340px',
-                height: '215px',
-                background: cardGradient,
-                padding: '12px',
-                color: 'white',
-                border: isHigherAuthority ? '3px solid #fbbf24' : 'none'
-              }}
-              data-testid="id-card-preview"
-            >
-              {/* Watermark - School Logo (transparent) */}
-              {school?.logo_url && (
-                <div 
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  style={{ opacity: 0.12, zIndex: 0 }}
-                  data-testid="id-card-watermark"
-                >
-                  <img 
-                    src={school.logo_url} 
-                    alt="" 
-                    className="w-36 h-36 object-contain"
-                    style={{ 
-                      mixBlendMode: 'luminosity',
-                      filter: 'drop-shadow(0 0 0 transparent)'
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* Content */}
-              <div className="relative z-10 h-full flex flex-col">
-                {/* Header with Logo */}
-                <div className="flex items-center gap-2 pb-2 border-b border-white/30 mb-2">
-                  {school?.logo_url && (
-                    <div className="w-9 h-9 bg-white rounded-full p-0.5 flex-shrink-0" data-testid="id-card-header-logo">
-                      <img src={school.logo_url} alt="" className="w-full h-full object-contain rounded-full" />
-                    </div>
-                  )}
-                  <div className="flex-1 text-center">
-                    <div className="text-sm font-bold uppercase tracking-wide" data-testid="id-card-school-name">
-                      {school?.name || 'School Name'}
-                    </div>
-                    {school?.address && <div className="text-[9px] opacity-80">{school.address}</div>}
-                    <div 
-                      className="text-[8px] inline-block px-2 py-0.5 rounded-full mt-1 font-bold" 
-                      style={{
-                        background: isHigherAuthority ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.25)',
-                        border: isHigherAuthority ? '1px solid rgba(251,191,36,0.5)' : 'none'
-                      }}
-                      data-testid="id-card-type"
-                    >
-                      {card?.card_type || 'ID CARD'}
-                    </div>
+          <div className={showSettings ? 'flex gap-4' : ''}>
+            {showSettings && (
+              <div className="w-56 flex-shrink-0 space-y-3 border-r border-gray-100 pr-4 max-h-[60vh] overflow-y-auto">
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 mb-1.5 block flex items-center gap-1.5"><Layout className="w-3.5 h-3.5" /> Template</label>
+                  <div className="space-y-1">
+                    {ID_CARD_TEMPLATES.map(t => (
+                      <button key={t.id} onClick={() => updateSetting('template', t.id)} className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all ${settings.template === t.id ? 'bg-blue-50 border border-blue-300 text-blue-700 font-semibold' : 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
+                        {t.name} <span className="text-gray-400">({t.nameHi})</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-
-                {/* Body */}
-                <div className="flex gap-3 flex-1">
-                  {/* Photo */}
-                  <div className="w-[70px] flex-shrink-0">
-                    <div className="w-[70px] h-[85px] bg-white rounded-lg overflow-hidden flex items-center justify-center">
-                      {photo ? (
-                        <img src={photo} alt={card?.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-gray-400 text-xs">Photo</span>
-                      )}
-                    </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 mb-1.5 block flex items-center gap-1.5"><Palette className="w-3.5 h-3.5" /> Color Theme</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {COLOR_THEMES.map(c => (
+                      <button key={c.id} onClick={() => updateSetting('colorTheme', c.id)} className={`w-full aspect-square rounded-lg border-2 transition-all ${settings.colorTheme === c.id ? 'border-gray-900 scale-110 shadow-md' : 'border-transparent hover:border-gray-300'}`} style={{background: `linear-gradient(135deg, ${c.colors[0]}, ${c.colors[1]})`}} title={c.name} />
+                    ))}
                   </div>
-
-                  {/* Details */}
-                  <div className="flex-1 text-[9px]">
-                    <div className="text-sm font-bold text-yellow-200 mb-1" data-testid="id-card-name">{card?.name}</div>
-                    
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Show/Hide Fields</label>
+                  <div className="space-y-1">
                     {personType === 'student' ? (
                       <>
-                        <div className="mb-0.5" data-testid="id-card-class">
-                          <span className="opacity-70 w-16 inline-block">Class:</span> 
-                          <span className="font-semibold">{card?.class}</span>
-                        </div>
-                        {card?.roll_no && (
-                          <div className="mb-0.5">
-                            <span className="opacity-70 w-16 inline-block">Roll No:</span> 
-                            <span className="font-semibold">{card.roll_no}</span>
-                          </div>
-                        )}
-                        {card?.father_name && (
-                          <div className="mb-0.5">
-                            <span className="opacity-70 w-16 inline-block">Father:</span> 
-                            <span className="font-semibold">{card.father_name}</span>
-                          </div>
-                        )}
-                        {/* Samgra ID for MP Board schools */}
-                        {card?.show_samgra_id && card?.samgra_id && (
-                          <div className="mb-0.5" data-testid="id-card-samgra-id">
-                            <span className="opacity-70 w-16 inline-block">Samgra ID:</span> 
-                            <span className="font-semibold">{card.samgra_id}</span>
-                          </div>
-                        )}
-                        {card?.blood_group && (
-                          <div className="mb-0.5">
-                            <span className="opacity-70 w-16 inline-block">Blood:</span> 
-                            <span className="font-semibold">{card.blood_group}</span>
-                          </div>
-                        )}
-                        
-                        {/* Parent Phone - PROMINENTLY DISPLAYED */}
-                        {(card?.parent_phone || card?.phone) && (
-                          <div className="mt-1.5 bg-white/20 rounded px-1.5 py-1 text-[8px]" data-testid="id-card-parent-phone">
-                            <span className="text-red-200 font-bold">📞 Parent: </span>
-                            <span className="font-bold">{card.parent_phone || card.phone}</span>
-                          </div>
-                        )}
+                        {[
+                          ['showFatherName', "Father's Name"],
+                          ['showMotherName', "Mother's Name"],
+                          ['showRollNo', 'Roll No'],
+                          ['showAdmissionNo', 'Admission No'],
+                          ['showDOB', 'Date of Birth'],
+                          ['showBloodGroup', 'Blood Group'],
+                          ['showSamgraId', 'Samgra/PEN ID'],
+                          ['showAddress', 'Address'],
+                          ['showPhone', 'Parent Phone'],
+                          ['showAadhar', 'Aadhar No'],
+                        ].map(([key, label]) => (
+                          <label key={key} className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer hover:text-gray-900">
+                            <input type="checkbox" checked={settings[key]} onChange={(e) => updateSetting(key, e.target.checked)} className="rounded border-gray-300 text-blue-600 w-3.5 h-3.5" />
+                            {label}
+                          </label>
+                        ))}
                       </>
                     ) : (
                       <>
-                        <div className="mb-0.5" data-testid="id-card-designation">
-                          <span className="opacity-70 w-16 inline-block">Designation:</span> 
-                          <span className="font-semibold">
-                            {card?.designation}
-                            {card?.designation_hindi && <span className="opacity-80"> / {card.designation_hindi}</span>}
-                          </span>
-                        </div>
-                        {card?.department && (
-                          <div className="mb-0.5">
-                            <span className="opacity-70 w-16 inline-block">Dept:</span> 
-                            <span className="font-semibold">{card.department}</span>
-                          </div>
-                        )}
-                        {card?.id_number && (
-                          <div className="mb-0.5">
-                            <span className="opacity-70 w-16 inline-block">Emp ID:</span> 
-                            <span className="font-semibold">{card.id_number}</span>
-                          </div>
-                        )}
-                        {card?.blood_group && (
-                          <div className="mb-0.5">
-                            <span className="opacity-70 w-16 inline-block">Blood:</span> 
-                            <span className="font-semibold">{card.blood_group}</span>
-                          </div>
-                        )}
-                        
-                        {/* Self Contact */}
-                        {card?.phone && (
-                          <div className="mt-1.5 bg-white/20 rounded px-1.5 py-1 text-[8px]" data-testid="id-card-phone">
-                            <span className="text-green-200 font-bold">📞 Self: </span>
-                            <span className="font-bold">{card.phone}</span>
-                          </div>
-                        )}
-                        
-                        {/* Emergency Contact for Employee */}
-                        {card?.emergency_contact && (
-                          <div className="mt-1 bg-white/20 rounded px-1.5 py-1 text-[8px]" data-testid="id-card-emergency">
-                            <span className="text-red-200 font-bold">🆘 Emergency: </span>
-                            <span className="font-bold">{card.emergency_contact}</span>
-                          </div>
-                        )}
+                        {[
+                          ['showDesignation', 'Designation'],
+                          ['showDepartment', 'Department'],
+                          ['showEmpId', 'Employee ID'],
+                          ['showBloodGroup', 'Blood Group'],
+                          ['showPhone', 'Phone Number'],
+                          ['showEmergencyContact', 'Emergency Contact'],
+                        ].map(([key, label]) => (
+                          <label key={key} className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer hover:text-gray-900">
+                            <input type="checkbox" checked={settings[key]} onChange={(e) => updateSetting(key, e.target.checked)} className="rounded border-gray-300 text-blue-600 w-3.5 h-3.5" />
+                            {label}
+                          </label>
+                        ))}
                       </>
                     )}
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="flex justify-between items-end text-[7px] opacity-70 mt-auto pt-1">
-                  <span>{school?.phone && `📞 ${school.phone}`}</span>
-                  <span>Valid: {card?.valid_until || `${new Date().getFullYear() + 1}`}</span>
-                </div>
-              </div>
-            </div>
-            )}
-
-            {/* ID Card Preview - Back Side */}
-            {showBack && (
-              <div 
-                className="mx-auto rounded-xl overflow-hidden shadow-xl relative"
-                style={{
-                  width: '340px',
-                  height: '215px',
-                  background: personType === 'student' 
-                    ? 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%)'
-                    : cardGradient,
-                  padding: '12px',
-                  color: 'white',
-                  border: isHigherAuthority ? '3px solid #fbbf24' : 'none'
-                }}
-                data-testid="id-card-back-preview"
-              >
-                {/* Large Watermark - School Logo (transparent background) */}
-                {school?.logo_url && (
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    style={{ opacity: 0.15, zIndex: 0 }}
-                  >
-                    <img 
-                      src={school.logo_url} 
-                      alt="" 
-                      className="w-44 h-44 object-contain"
-                      style={{ 
-                        mixBlendMode: 'luminosity',
-                        filter: 'drop-shadow(0 0 0 transparent)'
-                      }} 
-                    />
-                  </div>
-                )}
-
-                {/* Back Content */}
-                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center">
-                  {personType === 'student' ? (
-                    <>
-                      <div className="text-3xl font-bold tracking-wider mb-3 drop-shadow-lg">
-                        STUDENT OF
-                      </div>
-                      <div className="text-lg font-semibold uppercase px-4 leading-tight">
-                        {school?.name || 'School Name'}
-                      </div>
-                      {school?.address && (
-                        <div className="text-[10px] mt-3 opacity-80 max-w-[80%]">
-                          {school.address}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold tracking-wider mb-2 drop-shadow-lg uppercase">
-                        {card?.designation || 'Employee'}
-                      </div>
-                      {card?.designation_hindi && (
-                        <div className="text-sm font-medium mb-2 opacity-90">
-                          {card.designation_hindi}
-                        </div>
-                      )}
-                      <div className="text-xs tracking-widest opacity-80 mb-2">OF</div>
-                      <div className="text-lg font-bold uppercase px-4 leading-tight">
-                        {school?.name || 'School Name'}
-                      </div>
-                      {school?.address && (
-                        <div className="text-[9px] mt-2 opacity-70 max-w-[90%]">
-                          {school.address}
-                        </div>
-                      )}
-                      {school?.phone && (
-                        <div className="text-[10px] mt-2 opacity-80">
-                          📞 {school.phone}
-                        </div>
-                      )}
-                    </>
-                  )}
-                  
-                  {/* Bottom Info */}
-                  <div className="absolute bottom-3 left-0 right-0 text-center">
-                    <div className="text-[8px] opacity-70">
-                      If found, please return to school
+                    <div className="border-t border-gray-100 pt-1 mt-1">
+                      {[
+                        ['showSchoolAddress', 'School Address'],
+                        ['showSchoolPhone', 'School Phone'],
+                        ['showValidUntil', 'Valid Until'],
+                      ].map(([key, label]) => (
+                        <label key={key} className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer hover:text-gray-900">
+                          <input type="checkbox" checked={settings[key]} onChange={(e) => updateSetting(key, e.target.checked)} className="rounded border-gray-300 text-blue-600 w-3.5 h-3.5" />
+                          {label}
+                        </label>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Print Buttons */}
-            <div className="flex justify-center gap-3 mt-4">
-              <Button onClick={printCard} className="bg-indigo-600 hover:bg-indigo-700" data-testid="print-id-card-btn">
-                <Printer className="w-4 h-4 mr-2" />
-                Print {showBack ? 'Back' : 'Front'}
-              </Button>
-              <Button 
-                onClick={() => setShowBack(!showBack)} 
-                variant="outline"
-                data-testid="flip-card-btn"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Flip Card
-              </Button>
-              <Button onClick={onClose} variant="outline">
-                Close
-              </Button>
+            <div className="flex-1" ref={printRef}>
+              <div className="flex justify-center mb-3">
+                <div className="inline-flex bg-slate-100 rounded-lg p-1">
+                  <button onClick={() => setShowBack(false)} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${!showBack ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}>
+                    Front Side
+                  </button>
+                  <button onClick={() => setShowBack(true)} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${showBack ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}>
+                    Back Side
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <div style={getPreviewStyle()} dangerouslySetInnerHTML={{ __html: showBack ? getBackHtml() : getCardHtml() }} />
+              </div>
+
+              <div className="flex justify-center gap-3 mt-4">
+                <Button onClick={printCard} className="bg-indigo-600 hover:bg-indigo-700">
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print {showBack ? 'Back' : 'Front'}
+                </Button>
+                <Button onClick={() => setShowBack(!showBack)} variant="outline">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Flip Card
+                </Button>
+              </div>
+              
+              <p className="text-center text-xs text-slate-500 mt-2">
+                Print front first, then flip and print back. Standard PVC card size (85.6mm x 54mm)
+              </p>
             </div>
-            
-            {/* Print Tips */}
-            <p className="text-center text-xs text-slate-500 mt-2">
-              💡 Print Front first, then flip card and print Back. PVC card (85.6mm x 54mm)
-            </p>
           </div>
         ) : (
           <div className="text-center py-10 text-gray-500">
-            ID Card data load nahi ho saka
+            ID Card data load nahi ho saka. Please try again.
           </div>
         )}
       </DialogContent>
