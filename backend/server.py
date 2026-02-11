@@ -768,6 +768,8 @@ class PaperGenerateResponse(BaseModel):
     time_duration: int
     created_at: str
     marks_verified: Optional[bool] = None
+    question_paper: Optional[Dict[str, Any]] = None
+    answer_paper: Optional[Dict[str, Any]] = None
 
 # Dashboard Stats
 class DashboardStats(BaseModel):
@@ -4941,6 +4943,9 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
         # Final verification
         final_total = sum(q.get("marks", 0) for q in questions)
         
+        question_paper = questions_data.get("question_paper", None)
+        answer_paper = questions_data.get("answer_paper", None)
+        
         paper_data = {
             "id": str(uuid.uuid4()),
             "subject": request.subject,
@@ -4952,7 +4957,9 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
             "actual_marks": final_total,
             "time_duration": request.time_duration,
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "marks_verified": final_total == request.total_marks
+            "marks_verified": final_total == request.total_marks,
+            "question_paper": question_paper,
+            "answer_paper": answer_paper
         }
         
         # Save to DB

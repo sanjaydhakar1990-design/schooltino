@@ -1533,12 +1533,12 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </div>
               )}
 
-              {/* Photo Capture Section - Only for new admission */}
-              {!editingStudent && (
+              {/* Photo Capture Section - Available for both add and edit */}
+              {(true) && (
                 <div className="border-t border-slate-200 pt-4 mt-4">
                   <Label className="text-base font-semibold flex items-center gap-2 mb-3">
                     <Camera className="w-5 h-5 text-blue-600" />
-                    Student Photo (AI Attendance के लिए) - Optional
+                    Student Photo (छात्र फोटो) {editingStudent ? '- Update Photo' : '- Optional'}
                   </Label>
                   
                   {!capturedPhoto && !showCamera && (

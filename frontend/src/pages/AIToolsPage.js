@@ -1338,7 +1338,7 @@ function AIPaperGeneratorTab() {
   const [activeView, setActiveView] = useState('questions');
 
   const [paperForm, setPaperForm] = useState({
-    board: 'CBSE',
+    board: '',
     class_name: '',
     subject: '',
     chapter: '',
@@ -1357,11 +1357,41 @@ function AIPaperGeneratorTab() {
     label: SYLLABUS_DATA[key].name
   }));
 
+  const subjectHindiNames = {
+    'English': 'English (अंग्रेजी)',
+    'Hindi': 'Hindi (हिंदी)',
+    'Mathematics': 'Mathematics (गणित)',
+    'Science': 'Science (विज्ञान)',
+    'Social Science': 'Social Science (सामाजिक विज्ञान)',
+    'EVS': 'EVS (पर्यावरण अध्ययन)',
+    'Sanskrit': 'Sanskrit (संस्कृत)',
+    'Drawing': 'Drawing (चित्रकला)',
+    'Physics': 'Physics (भौतिक विज्ञान)',
+    'Chemistry': 'Chemistry (रसायन विज्ञान)',
+    'Biology': 'Biology (जीव विज्ञान)',
+    'Computer Science': 'Computer Science (कंप्यूटर विज्ञान)',
+    'Geography': 'Geography (भूगोल)',
+    'History': 'History (इतिहास)',
+    'Political Science': 'Political Science (राजनीति विज्ञान)',
+    'Economics': 'Economics (अर्थशास्त्र)',
+    'GK': 'GK (सामान्य ज्ञान)',
+    'Moral Science': 'Moral Science (नैतिक शिक्षा)',
+    'Art & Craft': 'Art & Craft (कला एवं शिल्प)',
+    'Physical Education': 'Physical Education (शारीरिक शिक्षा)',
+  };
+
   const boardData = SYLLABUS_DATA[paperForm.board];
   const classes = boardData ? Object.keys(boardData.classes) : [];
   const classData = boardData?.classes[paperForm.class_name];
   const subjects = classData ? Object.keys(classData.subjects) : [];
   const chapters = classData?.subjects[paperForm.subject] || [];
+
+  const getSubjectLabel = (subject) => {
+    if (paperForm.language === 'hindi' || paperForm.language === 'bilingual') {
+      return subjectHindiNames[subject] || subject;
+    }
+    return subject;
+  };
 
   const handleBoardChange = (board) => {
     setPaperForm(prev => ({ ...prev, board, class_name: '', subject: '', chapter: '', chapters: [] }));
@@ -1635,7 +1665,7 @@ function AIPaperGeneratorTab() {
                 disabled={!paperForm.class_name}
               >
                 <option value="">Select Subject</option>
-                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                {subjects.map(s => <option key={s} value={s}>{getSubjectLabel(s)}</option>)}
               </select>
             </div>
             <div className="space-y-2">
@@ -1653,7 +1683,9 @@ function AIPaperGeneratorTab() {
           {paperForm.subject && chapters.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="font-medium">Chapters ({paperForm.chapters.length}/{chapters.length} selected)</Label>
+                <Label className="font-medium">
+                Chapters {paperForm.language !== 'english' ? '(अध्याय)' : ''} ({paperForm.chapters.length}/{chapters.length} selected)
+              </Label>
                 <div className="flex gap-2">
                   <button onClick={selectAllChapters} className="text-xs text-blue-600 hover:underline">Select All</button>
                   <button onClick={clearChapters} className="text-xs text-red-500 hover:underline">Clear</button>
@@ -1752,8 +1784,8 @@ function AIPaperGeneratorTab() {
                 ))}
               </div>
               <p className="text-xs text-gray-400">
-                {paperForm.language === 'hindi' ? 'Paper puri tarah Hindi me generate hoga' : 
-                 paperForm.language === 'bilingual' ? 'Questions English + Hindi dono me honge' : 
+                {paperForm.language === 'hindi' ? 'पेपर पूरी तरह हिंदी में जनरेट होगा। अध्याय चुनें - प्रश्न हिंदी में बनेंगे।' : 
+                 paperForm.language === 'bilingual' ? 'Questions English + Hindi दोनों में होंगे। Select chapters - questions will be bilingual.' : 
                  'Paper will be generated fully in English'}
               </p>
             </div>

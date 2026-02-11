@@ -33,7 +33,7 @@ export default function RegisterPage() {
 
   const [form, setForm] = useState({
     school_name: '',
-    school_board: 'CBSE',
+    school_board: '',
     school_city: '',
     school_state: '',
     school_phone: '',
@@ -234,7 +234,8 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Board *</label>
-                    <select name="school_board" value={form.school_board} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white">
+                    <select name="school_board" value={form.school_board} onChange={handleChange} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white">
+                      <option value="">Select Board</option>
                       {boards.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
