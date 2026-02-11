@@ -142,40 +142,89 @@ export const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex overflow-hidden" style={{height: '100dvh'}}>
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0 transition-all duration-200 z-40">
+      <div className="hidden lg:block flex-shrink-0 h-full z-40">
         <Sidebar isOpen={true} onClose={() => {}} isCollapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
       <div className="lg:hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} isCollapsed={false} onToggleCollapse={() => {}} />
       </div>
 
-      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        <div className="sticky top-0 z-30">
-          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white px-4 lg:px-6 py-2.5">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        <div className="flex-shrink-0 z-30">
+          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white px-4 lg:px-6 py-2.5" style={{paddingTop: 'max(0.625rem, env(safe-area-inset-top))'}}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-white/80 hover:bg-white/10 rounded-lg flex-shrink-0">
+                  <Menu className="w-5 h-5" />
+                </button>
                 {schoolLogo ? (
-                  <img src={schoolLogo} alt={schoolName} className="w-11 h-11 rounded-lg object-cover bg-white/10 p-0.5" />
+                  <img src={schoolLogo} alt={schoolName} className="w-9 h-9 lg:w-11 lg:h-11 rounded-lg object-cover bg-white/10 p-0.5 flex-shrink-0" />
                 ) : (
-                  <div className="w-11 h-11 rounded-lg bg-white/10 flex items-center justify-center">
-                    <GraduationCap className="w-6 h-6 text-white" />
+                  <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <GraduationCap className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                   </div>
                 )}
-                <div>
-                  <h1 className="text-base lg:text-lg font-bold leading-tight tracking-tight">{schoolName || 'Schooltino'}</h1>
+                <div className="min-w-0">
+                  <h1 className="text-sm lg:text-lg font-bold leading-tight tracking-tight truncate">{schoolName || 'Schooltino'}</h1>
                   {schoolData?.address && (
-                    <p className="text-[10px] lg:text-xs text-blue-200/70 leading-tight truncate max-w-[200px] lg:max-w-none">
-                      {schoolData.address}{schoolData.city ? `, ${schoolData.city}` : ''}{schoolData.state ? `, ${schoolData.state}` : ''}
+                    <p className="text-[10px] lg:text-xs text-blue-200/70 leading-tight truncate">
+                      {schoolData.city || ''}{schoolData.state ? `, ${schoolData.state}` : ''}
                     </p>
                   )}
                 </div>
               </div>
-              <div className="hidden md:flex flex-col items-end gap-0.5 text-[11px] text-blue-200/70">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  onClick={() => setShowTinoChat(!showTinoChat)}
+                  className="p-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors"
+                  title="Tino AI"
+                >
+                  <Brain className="w-4 h-4" />
+                </button>
+                <div className="relative notification-dropdown">
+                  <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="relative p-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <Bell className="w-4 h-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] bg-red-500 rounded-full text-white text-[8px] font-bold flex items-center justify-center px-0.5">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  {showNotifications && (
+                    <div className="fixed left-4 right-4 sm:absolute sm:left-auto sm:right-0 top-auto sm:top-full mt-2 sm:w-80 max-h-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                      <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
+                        <span className="text-xs text-gray-500">{unreadCount} unread</span>
+                      </div>
+                      <div className="overflow-y-auto max-h-72">
+                        {notifications.length === 0 ? (
+                          <div className="p-6 text-center text-gray-400 text-sm">No notifications</div>
+                        ) : (
+                          notifications.slice(0, 15).map(notif => (
+                            <div
+                              key={notif.id}
+                              onClick={() => markAsRead(notif.id)}
+                              className={`p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read && !notif.is_read ? 'bg-blue-50' : ''}`}
+                            >
+                              <p className="text-sm font-medium text-gray-900 truncate">{notif.title || 'Notification'}</p>
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="hidden md:flex flex-col items-end gap-0.5 text-[11px] text-blue-200/70 ml-4">
                 {schoolData?.phone && (
                   <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{schoolData.phone}</span>
                 )}
@@ -189,72 +238,23 @@ export const Layout = () => {
             </div>
           </div>
 
-          <header className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 shadow-sm">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
-                <Menu className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-400">Home</span>
-                <span className="text-gray-300">/</span>
-                <span className="text-gray-800 font-medium">{currentPage}</span>
-              </div>
+          <header className="h-10 lg:h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 shadow-sm">
+            <div className="flex items-center gap-2 text-sm min-w-0">
+              <span className="text-gray-400 text-xs">Home</span>
+              <span className="text-gray-300 text-xs">/</span>
+              <span className="text-gray-800 font-medium text-xs lg:text-sm truncate">{currentPage}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
                 <Search className="w-3.5 h-3.5" />
                 <span className="hidden md:inline text-xs">Search...</span>
               </button>
-              <button
-                onClick={() => setShowTinoChat(!showTinoChat)}
-                className="p-2 text-gray-500 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-                title="Tino AI"
-              >
-                <Brain className="w-4.5 h-4.5" />
-              </button>
-              <div className="relative notification-dropdown">
-                <button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Bell className="w-4.5 h-4.5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center px-1">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  )}
-                </button>
-                {showNotifications && (
-                  <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-auto sm:top-full mt-2 sm:w-80 max-h-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
-                    <div className="p-3 border-b border-gray-100 flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
-                      <span className="text-xs text-gray-500">{unreadCount} unread</span>
-                    </div>
-                    <div className="overflow-y-auto max-h-72">
-                      {notifications.length === 0 ? (
-                        <div className="p-6 text-center text-gray-400 text-sm">No notifications</div>
-                      ) : (
-                        notifications.slice(0, 15).map(notif => (
-                          <div
-                            key={notif.id}
-                            onClick={() => markAsRead(notif.id)}
-                            className={`p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read && !notif.is_read ? 'bg-blue-50' : ''}`}
-                          >
-                            <p className="text-sm font-medium text-gray-900 truncate">{notif.title || 'Notification'}</p>
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           </header>
         </div>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto overscroll-contain" style={{WebkitOverflowScrolling: 'touch'}}>
+          <div className="p-3 md:p-6 lg:p-8 pb-6" style={{paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))'}}>
             <Outlet />
           </div>
         </main>

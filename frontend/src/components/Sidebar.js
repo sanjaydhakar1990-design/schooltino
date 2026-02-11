@@ -85,7 +85,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   });
 
   return (
-    <aside className={`fixed lg:relative top-0 left-0 h-screen ${isCollapsed ? 'w-[60px]' : 'w-[260px]'} z-50 lg:z-auto transform transition-all duration-200 shrink-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col bg-gradient-to-b from-blue-50 via-sky-50 to-indigo-50 border-r border-blue-100`}>
+    <aside className={`fixed lg:relative top-0 left-0 h-full ${isCollapsed ? 'w-[60px]' : 'w-[260px]'} z-50 lg:z-auto transform transition-all duration-200 shrink-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col bg-gradient-to-b from-blue-50 via-sky-50 to-indigo-50 border-r border-blue-100`} style={{height: '100dvh'}}>
       <button
         onClick={onToggleCollapse}
         className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 bg-blue-500 rounded-full items-center justify-center text-white shadow-md hover:bg-blue-600 z-10 border-2 border-white"
@@ -98,7 +98,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       </button>
 
 
-      <NavLink to="/app/profile" onClick={handleNavClick} className="block px-4 py-3 mt-2 border-b border-blue-100 hover:bg-blue-50 transition-colors">
+      <NavLink to="/app/profile" onClick={handleNavClick} className="block px-4 py-3 mt-2 border-b border-blue-100 hover:bg-blue-50 transition-colors" style={{paddingTop: 'max(0.75rem, env(safe-area-inset-top))'}}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0">
             {user?.photo_url ? (
@@ -133,7 +133,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         </div>
       )}
 
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5 overscroll-contain" style={{WebkitOverflowScrolling: 'touch'}}>
         {filteredItems.map((item) => (
           <NavLink
             key={item.path}
@@ -154,7 +154,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         ))}
       </nav>
 
-      <div className="p-3 border-t border-blue-100 safe-bottom">
+      <div className="p-3 border-t border-blue-100" style={{paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))'}}>
         <button
           onClick={handleLogout}
           className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 text-xs text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors`}

@@ -84,18 +84,18 @@ const PublicRoute = ({ children }) => {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
   if (isAuthenticated && user) {
     if (user.role === 'student') return <Navigate to="/student-dashboard" replace />;
-    if (user.role === 'director') return <Navigate to="/app/dashboard" replace />;
-    return <Navigate to="/portal" replace />;
+    if (user.role === 'teacher') return <Navigate to="/portal" replace />;
+    return <Navigate to="/app/dashboard" replace />;
   }
   return children;
 };
 
 function SmartRedirect() {
   const { user, isAuthenticated } = useAuth();
-  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+  if (!isAuthenticated || !user) return <Navigate to="/" replace />;
   if (user.role === 'student') return <Navigate to="/student-dashboard" replace />;
-  if (user.role === 'director') return <Navigate to="/app/dashboard" replace />;
-  return <Navigate to="/portal" replace />;
+  if (user.role === 'teacher') return <Navigate to="/portal" replace />;
+  return <Navigate to="/app/dashboard" replace />;
 }
 
 function AppRoutes() {

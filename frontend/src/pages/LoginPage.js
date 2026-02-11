@@ -208,11 +208,11 @@ export default function LoginPage() {
   const getRedirectPath = (role) => {
     switch (role) {
       case 'teacher': case 'admission_staff': case 'clerk': case 'staff':
-        return '/teacher-dashboard';
+        return '/portal';
       case 'student':
         return '/student-dashboard';
       default:
-        return '/dashboard';
+        return '/app/dashboard';
     }
   };
 
@@ -243,7 +243,7 @@ export default function LoginPage() {
       setToken(res.data.access_token);
       setUser(res.data.user);
       axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.access_token}`;
-      navigate('/dashboard');
+      navigate('/app/dashboard');
     } catch (err) {
       setError(err.response?.data?.detail || 'Setup failed');
     } finally {
