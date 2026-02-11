@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Loader2, Crown, GraduationCap, Users, Wallet, Shield, Brain, MessageSquare, Smartphone, BarChart3, BookOpen, Fingerprint, CheckCircle2, ArrowRight, Globe, Layers, Lock, Zap, Cloud, Cpu } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Crown, GraduationCap, Users, Wallet, Shield, Brain, MessageSquare, Smartphone, BarChart3, BookOpen, Fingerprint, CheckCircle2, ArrowRight, Globe, Layers, Lock, Zap, Cloud, Cpu, School, Apple, UserCircle } from 'lucide-react';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -284,10 +284,10 @@ export default function LoginPage() {
     );
   }
 
-  const tabs = [
-    { id: 'admin', label: 'Admin', icon: '/icon-schooltino-192.png' },
-    { id: 'teacher', label: 'Teacher', icon: '/icon-teachtino-192.png' },
-    { id: 'student', label: 'Student', icon: '/icon-studytino-192.png' },
+  const portalTabs = [
+    { id: 'admin', appLabel: 'Admin App', brand: 'SchoolTino', Icon: Shield, gradient: 'from-blue-500 to-indigo-600', glow: 'shadow-blue-500/40', bgActive: 'bg-gradient-to-br from-blue-50 to-indigo-50', borderActive: 'border-blue-400', textActive: 'text-blue-700', brandColor: 'text-blue-600' },
+    { id: 'teacher', appLabel: 'Teacher App', brand: 'TeachTino', Icon: BookOpen, gradient: 'from-emerald-500 to-teal-600', glow: 'shadow-emerald-500/40', bgActive: 'bg-gradient-to-br from-emerald-50 to-teal-50', borderActive: 'border-emerald-400', textActive: 'text-emerald-700', brandColor: 'text-emerald-600' },
+    { id: 'student', appLabel: 'Student App', brand: 'StudyTino', Icon: GraduationCap, gradient: 'from-violet-500 to-purple-600', glow: 'shadow-violet-500/40', bgActive: 'bg-gradient-to-br from-violet-50 to-purple-50', borderActive: 'border-violet-400', textActive: 'text-violet-700', brandColor: 'text-violet-600' },
   ];
 
   return (
@@ -398,13 +398,20 @@ export default function LoginPage() {
                     <h2 className="text-xl font-bold text-gray-900 mb-1">Welcome Back</h2>
                     <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
 
-                    <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
-                      {tabs.map(tab => (
-                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }} className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeTab === tab.id ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
-                          <img src={tab.icon} alt="" className="w-5 h-5 rounded" />
-                          {tab.label}
-                        </button>
-                      ))}
+                    <div className="grid grid-cols-3 gap-2 mb-6">
+                      {portalTabs.map(tab => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }} className={`relative flex flex-col items-center py-3 px-2 rounded-xl transition-all duration-300 border-2 ${isActive ? `${tab.bgActive} ${tab.borderActive} shadow-lg` : 'bg-gray-50 border-transparent hover:bg-gray-100 hover:border-gray-200'}`}>
+                            <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center mb-1.5 transition-all duration-300 ${isActive ? `bg-gradient-to-br ${tab.gradient} shadow-lg ${tab.glow}` : 'bg-gray-200'}`}>
+                              <tab.Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-500'}`} />
+                              {isActive && <div className="absolute inset-0 rounded-xl bg-white/20 animate-pulse"></div>}
+                            </div>
+                            <span className={`text-[10px] font-medium leading-tight transition-colors duration-300 ${isActive ? tab.textActive : 'text-gray-400'}`}>{tab.appLabel}</span>
+                            <span className={`text-xs font-bold leading-tight transition-colors duration-300 ${isActive ? tab.brandColor : 'text-gray-600'}`}>{tab.brand}</span>
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{error}</div>}

@@ -18,9 +18,9 @@ const modules = [
 ];
 
 const portals = [
-  { name: 'SchoolTino', subtitle: 'Admin Portal', desc: '22+ modules for complete school administration', icon: '/icon-schooltino-192.png', color: 'from-blue-500 to-blue-600', features: ['Student & Staff Management', 'Fee Collection & Finance', 'AI-Powered Tools', 'Analytics Dashboard'] },
-  { name: 'TeachTino', subtitle: 'Teacher Portal', desc: 'Everything teachers need in one place', icon: '/icon-teachtino-192.png', color: 'from-emerald-500 to-emerald-600', features: ['Class Management', 'Attendance Marking', 'Homework & Exams', 'Leave Management'] },
-  { name: 'StudyTino', subtitle: 'Student & Parent Portal', desc: 'Stay connected with your child\'s progress', icon: '/icon-studytino-192.png', color: 'from-purple-500 to-purple-600', features: ['View Results & Attendance', 'Fee Payment Online', 'Homework Submissions', 'Digital Library Access'] },
+  { name: 'SchoolTino', appLabel: 'Admin App', subtitle: 'Admin Portal', desc: '22+ modules for complete school administration', Icon: Shield, color: 'from-blue-500 to-indigo-600', glow: 'shadow-blue-500/30', brandColor: 'text-blue-600', features: ['Student & Staff Management', 'Fee Collection & Finance', 'AI-Powered Tools', 'Analytics Dashboard'] },
+  { name: 'TeachTino', appLabel: 'Teacher App', subtitle: 'Teacher Portal', desc: 'Everything teachers need in one place', Icon: BookOpen, color: 'from-emerald-500 to-teal-600', glow: 'shadow-emerald-500/30', brandColor: 'text-emerald-600', features: ['Class Management', 'Attendance Marking', 'Homework & Exams', 'Leave Management'] },
+  { name: 'StudyTino', appLabel: 'Student App', subtitle: 'Student & Parent Portal', desc: 'Stay connected with your child\'s progress', Icon: GraduationCap, color: 'from-violet-500 to-purple-600', glow: 'shadow-violet-500/30', brandColor: 'text-violet-600', features: ['View Results & Attendance', 'Fee Payment Online', 'Homework Submissions', 'Digital Library Access'] },
 ];
 
 const stats = [
@@ -124,11 +124,14 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {portals.map((portal, i) => (
               <div key={i} className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:border-gray-300 transition-all group">
-                <div className="flex items-center gap-3 mb-4">
-                  <img src={portal.icon} alt={portal.name} className="w-12 h-12 rounded-xl" />
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${portal.color} shadow-lg ${portal.glow} flex items-center justify-center group-hover:scale-105 transition-transform duration-300`}>
+                    <portal.Icon className="w-7 h-7 text-white" />
+                    <div className="absolute inset-0 rounded-2xl bg-white/10"></div>
+                  </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">{portal.name}</h3>
-                    <p className="text-sm text-gray-500">{portal.subtitle}</p>
+                    <p className="text-xs font-medium text-gray-400 leading-tight">{portal.appLabel}</p>
+                    <h3 className={`font-bold text-lg ${portal.brandColor} leading-tight`}>{portal.name}</h3>
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-4">{portal.desc}</p>
