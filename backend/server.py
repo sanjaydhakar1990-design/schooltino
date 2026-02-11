@@ -1065,36 +1065,128 @@ async def check_setup():
 
 # ==================== QUICK SCHOOL REGISTRATION (No OTP) ====================
 
+import secrets
+import string
+
+def generate_secure_password(length=10):
+    upper = [secrets.choice(string.ascii_uppercase) for _ in range(2)]
+    lower = [secrets.choice(string.ascii_lowercase) for _ in range(3)]
+    digits = [secrets.choice(string.digits) for _ in range(3)]
+    special = [secrets.choice("@#$&!") for _ in range(2)]
+    password = list(upper + lower + digits + special)
+    secrets.SystemRandom().shuffle(password)
+    return ''.join(password)
+
 class QuickSchoolSetup(BaseModel):
     """Quick setup for new school - creates school + director in one API"""
     school_name: str
     school_address: Optional[str] = None
     school_phone: Optional[str] = None
     school_email: Optional[str] = None
-    school_board: str = "CBSE"  # CBSE, ICSE, State Board, etc.
+    school_board: str = "CBSE"
     director_name: str
     director_email: EmailStr
-    director_password: str
+    director_password: Optional[str] = None
     director_mobile: Optional[str] = None
+
+class SchoolRegister(BaseModel):
+    """School registration with auto-generated password"""
+    school_name: str
+    school_board: str = "CBSE"
+    school_city: str = ""
+    school_state: str = ""
+    school_phone: Optional[str] = None
+    director_name: str
+    director_email: EmailStr
+    director_mobile: Optional[str] = None
+
+@api_router.post("/auth/register-school")
+async def register_school(data: SchoolRegister):
+    existing_email = await db.users.find_one({"email": data.director_email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="This email is already registered. Please sign in or use a different email.")
+
+    existing_school = await db.schools.find_one({"name": data.school_name, "city": data.school_city})
+    if existing_school:
+        raise HTTPException(status_code=400, detail="A school with this name already exists in this city.")
+
+    raw_password = generate_secure_password()
+    school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
+
+    school_data = {
+        "id": school_id,
+        "name": data.school_name,
+        "board": data.school_board,
+        "city": data.school_city,
+        "state": data.school_state,
+        "phone": data.school_phone or "",
+        "email": data.director_email,
+        "address": f"{data.school_city}, {data.school_state}",
+        "is_active": True,
+        "is_trial": True,
+        "trial_start_date": datetime.now(timezone.utc).isoformat(),
+        "trial_days": 30,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.schools.insert_one(school_data)
+
+    hashed_pw = bcrypt.hashpw(raw_password.encode(), bcrypt.gensalt()).decode()
+    director_id = str(uuid.uuid4())
+    director_data = {
+        "id": director_id,
+        "email": data.director_email,
+        "password": hashed_pw,
+        "name": data.director_name,
+        "role": "director",
+        "mobile": data.director_mobile or "",
+        "school_id": school_id,
+        "status": "active",
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(director_data)
+
+    token = create_jwt_token(director_data)
+
+    await log_audit(director_id, "school_registration", "auth", {
+        "school_id": school_id,
+        "school_name": data.school_name,
+        "director_name": data.director_name,
+        "director_email": data.director_email
+    })
+
+    return {
+        "success": True,
+        "message": f"School '{data.school_name}' registered successfully!",
+        "school": {
+            "id": school_id,
+            "name": data.school_name,
+            "board": data.school_board,
+            "city": data.school_city,
+            "state": data.school_state,
+            "is_trial": True,
+            "trial_days": 30
+        },
+        "director": {
+            "id": director_id,
+            "name": data.director_name,
+            "email": data.director_email,
+            "role": "director"
+        },
+        "generated_password": raw_password,
+        "access_token": token,
+        "token_type": "bearer"
+    }
 
 @api_router.post("/auth/quick-school-setup")
 async def quick_school_setup(data: QuickSchoolSetup):
-    """
-    Quick registration for new school - NO OTP required!
-    Creates:
-    1. School record
-    2. Director account for that school
-    Returns login token immediately
-    """
-    # Check if director email already exists
     existing_email = await db.users.find_one({"email": data.director_email})
     if existing_email:
         raise HTTPException(status_code=400, detail="Email already registered. Please login or use different email.")
     
-    # Generate unique school ID
+    raw_password = data.director_password or generate_secure_password()
     school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
     
-    # Create School
     school_data = {
         "id": school_id,
         "name": data.school_name,
@@ -1110,10 +1202,8 @@ async def quick_school_setup(data: QuickSchoolSetup):
     }
     await db.schools.insert_one(school_data)
     
-    # Hash password
-    hashed_pw = bcrypt.hashpw(data.director_password.encode(), bcrypt.gensalt()).decode()
+    hashed_pw = bcrypt.hashpw(raw_password.encode(), bcrypt.gensalt()).decode()
     
-    # Create Director
     director_id = str(uuid.uuid4())
     director_data = {
         "id": director_id,
@@ -1129,10 +1219,8 @@ async def quick_school_setup(data: QuickSchoolSetup):
     }
     await db.users.insert_one(director_data)
     
-    # Generate token for immediate login
     token = create_jwt_token(director_data)
     
-    # Log the registration
     await log_audit(director_id, "quick_school_setup", "auth", {
         "school_id": school_id,
         "school_name": data.school_name,
@@ -1142,7 +1230,7 @@ async def quick_school_setup(data: QuickSchoolSetup):
     
     return {
         "success": True,
-        "message": f"School '{data.school_name}' created successfully! 🎉",
+        "message": f"School '{data.school_name}' created successfully!",
         "school": {
             "id": school_id,
             "name": data.school_name,
@@ -1156,6 +1244,7 @@ async def quick_school_setup(data: QuickSchoolSetup):
             "email": data.director_email,
             "role": "director"
         },
+        "generated_password": raw_password,
         "access_token": token,
         "token_type": "bearer",
         "login_url": "/login",

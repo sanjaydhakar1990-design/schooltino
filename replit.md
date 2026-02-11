@@ -4,6 +4,11 @@
 Schooltino is a comprehensive, AI-powered school management platform inspired by NextOS K-12 Suite. It features a clean, simplified architecture with ~25 core modules across three portals (SchoolTino Admin, TeachTino Teachers, StudyTino Students/Parents). The platform covers student/staff management, finance, attendance, communication, and AI tools.
 
 ## Recent Changes (Feb 2026)
+- **Landing Page**: New "/" route with app details, features, modules grid, portals info, AI showcase, and CTA buttons
+- **School Registration**: "/register" page with minimal form (school name, board, city, state, director details), auto-generated secure password (10 chars with upper/lower/digits/special), credentials shown after registration with copy buttons
+- **Backend register-school API**: POST /api/auth/register-school - creates school + director with auto-generated password, returns credentials + token
+- **Login page updated**: Added "New school? Register Here" link below login form
+- **Routing updated**: "/" → LandingPage, "/login" → LoginPage, "/register" → RegisterPage
 - **MAJOR REBUILD (Option B)**: Fresh start rebuild to match NextOS K-12 style
 - Reduced from 85+ pages to ~30 clean pages
 - Simplified sidebar from 40+ items to 20 flat navigation items (no groups)

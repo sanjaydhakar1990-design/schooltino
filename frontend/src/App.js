@@ -4,7 +4,9 @@ import './i18n';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import ClassesPage from './pages/ClassesPage';
@@ -99,8 +101,9 @@ function SmartRedirect() {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+      <Route path="/register" element={<RegisterPage />} />
 
       <Route path="/teachtino" element={<TeachTinoLogin />} />
       <Route path="/portal" element={<TeacherRoute><TeachTinoDashboard /></TeacherRoute>} />
