@@ -21,6 +21,21 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [teacherRequests, setTeacherRequests] = useState([]);
   const [pendingCount, setPendingCount] = useState(0);
+  const [moduleVis, setModuleVis] = useState({});
+
+  const loadVis = useCallback(() => {
+    try {
+      const saved = localStorage.getItem('module_visibility_settings');
+      if (saved) setModuleVis(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    loadVis();
+    const h = () => loadVis();
+    window.addEventListener('module_visibility_changed', h);
+    return () => window.removeEventListener('module_visibility_changed', h);
+  }, [loadVis]);
 
   useEffect(() => {
     if (schoolId) {
@@ -119,19 +134,6 @@ export default function DashboardPage() {
     { icon: Brain, label: 'AI Tools', path: '/app/ai-tools', color: 'bg-indigo-500', lightBg: 'bg-indigo-50', textColor: 'text-indigo-600' },
   ];
 
-  const [moduleVis, setModuleVis] = useState({});
-  const loadVis = useCallback(() => {
-    try {
-      const saved = localStorage.getItem('module_visibility_settings');
-      if (saved) setModuleVis(JSON.parse(saved));
-    } catch {}
-  }, []);
-  useEffect(() => {
-    loadVis();
-    const h = () => loadVis();
-    window.addEventListener('module_visibility_changed', h);
-    return () => window.removeEventListener('module_visibility_changed', h);
-  }, [loadVis]);
   const isEnabled = (key) => !key || !moduleVis[key] || moduleVis[key].schooltino !== false;
 
   const allModules = [
