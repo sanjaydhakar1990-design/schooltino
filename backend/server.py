@@ -5606,6 +5606,164 @@ Respond in Hindi-English mix. Be practical and helpful."""
         # Fallback to basic response
         return {"response": f"AI temporarily unavailable. Your query: {request.prompt}", "error": str(e)}
 
+# ==================== TEACHER APPROVAL REQUESTS ====================
+
+class TeacherRequestCreate(BaseModel):
+    request_type: str
+    title: str
+    description: str = ""
+    data: Optional[Dict[str, Any]] = None
+
+@api_router.post("/teacher/requests")
+async def create_teacher_request(request: TeacherRequestCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["teacher", "principal", "vice_principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    req_data = {
+        "id": str(uuid.uuid4()),
+        "teacher_id": current_user["id"],
+        "teacher_name": current_user.get("name", ""),
+        "school_id": current_user.get("school_id", ""),
+        "request_type": request.request_type,
+        "title": request.title,
+        "description": request.description,
+        "data": request.data or {},
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "reviewed_at": None,
+        "reviewed_by": None,
+        "review_note": None
+    }
+    
+    await db.teacher_requests.insert_one(req_data)
+    
+    admin_notif = {
+        "id": str(uuid.uuid4()),
+        "school_id": current_user.get("school_id", ""),
+        "type": "teacher_request",
+        "title": f"Teacher Request: {request.title}",
+        "message": f"{current_user.get('name', 'Teacher')} ({request.request_type}): {request.description[:100]}",
+        "reference_id": req_data["id"],
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "for_role": "director"
+    }
+    await db.admin_notifications.insert_one(admin_notif)
+    
+    return {"message": "Request submitted for admin approval", "id": req_data["id"], "status": "pending"}
+
+@api_router.get("/teacher/requests")
+async def get_teacher_requests(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["teacher", "principal", "vice_principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    requests = await db.teacher_requests.find(
+        {"teacher_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return requests
+
+@api_router.get("/admin/teacher-requests")
+async def get_all_teacher_requests(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    query = {"school_id": current_user.get("school_id", "")}
+    if status:
+        query["status"] = status
+    
+    requests = await db.teacher_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return requests
+
+@api_router.put("/admin/teacher-requests/{request_id}")
+async def review_teacher_request(
+    request_id: str,
+    action: str = Body(...),
+    note: str = Body(default=""),
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if action not in ["approved", "rejected"]:
+        raise HTTPException(status_code=400, detail="Action must be 'approved' or 'rejected'")
+    
+    result = await db.teacher_requests.update_one(
+        {"id": request_id, "school_id": current_user.get("school_id", "")},
+        {"$set": {
+            "status": action,
+            "reviewed_at": datetime.now(timezone.utc).isoformat(),
+            "reviewed_by": current_user["id"],
+            "reviewer_name": current_user.get("name", ""),
+            "review_note": note
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    req = await db.teacher_requests.find_one({"id": request_id}, {"_id": 0})
+    if req:
+        teacher_notif = {
+            "id": str(uuid.uuid4()),
+            "school_id": current_user.get("school_id", ""),
+            "type": "request_response",
+            "title": f"Request {action.title()}: {req.get('title', '')}",
+            "message": f"Your request has been {action} by {current_user.get('name', 'Admin')}. {note}",
+            "reference_id": request_id,
+            "is_read": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "for_user": req.get("teacher_id")
+        }
+        await db.admin_notifications.insert_one(teacher_notif)
+    
+    return {"message": f"Request {action}", "status": action}
+
+@api_router.get("/admin/notifications")
+async def get_admin_notifications(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    notifs = await db.admin_notifications.find(
+        {"school_id": current_user.get("school_id", ""), "for_role": "director"},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return notifs
+
+@api_router.get("/teacher/my-notifications")
+async def get_teacher_notifications(current_user: dict = Depends(get_current_user)):
+    notifs = await db.admin_notifications.find(
+        {"for_user": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return notifs
+
+@api_router.put("/notifications/{notif_id}/read")
+async def mark_notification_read(notif_id: str, current_user: dict = Depends(get_current_user)):
+    await db.admin_notifications.update_one(
+        {"id": notif_id},
+        {"$set": {"is_read": True}}
+    )
+    return {"message": "Marked as read"}
+
+@api_router.get("/admin/pending-count")
+async def get_pending_count(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    count = await db.teacher_requests.count_documents({
+        "school_id": current_user.get("school_id", ""),
+        "status": "pending"
+    })
+    unread = await db.admin_notifications.count_documents({
+        "school_id": current_user.get("school_id", ""),
+        "for_role": "director",
+        "is_read": False
+    })
+    return {"pending_requests": count, "unread_notifications": unread}
+
 # ==================== TEACHER SYLLABUS & AI DAILY PLAN ====================
 
 @api_router.get("/teacher/syllabus")

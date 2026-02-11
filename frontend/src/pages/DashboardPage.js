@@ -19,10 +19,19 @@ export default function DashboardPage() {
   const { schoolId, user, schoolData } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [teacherRequests, setTeacherRequests] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    if (schoolId) fetchStats();
-    else setLoading(false);
+    if (schoolId) {
+      fetchStats();
+      if (user?.role === 'director' || user?.role === 'principal' || user?.role === 'admin') {
+        fetchTeacherRequests();
+        fetchPendingCount();
+      }
+    } else {
+      setLoading(false);
+    }
   }, [schoolId]);
 
   const fetchStats = async () => {
@@ -34,6 +43,40 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchTeacherRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/admin/teacher-requests?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
+      setTeacherRequests(res.data || []);
+    } catch (e) {}
+  };
+
+  const fetchPendingCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/admin/pending-count`, { headers: { Authorization: `Bearer ${token}` } });
+      setPendingCount(res.data?.pending_requests || 0);
+    } catch (e) {}
+  };
+
+  const handleApproveRequest = async (reqId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API}/admin/teacher-requests/${reqId}`, { action: 'approved', note: 'Approved by admin' }, { headers: { Authorization: `Bearer ${token}` } });
+      setTeacherRequests(prev => prev.filter(r => r.id !== reqId));
+      setPendingCount(prev => Math.max(0, prev - 1));
+    } catch (e) {}
+  };
+
+  const handleRejectRequest = async (reqId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API}/admin/teacher-requests/${reqId}`, { action: 'rejected', note: 'Rejected by admin' }, { headers: { Authorization: `Bearer ${token}` } });
+      setTeacherRequests(prev => prev.filter(r => r.id !== reqId));
+      setPendingCount(prev => Math.max(0, prev - 1));
+    } catch (e) {}
   };
 
   if (loading) {
@@ -97,21 +140,21 @@ export default function DashboardPage() {
     { icon: GraduationCap, label: 'Classes', desc: 'Class management', path: '/app/classes', gradient: 'from-cyan-500 to-blue-500', mk: 'classes' },
     { icon: CalendarCheck, label: 'Attendance', desc: 'Track attendance', path: '/app/attendance', gradient: 'from-teal-500 to-emerald-500', mk: 'attendance' },
     { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fees', gradient: 'from-emerald-500 to-green-500', mk: 'fee_management' },
-    { icon: Target, label: 'Admissions', desc: 'Admission & CRM', path: '/app/admissions', gradient: 'from-cyan-500 to-blue-500' },
+    { icon: Target, label: 'Admissions', desc: 'Admission & CRM', path: '/app/admissions', gradient: 'from-cyan-500 to-blue-500', mk: 'admissions' },
     { icon: FileText, label: 'Exams', desc: 'Exam & reports', path: '/app/exams', gradient: 'from-pink-500 to-rose-500', mk: 'exams_reports' },
     { icon: Clock, label: 'Timetable', desc: 'Schedule classes', path: '/app/timetable', gradient: 'from-indigo-500 to-blue-500', mk: 'timetable' },
     { icon: BookOpen, label: 'Library', desc: 'Digital library', path: '/app/library', gradient: 'from-purple-500 to-fuchsia-500', mk: 'digital_library' },
     { icon: Clipboard, label: 'Homework', desc: 'Assignments', path: '/app/homework', gradient: 'from-amber-500 to-orange-500', mk: 'homework' },
     { icon: Tv, label: 'Live Classes', desc: 'Online teaching', path: '/app/live-classes', gradient: 'from-red-500 to-rose-500', mk: 'live_classes' },
     { icon: MessageSquare, label: 'Communication', desc: 'SMS & WhatsApp', path: '/app/communication', gradient: 'from-sky-500 to-cyan-500', mk: 'communication_hub' },
-    { icon: Shield, label: 'Front Office', desc: 'Visitor management', path: '/app/front-office', gradient: 'from-teal-500 to-cyan-500' },
+    { icon: Shield, label: 'Front Office', desc: 'Visitor management', path: '/app/front-office', gradient: 'from-teal-500 to-cyan-500', mk: 'front_office' },
     { icon: Bus, label: 'Transport', desc: 'Routes & GPS', path: '/app/transport', gradient: 'from-orange-500 to-red-500', mk: 'transport' },
     { icon: Calendar, label: 'Calendar', desc: 'Events & schedule', path: '/app/calendar', gradient: 'from-emerald-500 to-teal-500', mk: 'calendar' },
     { icon: BarChart3, label: 'Analytics', desc: 'Reports & insights', path: '/app/analytics', gradient: 'from-blue-500 to-indigo-500', mk: 'analytics' },
     { icon: Brain, label: 'AI Tools', desc: 'Paper, Events, Calendar', path: '/app/ai-tools', gradient: 'from-purple-500 to-pink-500', mk: 'ai_tools' },
     { icon: Video, label: 'CCTV', desc: 'Camera monitoring', path: '/app/cctv', gradient: 'from-red-500 to-rose-500', mk: 'cctv' },
     { icon: Package, label: 'Inventory', desc: 'Stock management', path: '/app/inventory', gradient: 'from-slate-500 to-zinc-600', mk: 'inventory' },
-    { icon: Building, label: 'Multi-Branch', desc: 'Branch management', path: '/app/multi-branch', gradient: 'from-blue-500 to-indigo-500' },
+    { icon: Building, label: 'Multi-Branch', desc: 'Branch management', path: '/app/multi-branch', gradient: 'from-blue-500 to-indigo-500', mk: 'multi_branch' },
   ];
   const modules = allModules.filter(m => isEnabled(m.mk));
 
@@ -169,6 +212,40 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {teacherRequests.length > 0 && (user?.role === 'director' || user?.role === 'principal') && (
+        <div className="bg-white rounded-xl shadow-sm border border-amber-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Bell className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Teacher Requests (Pending Approval)</h2>
+                <p className="text-xs text-gray-500">{teacherRequests.length} request(s) waiting for your action</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {teacherRequests.slice(0, 5).map((req) => (
+              <div key={req.id} className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-100">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-bold text-gray-800">{req.title}</span>
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-700 capitalize">{req.request_type}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 truncate">{req.teacher_name} - {req.description?.slice(0, 80)}</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{new Date(req.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+                <div className="flex items-center gap-2 ml-4">
+                  <button onClick={() => handleApproveRequest(req.id)} className="px-4 py-2 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors">Approve</button>
+                  <button onClick={() => handleRejectRequest(req.id)} className="px-4 py-2 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors">Reject</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <div className="flex items-center justify-between mb-4">

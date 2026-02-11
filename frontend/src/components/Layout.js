@@ -91,7 +91,14 @@ export const Layout = () => {
         });
         const notifs = res.data?.notifications || [];
         setNotifications(notifs);
-        setUnreadCount(notifs.filter(n => !n.read && !n.is_read).length);
+        let totalUnread = notifs.filter(n => !n.read && !n.is_read).length;
+        if (user?.role === 'director' || user?.role === 'principal' || user?.role === 'admin') {
+          try {
+            const pendingRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/admin/pending-count`, { headers: { Authorization: `Bearer ${token}` } });
+            totalUnread += (pendingRes.data?.pending_requests || 0);
+          } catch (e) {}
+        }
+        setUnreadCount(totalUnread);
       } catch (err) {}
     };
     fetchNotifications();

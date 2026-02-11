@@ -55,10 +55,20 @@ export default function TeachTinoDashboard() {
   });
   const [noticeForm, setNoticeForm] = useState({ title: '', content: '' });
 
+  const [myRequests, setMyRequests] = useState([]);
+  
   const isPrincipal = user?.role === 'principal' || user?.role === 'vice_principal';
   const canApproveLeave = isPrincipal || user?.role === 'director';
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); fetchMyRequests(); }, []);
+
+  const fetchMyRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/teacher/requests`, { headers: { Authorization: `Bearer ${token}` } });
+      setMyRequests(res.data || []);
+    } catch (e) {}
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -94,12 +104,18 @@ export default function TeachTinoDashboard() {
   const handleSendNotice = async () => {
     if (!noticeForm.title || !noticeForm.content) { toast.error('Please fill all fields'); return; }
     try {
-      await axios.post(`${API}/notices`, { ...noticeForm, target_audience: ['students', 'parents'], priority: 'normal', school_id: user?.school_id });
-      toast.success('Notice sent!');
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/teacher/requests`, {
+        request_type: 'notice',
+        title: `Notice: ${noticeForm.title}`,
+        description: noticeForm.content,
+        data: { ...noticeForm, target_audience: ['students', 'parents'], priority: 'normal' }
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Notice submitted for admin approval! Admin will review and publish it.');
       setShowNoticeDialog(false);
       setNoticeForm({ title: '', content: '' });
-      fetchData();
-    } catch (error) { toast.error('Failed to send notice'); }
+      fetchMyRequests();
+    } catch (error) { toast.error('Failed to submit notice request'); }
   };
 
   const handleApproveLeave = async (leaveId) => {
@@ -357,6 +373,45 @@ export default function TeachTinoDashboard() {
                     <tr key={notice.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
                       <td className="px-5 py-3.5 text-sm text-gray-800">{notice.title}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell line-clamp-1">{notice.content}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {myRequests.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="px-5 pt-5 pb-4">
+              <h2 className="text-xl font-bold text-gray-900">My Requests (मेरे अनुरोध)</h2>
+              <p className="text-sm text-gray-500 mt-1">Your requests sent to admin for approval.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Title</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Type</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Status</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden md:table-cell whitespace-nowrap">Admin Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myRequests.slice(0, 10).map((req) => (
+                    <tr key={req.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
+                      <td className="px-5 py-3.5 text-sm text-gray-800">{req.title}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell capitalize">{req.request_type}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
+                          req.status === 'approved' ? 'bg-green-100 text-green-700' :
+                          req.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-amber-100 text-amber-700'
+                        }`}>
+                          {req.status === 'pending' ? 'Pending Approval' : req.status === 'approved' ? 'Approved' : 'Rejected'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden md:table-cell">{req.review_note || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

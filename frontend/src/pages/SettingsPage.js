@@ -60,22 +60,25 @@ export default function SettingsPage() {
     { key: 'digital_library', label: 'Digital Library' },
     { key: 'live_classes', label: 'Live Classes' },
     { key: 'fee_management', label: 'Fee Management' },
+    { key: 'admissions', label: 'Admissions CRM' },
     { key: 'communication_hub', label: 'Communication Hub' },
+    { key: 'front_office', label: 'Front Office' },
     { key: 'transport', label: 'Transport' },
     { key: 'inventory', label: 'Inventory' },
     { key: 'cctv', label: 'CCTV' },
     { key: 'calendar', label: 'Calendar' },
     { key: 'ai_tools', label: 'AI Tools' },
     { key: 'analytics', label: 'Analytics' },
+    { key: 'multi_branch', label: 'Multi-Branch' },
   ];
 
-  const PORTALS = ['schooltino', 'teachtino', 'studytino'];
-  const PORTAL_LABELS = { schooltino: 'Schooltino (Admin)', teachtino: 'TeachTino (Teachers)', studytino: 'StudyTino (Students)' };
+  const PORTALS = ['schooltino', 'teachtino'];
+  const PORTAL_LABELS = { schooltino: 'SchoolTino (Admin)', teachtino: 'TeachTino (Teachers)' };
 
   const defaultVisibility = () => {
     const settings = {};
     MODULE_LIST.forEach(m => {
-      settings[m.key] = { schooltino: true, teachtino: true, studytino: true };
+      settings[m.key] = { schooltino: true, teachtino: true };
     });
     return settings;
   };

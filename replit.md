@@ -4,6 +4,10 @@
 Schooltino is a comprehensive, AI-powered school management platform inspired by NextOS K-12 Suite. It features a clean, simplified architecture with ~25 core modules across three portals (SchoolTino Admin, TeachTino Teachers, StudyTino Students/Parents). The platform covers student/staff management, finance, attendance, communication, and AI tools.
 
 ## Recent Changes (Feb 2026)
+- **Module Management Enhanced**: Added Admissions CRM, Multi-Branch, and Front Office to MODULE_LIST with enable/disable toggles. Added moduleKey to sidebar entries so all modules can be hidden/shown via Settings.
+- **StudyTino Removed from Module Management**: Students should never access admin modules. Removed StudyTino column from module toggle table. Students use separate StudentDashboard with fixed modules.
+- **Teacher Approval System (TeachTino)**: Teacher actions (notices, etc.) now go through admin approval. Teachers submit requests → Admin gets notifications → Approve/Reject. Backend endpoints: POST /api/teacher/requests, GET /api/admin/teacher-requests, PUT /api/admin/teacher-requests/{id}. Teacher sees request status in "My Requests" section. Admin sees pending requests on Dashboard with approve/reject buttons.
+- **Admin Notification Badge**: Notification bell now shows count of pending teacher requests + regular notifications
 - **Mobile Dashboard Fix**: Fixed Layout.js (h-screen/100dvh, overflow-hidden, flex-shrink-0 headers, iOS touch scrolling, safe-area-inset), Sidebar.js (100dvh, touch scrolling, safe-area), login redirects (/app/dashboard, /portal), SmartRedirect paths
 - **Landing Page**: New "/" route with app details, features, modules grid, portals info, AI showcase, and CTA buttons
 - **School Registration**: "/register" page with minimal form (school name, board, city, state, director details), auto-generated secure password (10 chars with upper/lower/digits/special), credentials shown after registration with copy buttons
