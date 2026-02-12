@@ -12120,6 +12120,7 @@ async def get_timetables(school_id: str, class_id: Optional[str] = None, current
     
     # Convert to nested format: { class_id: { day: { period_id: slot } } }
     result = {}
+    class_ids_set = set()
     for slot in timetables:
         cid = slot.get("class_id")
         day = slot.get("day")
@@ -12129,6 +12130,17 @@ async def get_timetables(school_id: str, class_id: Optional[str] = None, current
         if day not in result[cid]:
             result[cid][day] = {}
         result[cid][day][pid] = slot
+        class_ids_set.add(cid)
+    
+    # Enrich homeroom slots with class teacher info
+    for cid in class_ids_set:
+        class_doc = await db.classes.find_one({"id": cid, "school_id": school_id}, {"_id": 0, "class_teacher_id": 1, "class_teacher": 1})
+        if class_doc and class_doc.get("class_teacher_id"):
+            for day in result.get(cid, {}):
+                slot = result[cid][day].get(1)
+                if slot and slot.get("is_homeroom"):
+                    slot["teacher_id"] = class_doc.get("class_teacher_id", slot.get("teacher_id"))
+                    slot["teacher_name"] = class_doc.get("class_teacher", slot.get("teacher_name"))
     
     return result
 
@@ -12137,6 +12149,20 @@ async def save_timetable_slot(data: TimetableSlotModel, current_user: dict = Dep
     """Save a single timetable slot"""
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if data.period_id == 1:
+        existing_homeroom = await db.timetables.find_one({
+            "school_id": data.school_id,
+            "class_id": data.class_id,
+            "day": data.day,
+            "period_id": 1,
+            "is_homeroom": True
+        })
+        if existing_homeroom:
+            raise HTTPException(status_code=400, detail="Period 1 is reserved for Homeroom/Attendance. Change class teacher to update.")
+        class_doc = await db.classes.find_one({"id": data.class_id, "school_id": data.school_id})
+        if class_doc and class_doc.get("class_teacher_id"):
+            raise HTTPException(status_code=400, detail="Period 1 is locked to class teacher for Homeroom. Remove class teacher first.")
     
     # Check if slot exists
     existing = await db.timetables.find_one({
@@ -12161,12 +12187,195 @@ async def save_timetable_slot(data: TimetableSlotModel, current_user: dict = Dep
 @api_router.delete("/timetables/slot")
 async def delete_timetable_slot(school_id: str, class_id: str, day: str, period_id: int, current_user: dict = Depends(get_current_user)):
     """Delete a timetable slot"""
+    if period_id == 1:
+        homeroom = await db.timetables.find_one({
+            "school_id": school_id, "class_id": class_id, "day": day, "period_id": 1, "is_homeroom": True
+        })
+        if homeroom:
+            raise HTTPException(status_code=400, detail="Cannot delete Homeroom period. Remove class teacher assignment first.")
     await db.timetables.delete_one({
         "school_id": school_id,
         "class_id": class_id,
         "day": day,
         "period_id": period_id
     })
+    return {"success": True}
+
+# ==================== TIMETABLE SETTINGS ====================
+
+class TimetableSettingsModel(BaseModel):
+    school_id: str
+    normal_period_duration: int = 40
+    first_period_extra_mins: int = 10
+    school_start_time: str = "08:00"
+    break_duration: int = 15
+    lunch_duration: int = 30
+    break_after_period: int = 3
+    lunch_after_period: int = 6
+    periods_per_day: int = 8
+    working_days: List[str] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+@api_router.get("/timetable-settings")
+async def get_timetable_settings(school_id: str, current_user: dict = Depends(get_current_user)):
+    settings = await db.timetable_settings.find_one({"school_id": school_id}, {"_id": 0})
+    if not settings:
+        settings = {
+            "school_id": school_id,
+            "normal_period_duration": 40,
+            "first_period_extra_mins": 10,
+            "school_start_time": "08:00",
+            "break_duration": 15,
+            "lunch_duration": 30,
+            "break_after_period": 3,
+            "lunch_after_period": 6,
+            "periods_per_day": 8,
+            "working_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        }
+    return settings
+
+@api_router.post("/timetable-settings")
+async def save_timetable_settings(data: TimetableSettingsModel, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    settings = data.model_dump()
+    settings["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.timetable_settings.update_one(
+        {"school_id": data.school_id},
+        {"$set": settings},
+        upsert=True
+    )
+    return {"success": True, "message": "Settings saved"}
+
+# ==================== CLASS TEACHER ASSIGNMENT ====================
+
+class ClassTeacherAssignment(BaseModel):
+    school_id: str
+    class_id: str
+    teacher_id: str
+
+@api_router.post("/class-teacher/assign")
+async def assign_class_teacher(data: ClassTeacherAssignment, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    existing = await db.classes.find_one({
+        "school_id": data.school_id,
+        "class_teacher_id": data.teacher_id,
+        "id": {"$ne": data.class_id}
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Teacher already assigned as class teacher for {existing.get('name', 'another class')}")
+    
+    teacher = await db.staff.find_one({"id": data.teacher_id}, {"_id": 0, "name": 1})
+    if not teacher:
+        teacher = await db.users.find_one({"id": data.teacher_id}, {"_id": 0, "name": 1})
+    
+    teacher_name = teacher.get("name", "Unknown") if teacher else "Unknown"
+    
+    await db.classes.update_one(
+        {"id": data.class_id, "school_id": data.school_id},
+        {"$set": {
+            "class_teacher_id": data.teacher_id,
+            "class_teacher": teacher_name,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    settings = await db.timetable_settings.find_one({"school_id": data.school_id})
+    working_days = settings.get("working_days", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]) if settings else ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    
+    for day in working_days:
+        await db.timetables.update_one(
+            {"school_id": data.school_id, "class_id": data.class_id, "day": day, "period_id": 1},
+            {"$set": {
+                "school_id": data.school_id,
+                "class_id": data.class_id,
+                "day": day,
+                "period_id": 1,
+                "subject_id": "homeroom",
+                "subject_name": "Homeroom / Attendance",
+                "teacher_id": data.teacher_id,
+                "teacher_name": teacher_name,
+                "is_homeroom": True,
+                "is_locked": True,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+    
+    return {"success": True, "message": f"{teacher_name} assigned as class teacher", "teacher_name": teacher_name}
+
+# ==================== SUBSTITUTION MANAGEMENT ====================
+
+class SubstitutionModel(BaseModel):
+    school_id: str
+    class_id: str
+    date: str
+    period_id: int = 1
+    original_teacher_id: str
+    substitute_teacher_id: str
+    reason: str = ""
+    is_homeroom: bool = False
+
+@api_router.post("/substitutions")
+async def create_substitution(data: SubstitutionModel, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    sub_teacher = await db.staff.find_one({"id": data.substitute_teacher_id}, {"_id": 0, "name": 1})
+    if not sub_teacher:
+        sub_teacher = await db.users.find_one({"id": data.substitute_teacher_id}, {"_id": 0, "name": 1})
+    
+    orig_teacher = await db.staff.find_one({"id": data.original_teacher_id}, {"_id": 0, "name": 1})
+    if not orig_teacher:
+        orig_teacher = await db.users.find_one({"id": data.original_teacher_id}, {"_id": 0, "name": 1})
+    
+    class_doc = await db.classes.find_one({"id": data.class_id}, {"_id": 0, "name": 1})
+    class_name = class_doc.get("name", "") if class_doc else ""
+    
+    sub_id = str(uuid.uuid4())
+    sub_doc = {
+        "id": sub_id,
+        **data.model_dump(),
+        "substitute_teacher_name": sub_teacher.get("name", "Unknown") if sub_teacher else "Unknown",
+        "original_teacher_name": orig_teacher.get("name", "Unknown") if orig_teacher else "Unknown",
+        "class_name": class_name,
+        "status": "assigned",
+        "attendance_taken": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.substitutions.insert_one(sub_doc)
+    
+    period_label = "Homeroom (Attendance)" if data.is_homeroom else f"Period {data.period_id}"
+    await db.notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "school_id": data.school_id,
+        "user_id": data.substitute_teacher_id,
+        "type": "substitution",
+        "title": f"Substitution - {class_name}",
+        "message": f"Aaj {class_name} ka {period_label} aap sambhalenge. {'Attendance lena hai.' if data.is_homeroom else ''}",
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"success": True, "id": sub_id, "message": f"Substitute assigned for {class_name}"}
+
+@api_router.get("/substitutions")
+async def get_substitutions(school_id: str, date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    query = {"school_id": school_id}
+    if date:
+        query["date"] = date
+    else:
+        query["date"] = datetime.now().strftime("%Y-%m-%d")
+    
+    subs = await db.substitutions.find(query, {"_id": 0}).to_list(100)
+    return subs
+
+@api_router.delete("/substitutions/{sub_id}")
+async def delete_substitution(sub_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    await db.substitutions.delete_one({"id": sub_id})
     return {"success": True}
 
 @api_router.post("/timetables/copy")

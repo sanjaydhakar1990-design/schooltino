@@ -1,0 +1,125 @@
+📜 SCHOOL ERP TIMETABLE MODULE: FINAL REQUIREMENTS SCRIPT
+(Version 2.0 - Class Teacher + Attendance Focus)
+
+✅ CORE RULES (MUST-HAVE)
+Requirement	Implementation
+Class Teacher = Period 1 Har Din	Har class (1A se 12B tak) ke liye Monday se Saturday tak har din ka PEHLA period (Period 1) hamesha Class Teacher ke naam. Subject: "Homeroom / Attendance" (locked)
+Period 1 Duration	Normal period (40 mins) se 10 mins extra = 50 mins total
+<br>
+
+• 8:00 AM - 8:50 AM (Attendance + Announcements)
+<br>
+
+• Break: 8:50 - 9:00 AM
+Class Teacher ka Kaam	Period 1 mein:
+<br>
+
+1. Attendance mark karega
+<br>
+
+2. Diary check karega
+<br>
+
+3. Important announcements dega
+<br>
+
+4. Phir class formally shuru
+Substitution Logic	Agar Class Teacher absent:
+<br>
+
+• Admin ko ALAG SE Period 1 ke liye substitute assign karna hoga
+<br>
+
+• Substitute ko notification: "Aaj Class 5B ka Homeroom (8:00-8:50 AM) aap sambhalenge. Attendance lena hai."
+🖥️ ADMIN SETUP WORKFLOW (Step-by-Step)
+1. Class Teacher Assign Karna:
+   School Admin → Class Management → Class 5B → "Assign Class Teacher" → Mrs. Sharma select karein
+   → SYSTEM AUTO-LOCK KAREGA: "Period 1 (Mon-Sat) = Mrs. Sharma | Subject: Homeroom"
+
+2. Timetable Banate Waqt:
+   • Period 1 cells har class ke liye GRAY + LOCKED dikhegi (edit nahi ho sakta)
+   • Tooltip: "Reserved for Class Teacher - Attendance Period (+10 mins)"
+   • Period 2 se aage normal subject allocation
+
+3. Global Settings (School Level):
+   • Normal Period Duration: 40 mins
+   • First Period Duration: 50 mins (auto-calculate: Normal + 10)
+   • School Days: Monday to Saturday (toggle option)
+📱 TEACHER DASHBOARD VIEW (Mobile App)
+[Today: Monday]
+✅ 8:00 AM - 8:50 AM | Class 5B | HOMEROOM (50 mins) 👨🏫
+   [TAKE ATTENDANCE] button (big & highlighted)
+   • "Attendance lena zaroori hai - Period start hone se pehle"
+   
+✅ 9:00 AM - 9:40 AM | Class 5B | Mathematics
+✅ 9:50 AM - 10:30 AM | Class 7A | Science
+Note: Homeroom period card mein "🕗 +10 mins" badge dikhega
+
+🔁 SUBSTITUTION FLOW (Class Teacher Absent)
+mermaid
+
+Download
+
+Copy code
+graph LR
+    A[Class Teacher Leave Apply] --> B{System Alert}
+    B --> C[Admin: “Class 5B Homeroom<br>8:00-8:50 AM needs substitute”]
+    C --> D[AI Suggests:<br>• Ms. Gupta (Free Period)<br>• Mr. Khan (Science Teacher)]
+    D --> E[Admin Assigns Ms. Gupta]
+    E --> F[Ms. Gupta ko Notification:<br>“Aaj Class 5B Homeroom<br>Attendance lena hai”]
+    F --> G[Ms. Gupta Attendance Mark Karegi<br>Record: “Taken by: Ms. Gupta<br>(Substitute for Mrs. Sharma)”]
+📊 ATTENDANCE RECORD FORMAT (Database Level)
+Field	Value Example
+Class	5B
+Period	1 (Homeroom)
+Date	12 Feb 2026
+Taken By	Mrs. Sharma
+Role	Class Teacher
+Duration	50 mins
+Status	Completed at 8:42 AM
+If Substitute	Taken By: Ms. Gupta | Role: Substitute for Mrs. Sharma
+💡 PRO TIPS FOR DEVELOPER (Technical Notes)
+python
+
+Download
+
+Copy code
+# Pseudo-code for Timetable Generator
+def generate_timetable(class_id):
+    class_teacher = get_class_teacher(class_id)
+    for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]:
+        # LOCK Period 1 for Class Teacher
+        create_timetable_entry(
+            class_id=class_id,
+            day=day,
+            period=1,
+            teacher_id=class_teacher.id,
+            subject="Homeroom",
+            duration=50,  # 10 mins extra
+            is_locked=True,  # Admin cannot edit
+            is_homeroom=True
+        )
+    # Periods 2+ = normal allocation logic
+UI/UX Must-Haves:
+
+Period 1 cells ko light blue background + 👨🏫 icon
+"Homeroom" subject ko bold + star icon (*) ke saath
+Attendance button ko green + large size (mobile pe easily tap ho)
+Substitute assignment screen mein "Homeroom Period" ko RED highlight karein
+❓ FAQ (Common Doubts Solved)
+Q: Agar kisi teacher ko 2 classes ki class teacher bana diya jaye?
+A: System conflict alert dega: "Mrs. Sharma already Class Teacher for 5B. Ek teacher sirf ek class ki class teacher ho sakta hai." (Rule enforce karein)
+
+Q: Saturday ko bhi Period 1 mandatory hai?
+A: Haan! Settings mein "School Days" toggle hai. Agar Saturday off hai, to timetable generate hi nahi hoga us din.
+
+Q: Attendance 50 mins ke andar khatam ho gayi to?
+A: Teacher "Mark Complete" dabaye. Timer band ho jayega. Baki time announcements ke liye use ho sakta hai.
+
+📤 READY-TO-USE DELIVERABLE
+Aap is pure script ko copy-paste karke developer ko bhej sakte hain:
+➡️ "Timetable Module Requirements_v2.0.pdf"
+(Ismein: Rules, Workflow, UI Notes, Technical Specs sab include hain)
+
+Ye design school reality ko perfectly match karta hai — attendance time milta hai, routine banata hai, aur substitution bhi transparent rehta hai. Aapka ERP teachers ke liye truly useful banega! 🌟
+Koi aur detail chahiye to zaroor batayein.
