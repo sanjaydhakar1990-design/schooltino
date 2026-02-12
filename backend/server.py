@@ -5280,6 +5280,7 @@ async def generate_answer_image(
     answer: str = Body(...),
     subject: str = Body(...),
     question_type: str = Body(default="diagram"),
+    is_drawing: bool = Body(default=False),
     current_user: dict = Depends(get_current_user)
 ):
     """Generate a detailed diagram description/SVG for paper answer key using Sarvam AI"""
@@ -5291,7 +5292,31 @@ async def generate_answer_image(
     try:
         import httpx
         
-        svg_prompt = f"""You are an expert educational diagram creator for Indian school textbooks.
+        if is_drawing:
+            svg_prompt = f"""You are an expert children's drawing/art teacher creating reference images for Indian school drawing exams.
+
+Create a REFERENCE SVG image that a student needs to draw for this Drawing/Art question:
+Question: {question}
+Description: {answer}
+
+REQUIREMENTS:
+1. Return ONLY a valid SVG code (no markdown, no explanation)
+2. SVG must be self-contained with width="500" height="400" viewBox="0 0 500 400"
+3. Create a COLORFUL, DETAILED reference drawing that shows exactly what the student should draw
+4. Use bright, child-friendly colors with fills: #FF6B6B (red), #4ECDC4 (teal), #45B7D1 (blue), #96CEB4 (green), #FFEAA7 (yellow), #DDA0DD (purple), #FF9FF3 (pink), #FFA502 (orange)
+5. Add thick black outlines (stroke-width: 2-3) for clarity
+6. Make shapes rounded and appealing for children
+7. Include a title at the top in bold
+8. For fruits/vegetables/animals: draw them large, centered, with details like leaves, eyes, etc.
+9. For scenery: include sun, clouds, trees, mountains, river etc. as appropriate
+10. For patterns/rangoli: use symmetrical geometric designs with multiple colors
+11. For national symbols: draw them accurately with proper proportions
+12. Make the drawing simple enough for a child to replicate but detailed enough to be a good reference
+13. Font: Arial, size 14-16px for title, 12px for labels
+
+Return ONLY the <svg>...</svg> code, nothing else."""
+        else:
+            svg_prompt = f"""You are an expert educational diagram creator for Indian school textbooks.
 
 Create an SVG diagram for this {subject} question:
 Question: {question}
@@ -5299,7 +5324,7 @@ Answer/Description: {answer}
 
 REQUIREMENTS:
 1. Return ONLY a valid SVG code (no markdown, no explanation)
-2. SVG must be self-contained with width="400" height="300" viewBox="0 0 400 300"
+2. SVG must be self-contained with width="500" height="400" viewBox="0 0 500 400"
 3. Use clean lines, proper labels, arrows where needed
 4. Use colors: #1e40af (blue), #059669 (green), #dc2626 (red), #7c3aed (purple), #000000 (black)
 5. Include text labels for all parts

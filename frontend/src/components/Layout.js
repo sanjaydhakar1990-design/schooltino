@@ -4,6 +4,7 @@ import { Menu, Bell, Search, Phone, Mail, Hash, GraduationCap, Brain, Send, X } 
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const breadcrumbMap = {
   '/app/dashboard': 'Dashboard',
@@ -47,6 +48,7 @@ export const Layout = () => {
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef(null);
   const { user, schoolData } = useAuth();
+  const { isHindi, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -197,6 +199,13 @@ export const Layout = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  onClick={toggleLanguage}
+                  className="px-2 py-1 text-xs font-bold rounded-lg transition-colors bg-white/10 hover:bg-white/20 text-white"
+                  title={isHindi ? 'Switch to English' : 'हिंदी में बदलें'}
+                >
+                  {isHindi ? 'EN' : 'हि'}
+                </button>
                 {isTinoChatEnabled() && (
                   <button
                     onClick={() => setShowTinoChat(!showTinoChat)}

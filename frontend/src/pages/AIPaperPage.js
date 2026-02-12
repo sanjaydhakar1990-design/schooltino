@@ -84,6 +84,13 @@ const LANG_TEXT = {
   }
 };
 
+const isDrawingSubject = (subject) => {
+  if (!subject) return false;
+  const s = subject.toLowerCase().trim();
+  const drawingNames = ['drawing', 'चित्रकला', 'art', 'art & craft', 'कला', 'art and craft', 'चित्र कला', 'craft'];
+  return drawingNames.some(name => s.includes(name) || s === name);
+};
+
 const SECTION_LABELS = {
   hindi: { A: 'अ', B: 'ब', C: 'स', D: 'द' },
   english: { A: 'A', B: 'B', C: 'C', D: 'D' },
@@ -482,13 +489,21 @@ export default function AIPaperPage() {
       setStep(3);
       toast.success(isAppHindi ? 'पेपर तैयार है!' : 'Paper is ready!');
       
-      const diagramQuestions = response.data.questions
-        ?.map((q, idx) => ({ ...q, idx }))
-        .filter(q => q.type === 'diagram' || q.type === 'draw_color' || q.type === 'scenery' || q.requires_drawing || q.hasDrawing) || [];
-      
-      if (diagramQuestions.length > 0) {
-        toast.info(`${diagramQuestions.length} ${isAppHindi ? 'चित्र generate हो रहे हैं...' : 'images being generated...'}`);
-        autoGenerateImages(diagramQuestions, response.data.subject);
+      if (isDrawingSubject(response.data.subject)) {
+        const allQuestions = response.data.questions?.map((q, idx) => ({ ...q, idx })) || [];
+        if (allQuestions.length > 0) {
+          toast.info(`${allQuestions.length} ${isAppHindi ? 'चित्र generate हो रहे हैं...' : 'reference images being generated...'}`);
+          autoGenerateImages(allQuestions, response.data.subject);
+        }
+      } else {
+        const diagramQuestions = response.data.questions
+          ?.map((q, idx) => ({ ...q, idx }))
+          .filter(q => q.type === 'diagram' || q.type === 'draw_color' || q.type === 'scenery' || q.requires_drawing || q.hasDrawing) || [];
+        
+        if (diagramQuestions.length > 0) {
+          toast.info(`${diagramQuestions.length} ${isAppHindi ? 'चित्र generate हो रहे हैं...' : 'images being generated...'}`);
+          autoGenerateImages(diagramQuestions, response.data.subject);
+        }
       }
     } catch (error) {
       const msg = error.response?.data?.detail;
@@ -507,6 +522,7 @@ export default function AIPaperPage() {
     setImageProgress({ current: 0, total: diagramQuestions.length });
     
     const token = localStorage.getItem('token');
+    const drawingPaper = isDrawingSubject(subject);
     
     for (let i = 0; i < diagramQuestions.length; i++) {
       const q = diagramQuestions[i];
@@ -517,7 +533,8 @@ export default function AIPaperPage() {
           question: q.question,
           answer: q.answer || q.drawing_guide || q.diagram_description || 'Draw as described',
           subject: subject,
-          question_type: q.type
+          question_type: q.type,
+          is_drawing: drawingPaper
         }, {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 60000
@@ -548,7 +565,8 @@ export default function AIPaperPage() {
         question: question.question,
         answer: question.answer,
         subject: formData.subject,
-        question_type: question.type
+        question_type: question.type,
+        is_drawing: isDrawingSubject(formData.subject)
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -962,8 +980,9 @@ export default function AIPaperPage() {
     const printWindow = window.open('', '_blank');
     if (!printWindow) { toast.error('Please allow popups'); return; }
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Print</title>
-      <style>@page{margin:15mm;size:A4}*{margin:0;padding:0;box-sizing:border-box}
+      <style>@page{margin:15mm;size:A4}*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       body{font-family:Arial,sans-serif;font-size:12pt;line-height:1.6;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      img{-webkit-print-color-adjust:exact;print-color-adjust:exact}
       .paper-header{text-align:center;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px}
       .paper-header h1{font-size:16pt;margin-bottom:4px}.paper-header h2{font-size:14pt}
       .paper-header .meta{font-size:10pt;color:#444;margin-top:4px}
@@ -980,6 +999,11 @@ export default function AIPaperPage() {
       .answer-item .marking-points li{margin-bottom:2px}
       .diagram-box{border:1px solid #ccc;padding:8px;margin-top:6px;background:#f9f9f9;border-radius:4px}
       .diagram-box p{font-size:10pt}.diagram-box img{max-width:100%;height:auto;max-height:200px}
+      .reference-image-box{border:2px solid #93c5fd;border-radius:8px;padding:10px;margin-top:8px;background:#eff6ff;text-align:center}
+      .reference-image-box p{font-size:9pt;font-weight:bold;color:#1d4ed8;margin-bottom:6px}
+      .reference-image-box img{max-width:100%;height:auto;max-height:200px;display:block;margin:0 auto}
+      .drawing-space{border:2px dashed #9ca3af;border-radius:8px;padding:16px;margin-top:8px;min-height:120px;text-align:center}
+      .drawing-space p{color:#9ca3af;font-size:10pt}
       .page-break{page-break-before:always}
       </style></head><body>${el.innerHTML}
       <script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`);
@@ -991,6 +1015,7 @@ export default function AIPaperPage() {
     const qp = paper?.question_paper;
     const ak = paper?.answer_paper;
     const displaySubject = formData.language === 'english' ? getSubjectInLanguage(paper?.subject, 'english') : paper?.subject;
+    const drawingPaper = isDrawingSubject(paper?.subject);
     
     return (
       <div className="space-y-6">
@@ -1094,6 +1119,30 @@ export default function AIPaperPage() {
                                         <p className="font-medium mt-1">{q.choice_question}</p>
                                       </div>
                                     )}
+                                    {drawingPaper && answerImages[q.originalIdx] && (
+                                      <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
+                                        <p className="text-xs font-semibold text-blue-700 mb-2">
+                                          {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
+                                        </p>
+                                        <img src={answerImages[q.originalIdx]} alt={`Reference Q${globalNum}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
+                                      </div>
+                                    )}
+                                    {drawingPaper && !answerImages[q.originalIdx] && autoGeneratingImages && (
+                                      <div className="mt-2 text-xs text-purple-600 italic print:hidden">
+                                        <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
+                                        {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
+                                      </div>
+                                    )}
+                                    {drawingPaper && (
+                                      <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: '150px' }}>
+                                        <p className="text-center text-gray-400 text-sm">
+                                          {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {drawingPaper && q.drawing_guide && (
+                                      <p className="text-xs text-gray-500 mt-1 italic">{q.drawing_guide}</p>
+                                    )}
                                   </div>
                                 </div>
                                 {q.options && q.options.length > 0 && (
@@ -1120,6 +1169,30 @@ export default function AIPaperPage() {
                         <div className="flex-1">
                           <p className="font-medium">{q.question}</p>
                           <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
+                          {drawingPaper && answerImages[idx] && (
+                            <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
+                              <p className="text-xs font-semibold text-blue-700 mb-2">
+                                {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
+                              </p>
+                              <img src={answerImages[idx]} alt={`Reference Q${idx + 1}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
+                            </div>
+                          )}
+                          {drawingPaper && !answerImages[idx] && autoGeneratingImages && (
+                            <div className="mt-2 text-xs text-purple-600 italic print:hidden">
+                              <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
+                              {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
+                            </div>
+                          )}
+                          {drawingPaper && (
+                            <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: '150px' }}>
+                              <p className="text-center text-gray-400 text-sm">
+                                {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
+                              </p>
+                            </div>
+                          )}
+                          {drawingPaper && q.drawing_guide && (
+                            <p className="text-xs text-gray-500 mt-1 italic">{q.drawing_guide}</p>
+                          )}
                         </div>
                       </div>
                       {q.options && q.options.length > 0 && (
