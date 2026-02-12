@@ -11708,11 +11708,14 @@ class FeeStructureModel(BaseModel):
     class_id: str
     academic_year: str
     fees: Dict[str, float]  # fee_type: amount
+    tuition_frequency: Optional[str] = "monthly"  # monthly or yearly
 
 class FeeCollectionModel(BaseModel):
     school_id: str
     student_id: str
     amount: float
+    academic_year: Optional[str] = None
+    fee_items: Optional[List[Dict[str, Any]]] = []  # [{fee_type, amount, months?}]
     fee_types: Optional[List[str]] = []
     months: Optional[List[str]] = []
     payment_mode: str = "cash"
@@ -11742,12 +11745,12 @@ async def generate_receipt_no(school_id: str) -> str:
     return f"{prefix}-{str(count + 1).zfill(4)}"
 
 @api_router.get("/fee-structures")
-async def get_fee_structures(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get all fee structures for a school"""
-    structures = await db.fee_structures_new.find(
-        {"school_id": school_id},
-        {"_id": 0}
-    ).to_list(100)
+async def get_fee_structures(school_id: str, academic_year: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all fee structures for a school, optionally filtered by academic year"""
+    query = {"school_id": school_id}
+    if academic_year:
+        query["academic_year"] = academic_year
+    structures = await db.fee_structures_new.find(query, {"_id": 0}).to_list(100)
     return structures
 
 @api_router.post("/fee-structures")
@@ -11756,7 +11759,6 @@ async def create_fee_structure(data: FeeStructureModel, current_user: dict = Dep
     if current_user["role"] not in ["director", "principal", "accountant", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    # Check if structure exists for this class
     existing = await db.fee_structures_new.find_one({
         "school_id": data.school_id,
         "class_id": data.class_id,
@@ -11768,12 +11770,12 @@ async def create_fee_structure(data: FeeStructureModel, current_user: dict = Dep
             {"id": existing["id"]},
             {"$set": {
                 "fees": data.fees,
+                "tuition_frequency": data.tuition_frequency or "monthly",
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
         return {"success": True, "message": "Fee structure updated", "id": existing["id"]}
     
-    # Create new
     structure_id = str(uuid.uuid4())
     structure = {
         "id": structure_id,
@@ -11785,11 +11787,13 @@ async def create_fee_structure(data: FeeStructureModel, current_user: dict = Dep
     return {"success": True, "message": "Fee structure created", "id": structure_id}
 
 @api_router.get("/fee-collections")
-async def get_fee_collections(school_id: str, student_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_fee_collections(school_id: str, student_id: Optional[str] = None, academic_year: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     """Get fee collections for a school"""
     query = {"school_id": school_id}
     if student_id:
         query["student_id"] = student_id
+    if academic_year:
+        query["academic_year"] = academic_year
     
     collections = await db.fee_collections.find(query, {"_id": 0}).sort("payment_date", -1).to_list(1000)
     return collections
@@ -11813,18 +11817,58 @@ async def collect_fee(data: FeeCollectionModel, current_user: dict = Depends(get
     }
     await db.fee_collections.insert_one(collection)
     
-    # Update student's fee status
     student = await db.students.find_one({"id": data.student_id})
     if student:
         current_paid = student.get("total_fee_paid", 0)
+        new_total = current_paid + data.amount
         await db.students.update_one(
             {"id": data.student_id},
             {"$set": {
-                "total_fee_paid": current_paid + data.amount,
+                "total_fee_paid": new_total,
                 "last_payment_date": data.payment_date,
                 "last_receipt_no": receipt_no
             }}
         )
+        
+        fee_structure = await db.fee_structures_new.find_one({
+            "school_id": data.school_id,
+            "class_id": student.get("class_id")
+        })
+        if fee_structure:
+            total_fee = sum(fee_structure.get("fees", {}).values())
+            if total_fee > 0:
+                fee_percent = (new_total / total_fee) * 100
+                settings = await db.admit_card_settings.find_one({"school_id": data.school_id})
+                min_percent = settings.get("min_fee_percentage", 50) if settings else 50
+                
+                if fee_percent >= min_percent:
+                    student_class = student.get("class_id", "")
+                    pending_exams = await db.exams.find({
+                        "school_id": data.school_id,
+                        "status": {"$in": ["upcoming", "active", "scheduled"]}
+                    }).to_list(10)
+                    
+                    for exam in pending_exams:
+                        exam_classes = exam.get("classes", exam.get("class_ids", []))
+                        if exam_classes and student_class not in exam_classes:
+                            continue
+                        existing = await db.generated_admit_cards.find_one({
+                            "student_id": data.student_id,
+                            "exam_id": exam["id"]
+                        })
+                        if not existing:
+                            await db.generated_admit_cards.update_one(
+                                {"student_id": data.student_id, "exam_id": exam["id"]},
+                                {"$set": {
+                                    "student_id": data.student_id,
+                                    "exam_id": exam["id"],
+                                    "school_id": data.school_id,
+                                    "auto_activated": True,
+                                    "activated_by_fee": receipt_no,
+                                    "generated_at": datetime.now(timezone.utc).isoformat()
+                                }},
+                                upsert=True
+                            )
     
     return {"success": True, "receipt_no": receipt_no, "id": collection_id}
 

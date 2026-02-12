@@ -52,6 +52,7 @@ export default function IntegratedCommunicationPage() {
     template: ''
   });
 
+  const [whatsappMode, setWhatsappMode] = useState('free');
   const [whatsappForm, setWhatsappForm] = useState({
     recipient_type: 'all_parents',
     class_id: '',
@@ -188,8 +189,40 @@ export default function IntegratedCommunicationPage() {
     setShowSendConfirm(true);
   };
 
+  const handleFreeWhatsapp = (e) => {
+    e.preventDefault();
+    if (!whatsappForm.message.trim()) {
+      toast.error('Message लिखना ज़रूरी है');
+      return;
+    }
+    if (whatsappForm.recipient_type === 'single') {
+      let phone = (whatsappForm.mobile || '').replace(/\D/g, '');
+      if (!phone || (phone.length !== 10 && phone.length !== 12)) {
+        toast.error('Valid 10-digit mobile number डालें');
+        return;
+      }
+      if (phone.length === 10) phone = '91' + phone;
+      const encoded = encodeURIComponent(whatsappForm.message);
+      window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+      toast.success('WhatsApp chat opened! Message copy करके भेजें।');
+    } else {
+      const encoded = encodeURIComponent(whatsappForm.message);
+      const waUrl = `https://wa.me/?text=${encoded}`;
+      navigator.clipboard.writeText(whatsappForm.message).then(() => {
+        toast.success('Message copied! WhatsApp खोलें और contacts को forward करें।');
+      }).catch(() => {
+        toast.info('WhatsApp खोलें और message paste करें');
+      });
+      window.open(waUrl, '_blank');
+    }
+  };
+
   const handleWhatsappSubmit = (e) => {
     e.preventDefault();
+    if (whatsappMode === 'free') {
+      handleFreeWhatsapp(e);
+      return;
+    }
     if (!whatsappForm.message.trim()) {
       toast.error('Message लिखना ज़रूरी है');
       return;
@@ -678,15 +711,73 @@ export default function IntegratedCommunicationPage() {
             </TabsList>
 
             <TabsContent value="send">
+              <div className="mb-4 flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                <span className="text-sm font-medium text-gray-700">WhatsApp Mode:</span>
+                <button
+                  onClick={() => setWhatsappMode('free')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${whatsappMode === 'free' ? 'bg-green-600 text-white shadow' : 'bg-white text-gray-600 border hover:bg-green-50'}`}
+                >
+                  Free (wa.me Link)
+                </button>
+                <button
+                  onClick={() => setWhatsappMode('paid')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${whatsappMode === 'paid' ? 'bg-green-600 text-white shadow' : 'bg-white text-gray-600 border hover:bg-green-50'}`}
+                >
+                  Paid API (BotBiz)
+                </button>
+                {whatsappMode === 'free' && (
+                  <Badge className="bg-green-100 text-green-700 ml-auto">No Credits Required</Badge>
+                )}
+                {whatsappMode === 'paid' && (
+                  <Badge className="bg-amber-100 text-amber-700 ml-auto">{WHATSAPP_CREDIT_COST} Credit/msg</Badge>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <Card className="border-0 shadow-md">
                     <CardContent className="p-6">
                       <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <Send className="w-5 h-5 text-green-600" /> Compose WhatsApp Message
+                        <Send className="w-5 h-5 text-green-600" />
+                        {whatsappMode === 'free' ? 'Free WhatsApp (wa.me Link)' : 'Paid WhatsApp (API Broadcast)'}
                       </h3>
+
+                      {whatsappMode === 'free' && (
+                        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-xs text-blue-700">
+                            <strong>Free Mode:</strong> Single number पर direct WhatsApp chat खुलेगा। Bulk भेजने के लिए message copy होगा, WhatsApp पर contacts select करके forward करें। कोई credit नहीं लगेगा!
+                          </p>
+                        </div>
+                      )}
+
                       <form onSubmit={handleWhatsappSubmit} className="space-y-4">
-                        <RecipientSelector form={whatsappForm} setForm={setWhatsappForm} colorClass="green" />
+                        {whatsappMode === 'free' ? (
+                          <div className="space-y-3">
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => setWhatsappForm(f => ({...f, recipient_type: 'single'}))}
+                                className={`px-3 py-1.5 rounded text-sm ${whatsappForm.recipient_type === 'single' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                Single Number
+                              </button>
+                              <button type="button" onClick={() => setWhatsappForm(f => ({...f, recipient_type: 'bulk_free'}))}
+                                className={`px-3 py-1.5 rounded text-sm ${whatsappForm.recipient_type === 'bulk_free' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                Bulk (Copy & Forward)
+                              </button>
+                            </div>
+                            {whatsappForm.recipient_type === 'single' && (
+                              <div>
+                                <Label>Mobile Number</Label>
+                                <Input
+                                  value={whatsappForm.mobile}
+                                  onChange={(e) => setWhatsappForm(f => ({...f, mobile: e.target.value}))}
+                                  placeholder="10-digit mobile number"
+                                  maxLength={10}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <RecipientSelector form={whatsappForm} setForm={setWhatsappForm} colorClass="green" />
+                        )}
 
                         <div className="space-y-2">
                           <Label>Message (संदेश)</Label>
@@ -700,11 +791,15 @@ export default function IntegratedCommunicationPage() {
                           <p className="text-xs text-slate-500">{whatsappForm.message.length} characters</p>
                         </div>
 
-                        <CreditCostBanner form={whatsappForm} costPerMsg={WHATSAPP_CREDIT_COST} />
+                        {whatsappMode === 'paid' && (
+                          <CreditCostBanner form={whatsappForm} costPerMsg={WHATSAPP_CREDIT_COST} />
+                        )}
 
-                        <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={sending}>
+                        <Button type="submit" className={`w-full ${whatsappMode === 'free' ? 'bg-green-600 hover:bg-green-700' : 'bg-green-600 hover:bg-green-700'}`} disabled={sending}>
                           {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                          Send WhatsApp ({WHATSAPP_CREDIT_COST} credit/msg)
+                          {whatsappMode === 'free'
+                            ? (whatsappForm.recipient_type === 'single' ? 'Open WhatsApp Chat' : 'Copy & Open WhatsApp')
+                            : `Send WhatsApp (${WHATSAPP_CREDIT_COST} credit/msg)`}
                         </Button>
                       </form>
                     </CardContent>
@@ -714,7 +809,7 @@ export default function IntegratedCommunicationPage() {
                 <div className="space-y-4">
                   <Card className="border-0 shadow-md">
                     <CardContent className="p-5">
-                      <h4 className="font-semibold text-gray-900 mb-3">📋 WhatsApp Templates</h4>
+                      <h4 className="font-semibold text-gray-900 mb-3">Quick Templates</h4>
                       <div className="space-y-2">
                         {whatsappTemplates.map((t) => (
                           <button
@@ -734,12 +829,25 @@ export default function IntegratedCommunicationPage() {
 
                   <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-emerald-50">
                     <CardContent className="p-5">
-                      <h4 className="font-medium text-green-800 mb-2">💡 WhatsApp Tips</h4>
+                      <h4 className="font-medium text-green-800 mb-2">
+                        {whatsappMode === 'free' ? 'Free Mode Tips' : 'Paid API Tips'}
+                      </h4>
                       <ul className="text-xs text-green-700 space-y-1">
-                        <li>• Emojis और formatting use करें</li>
-                        <li>• Images/documents भी भेज सकते हैं</li>
-                        <li>• Bulk broadcast class-wise करें</li>
-                        <li>• Each message = {WHATSAPP_CREDIT_COST} credit</li>
+                        {whatsappMode === 'free' ? (
+                          <>
+                            <li>• Single number: Direct chat खुलेगा</li>
+                            <li>• Bulk: Message copy होगा, forward करें</li>
+                            <li>• Unlimited messages, no cost!</li>
+                            <li>• Media attach WhatsApp में करें</li>
+                          </>
+                        ) : (
+                          <>
+                            <li>• Bulk broadcast class-wise करें</li>
+                            <li>• Auto-send to all parents</li>
+                            <li>• Delivery reports available</li>
+                            <li>• Each message = {WHATSAPP_CREDIT_COST} credit</li>
+                          </>
+                        )}
                       </ul>
                     </CardContent>
                   </Card>

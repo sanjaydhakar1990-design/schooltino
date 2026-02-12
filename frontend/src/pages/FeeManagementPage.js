@@ -19,7 +19,6 @@ import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Fee Types Configuration
 const FEE_TYPES = [
   { id: 'admission_fee', name: 'Admission Fee', name_hi: 'प्रवेश शुल्क', frequency: 'one_time' },
   { id: 'tuition_fee', name: 'Tuition Fee', name_hi: 'ट्यूशन फीस', frequency: 'monthly' },
@@ -39,21 +38,41 @@ const FEE_TYPES = [
 
 const MONTHS = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
 
+const MONTHLY_FEE_IDS = ['tuition_fee', 'transport_fee', 'computer_fee', 'hostel_fee'];
+
+function getDefaultAcademicYear() {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  if (month >= 3) {
+    return `${year}-${year + 1}`;
+  }
+  return `${year - 1}-${year}`;
+}
+
+function generateAcademicYearOptions() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  return [
+    `${currentYear - 2}-${currentYear - 1}`,
+    `${currentYear - 1}-${currentYear}`,
+    `${currentYear}-${currentYear + 1}`
+  ];
+}
+
 export default function FeeManagementPage() {
   const { t } = useTranslation();
   const { schoolId, user } = useAuth();
   
-  // Tab state
   const [activeTab, setActiveTab] = useState('structure');
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState(getDefaultAcademicYear());
   
-  // Data states
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
   const [feeStructures, setFeeStructures] = useState([]);
   const [feeCollections, setFeeCollections] = useState([]);
   const [oldDues, setOldDues] = useState([]);
   
-  // UI states
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState('');
   const [search, setSearch] = useState('');
@@ -64,26 +83,29 @@ export default function FeeManagementPage() {
   const [saving, setSaving] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState(null);
   
-  // Fee structure form
   const [structureForm, setStructureForm] = useState({
     class_id: '',
-    academic_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+    academic_year: getDefaultAcademicYear(),
+    tuition_frequency: 'monthly',
     fees: FEE_TYPES.reduce((acc, f) => ({ ...acc, [f.id]: 0 }), {})
   });
   
-  // Collection form
   const [collectionForm, setCollectionForm] = useState({
     student_id: '',
     amount: 0,
     fee_types: [],
     months: [],
+    fee_items: [],
     payment_mode: 'cash',
     payment_date: new Date().toISOString().split('T')[0],
     receipt_no: '',
-    remarks: ''
+    remarks: '',
+    academic_year: getDefaultAcademicYear()
   });
 
-  // Old Due form
+  const [collectionFeeSelections, setCollectionFeeSelections] = useState({});
+  const [collectionMonthSelections, setCollectionMonthSelections] = useState({});
+
   const [oldDueForm, setOldDueForm] = useState({
     student_id: '',
     academic_year: '',
@@ -93,7 +115,6 @@ export default function FeeManagementPage() {
     send_notification: true
   });
   
-  // Government Schemes & Scholarships
   const [scholarships, setScholarships] = useState([]);
   const [studentScholarships, setStudentScholarships] = useState([]);
   const [showScholarshipDialog, setShowScholarshipDialog] = useState(false);
@@ -101,18 +122,18 @@ export default function FeeManagementPage() {
   const [scholarshipForm, setScholarshipForm] = useState({
     name: '',
     name_hi: '',
-    type: 'central_govt', // central_govt, state_govt, private
+    type: 'central_govt',
     amount: 0,
-    percentage: 0, // percentage of total fee
+    percentage: 0,
     eligibility: '',
     documents_required: '',
-    academic_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+    academic_year: getDefaultAcademicYear()
   });
   const [assignForm, setAssignForm] = useState({
     student_id: '',
     scholarship_id: '',
     amount: 0,
-    status: 'pending', // pending, approved, received, rejected
+    status: 'pending',
     remarks: ''
   });
 
@@ -120,7 +141,7 @@ export default function FeeManagementPage() {
     if (schoolId) {
       fetchAllData();
     }
-  }, [schoolId]);
+  }, [schoolId, selectedAcademicYear]);
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -130,8 +151,8 @@ export default function FeeManagementPage() {
       
       const [classRes, feeRes, collectionRes, duesRes, schemeRes, studentSchemeRes] = await Promise.all([
         axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
-        axios.get(`${API}/fee-structures?school_id=${schoolId}`, { headers }),
-        axios.get(`${API}/fee-collections?school_id=${schoolId}`, { headers }),
+        axios.get(`${API}/fee-structures?school_id=${schoolId}&academic_year=${selectedAcademicYear}`, { headers }),
+        axios.get(`${API}/fee-collections?school_id=${schoolId}&academic_year=${selectedAcademicYear}`, { headers }),
         axios.get(`${API}/old-dues?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/scholarships?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
         axios.get(`${API}/student-scholarships?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] }))
@@ -168,12 +189,44 @@ export default function FeeManagementPage() {
 
   useEffect(() => {
     if (schoolId) {
-      // Always fetch students for Collection dialog to work
       fetchStudents(selectedClass);
     }
   }, [schoolId, selectedClass, search, activeTab]);
 
-  // Save fee structure
+  const isMonthlyFee = (feeId, structure) => {
+    if (MONTHLY_FEE_IDS.includes(feeId)) {
+      if (feeId === 'tuition_fee' && structure?.tuition_frequency === 'yearly') {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  };
+
+  const calculateAnnualFee = (structure) => {
+    if (!structure || !structure.fees) return 0;
+    const fees = structure.fees;
+    const freq = structure.tuition_frequency || 'monthly';
+    let total = 0;
+    
+    Object.entries(fees).forEach(([key, val]) => {
+      const amount = Number(val) || 0;
+      if (amount <= 0) return;
+      
+      if (MONTHLY_FEE_IDS.includes(key)) {
+        if (key === 'tuition_fee' && freq === 'yearly') {
+          total += amount;
+        } else {
+          total += amount * 12;
+        }
+      } else {
+        total += amount;
+      }
+    });
+    
+    return total;
+  };
+
   const handleSaveStructure = async () => {
     if (!structureForm.class_id) {
       toast.error('कृपया class select करें');
@@ -200,10 +253,69 @@ export default function FeeManagementPage() {
     }
   };
 
-  // Collect fee
+  const openCollectionDialog = (student) => {
+    setSelectedStudent(student);
+    const structure = getClassFeeStructure(student.class_id);
+    const feeSelections = {};
+    const monthSelections = {};
+
+    if (structure && structure.fees) {
+      FEE_TYPES.forEach(ft => {
+        const amt = Number(structure.fees[ft.id]) || 0;
+        if (amt > 0) {
+          feeSelections[ft.id] = { selected: false, amount: amt };
+          if (isMonthlyFee(ft.id, structure)) {
+            monthSelections[ft.id] = [];
+          }
+        }
+      });
+    }
+
+    setCollectionFeeSelections(feeSelections);
+    setCollectionMonthSelections(monthSelections);
+    setCollectionForm({
+      student_id: student.id,
+      amount: 0,
+      fee_types: [],
+      months: [],
+      fee_items: [],
+      payment_mode: 'cash',
+      payment_date: new Date().toISOString().split('T')[0],
+      receipt_no: '',
+      remarks: '',
+      academic_year: selectedAcademicYear
+    });
+    setShowCollectionDialog(true);
+  };
+
+  const calculateCollectionTotal = () => {
+    let total = 0;
+    const items = [];
+
+    Object.entries(collectionFeeSelections).forEach(([feeId, data]) => {
+      if (!data.selected) return;
+      const amt = Number(data.amount) || 0;
+
+      if (collectionMonthSelections[feeId] !== undefined) {
+        const months = collectionMonthSelections[feeId] || [];
+        if (months.length > 0) {
+          total += amt * months.length;
+          items.push({ fee_type: feeId, amount: amt, months: [...months] });
+        }
+      } else {
+        total += amt;
+        items.push({ fee_type: feeId, amount: amt });
+      }
+    });
+
+    return { total, items };
+  };
+
   const handleCollectFee = async () => {
-    if (!collectionForm.student_id || collectionForm.amount <= 0) {
-      toast.error('कृपया student और amount भरें');
+    const { total, items } = calculateCollectionTotal();
+
+    if (!collectionForm.student_id || total <= 0) {
+      toast.error('कृपया student और fee items select करें');
       return;
     }
     
@@ -212,6 +324,9 @@ export default function FeeManagementPage() {
       const token = localStorage.getItem('token');
       const response = await axios.post(`${API}/fee-collections`, {
         ...collectionForm,
+        amount: total,
+        fee_items: items,
+        academic_year: selectedAcademicYear,
         school_id: schoolId,
         collected_by: user?.id
       }, {
@@ -220,15 +335,20 @@ export default function FeeManagementPage() {
       
       toast.success(`Fee collected! Receipt No: ${response.data.receipt_no}`);
       setShowCollectionDialog(false);
+      setSelectedStudent(null);
+      setCollectionFeeSelections({});
+      setCollectionMonthSelections({});
       setCollectionForm({
         student_id: '',
         amount: 0,
         fee_types: [],
         months: [],
+        fee_items: [],
         payment_mode: 'cash',
         payment_date: new Date().toISOString().split('T')[0],
         receipt_no: '',
-        remarks: ''
+        remarks: '',
+        academic_year: selectedAcademicYear
       });
       fetchAllData();
     } catch (error) {
@@ -238,7 +358,6 @@ export default function FeeManagementPage() {
     }
   };
 
-  // Add old due
   const handleAddOldDue = async () => {
     if (!oldDueForm.student_id || oldDueForm.amount <= 0) {
       toast.error('कृपया student और amount भरें');
@@ -274,7 +393,6 @@ export default function FeeManagementPage() {
     }
   };
 
-  // Save Scholarship/Govt Scheme
   const handleSaveScholarship = async () => {
     if (!scholarshipForm.name || scholarshipForm.amount <= 0) {
       toast.error('कृपया scheme name और amount भरें');
@@ -301,7 +419,7 @@ export default function FeeManagementPage() {
         percentage: 0,
         eligibility: '',
         documents_required: '',
-        academic_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+        academic_year: getDefaultAcademicYear()
       });
       fetchAllData();
     } catch (error) {
@@ -311,7 +429,6 @@ export default function FeeManagementPage() {
     }
   };
 
-  // Assign Scholarship to Student
   const handleAssignScholarship = async () => {
     if (!assignForm.student_id || !assignForm.scholarship_id) {
       toast.error('कृपया student और scheme select करें');
@@ -347,23 +464,19 @@ export default function FeeManagementPage() {
     }
   };
 
-  // Get scholarship name by ID
   const getScholarshipName = (id) => {
     const scheme = scholarships.find(s => s.id === id);
     return scheme?.name || 'Unknown';
   };
 
-  // Get student scholarship summary
   const getStudentScholarshipSummary = (studentId) => {
     return studentScholarships.filter(s => s.student_id === studentId);
   };
 
-  // Get fee structure for a class
   const getClassFeeStructure = (classId) => {
     return feeStructures.find(f => f.class_id === classId);
   };
 
-  // Calculate student fee summary
   const getStudentFeeSummary = (studentId) => {
     const studentCollections = feeCollections.filter(c => c.student_id === studentId);
     const studentDues = oldDues.filter(d => d.student_id === studentId);
@@ -374,7 +487,6 @@ export default function FeeManagementPage() {
     return { totalPaid, totalOldDue, collections: studentCollections, dues: studentDues };
   };
 
-  // Print receipt
   const handlePrintReceipt = (collection) => {
     const printWindow = window.open('', '_blank');
     const student = students.find(s => s.id === collection.student_id);
@@ -405,7 +517,7 @@ export default function FeeManagementPage() {
           <div class="row"><span>Date:</span><span>${new Date(collection.payment_date).toLocaleDateString('en-IN')}</span></div>
           <div class="row"><span>Payment Mode:</span><span>${collection.payment_mode?.toUpperCase()}</span></div>
         </div>
-        <div class="amount">₹ ${collection.amount?.toLocaleString('en-IN')}</div>
+        <div class="amount">\u20B9 ${collection.amount?.toLocaleString('en-IN')}</div>
         <div class="footer">
           <p>Thank you for your payment</p>
           <p>This is a computer generated receipt</p>
@@ -417,12 +529,11 @@ export default function FeeManagementPage() {
     printWindow.document.close();
   };
 
-  // Class-wise summary
   const getClassSummary = () => {
     return classes.map(cls => {
       const structure = getClassFeeStructure(cls.id);
       const classStudents = students.filter(s => s.class_id === cls.id);
-      const totalFee = structure ? Object.values(structure.fees || {}).reduce((a, b) => a + (b || 0), 0) : 0;
+      const totalFee = calculateAnnualFee(structure);
       const collections = feeCollections.filter(c => classStudents.some(s => s.id === c.student_id));
       const totalCollected = collections.reduce((sum, c) => sum + (c.amount || 0), 0);
       
@@ -437,6 +548,8 @@ export default function FeeManagementPage() {
     });
   };
 
+  const { total: collectionTotal, items: collectionItems } = calculateCollectionTotal();
+
   if (!schoolId) {
     return (
       <div className="text-center py-20">
@@ -447,7 +560,6 @@ export default function FeeManagementPage() {
 
   return (
     <div className="space-y-6" data-testid="fee-management-page">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold font-heading text-slate-900 flex items-center gap-2">
@@ -456,7 +568,20 @@ export default function FeeManagementPage() {
           </h1>
           <p className="text-slate-500 mt-1">Complete fee structure, collection & tracking</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2 bg-white border rounded-lg px-3 py-2">
+            <Calendar className="w-4 h-4 text-emerald-600" />
+            <select
+              value={selectedAcademicYear}
+              onChange={(e) => setSelectedAcademicYear(e.target.value)}
+              className="text-sm font-medium border-0 outline-none bg-transparent"
+              data-testid="academic-year-selector"
+            >
+              {generateAcademicYearOptions().map(yr => (
+                <option key={yr} value={yr}>{yr}</option>
+              ))}
+            </select>
+          </div>
           <Button
             variant="outline"
             onClick={() => setShowOldDueDialog(true)}
@@ -477,7 +602,6 @@ export default function FeeManagementPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -540,7 +664,6 @@ export default function FeeManagementPage() {
         </Card>
       </div>
 
-      {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-slate-100 p-1 rounded-lg">
           <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
@@ -569,15 +692,22 @@ export default function FeeManagementPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Fee Structure Tab */}
         <TabsContent value="structure" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Class-wise Fee Structure</CardTitle>
+                <CardTitle>Class-wise Fee Structure ({selectedAcademicYear})</CardTitle>
                 <CardDescription>Set fees for each class</CardDescription>
               </div>
-              <Button onClick={() => setShowStructureDialog(true)} className="gap-2">
+              <Button onClick={() => {
+                setStructureForm({
+                  class_id: '',
+                  academic_year: selectedAcademicYear,
+                  tuition_frequency: 'monthly',
+                  fees: FEE_TYPES.reduce((acc, f) => ({ ...acc, [f.id]: 0 }), {})
+                });
+                setShowStructureDialog(true);
+              }} className="gap-2">
                 <Plus className="w-4 h-4" />
                 Add/Edit Structure
               </Button>
@@ -592,10 +722,8 @@ export default function FeeManagementPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Class</TableHead>
-                      <TableHead>Admission Fee</TableHead>
-                      <TableHead>Tuition Fee</TableHead>
-                      <TableHead>Exam Fee</TableHead>
-                      <TableHead>Other Fees</TableHead>
+                      <TableHead>Academic Year</TableHead>
+                      <TableHead>Fee Details</TableHead>
                       <TableHead>Total Annual</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -604,34 +732,36 @@ export default function FeeManagementPage() {
                     {classes.map(cls => {
                       const structure = getClassFeeStructure(cls.id);
                       const fees = structure?.fees || {};
+                      const freq = structure?.tuition_frequency || 'monthly';
+                      const totalAnnual = calculateAnnualFee(structure);
                       
-                      // Safely get numeric values, ensuring no NaN or negative
-                      const safeNumber = (val) => {
-                        const num = Number(val) || 0;
-                        return num > 0 ? num : 0;
-                      };
-                      
-                      const admissionFee = safeNumber(fees.admission_fee);
-                      const tuitionFee = safeNumber(fees.tuition_fee);
-                      const examFee = safeNumber(fees.exam_fee);
-                      
-                      // Calculate other fees (all fees except admission, tuition, exam)
-                      // Only count positive values
-                      const otherFees = Object.entries(fees)
-                        .filter(([key, val]) => !['admission_fee', 'tuition_fee', 'exam_fee'].includes(key))
-                        .reduce((sum, [_, val]) => sum + safeNumber(val), 0);
-                      
-                      // Calculate total annual (admission + tuition*12 + exam + other)
-                      const totalAnnual = admissionFee + (tuitionFee * 12) + examFee + otherFees;
+                      const activeFees = FEE_TYPES.filter(ft => (Number(fees[ft.id]) || 0) > 0);
                       
                       return (
                         <TableRow key={cls.id}>
                           <TableCell className="font-medium">{cls.name}</TableCell>
-                          <TableCell>₹{admissionFee > 0 ? admissionFee.toLocaleString('en-IN') : '-'}</TableCell>
-                          <TableCell>₹{tuitionFee > 0 ? tuitionFee.toLocaleString('en-IN') : '-'}/month</TableCell>
-                          <TableCell>₹{examFee > 0 ? examFee.toLocaleString('en-IN') : '-'}</TableCell>
+                          <TableCell className="text-sm text-slate-500">{structure?.academic_year || '-'}</TableCell>
                           <TableCell>
-                            ₹{otherFees > 0 ? otherFees.toLocaleString('en-IN') : '0'}
+                            {activeFees.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {activeFees.map(ft => {
+                                  const amt = Number(fees[ft.id]) || 0;
+                                  let label = `₹${amt.toLocaleString('en-IN')}`;
+                                  if (ft.id === 'tuition_fee') {
+                                    label = freq === 'yearly' ? `₹${amt.toLocaleString('en-IN')}/year` : `₹${amt.toLocaleString('en-IN')}/month`;
+                                  } else if (MONTHLY_FEE_IDS.includes(ft.id)) {
+                                    label = `₹${amt.toLocaleString('en-IN')}/month`;
+                                  }
+                                  return (
+                                    <span key={ft.id} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700">
+                                      {ft.name_hi}: {label}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400 text-sm">Not set</span>
+                            )}
                           </TableCell>
                           <TableCell className="font-bold text-emerald-600">
                             ₹{totalAnnual.toLocaleString('en-IN')}
@@ -643,7 +773,8 @@ export default function FeeManagementPage() {
                               onClick={() => {
                                 setStructureForm({
                                   class_id: cls.id,
-                                  academic_year: structure?.academic_year || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+                                  academic_year: structure?.academic_year || selectedAcademicYear,
+                                  tuition_frequency: structure?.tuition_frequency || 'monthly',
                                   fees: structure?.fees || FEE_TYPES.reduce((acc, f) => ({ ...acc, [f.id]: 0 }), {})
                                 });
                                 setShowStructureDialog(true);
@@ -662,13 +793,12 @@ export default function FeeManagementPage() {
           </Card>
         </TabsContent>
 
-        {/* Student Fees Tab */}
         <TabsContent value="collection" className="mt-4">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <CardTitle>Student Fee Status</CardTitle>
+                  <CardTitle>Student Fee Status ({selectedAcademicYear})</CardTitle>
                   <CardDescription>View and collect fees for each student</CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -704,13 +834,12 @@ export default function FeeManagementPage() {
                   {students.map(student => {
                     const summary = getStudentFeeSummary(student.id);
                     const structure = getClassFeeStructure(student.class_id);
-                    const totalFee = structure ? Object.values(structure.fees || {}).reduce((a, b) => a + (b || 0), 0) : 0;
+                    const totalFee = calculateAnnualFee(structure);
                     const pendingAmount = totalFee - summary.totalPaid + summary.totalOldDue;
                     const isExpanded = expandedStudent === student.id;
                     
                     return (
                       <div key={student.id} className="border rounded-lg overflow-hidden">
-                        {/* Student Row */}
                         <div 
                           className="flex items-center justify-between p-4 hover:bg-slate-50 cursor-pointer"
                           onClick={() => setExpandedStudent(isExpanded ? null : student.id)}
@@ -753,9 +882,7 @@ export default function FeeManagementPage() {
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedStudent(student);
-                                setCollectionForm(prev => ({ ...prev, student_id: student.id }));
-                                setShowCollectionDialog(true);
+                                openCollectionDialog(student);
                               }}
                               className="bg-emerald-600 hover:bg-emerald-700"
                             >
@@ -764,11 +891,9 @@ export default function FeeManagementPage() {
                           </div>
                         </div>
                         
-                        {/* Expanded Details */}
                         {isExpanded && (
                           <div className="border-t bg-slate-50 p-4">
                             <div className="grid grid-cols-2 gap-6">
-                              {/* Fee Breakdown */}
                               <div>
                                 <h4 className="font-medium mb-3 flex items-center gap-2">
                                   <FileText className="w-4 h-4" />
@@ -776,19 +901,25 @@ export default function FeeManagementPage() {
                                 </h4>
                                 {structure ? (
                                   <div className="space-y-2">
-                                    {FEE_TYPES.filter(f => structure.fees?.[f.id] > 0).map(feeType => (
-                                      <div key={feeType.id} className="flex justify-between text-sm">
-                                        <span>{feeType.name_hi}</span>
-                                        <span>₹{structure.fees[feeType.id]?.toLocaleString('en-IN')}</span>
-                                      </div>
-                                    ))}
+                                    {FEE_TYPES.filter(f => (Number(structure.fees?.[f.id]) || 0) > 0).map(feeType => {
+                                      const amt = Number(structure.fees[feeType.id]) || 0;
+                                      let display = `₹${amt.toLocaleString('en-IN')}`;
+                                      if (isMonthlyFee(feeType.id, structure)) {
+                                        display = `₹${amt.toLocaleString('en-IN')}/month`;
+                                      }
+                                      return (
+                                        <div key={feeType.id} className="flex justify-between text-sm">
+                                          <span>{feeType.name_hi}</span>
+                                          <span>{display}</span>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 ) : (
                                   <p className="text-sm text-slate-500">No fee structure set for this class</p>
                                 )}
                               </div>
                               
-                              {/* Payment History */}
                               <div>
                                 <h4 className="font-medium mb-3 flex items-center gap-2">
                                   <Receipt className="w-4 h-4" />
@@ -831,10 +962,8 @@ export default function FeeManagementPage() {
           </Card>
         </TabsContent>
 
-        {/* Government Schemes & Scholarships Tab */}
         <TabsContent value="scholarships" className="mt-4">
           <div className="grid gap-4">
-            {/* Header with Actions */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
@@ -864,7 +993,6 @@ export default function FeeManagementPage() {
               </CardHeader>
             </Card>
 
-            {/* Available Schemes */}
             <div className="grid md:grid-cols-3 gap-4">
               {scholarships.length > 0 ? scholarships.map((scheme) => (
                 <Card key={scheme.id} className="hover:shadow-md transition-shadow">
@@ -917,7 +1045,6 @@ export default function FeeManagementPage() {
               )}
             </div>
 
-            {/* Students with Scholarships */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
@@ -979,7 +1106,6 @@ export default function FeeManagementPage() {
           </div>
         </TabsContent>
 
-        {/* Old Dues Tab */}
         <TabsContent value="old_dues" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -1037,14 +1163,9 @@ export default function FeeManagementPage() {
                             <Button
                               size="sm"
                               onClick={() => {
-                                setSelectedStudent(student);
-                                setCollectionForm(prev => ({ 
-                                  ...prev, 
-                                  student_id: due.student_id,
-                                  amount: due.amount,
-                                  remarks: `Old due payment for ${due.academic_year}`
-                                }));
-                                setShowCollectionDialog(true);
+                                if (student) {
+                                  openCollectionDialog(student);
+                                }
                               }}
                               className="bg-emerald-600 hover:bg-emerald-700"
                             >
@@ -1066,11 +1187,10 @@ export default function FeeManagementPage() {
           </Card>
         </TabsContent>
 
-        {/* Reports Tab */}
         <TabsContent value="reports" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Class-wise Fee Summary</CardTitle>
+              <CardTitle>Class-wise Fee Summary ({selectedAcademicYear})</CardTitle>
               <CardDescription>Overview of fee collection by class</CardDescription>
             </CardHeader>
             <CardContent>
@@ -1121,7 +1241,6 @@ export default function FeeManagementPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Fee Structure Dialog */}
       <Dialog open={showStructureDialog} onOpenChange={setShowStructureDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -1146,10 +1265,43 @@ export default function FeeManagementPage() {
               </div>
               <div className="space-y-2">
                 <Label>Academic Year</Label>
-                <Input
+                <select
                   value={structureForm.academic_year}
                   onChange={(e) => setStructureForm(prev => ({ ...prev, academic_year: e.target.value }))}
-                />
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  {generateAcademicYearOptions().map(yr => (
+                    <option key={yr} value={yr}>{yr}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 bg-blue-50">
+              <Label className="text-sm font-medium">Tuition Fee Frequency (ट्यूशन फीस आवृत्ति)</Label>
+              <div className="flex gap-4 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="tuition_frequency"
+                    value="monthly"
+                    checked={structureForm.tuition_frequency === 'monthly'}
+                    onChange={() => setStructureForm(prev => ({ ...prev, tuition_frequency: 'monthly' }))}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Monthly (मासिक)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="tuition_frequency"
+                    value="yearly"
+                    checked={structureForm.tuition_frequency === 'yearly'}
+                    onChange={() => setStructureForm(prev => ({ ...prev, tuition_frequency: 'yearly' }))}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Yearly (वार्षिक)</span>
+                </label>
               </div>
             </div>
             
@@ -1158,7 +1310,16 @@ export default function FeeManagementPage() {
               <div className="grid grid-cols-2 gap-4">
                 {FEE_TYPES.map(feeType => (
                   <div key={feeType.id} className="space-y-1">
-                    <Label className="text-sm">{feeType.name_hi} ({feeType.name})</Label>
+                    <Label className="text-sm">
+                      {feeType.name_hi} ({feeType.name})
+                      {MONTHLY_FEE_IDS.includes(feeType.id) && (
+                        <span className="text-xs text-slate-400 ml-1">
+                          {feeType.id === 'tuition_fee' 
+                            ? (structureForm.tuition_frequency === 'yearly' ? '(वार्षिक)' : '(मासिक)')
+                            : '(मासिक)'}
+                        </span>
+                      )}
+                    </Label>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-500">₹</span>
                       <Input
@@ -1187,13 +1348,19 @@ export default function FeeManagementPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Fee Collection Dialog */}
-      <Dialog open={showCollectionDialog} onOpenChange={setShowCollectionDialog}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showCollectionDialog} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedStudent(null);
+          setCollectionFeeSelections({});
+          setCollectionMonthSelections({});
+        }
+        setShowCollectionDialog(open);
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Collect Fee</DialogTitle>
+            <DialogTitle>Collect Fee (फीस जमा करें)</DialogTitle>
             <DialogDescription>
-              {selectedStudent ? `Collecting fee for ${selectedStudent.name}` : 'Select student and enter amount'}
+              {selectedStudent ? `${selectedStudent.name} - ${selectedStudent.class_name}` : 'Select student'}
             </DialogDescription>
           </DialogHeader>
           
@@ -1205,8 +1372,9 @@ export default function FeeManagementPage() {
                   value={collectionForm.student_id}
                   onChange={(e) => {
                     const student = students.find(s => s.id === e.target.value);
-                    setSelectedStudent(student);
-                    setCollectionForm(prev => ({ ...prev, student_id: e.target.value }));
+                    if (student) {
+                      openCollectionDialog(student);
+                    }
                   }}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
@@ -1217,20 +1385,125 @@ export default function FeeManagementPage() {
                 </select>
               </div>
             )}
-            
-            <div className="space-y-2">
-              <Label>Amount *</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold">₹</span>
-                <Input
-                  type="number"
-                  value={collectionForm.amount}
-                  onChange={(e) => setCollectionForm(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
-                  className="text-2xl font-bold"
-                  placeholder="0"
-                />
+
+            {selectedStudent && Object.keys(collectionFeeSelections).length > 0 && (
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-3">Fee Items (शुल्क मद)</h4>
+                <div className="space-y-3">
+                  {Object.entries(collectionFeeSelections).map(([feeId, data]) => {
+                    const feeType = FEE_TYPES.find(f => f.id === feeId);
+                    if (!feeType) return null;
+                    const isMonthly = collectionMonthSelections[feeId] !== undefined;
+
+                    return (
+                      <div key={feeId} className="border rounded p-3 bg-slate-50">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={data.selected}
+                            onChange={(e) => {
+                              setCollectionFeeSelections(prev => ({
+                                ...prev,
+                                [feeId]: { ...prev[feeId], selected: e.target.checked }
+                              }));
+                            }}
+                            className="w-4 h-4"
+                          />
+                          <div className="flex-1">
+                            <span className="text-sm font-medium">{feeType.name_hi} ({feeType.name})</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm text-slate-500">₹</span>
+                            <Input
+                              type="number"
+                              value={data.amount}
+                              onChange={(e) => {
+                                setCollectionFeeSelections(prev => ({
+                                  ...prev,
+                                  [feeId]: { ...prev[feeId], amount: parseInt(e.target.value) || 0 }
+                                }));
+                              }}
+                              className="w-24 h-8 text-sm"
+                            />
+                            {isMonthly && <span className="text-xs text-slate-400">/month</span>}
+                          </div>
+                        </div>
+                        
+                        {isMonthly && data.selected && (
+                          <div className="mt-2 ml-7">
+                            <p className="text-xs text-slate-500 mb-1">Months (महीने):</p>
+                            <div className="flex flex-wrap gap-1">
+                              {MONTHS.map(month => {
+                                const isSelected = (collectionMonthSelections[feeId] || []).includes(month);
+                                return (
+                                  <button
+                                    key={month}
+                                    type="button"
+                                    onClick={() => {
+                                      setCollectionMonthSelections(prev => {
+                                        const current = prev[feeId] || [];
+                                        const updated = isSelected
+                                          ? current.filter(m => m !== month)
+                                          : [...current, month];
+                                        return { ...prev, [feeId]: updated };
+                                      });
+                                    }}
+                                    className={`px-2 py-1 text-xs rounded border ${
+                                      isSelected 
+                                        ? 'bg-emerald-100 border-emerald-400 text-emerald-700' 
+                                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    {month}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
+
+            {selectedStudent && Object.keys(collectionFeeSelections).length === 0 && (
+              <div className="text-center py-6 text-slate-500 border rounded-lg">
+                <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No fee structure found for this class</p>
+              </div>
+            )}
+
+            {collectionItems.length > 0 && (
+              <div className="border rounded-lg p-4 bg-emerald-50">
+                <h4 className="font-medium mb-2 text-emerald-800">Breakdown (विवरण)</h4>
+                <div className="space-y-1">
+                  {collectionItems.map((item, idx) => {
+                    const ft = FEE_TYPES.find(f => f.id === item.fee_type);
+                    return (
+                      <div key={idx} className="flex justify-between text-sm">
+                        <span>
+                          {ft?.name_hi || item.fee_type}
+                          {item.months && item.months.length > 0 && (
+                            <span className="text-xs text-slate-500 ml-1">
+                              ({item.months.length} months: {item.months.join(', ')})
+                            </span>
+                          )}
+                        </span>
+                        <span className="font-medium">
+                          ₹{(item.months ? item.amount * item.months.length : item.amount).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="border-t pt-2 mt-2 flex justify-between font-bold text-emerald-700">
+                    <span>Total (कुल)</span>
+                    <span>₹{collectionTotal.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1270,17 +1543,22 @@ export default function FeeManagementPage() {
               <Button variant="outline" onClick={() => {
                 setShowCollectionDialog(false);
                 setSelectedStudent(null);
+                setCollectionFeeSelections({});
+                setCollectionMonthSelections({});
               }}>Cancel</Button>
-              <Button onClick={handleCollectFee} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+              <Button 
+                onClick={handleCollectFee} 
+                disabled={saving || collectionTotal <= 0} 
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                Collect ₹{collectionForm.amount.toLocaleString('en-IN')}
+                Collect ₹{collectionTotal.toLocaleString('en-IN')}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Old Due Dialog */}
       <Dialog open={showOldDueDialog} onOpenChange={setShowOldDueDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -1379,7 +1657,6 @@ export default function FeeManagementPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Scholarship/Scheme Dialog */}
       <Dialog open={showScholarshipDialog} onOpenChange={setShowScholarshipDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -1429,10 +1706,9 @@ export default function FeeManagementPage() {
                   onChange={(e) => setScholarshipForm(prev => ({ ...prev, academic_year: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  {Array.from({ length: 3 }, (_, i) => {
-                    const year = new Date().getFullYear() + i;
-                    return <option key={year} value={`${year}-${year + 1}`}>{year}-{year + 1}</option>;
-                  })}
+                  {generateAcademicYearOptions().map(yr => (
+                    <option key={yr} value={yr}>{yr}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -1488,7 +1764,6 @@ export default function FeeManagementPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Assign Scholarship to Student Dialog */}
       <Dialog open={showAssignScholarshipDialog} onOpenChange={setShowAssignScholarshipDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -1529,35 +1804,32 @@ export default function FeeManagementPage() {
               >
                 <option value="">-- Select Scheme --</option>
                 {scholarships.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} - ₹{(s.amount || 0).toLocaleString()}
-                  </option>
+                  <option key={s.id} value={s.id}>{s.name} - ₹{(s.amount || 0).toLocaleString()}</option>
                 ))}
               </select>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Amount (₹)</Label>
-                <Input
-                  type="number"
-                  value={assignForm.amount}
-                  onChange={(e) => setAssignForm(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <select
-                  value={assignForm.status}
-                  onChange={(e) => setAssignForm(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="received">Received</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
+            <div className="space-y-2">
+              <Label>Amount (₹)</Label>
+              <Input
+                type="number"
+                value={assignForm.amount}
+                onChange={(e) => setAssignForm(prev => ({ ...prev, amount: parseInt(e.target.value) || 0 }))}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <select
+                value={assignForm.status}
+                onChange={(e) => setAssignForm(prev => ({ ...prev, status: e.target.value }))}
+                className="w-full px-3 py-2 border rounded-lg"
+              >
+                <option value="pending">Pending (लंबित)</option>
+                <option value="approved">Approved (स्वीकृत)</option>
+                <option value="received">Received (प्राप्त)</option>
+                <option value="rejected">Rejected (अस्वीकृत)</option>
+              </select>
             </div>
             
             <div className="space-y-2">
@@ -1565,7 +1837,7 @@ export default function FeeManagementPage() {
               <Input
                 value={assignForm.remarks}
                 onChange={(e) => setAssignForm(prev => ({ ...prev, remarks: e.target.value }))}
-                placeholder="Any notes about this application"
+                placeholder="Any notes..."
               />
             </div>
             

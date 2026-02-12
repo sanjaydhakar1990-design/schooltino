@@ -1,0 +1,68 @@
+{
+  "name": "SchoolTino - Smart School ERP",
+  "short_name": "SchoolTino",
+  "description": "SchoolTino - Complete AI-Powered School Management System",
+  "start_url": "/",
+  "scope": "/",
+  "id": "schooltino-erp",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "orientation": "any",
+  "lang": "hi-IN",
+  "icons": [
+    {
+      "src": "icon-schooltino-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-schooltino-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-schooltino-192.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-schooltino-192.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-schooltino-192.png",
+      "type": "image/png",
+      "sizes": "180x180",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["education", "business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/app/dashboard",
+      "icons": [{"src": "icon-schooltino-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Students",
+      "short_name": "Students",
+      "url": "/app/students",
+      "icons": [{"src": "icon-schooltino-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Attendance",
+      "short_name": "Attendance",
+      "url": "/app/attendance",
+      "icons": [{"src": "icon-schooltino-192.png", "sizes": "192x192"}]
+    }
+  ],
+  "prefer_related_applications": false
+}

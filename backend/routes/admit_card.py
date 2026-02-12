@@ -703,6 +703,34 @@ async def generate_bulk_admit_cards(request: BulkAdmitCardRequest):
                 "fee_status": eligibility.get("fee_status")
             })
     
+    exam = await db.exams.find_one({"id": request.exam_id})
+    exam_name = exam.get("name", "Exam") if exam else "Exam"
+    
+    for student in students:
+        sid = student["id"]
+        is_generated = any(g["student_id"] == sid for g in generated)
+        is_pending = any(p["student_id"] == sid for p in pending_fee)
+        
+        if is_generated:
+            msg = f"आपका {exam_name} का Admit Card तैयार हो गया है। अभी डाउनलोड करें!"
+        elif is_pending:
+            pending_info = next((p for p in pending_fee if p["student_id"] == sid), {})
+            amt = pending_info.get("pending_amount", 0)
+            msg = f"{exam_name} का Admit Card जारी हुआ है। Fee बकाया ₹{amt} - न्यूनतम राशि भरकर download करें।"
+        else:
+            continue
+        
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "school_id": request.school_id,
+            "student_id": sid,
+            "type": "admit_card",
+            "title": f"Admit Card - {exam_name}",
+            "message": msg,
+            "is_read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    
     return {
         "success": True,
         "total_students": len(students),
