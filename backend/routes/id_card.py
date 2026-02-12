@@ -177,6 +177,14 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
         elif person.get("photo_url"):
             photo = person.get("photo_url")
     
+    # Make relative photo URLs absolute so they work in ID cards and print popups
+    if photo and not photo.startswith("data:") and not photo.startswith("http"):
+        backend_url = os.environ.get("REPLIT_DEV_DOMAIN", "")
+        if backend_url:
+            photo = f"https://{backend_url}{photo}"
+        else:
+            photo = f"http://localhost:8000{photo}"
+    
     # Build ID card data
     if person_type == "student":
         # Get class name from class_id

@@ -238,7 +238,7 @@ DEFAULT_PERMISSIONS = {
 
 # School Models - Comprehensive School Registration
 class SchoolCreate(BaseModel):
-    model_config = {"extra": "ignore"}
+    model_config = {"extra": "allow"}
 
     name: str = ""
     address: str = ""
@@ -284,6 +284,22 @@ class SchoolCreate(BaseModel):
     watermark_size: Optional[str] = None
     watermark_position: Optional[str] = None
     watermark_apply: Optional[dict] = None
+
+    logo_size: Optional[int] = None
+    logo_opacity: Optional[int] = None
+    logo_apply_to: Optional[dict] = None
+    
+    razorpay_key_id: Optional[str] = None
+    razorpay_key_secret: Optional[str] = None
+    upi_ids: Optional[List[dict]] = None
+    payment_mode: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_account_no: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_branch: Optional[str] = None
+    
+    school_start_time: Optional[str] = None
+    school_end_time: Optional[str] = None
 
     @validator('established_year', 'total_capacity', pre=True, always=True)
     def empty_str_to_none(cls, v):
@@ -2146,7 +2162,7 @@ async def update_school(school_id: str, school: SchoolCreate, current_user: dict
     if not existing:
         raise HTTPException(status_code=404, detail="School not found")
     
-    update_data = school.model_dump()
+    update_data = {k: v for k, v in school.model_dump().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     update_data["updated_by"] = current_user["id"]
     
@@ -4970,10 +4986,62 @@ Generate the paper now in pure {request.language} language."""
         import json
         import re
         
+        def clean_json_string(raw_json):
+            """Clean common LLM JSON errors"""
+            s = raw_json
+            s = re.sub(r'```json\s*', '', s)
+            s = re.sub(r'```\s*$', '', s)
+            s = re.sub(r',\s*([}\]])', r'\1', s)
+            s = re.sub(r'(["\d\w])\s*\n\s*(")', r'\1,\n\2', s)
+            s = s.replace('\n', ' ')
+            s = re.sub(r'(?<!\\)"([^"]*?)(?<!\\)":\s*"([^"]*?)(?<!\\)"([^,}\]\s])', r'"\1": "\2"\3', s)
+            s = re.sub(r'//.*?(?=[\n,}\]])', '', s)
+            s = re.sub(r'/\*.*?\*/', '', s, flags=re.DOTALL)
+            return s
+        
         json_match = re.search(r'\{[\s\S]*\}', response)
+        questions_data = None
         if json_match:
-            questions_data = json.loads(json_match.group())
-        else:
+            raw = json_match.group()
+            try:
+                questions_data = json.loads(raw)
+            except json.JSONDecodeError:
+                cleaned = clean_json_string(raw)
+                try:
+                    questions_data = json.loads(cleaned)
+                except json.JSONDecodeError:
+                    bracket_count = 0
+                    last_valid_end = -1
+                    for i, ch in enumerate(cleaned):
+                        if ch == '{': bracket_count += 1
+                        elif ch == '}': 
+                            bracket_count -= 1
+                            if bracket_count == 0:
+                                last_valid_end = i
+                                break
+                    if last_valid_end > 0:
+                        try:
+                            questions_data = json.loads(cleaned[:last_valid_end+1])
+                        except json.JSONDecodeError:
+                            pass
+                    
+                    if not questions_data:
+                        q_pattern = re.findall(r'"question"\s*:\s*"([^"]+)"', raw)
+                        a_pattern = re.findall(r'"answer"\s*:\s*"([^"]+)"', raw)
+                        m_pattern = re.findall(r'"marks"\s*:\s*(\d+)', raw)
+                        t_pattern = re.findall(r'"type"\s*:\s*"([^"]+)"', raw)
+                        if q_pattern:
+                            questions_data = {"questions": []}
+                            for idx, q in enumerate(q_pattern):
+                                questions_data["questions"].append({
+                                    "question": q,
+                                    "answer": a_pattern[idx] if idx < len(a_pattern) else "Answer not generated",
+                                    "marks": int(m_pattern[idx]) if idx < len(m_pattern) else 2,
+                                    "type": t_pattern[idx] if idx < len(t_pattern) else "short"
+                                })
+                            logging.warning(f"Used regex fallback to extract {len(q_pattern)} questions from malformed JSON")
+        
+        if not questions_data:
             questions_data = {"questions": []}
         
         questions = questions_data.get("questions", [])
@@ -5028,7 +5096,15 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
             
             json_match = re.search(r'\{[\s\S]*\}', response)
             if json_match:
-                questions_data = json.loads(json_match.group())
+                raw_retry = json_match.group()
+                try:
+                    questions_data = json.loads(raw_retry)
+                except json.JSONDecodeError:
+                    try:
+                        questions_data = json.loads(clean_json_string(raw_retry))
+                    except json.JSONDecodeError:
+                        logging.warning("Retry JSON also malformed, keeping previous questions")
+                        break
                 questions = questions_data.get("questions", [])
                 if not questions and "question_paper" in questions_data:
                     sections = questions_data.get("question_paper", {}).get("sections", [])
