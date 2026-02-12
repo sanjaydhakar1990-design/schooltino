@@ -5117,59 +5117,76 @@ async def generate_answer_image(
     question_type: str = Body(default="diagram"),
     current_user: dict = Depends(get_current_user)
 ):
-    """Generate an image/diagram for paper answer key using Nano Banana"""
-    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    """Generate a detailed diagram description/SVG for paper answer key using Sarvam AI"""
+    sarvam_api_key = os.environ.get("SARVAM_API_KEY")
     
-    if not emergent_key:
-        raise HTTPException(status_code=500, detail="Emergent LLM key not configured")
+    if not sarvam_api_key:
+        raise HTTPException(status_code=500, detail="Sarvam API key not configured")
     
     try:
-        import base64
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        import httpx
         
-        # Create a descriptive prompt for the image
-        image_prompt = f"""Create an educational diagram/illustration for a {subject} question paper answer key.
+        svg_prompt = f"""You are an expert educational diagram creator for Indian school textbooks.
 
-Topic: {question}
+Create an SVG diagram for this {subject} question:
+Question: {question}
+Answer/Description: {answer}
 
-The diagram should show: {answer}
+REQUIREMENTS:
+1. Return ONLY a valid SVG code (no markdown, no explanation)
+2. SVG must be self-contained with width="400" height="300" viewBox="0 0 400 300"
+3. Use clean lines, proper labels, arrows where needed
+4. Use colors: #1e40af (blue), #059669 (green), #dc2626 (red), #7c3aed (purple), #000000 (black)
+5. Include text labels for all parts
+6. Make it look like NCERT textbook diagrams
+7. Font: Arial, size 12-14px for labels
+8. Include a title at the top
 
-Requirements:
-- Clean, simple educational diagram suitable for school textbooks
-- Clear labels and annotations
-- Professional looking like NCERT textbook illustrations
-- Simple colors suitable for printing
-- Include all key parts mentioned"""
+Return ONLY the <svg>...</svg> code, nothing else."""
+
+        async with httpx.AsyncClient() as http_client:
+            resp = await http_client.post(
+                "https://api.sarvam.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {sarvam_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "sarvam-m",
+                    "messages": [
+                        {"role": "system", "content": "You are an SVG diagram generator for educational content. Return ONLY valid SVG code."},
+                        {"role": "user", "content": svg_prompt}
+                    ],
+                    "max_tokens": 4000,
+                    "temperature": 0.3
+                },
+                timeout=60.0
+            )
         
-        # Initialize chat with Gemini image model
-        session_id = f"answer-image-{uuid.uuid4()}"
-        chat = LlmChat(api_key=emergent_key, session_id=session_id, system_message="You are an educational diagram generator")
-        chat.with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
-        
-        msg = UserMessage(text=image_prompt)
-        text_response, images = await chat.send_message_multimodal_response(msg)
-        
-        if images and len(images) > 0:
-            # Get the first image and convert to data URL
-            img = images[0]
-            mime_type = img.get('mime_type', 'image/png')
-            img_data = img.get('data', '')
+        if resp.status_code == 200:
+            data = resp.json()
+            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             
-            # Create a data URL that can be used in img src
-            image_url = f"data:{mime_type};base64,{img_data}"
-            
-            return {
-                "success": True,
-                "image_url": image_url,
-                "question": question,
-                "answer": answer
-            }
-        else:
-            return {
-                "success": False,
-                "message": "No image generated",
-                "fallback_text": answer
-            }
+            import re
+            svg_match = re.search(r'<svg[\s\S]*?</svg>', content)
+            if svg_match:
+                svg_code = svg_match.group()
+                import base64
+                svg_b64 = base64.b64encode(svg_code.encode('utf-8')).decode('utf-8')
+                image_url = f"data:image/svg+xml;base64,{svg_b64}"
+                
+                return {
+                    "success": True,
+                    "image_url": image_url,
+                    "question": question,
+                    "answer": answer
+                }
+        
+        return {
+            "success": False,
+            "message": "Could not generate diagram SVG",
+            "fallback_text": answer
+        }
             
     except Exception as e:
         logging.error(f"Answer image generation error: {str(e)}")

@@ -13,6 +13,44 @@ import { getChaptersByMedium } from '../data/syllabusLatest2025';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const SUBJECT_MAP_HI_TO_EN = {
+  'हिंदी': 'Hindi', 'गणित': 'Mathematics', 'विज्ञान': 'Science',
+  'सामाजिक विज्ञान': 'Social Science', 'संस्कृत': 'Sanskrit',
+  'पर्यावरण': 'EVS', 'पर्यावरण अध्ययन': 'EVS', 'चित्रकला': 'Drawing',
+  'सामान्य ज्ञान': 'General Knowledge', 'भौतिक विज्ञान': 'Physics',
+  'रसायन विज्ञान': 'Chemistry', 'जीव विज्ञान': 'Biology',
+  'भौतिकी': 'Physics', 'रसायन शास्त्र': 'Chemistry',
+  'वाणिज्य': 'Commerce', 'अर्थशास्त्र': 'Economics',
+  'वाणिज्य शास्त्र': 'Commerce', 'लेखाशास्त्र': 'Accountancy',
+  'राजस्थान अध्ययन': 'Rajasthan Studies',
+};
+
+const SUBJECT_MAP_EN_TO_HI = Object.fromEntries(
+  Object.entries(SUBJECT_MAP_HI_TO_EN).map(([hi, en]) => [en, hi])
+);
+
+const getSubjectInLanguage = (subject, targetLang) => {
+  if (targetLang === 'english') {
+    return SUBJECT_MAP_HI_TO_EN[subject] || subject;
+  } else if (targetLang === 'hindi') {
+    return SUBJECT_MAP_EN_TO_HI[subject] || subject;
+  }
+  return subject;
+};
+
+const getSubjectsForLanguage = (subjects, language) => {
+  if (language === 'english') {
+    return subjects.map(s => ({
+      original: s,
+      display: SUBJECT_MAP_HI_TO_EN[s] || s,
+    }));
+  }
+  return subjects.map(s => ({
+    original: s,
+    display: SUBJECT_MAP_EN_TO_HI[s] || s,
+  }));
+};
+
 const LANG_TEXT = {
   hindi: {
     questionPrefix: 'प्र.',
@@ -98,6 +136,7 @@ export default function AIPaperPage() {
   const [generatingImage, setGeneratingImage] = useState(null);
   const [autoGeneratingImages, setAutoGeneratingImages] = useState(false);
   const [imageProgress, setImageProgress] = useState({ current: 0, total: 0 });
+  const [viewMode, setViewMode] = useState('question_paper');
   const [printLayout, setPrintLayout] = useState('normal');
 
   const classNames = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
@@ -612,9 +651,10 @@ export default function AIPaperPage() {
             disabled={!formData.class_name}
           >
             <option value="">{formData.class_name ? (isAppHindi ? 'विषय चुनें' : 'Select Subject') : (isAppHindi ? 'पहले कक्षा चुनें' : 'First select class')}</option>
-            {availableSubjects.map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+            {availableSubjects.map(s => {
+              const displayName = formData.language === 'english' ? getSubjectInLanguage(s, 'english') : getSubjectInLanguage(s, 'hindi');
+              return <option key={s} value={s}>{displayName !== s ? `${displayName} (${s})` : s}</option>;
+            })}
           </select>
         </div>
 
@@ -851,8 +891,41 @@ export default function AIPaperPage() {
     </div>
   );
 
+  const printSection = (sectionId) => {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) { toast.error('Please allow popups'); return; }
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Print</title>
+      <style>@page{margin:15mm;size:A4}*{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:Arial,sans-serif;font-size:12pt;line-height:1.6;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .paper-header{text-align:center;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px}
+      .paper-header h1{font-size:16pt;margin-bottom:4px}.paper-header h2{font-size:14pt}
+      .paper-header .meta{font-size:10pt;color:#444;margin-top:4px}
+      .paper-header .marks-time{display:flex;justify-content:center;gap:40px;margin-top:8px;font-size:11pt;font-weight:bold}
+      .instructions{border:1px solid #999;padding:8px 12px;margin-bottom:16px;font-size:10pt}
+      .instructions p{font-weight:bold;margin-bottom:4px}
+      .section-header{background:#f0f0f0;padding:6px 12px;font-weight:bold;font-size:12pt;margin:16px 0 8px;border:1px solid #ccc}
+      .question{margin-bottom:10px;padding-left:8px}.question .q-num{font-weight:bold;min-width:40px;display:inline-block}
+      .question .q-marks{font-size:9pt;color:#666}.options{margin-left:50px;margin-top:4px}
+      .options p{margin-bottom:2px}
+      .answer-item{border-bottom:1px solid #ddd;padding:8px 0;margin-bottom:4px}
+      .answer-item .q-num{font-weight:bold;color:#1e40af;min-width:40px;display:inline-block}
+      .answer-item .marking-points{margin-left:40px;margin-top:4px;font-size:10pt}
+      .answer-item .marking-points li{margin-bottom:2px}
+      .diagram-box{border:1px solid #ccc;padding:8px;margin-top:6px;background:#f9f9f9;border-radius:4px}
+      .diagram-box p{font-size:10pt}.diagram-box img{max-width:100%;height:auto;max-height:200px}
+      .page-break{page-break-before:always}
+      </style></head><body>${el.innerHTML}
+      <script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`);
+    printWindow.document.close();
+  };
+
   const renderStep3 = () => {
     const sections = getQuestionsGroupedBySections();
+    const qp = paper?.question_paper;
+    const ak = paper?.answer_paper;
+    const displaySubject = formData.language === 'english' ? getSubjectInLanguage(paper?.subject, 'english') : paper?.subject;
     
     return (
       <div className="space-y-6">
@@ -862,13 +935,10 @@ export default function AIPaperPage() {
               <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
               <div className="flex-1">
                 <p className="font-medium text-purple-800">
-                  {isAppHindi ? 'चित्र बन रहे हैं...' : 'Generating images...'} ({imageProgress.current}/{imageProgress.total})
+                  {isAppHindi ? 'चित्र बन रहे हैं...' : 'Generating diagrams...'} ({imageProgress.current}/{imageProgress.total})
                 </p>
                 <div className="w-full bg-purple-200 rounded-full h-2 mt-2">
-                  <div 
-                    className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(imageProgress.current / imageProgress.total) * 100}%` }}
-                  />
+                  <div className="bg-purple-600 h-2 rounded-full transition-all duration-300" style={{ width: `${imageProgress.total > 0 ? (imageProgress.current / imageProgress.total) * 100 : 0}%` }} />
                 </div>
               </div>
             </div>
@@ -876,221 +946,218 @@ export default function AIPaperPage() {
         )}
 
         <div className="flex justify-between items-center flex-wrap gap-3 print:hidden">
-          <Button variant="outline" onClick={() => { setPaper(null); setStep(1); setAnswerImages({}); }}>
+          <Button variant="outline" onClick={() => { setPaper(null); setStep(1); setAnswerImages({}); setViewMode('question_paper'); }}>
             {formData.language === 'hindi' ? 'नया पेपर बनाएं' : 'Create New Paper'}
           </Button>
           
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">{formData.language === 'hindi' ? 'प्रिंट लेआउट:' : 'Print Layout:'}</span>
-            <select 
-              className="border rounded px-2 py-1 text-sm"
-              value={printLayout}
-              onChange={(e) => setPrintLayout(e.target.value)}
-            >
-              <option value="normal">{formData.language === 'hindi' ? 'सामान्य (1 पेपर)' : 'Normal (1 paper)'}</option>
-              <option value="2-up">{formData.language === 'hindi' ? '2 पेपर प्रति पेज' : '2 papers per page'}</option>
-              <option value="4-up">{formData.language === 'hindi' ? '4 पेपर प्रति पेज' : '4 papers per page'}</option>
-            </select>
+          <div className="flex bg-slate-100 rounded-lg p-1">
+            <button onClick={() => setViewMode('question_paper')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'question_paper' ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}>
+              {formData.language === 'hindi' ? 'प्रश्न पत्र' : 'Question Paper'}
+            </button>
+            <button onClick={() => setViewMode('answer_key')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'answer_key' ? 'bg-white shadow text-green-700' : 'text-slate-600 hover:text-slate-900'}`}>
+              {formData.language === 'hindi' ? 'उत्तर कुंजी' : 'Answer Key'}
+            </button>
           </div>
           
-          <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700" disabled={autoGeneratingImages}>
+          <Button onClick={() => printSection(viewMode === 'question_paper' ? 'printable-question-paper' : 'printable-answer-key')} className="bg-indigo-600 hover:bg-indigo-700" disabled={autoGeneratingImages}>
             <Printer className="w-5 h-5 mr-2" />
-            {formData.language === 'hindi' ? 'प्रिंट करें' : 'Print Paper'}
+            {viewMode === 'question_paper' 
+              ? (formData.language === 'hindi' ? 'प्रश्न पत्र प्रिंट' : 'Print Question Paper')
+              : (formData.language === 'hindi' ? 'उत्तर कुंजी प्रिंट' : 'Print Answer Key')}
           </Button>
         </div>
 
-        <div 
-          className="bg-white rounded-xl border border-slate-200 print:border-0 print:shadow-none print:rounded-none" 
-          data-testid="paper-preview"
-          id="printable-paper"
-        >
-          <div className="p-8 print:p-4">
-            <div className="text-center border-b-2 border-black pb-4 mb-6">
-              <h1 className="text-xl font-bold mb-1">{paper?.exam_name}</h1>
-              <h2 className="text-lg font-semibold">{paper?.subject} - {paper?.class_name}</h2>
-              <p className="text-sm text-gray-600 mt-1">{BOARDS[schoolBoard]?.name} | 2025-26</p>
-              <div className="flex justify-center gap-12 mt-3 text-sm font-medium">
-                <span>{langText.totalMarks}: {paper?.total_marks}</span>
-                <span>{langText.time}: {paper?.time_duration} {langText.minutes}</span>
+        {viewMode === 'question_paper' && (
+          <div className="bg-white rounded-xl border border-slate-200" data-testid="paper-preview" id="printable-question-paper">
+            <div className="p-8">
+              <div className="paper-header text-center border-b-2 border-black pb-4 mb-6">
+                <h1 className="text-xl font-bold mb-1">{paper?.exam_name || (formData.language === 'hindi' ? 'परीक्षा' : 'Examination')}</h1>
+                <h2 className="text-lg font-semibold">{displaySubject} - {paper?.class_name}</h2>
+                <p className="text-sm text-gray-600 mt-1">{BOARDS[schoolBoard]?.name} | 2025-26</p>
+                <div className="flex justify-center gap-12 mt-3 text-sm font-medium">
+                  <span>{langText.totalMarks}: {paper?.total_marks}</span>
+                  <span>{langText.time}: {paper?.time_duration} {langText.minutes}</span>
+                </div>
               </div>
-            </div>
 
-            <div className="mb-6 p-3 bg-gray-50 rounded-lg text-sm print:bg-transparent print:border print:border-gray-300">
-              <p className="font-semibold mb-2">{langText.instructions}:</p>
-              <ol className="list-decimal list-inside text-gray-700 space-y-1">
-                <li>{langText.inst1}</li>
-                <li>{langText.inst2}</li>
-                <li>{langText.inst3}</li>
-              </ol>
-            </div>
+              <div className="mb-6 p-3 bg-gray-50 rounded-lg text-sm border border-gray-200">
+                <p className="font-semibold mb-2">{langText.instructions}:</p>
+                <ol className="list-decimal list-inside text-gray-700 space-y-1">
+                  <li>{langText.inst1}</li>
+                  <li>{langText.inst2}</li>
+                  <li>{langText.inst3}</li>
+                </ol>
+              </div>
 
-            <div className="space-y-6">
-              {sections.length > 0 ? (
-                sections.map((sec) => {
-                  let questionCounter = 0;
-                  const prevSectionsCounts = sections
-                    .slice(0, sections.indexOf(sec))
-                    .reduce((sum, s) => sum + s.questions.length, 0);
-                  
-                  return (
-                    <div key={sec.section} className="mb-4">
-                      <div className="bg-gray-100 px-4 py-2 rounded-lg mb-4 print:bg-transparent print:border print:border-gray-400">
-                        <h3 className="font-bold text-base">
-                          {langText.section} - {sec.label} : {sec.name}
-                        </h3>
-                      </div>
-                      
-                      <div className="space-y-4 pl-2">
-                        {sec.questions.map((q, qIdx) => {
-                          const globalNum = prevSectionsCounts + qIdx + 1;
-                          return (
-                            <div key={q.originalIdx} className="pb-3" data-testid={`question-${q.originalIdx}`}>
-                              <div className="flex items-start gap-2">
-                                <span className="font-bold min-w-[45px]">{langText.questionPrefix}{globalNum}.</span>
-                                <div className="flex-1">
-                                  <p className="font-medium">{q.question}</p>
-                                  <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
-                                  
-                                  {(q.type === 'diagram' || q.requires_drawing) && (
-                                    <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              {q.options && q.options.length > 0 && (
-                                <div className="ml-12 mt-2 space-y-1">
-                                  {q.options.map((opt, i) => {
-                                    const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
-                                    const prefix = String.fromCharCode(97 + i);
-                                    return (
-                                      <p key={i} className="text-gray-800">
-                                        ({prefix}) {cleanOption}
-                                      </p>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                paper?.questions?.map((q, idx) => (
-                  <div key={idx} className="pb-3" data-testid={`question-${idx}`}>
-                    <div className="flex items-start gap-2">
-                      <span className="font-bold min-w-[45px]">{langText.questionPrefix}{idx + 1}.</span>
-                      <div className="flex-1">
-                        <p className="font-medium">{q.question}</p>
-                        <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
-                      </div>
-                    </div>
+              <div className="space-y-6">
+                {sections.length > 0 ? (
+                  sections.map((sec) => {
+                    const prevSectionsCounts = sections
+                      .slice(0, sections.indexOf(sec))
+                      .reduce((sum, s) => sum + s.questions.length, 0);
                     
-                    {q.options && q.options.length > 0 && (
-                      <div className="ml-12 mt-2 space-y-1">
-                        {q.options.map((opt, i) => {
-                          const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
-                          const prefix = String.fromCharCode(97 + i);
-                          return (
-                            <p key={i} className="text-gray-800">
-                              ({prefix}) {cleanOption}
-                            </p>
-                          );
-                        })}
+                    return (
+                      <div key={sec.section} className="mb-4">
+                        <div className="bg-gray-100 px-4 py-2 rounded-lg mb-4 border border-gray-300">
+                          <h3 className="font-bold text-base">
+                            {langText.section} - {sec.label} : {sec.name}
+                            <span className="text-sm font-normal text-gray-600 ml-2">
+                              ({sec.questions.reduce((s, q) => s + (q.marks || 0), 0)} {langText.marks})
+                            </span>
+                          </h3>
+                        </div>
+                        
+                        <div className="space-y-4 pl-2">
+                          {sec.questions.map((q, qIdx) => {
+                            const globalNum = prevSectionsCounts + qIdx + 1;
+                            return (
+                              <div key={q.originalIdx} className="pb-3">
+                                <div className="flex items-start gap-2">
+                                  <span className="font-bold min-w-[45px]">{langText.questionPrefix}{globalNum}.</span>
+                                  <div className="flex-1">
+                                    <p className="font-medium">{q.question || q.q_text}</p>
+                                    <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
+                                    {(q.type === 'diagram' || q.requires_drawing || q.diagram_required) && (
+                                      <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
+                                    )}
+                                    {q.internal_choice && q.choice_question && (
+                                      <div className="mt-2 pl-4 border-l-2 border-amber-300">
+                                        <p className="text-sm text-amber-700 font-medium">{formData.language === 'hindi' ? 'अथवा (OR)' : 'OR'}</p>
+                                        <p className="font-medium mt-1">{q.choice_question}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                {q.options && q.options.length > 0 && (
+                                  <div className="ml-12 mt-2 space-y-1">
+                                    {q.options.map((opt, i) => {
+                                      const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
+                                      const prefix = String.fromCharCode(97 + i);
+                                      return <p key={i} className="text-gray-800">({prefix}) {cleanOption}</p>;
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="mt-10 pt-6 border-t-2 border-dashed border-gray-400 page-break-before print:mt-0 print:pt-8 print:border-0" style={{ pageBreakBefore: 'always' }}>
-              <h2 className="text-lg font-bold mb-4 text-center border-b pb-2">{langText.answerKey}</h2>
-              <div className="space-y-4">
-                {paper?.questions?.map((q, idx) => (
-                  <div key={idx} className="p-3 bg-gray-50 rounded-lg print:bg-transparent print:border-b print:rounded-none print:p-2">
-                    <div className="flex items-start gap-2">
-                      <span className="font-bold text-indigo-700 print:text-black min-w-[45px]">
-                        {langText.questionPrefix}{idx + 1}:
-                      </span>
-                      <div className="flex-1">
-                        <p className="text-gray-800">{q.answer}</p>
-                        
-                        {q.type === 'diagram' && q.diagram_description && (
-                          <div className="mt-2 p-2 bg-blue-50 rounded text-sm print:bg-transparent print:border print:border-gray-300">
-                            <p className="font-medium text-blue-800 print:text-black">{langText.diagramAnswer}</p>
-                            <p className="text-blue-700 print:text-gray-700">{q.diagram_description}</p>
-                          </div>
-                        )}
-                        
-                        {answerImages[idx] && (
-                          <div className="mt-3">
-                            <img 
-                              src={answerImages[idx]} 
-                              alt={`Answer diagram for Q${idx + 1}`}
-                              className="max-w-full h-auto rounded-lg border shadow-sm max-h-64 object-contain"
-                            />
-                          </div>
-                        )}
-                        
-                        {(q.type === 'diagram' || q.type === 'long' || q.type === 'very_long') && !answerImages[idx] && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => generateAnswerImage(idx, q)}
-                            disabled={generatingImage === idx}
-                            className="mt-2 print:hidden"
-                          >
-                            {generatingImage === idx ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                {isAppHindi ? 'चित्र बना रहा है...' : 'Generating image...'}
-                              </>
-                            ) : (
-                              <>
-                                <Image className="w-4 h-4 mr-2" />
-                                {isAppHindi ? 'AI से चित्र बनाएं' : 'Generate AI Image'}
-                              </>
-                            )}
-                          </Button>
-                        )}
+                    );
+                  })
+                ) : (
+                  paper?.questions?.map((q, idx) => (
+                    <div key={idx} className="pb-3">
+                      <div className="flex items-start gap-2">
+                        <span className="font-bold min-w-[45px]">{langText.questionPrefix}{idx + 1}.</span>
+                        <div className="flex-1">
+                          <p className="font-medium">{q.question}</p>
+                          <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
+                        </div>
                       </div>
+                      {q.options && q.options.length > 0 && (
+                        <div className="ml-12 mt-2 space-y-1">
+                          {q.options.map((opt, i) => {
+                            const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
+                            const prefix = String.fromCharCode(97 + i);
+                            return <p key={i} className="text-gray-800">({prefix}) {cleanOption}</p>;
+                          })}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
+              </div>
+
+              <div className="mt-8 text-center text-sm text-gray-500 border-t pt-4">
+                *** {formData.language === 'hindi' ? 'शुभकामनाएँ' : 'Best of Luck'} ***
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        <style>{`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #printable-paper, #printable-paper * {
-              visibility: visible;
-            }
-            #printable-paper {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              margin: 0;
-              padding: 20px;
-              font-size: 12pt;
-            }
-            @page {
-              margin: 15mm;
-              size: A4;
-            }
-            .print\\:break-before-page {
-              page-break-before: always;
-            }
-          }
-        `}</style>
+        {viewMode === 'answer_key' && (
+          <div className="bg-white rounded-xl border border-green-200" id="printable-answer-key">
+            <div className="p-8">
+              <div className="text-center border-b-2 border-green-600 pb-4 mb-6">
+                <h1 className="text-xl font-bold text-green-800 mb-1">
+                  {formData.language === 'hindi' ? 'उत्तर कुंजी / मार्किंग स्कीम' : 'ANSWER KEY / MARKING SCHEME'}
+                </h1>
+                <h2 className="text-lg font-semibold">{paper?.exam_name} - {displaySubject} - {paper?.class_name}</h2>
+                <p className="text-sm text-gray-600 mt-1">{BOARDS[schoolBoard]?.name} | 2025-26 | {langText.totalMarks}: {paper?.total_marks}</p>
+              </div>
+
+              <div className="space-y-4">
+                {(ak?.answers || paper?.questions || []).map((item, idx) => {
+                  const q = paper?.questions?.[idx] || {};
+                  const answer = item.model_answer || item.correct_answer || item.answer || q.answer || '';
+                  const qNum = item.q_no || idx + 1;
+                  const marks = item.marks || q.marks || 0;
+                  const qType = item.type || q.type || '';
+                  
+                  return (
+                    <div key={idx} className="p-4 bg-green-50 rounded-lg border border-green-100">
+                      <div className="flex items-start gap-2">
+                        <span className="font-bold text-green-700 min-w-[50px]">
+                          {langText.questionPrefix}{qNum}:
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1 italic">{q.question}</p>
+                          <p className="text-gray-800 font-medium">{answer}</p>
+                          <span className="text-xs text-green-600">[{marks} {langText.marks}]</span>
+                          
+                          {item.explanation && (
+                            <p className="text-sm text-blue-700 mt-1 italic">{formData.language === 'hindi' ? 'व्याख्या: ' : 'Explanation: '}{item.explanation}</p>
+                          )}
+
+                          {item.marking_points && item.marking_points.length > 0 && (
+                            <div className="mt-2 pl-4 border-l-2 border-green-300">
+                              <p className="text-xs font-semibold text-green-700 mb-1">{formData.language === 'hindi' ? 'अंक विभाजन:' : 'Marking Points:'}</p>
+                              <ul className="text-sm text-gray-700 space-y-0.5">
+                                {item.marking_points.map((pt, pi) => <li key={pi}>• {pt}</li>)}
+                              </ul>
+                            </div>
+                          )}
+
+                          {item.diagram_steps && item.diagram_steps.length > 0 && (
+                            <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                              <p className="text-xs font-semibold text-blue-700 mb-1">{formData.language === 'hindi' ? 'चित्र निर्देश:' : 'Diagram Steps:'}</p>
+                              <ol className="text-sm text-gray-700 space-y-0.5 list-decimal list-inside">
+                                {item.diagram_steps.map((st, si) => <li key={si}>{st}</li>)}
+                              </ol>
+                            </div>
+                          )}
+
+                          {(qType === 'diagram' || q.diagram_description) && (
+                            <div className="mt-2 p-2 bg-blue-50 rounded text-sm border border-blue-200">
+                              <p className="font-medium text-blue-800">{langText.diagramAnswer}</p>
+                              <p className="text-blue-700">{q.diagram_description || q.drawing_guide || ''}</p>
+                            </div>
+                          )}
+
+                          {answerImages[idx] && (
+                            <div className="mt-3">
+                              <img src={answerImages[idx]} alt={`Diagram Q${qNum}`} className="max-w-full h-auto rounded-lg border shadow-sm max-h-64 object-contain" />
+                            </div>
+                          )}
+                          
+                          {(qType === 'diagram' || qType === 'long' || qType === 'very_long' || q.requires_drawing) && !answerImages[idx] && (
+                            <Button variant="outline" size="sm" onClick={() => generateAnswerImage(idx, q)} disabled={generatingImage === idx} className="mt-2 print:hidden">
+                              {generatingImage === idx ? (
+                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isAppHindi ? 'चित्र बना रहा...' : 'Generating...'}</>
+                              ) : (
+                                <><Image className="w-4 h-4 mr-2" />{isAppHindi ? 'AI चित्र बनाएं' : 'Generate AI Diagram'}</>
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };

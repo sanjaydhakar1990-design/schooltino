@@ -9,13 +9,14 @@ import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import axios from 'axios';
 import { 
-  User, Mail, Phone, Building2, Shield, Key, 
+  User, Mail, Phone, Building2, Shield, Key, CreditCard,
   Save, Loader2, CheckCircle, AlertCircle, Eye, EyeOff,
   Camera, Edit, Lock, Upload, Video, Mic, Fingerprint,
   Settings, ArrowRight, Wrench
 } from 'lucide-react';
 import { toast } from 'sonner';
 import MultiFaceEnrollment from '../components/MultiFaceEnrollment';
+import IDCardViewer from '../components/IDCardViewer';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -28,7 +29,8 @@ export default function ProfilePage() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   
-  // Photo & AI states
+  const [showIDCard, setShowIDCard] = useState(false);
+  
   const [photoUrl, setPhotoUrl] = useState(null);
   const [faceEnrolled, setFaceEnrolled] = useState(false);
   const [cctvAuthorized, setCctvAuthorized] = useState(false);
@@ -420,7 +422,23 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Change Password Button */}
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-between h-14 border-blue-200 hover:bg-blue-50"
+                  onClick={() => setShowIDCard(true)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium">My ID Card</p>
+                      <p className="text-xs text-slate-500">View & print your ID card</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400" />
+                </Button>
+
                 <Button 
                   variant="outline" 
                   className="w-full justify-between h-14"
@@ -579,6 +597,16 @@ export default function ProfilePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {showIDCard && user?.id && (
+        <IDCardViewer
+          personId={user.id}
+          personType="staff"
+          schoolId={schoolId}
+          isOpen={showIDCard}
+          onClose={() => setShowIDCard(false)}
+        />
+      )}
     </div>
   );
 }

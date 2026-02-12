@@ -4,8 +4,13 @@
 Schooltino is a comprehensive, AI-powered school management platform inspired by NextOS K-12 Suite. It features a clean, simplified architecture with ~25 core modules across three portals (SchoolTino Admin, TeachTino Teachers, StudyTino Students/Parents). The platform covers student/staff management, finance, attendance, communication, and AI tools.
 
 ## Recent Changes (Feb 2026)
+- **Premium Admin ID Cards**: 3 exclusive VIP templates (Royal gold borders, Executive purple gradient, Gold Shield crest) for director/admin staff only. "My ID Card" button on ProfilePage.
+- **AI Paper Generator - Language Fix**: Subject name mapping (SUBJECT_MAP_HI_TO_EN) so paper language controls subject display. English paper shows "Mathematics" even for MP Board Hindi subjects.
+- **AI Paper Generator - Answer Key Rewrite**: Step 3 now has separate Question Paper and Answer Key tabs with individual print buttons. Answer key shows marking_points, diagram_steps, explanations per question.
+- **AI Paper Generator - Diagram SVG**: Replaced broken Emergent LLM with Sarvam API for generating SVG diagrams in answer keys. Diagrams rendered as base64 data URLs.
+- **AI Paper Generator - Print System**: New printSection() function opens popup window with styled content for clean printing of question paper or answer key separately.
 - **ErrorBoundary Added**: React ErrorBoundary in App.js catches runtime crashes and shows friendly error page instead of blank white screen. Prevents "blank page" issue.
-- **ID Card System Enhanced**: IDCardViewer rewritten with 5 templates (Classic, Modern, Elegant, Minimal, Vertical), 8 color themes, field visibility controls (father/mother name, DOB, blood group, Samgra ID, etc.), settings panel with template/color/field toggles, persistent settings via localStorage ('id_card_settings'), proper print support for each template.
+- **ID Card System Enhanced**: IDCardViewer rewritten with 5+3 templates (Classic, Modern, Elegant, Minimal, Vertical + Royal, Executive, Gold Shield), 8 color themes, field visibility controls (father/mother name, DOB, blood group, Samgra ID, etc.), settings panel with template/color/field toggles, persistent settings via localStorage ('id_card_settings'), proper print support for each template.
 - **Student Photo Upload Fixed**: Camera icon overlay on split-view student profile photo with hover effect, blue badge indicator, click-to-upload functionality. Uses splitPhotoInputRef, handleProfilePhotoUpload function.
 - **index.js Import Fix**: Changed `@/App` to `./App` and `@/index.css` to `./index.css` for safer imports (craco alias also exists).
 - **Module Management Enhanced**: Added Admissions CRM, Multi-Branch, and Front Office to MODULE_LIST with enable/disable toggles. Added moduleKey to sidebar entries so all modules can be hidden/shown via Settings.

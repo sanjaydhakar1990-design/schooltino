@@ -12,6 +12,9 @@ const ID_CARD_TEMPLATES = [
   { id: 'elegant', name: 'Elegant', nameHi: 'एलिगेंट', desc: 'Premium design with gold accents' },
   { id: 'minimal', name: 'Minimal', nameHi: 'मिनिमल', desc: 'Simple clean layout' },
   { id: 'vertical', name: 'Vertical', nameHi: 'वर्टिकल', desc: 'Portrait orientation ID card' },
+  { id: 'royal', name: 'Royal', nameHi: 'रॉयल', desc: 'Premium royal design for Director/Admin', adminOnly: true },
+  { id: 'executive', name: 'Executive', nameHi: 'एक्जिक्यूटिव', desc: 'Executive card with embossed style', adminOnly: true },
+  { id: 'gold_shield', name: 'Gold Shield', nameHi: 'गोल्ड शील्ड', desc: 'Gold shield crest design', adminOnly: true },
 ];
 
 const COLOR_THEMES = [
@@ -273,12 +276,122 @@ const renderBack = (card, school, personType, settings, gradient) => {
     </div>`;
 };
 
+const renderRoyalFront = (card, school, photo, settings, personType, gradient) => {
+  const isAdmin = card?.is_higher_authority || ['director', 'principal', 'admin'].includes(card?.role?.toLowerCase());
+  return `
+    <div class="id-card" style="width:85.6mm;height:54mm;background:linear-gradient(145deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);border-radius:3mm;overflow:hidden;position:relative;color:white;padding:0;box-sizing:border-box;border:0.8mm solid #c9a84c;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2mm;background:linear-gradient(90deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:2mm;background:linear-gradient(90deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+      <div style="position:absolute;top:0;left:0;bottom:0;width:2mm;background:linear-gradient(180deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+      <div style="position:absolute;top:0;right:0;bottom:0;width:2mm;background:linear-gradient(180deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+      ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;z-index:0;"><img src="${school.logo_url}" style="width:40mm;height:40mm;object-fit:contain;" /></div>` : ''}
+      <div style="position:absolute;top:3mm;left:3mm;font-size:14pt;opacity:0.15;color:#c9a84c;">♛</div>
+      <div style="position:absolute;top:3mm;right:3mm;font-size:14pt;opacity:0.15;color:#c9a84c;">♛</div>
+      <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:4mm 5mm 3mm;">
+        <div style="display:flex;align-items:center;gap:2mm;padding-bottom:2mm;border-bottom:0.5mm solid rgba(201,168,76,0.4);margin-bottom:2mm;">
+          ${school?.logo_url ? `<div style="width:9mm;height:9mm;background:linear-gradient(135deg,#c9a84c,#f5e6a3);border-radius:50%;padding:0.7mm;flex-shrink:0;"><img src="${school.logo_url}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" /></div>` : ''}
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:9pt;font-weight:bold;text-transform:uppercase;letter-spacing:1.5px;color:#f5e6a3;">${school?.name || 'School'}</div>
+            <div style="font-size:6pt;background:linear-gradient(90deg,rgba(201,168,76,0.3),rgba(245,230,163,0.3),rgba(201,168,76,0.3));border:0.3mm solid rgba(201,168,76,0.5);padding:0.5mm 3mm;border-radius:2mm;display:inline-block;margin-top:0.8mm;font-weight:bold;color:#f5e6a3;letter-spacing:1px;">♦ ${card?.card_type || (isAdmin ? 'DIRECTOR' : 'ADMINISTRATOR')} ♦</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:3mm;flex:1;">
+          <div style="width:18mm;flex-shrink:0;">
+            <div style="width:18mm;height:22mm;background:linear-gradient(135deg,#c9a84c,#f5e6a3);border-radius:2mm;padding:0.7mm;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              <div style="width:100%;height:100%;border-radius:1.5mm;overflow:hidden;background:white;">
+                ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#c9a84c;font-size:7pt;">Photo</div>'}
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;font-size:7pt;">
+            <div style="font-size:11pt;font-weight:bold;color:#f5e6a3;margin-bottom:1.5mm;text-shadow:0 1px 2px rgba(0,0,0,0.3);">${card?.name || ''}</div>
+            ${renderStaffDetails(card, settings, '#c9a84c')}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:5pt;color:#c9a84c;opacity:0.8;margin-top:auto;padding-top:1mm;border-top:0.3mm solid rgba(201,168,76,0.3);">
+          <span>${settings.showSchoolPhone && school?.phone ? '📞 ' + school.phone : ''}</span>
+          <span>${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}</span>
+        </div>
+      </div>
+    </div>`;
+};
+
+const renderExecutiveFront = (card, school, photo, settings, personType, gradient) => {
+  return `
+    <div class="id-card" style="width:85.6mm;height:54mm;background:linear-gradient(135deg, #2d1b4e 0%, #1a1a2e 50%, #2d1b4e 100%);border-radius:3mm;overflow:hidden;position:relative;color:white;padding:3mm;box-sizing:border-box;border:0.5mm solid #8b5cf6;">
+      <div style="position:absolute;top:-5mm;right:-5mm;width:25mm;height:25mm;background:radial-gradient(circle,rgba(139,92,246,0.2),transparent);border-radius:50%;"></div>
+      <div style="position:absolute;bottom:-5mm;left:-5mm;width:20mm;height:20mm;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent);border-radius:50%;"></div>
+      ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
+      <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:2mm;padding-bottom:1.5mm;border-bottom:0.5mm solid rgba(139,92,246,0.4);margin-bottom:2mm;">
+          ${school?.logo_url ? `<div style="width:8mm;height:8mm;background:rgba(255,255,255,0.1);border-radius:50%;padding:0.5mm;flex-shrink:0;border:0.3mm solid rgba(139,92,246,0.5);"><img src="${school.logo_url}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" /></div>` : ''}
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:9pt;font-weight:bold;text-transform:uppercase;letter-spacing:1px;background:linear-gradient(90deg,#c4b5fd,#e9d5ff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${school?.name || 'School'}</div>
+            ${settings.showSchoolAddress && school?.address ? `<div style="font-size:5pt;opacity:0.6;margin-top:0.3mm;">${school.address}</div>` : ''}
+            <div style="font-size:5.5pt;background:linear-gradient(90deg,#8b5cf6,#a78bfa);padding:0.5mm 4mm;border-radius:2mm;display:inline-block;margin-top:0.8mm;font-weight:bold;letter-spacing:0.5px;box-shadow:0 1px 3px rgba(139,92,246,0.3);">${card?.card_type || 'EXECUTIVE ADMINISTRATOR'}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:3mm;flex:1;">
+          <div style="width:18mm;flex-shrink:0;">
+            <div style="width:18mm;height:22mm;background:rgba(255,255,255,0.05);border-radius:2mm;border:0.5mm solid rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+              ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<span style="color:#8b5cf6;font-size:7pt;">Photo</span>'}
+            </div>
+          </div>
+          <div style="flex:1;font-size:7pt;">
+            <div style="font-size:11pt;font-weight:bold;color:#e9d5ff;margin-bottom:1.5mm;">${card?.name || ''}</div>
+            ${renderStaffDetails(card, settings, '#a78bfa')}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:5pt;color:#a78bfa;opacity:0.8;margin-top:auto;padding-top:1mm;">
+          <span>${settings.showSchoolPhone && school?.phone ? '📞 ' + school.phone : ''}</span>
+          <span>${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}</span>
+        </div>
+      </div>
+    </div>`;
+};
+
+const renderGoldShieldFront = (card, school, photo, settings, personType, gradient) => {
+  return `
+    <div class="id-card" style="width:85.6mm;height:54mm;background:linear-gradient(160deg, #0c1220 0%, #1a2744 40%, #0c1220 100%);border-radius:3mm;overflow:hidden;position:relative;color:white;padding:3mm;box-sizing:border-box;border:1mm solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 0.5mm #d4a853;">
+      <div style="position:absolute;top:2mm;right:3mm;font-size:22pt;opacity:0.12;color:#d4a853;">🛡</div>
+      ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.07;z-index:0;"><img src="${school.logo_url}" style="width:38mm;height:38mm;object-fit:contain;" /></div>` : ''}
+      <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:2mm;padding-bottom:1.5mm;margin-bottom:2mm;">
+          ${school?.logo_url ? `<div style="width:10mm;height:10mm;background:linear-gradient(135deg,#d4a853,#f0d78c,#d4a853);border-radius:50%;padding:0.8mm;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,0.3);"><img src="${school.logo_url}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" /></div>` : ''}
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:9pt;font-weight:bold;text-transform:uppercase;letter-spacing:1.5px;color:#f0d78c;text-shadow:0 1px 2px rgba(0,0,0,0.5);">${school?.name || 'School'}</div>
+            <div style="height:0.3mm;background:linear-gradient(90deg,transparent,#d4a853,transparent);margin:1mm 5mm;"></div>
+            <div style="font-size:6pt;color:#d4a853;font-weight:bold;letter-spacing:2px;margin-top:0.5mm;">🛡 ${card?.card_type || 'DIRECTOR / PRINCIPAL'} 🛡</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:3mm;flex:1;">
+          <div style="width:20mm;flex-shrink:0;">
+            <div style="width:20mm;height:24mm;border-radius:2mm;overflow:hidden;border:0.8mm solid #d4a853;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+              ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;" />` : '<div style="width:100%;height:100%;background:#1a2744;display:flex;align-items:center;justify-content:center;color:#d4a853;font-size:7pt;">Photo</div>'}
+            </div>
+          </div>
+          <div style="flex:1;font-size:7pt;">
+            <div style="font-size:12pt;font-weight:bold;color:#f0d78c;margin-bottom:2mm;text-shadow:0 1px 3px rgba(0,0,0,0.3);">${card?.name || ''}</div>
+            ${renderStaffDetails(card, settings, '#d4a853')}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:5pt;color:#d4a853;opacity:0.8;margin-top:auto;padding-top:1mm;border-top:0.3mm solid rgba(212,168,83,0.3);">
+          <span>${settings.showSchoolPhone && school?.phone ? '📞 ' + school.phone : ''}</span>
+          <span>${settings.showValidUntil ? 'Valid: ' + (card?.valid_until || (new Date().getFullYear() + 1)) : ''}</span>
+        </div>
+      </div>
+    </div>`;
+};
+
 const TEMPLATE_RENDERERS = {
   classic: renderClassicFront,
   modern: renderModernFront,
   elegant: renderElegantFront,
   minimal: renderMinimalFront,
   vertical: renderVerticalFront,
+  royal: renderRoyalFront,
+  executive: renderExecutiveFront,
+  gold_shield: renderGoldShieldFront,
 };
 
 export default function IDCardViewer({ 
@@ -392,9 +505,10 @@ export default function IDCardViewer({
                 <div>
                   <label className="text-xs font-semibold text-gray-700 mb-1.5 block flex items-center gap-1.5"><Layout className="w-3.5 h-3.5" /> Template</label>
                   <div className="space-y-1">
-                    {ID_CARD_TEMPLATES.map(t => (
-                      <button key={t.id} onClick={() => updateSetting('template', t.id)} className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all ${settings.template === t.id ? 'bg-blue-50 border border-blue-300 text-blue-700 font-semibold' : 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
+                    {ID_CARD_TEMPLATES.filter(t => !t.adminOnly || personType === 'staff').map(t => (
+                      <button key={t.id} onClick={() => updateSetting('template', t.id)} className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all ${settings.template === t.id ? (t.adminOnly ? 'bg-amber-50 border border-amber-400 text-amber-800 font-semibold' : 'bg-blue-50 border border-blue-300 text-blue-700 font-semibold') : 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
                         {t.name} <span className="text-gray-400">({t.nameHi})</span>
+                        {t.adminOnly && <span className="ml-1 text-[9px] bg-amber-100 text-amber-700 px-1 py-0.5 rounded font-bold">VIP</span>}
                       </button>
                     ))}
                   </div>
