@@ -4,6 +4,9 @@
 Schooltino is a comprehensive, AI-powered school management platform inspired by NextOS K-12 Suite. It features a clean, simplified architecture with ~25 core modules across three portals (SchoolTino Admin, TeachTino Teachers, StudyTino Students/Parents). The platform covers student/staff management, finance, attendance, communication, and AI tools.
 
 ## Recent Changes (Feb 2026)
+- **WhatsApp Dual Mode**: Communication page now has Free (wa.me link) and Paid API (BotBiz) toggle. Free mode opens direct WhatsApp chat for single numbers or copies message for bulk forwarding. No credits required for free mode. Mobile validation for single-number free mode.
+- **Admit Card Notifications**: Bulk admit card generation now creates Hindi notifications for each student - eligible students get download prompt, fee-pending students see pending amount with instructions.
+- **Fee Collection Auto-Activates Admit Cards**: When admin collects fee and student's total meets minimum fee percentage, system auto-generates admit card entries for applicable pending exams (filtered by student's class).
 - **Permission Update Fix**: Fixed quick permissions save in EmployeeManagementPage - now calls dedicated /api/employees/{id}/permissions endpoint instead of full employee update endpoint that was failing validation.
 - **Security Fix - Director-Only Settings**: SettingsPage now blocks non-director users with "Access Denied" screen. Previously principal/staff could access settings and module management.
 - **Login Credentials Viewer**: New "Login Credentials" tab in Employee Management (director-only) showing employee login IDs, roles, login status with password reset functionality. Similar password reset added for students.
