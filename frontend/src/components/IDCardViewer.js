@@ -261,17 +261,79 @@ const renderBack = (card, school, personType, settings, gradient) => {
   const isVertical = settings.template === 'vertical';
   const w = isVertical ? '54mm' : '85.6mm';
   const h = isVertical ? '85.6mm' : '54mm';
+  const template = settings.template;
+  const t = COLOR_THEMES.find(c => c.id === settings.colorTheme) || COLOR_THEMES[0];
+
+  const contentHtml = `
+    <div style="font-size:${isVertical ? '16pt' : '20pt'};font-weight:bold;letter-spacing:2px;margin-bottom:3mm;">${personType === 'student' ? 'STUDENT OF' : (card?.designation || 'STAFF')}</div>
+    ${personType !== 'student' && card?.designation_hindi ? `<div style="font-size:10pt;opacity:0.9;margin-bottom:2mm;">${card.designation_hindi}</div>` : ''}
+    ${personType !== 'student' ? '<div style="font-size:8pt;letter-spacing:3px;opacity:0.7;margin-bottom:2mm;">OF</div>' : ''}
+    <div style="font-size:${isVertical ? '10pt' : '12pt'};font-weight:bold;text-transform:uppercase;padding:0 4mm;line-height:1.4;">${school?.name || 'School Name'}</div>
+    ${settings.showSchoolAddress && school?.address ? `<div style="font-size:7pt;margin-top:3mm;opacity:0.8;max-width:90%;margin-left:auto;margin-right:auto;">${school.address}</div>` : ''}
+    ${settings.showSchoolPhone && school?.phone ? `<div style="font-size:8pt;margin-top:2mm;opacity:0.9;">📞 ${school.phone}</div>` : ''}
+  `;
+
+  const returnText = 'If found, please return to school';
+
+  if (template === 'modern' || template === 'minimal') {
+    return `
+      <div class="id-card-back" style="width:${w};height:${h};background:white;border-radius:3mm;overflow:hidden;position:relative;color:${t.colors[0]};box-sizing:border-box;display:flex;align-items:center;justify-content:center;${template === 'modern' ? `border-left:8mm solid ${gradient};` : `border-top:2mm solid ${t.colors[0]};border:0.5mm solid #e2e8f0;`}">
+        ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
+        <div style="position:relative;z-index:1;text-align:center;padding:4mm;">
+          ${contentHtml}
+          <div style="position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-size:6pt;opacity:0.5;color:#64748b;">${returnText}</div>
+        </div>
+      </div>`;
+  }
+
+  if (template === 'royal') {
+    return `
+      <div class="id-card-back" style="width:${w};height:${h};background:linear-gradient(145deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);border-radius:3mm;overflow:hidden;position:relative;color:#f5e6a3;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:0.8mm solid #c9a84c;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2mm;background:linear-gradient(90deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:2mm;background:linear-gradient(90deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+        <div style="position:absolute;top:0;left:0;bottom:0;width:2mm;background:linear-gradient(180deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+        <div style="position:absolute;top:0;right:0;bottom:0;width:2mm;background:linear-gradient(180deg,#c9a84c,#f5e6a3,#c9a84c);"></div>
+        <div style="position:absolute;top:3mm;left:3mm;font-size:14pt;opacity:0.15;color:#c9a84c;">♛</div>
+        <div style="position:absolute;top:3mm;right:3mm;font-size:14pt;opacity:0.15;color:#c9a84c;">♛</div>
+        ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
+        <div style="position:relative;z-index:1;text-align:center;padding:4mm;">
+          ${contentHtml}
+          <div style="position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-size:6pt;opacity:0.6;color:#c9a84c;">${returnText}</div>
+        </div>
+      </div>`;
+  }
+
+  if (template === 'executive') {
+    return `
+      <div class="id-card-back" style="width:${w};height:${h};background:linear-gradient(135deg, #2d1b4e 0%, #1a1a2e 50%, #2d1b4e 100%);border-radius:3mm;overflow:hidden;position:relative;color:#e9d5ff;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:0.5mm solid #8b5cf6;">
+        <div style="position:absolute;top:-5mm;right:-5mm;width:25mm;height:25mm;background:radial-gradient(circle,rgba(139,92,246,0.2),transparent);border-radius:50%;"></div>
+        <div style="position:absolute;bottom:-5mm;left:-5mm;width:20mm;height:20mm;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent);border-radius:50%;"></div>
+        ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
+        <div style="position:relative;z-index:1;text-align:center;padding:4mm;">
+          ${contentHtml}
+          <div style="position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-size:6pt;opacity:0.6;color:#a78bfa;">${returnText}</div>
+        </div>
+      </div>`;
+  }
+
+  if (template === 'gold_shield') {
+    return `
+      <div class="id-card-back" style="width:${w};height:${h};background:linear-gradient(160deg, #0c1220 0%, #1a2744 40%, #0c1220 100%);border-radius:3mm;overflow:hidden;position:relative;color:#f0d78c;box-sizing:border-box;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 0.5mm #d4a853;">
+        <div style="position:absolute;top:2mm;right:3mm;font-size:22pt;opacity:0.12;color:#d4a853;">🛡</div>
+        ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.07;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
+        <div style="position:relative;z-index:1;text-align:center;padding:4mm;">
+          ${contentHtml}
+          <div style="position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-size:6pt;opacity:0.6;color:#d4a853;">${returnText}</div>
+        </div>
+      </div>`;
+  }
+
   return `
     <div class="id-card-back" style="width:${w};height:${h};background:${gradient};border-radius:3mm;overflow:hidden;position:relative;color:white;box-sizing:border-box;display:flex;align-items:center;justify-content:center;">
       ${school?.logo_url ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.15;z-index:0;"><img src="${school.logo_url}" style="width:35mm;height:35mm;object-fit:contain;" /></div>` : ''}
       <div style="position:relative;z-index:1;text-align:center;padding:4mm;">
-        <div style="font-size:${isVertical ? '16pt' : '20pt'};font-weight:bold;letter-spacing:2px;margin-bottom:3mm;">${personType === 'student' ? 'STUDENT OF' : (card?.designation || 'STAFF')}</div>
-        ${personType !== 'student' && card?.designation_hindi ? `<div style="font-size:10pt;opacity:0.9;margin-bottom:2mm;">${card.designation_hindi}</div>` : ''}
-        ${personType !== 'student' ? '<div style="font-size:8pt;letter-spacing:3px;opacity:0.7;margin-bottom:2mm;">OF</div>' : ''}
-        <div style="font-size:${isVertical ? '10pt' : '12pt'};font-weight:bold;text-transform:uppercase;padding:0 4mm;line-height:1.4;">${school?.name || 'School Name'}</div>
-        ${settings.showSchoolAddress && school?.address ? `<div style="font-size:7pt;margin-top:3mm;opacity:0.8;max-width:90%;margin-left:auto;margin-right:auto;">${school.address}</div>` : ''}
-        ${settings.showSchoolPhone && school?.phone ? `<div style="font-size:8pt;margin-top:2mm;opacity:0.9;">📞 ${school.phone}</div>` : ''}
-        <div style="position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-size:6pt;opacity:0.6;">If found, please return to school</div>
+        ${contentHtml}
+        <div style="position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-size:6pt;opacity:0.6;">${returnText}</div>
       </div>
     </div>`;
 };

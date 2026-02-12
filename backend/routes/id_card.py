@@ -176,6 +176,19 @@ async def generate_id_card(person_type: str, person_id: str, school_id: Optional
             photo = person.get("photo")
         elif person.get("photo_url"):
             photo = person.get("photo_url")
+        
+        if not photo:
+            if collection == "staff":
+                user_record = await db.users.find_one({"id": person_id}, {"_id": 0, "photo_url": 1, "photo": 1})
+            else:
+                user_record = await db.staff.find_one({"id": person_id}, {"_id": 0, "photo_url": 1, "photo": 1})
+            if user_record:
+                photo = user_record.get("photo_url") or user_record.get("photo")
+        
+        if not photo and collection == "staff" and person.get("user_id"):
+            user_record = await db.users.find_one({"id": person.get("user_id")}, {"_id": 0, "photo_url": 1, "photo": 1})
+            if user_record:
+                photo = user_record.get("photo_url") or user_record.get("photo")
     
     # Make relative photo URLs absolute so they work in ID cards and print popups
     if photo and not photo.startswith("data:") and not photo.startswith("http"):

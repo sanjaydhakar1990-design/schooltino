@@ -30,41 +30,32 @@ export default function StudyTinoLoginPage() {
     student_id: '',
     parent_id: '',
     mobile: '',
-    password: '',
-    dob: ''
+    password: ''
   });
 
   const handleStudentLogin = async (e) => {
     e.preventDefault();
     
-    if (loginMethod === 'id' && !form.student_id) {
+    if (!form.student_id) {
       toast.error(isHindi ? 'Student ID enter kijiye' : 'Enter Student ID');
       return;
     }
-    if (loginMethod === 'mobile' && !form.mobile) {
-      toast.error(isHindi ? 'Mobile Number enter kijiye' : 'Enter Mobile Number');
-      return;
-    }
-    if (loginMethod === 'id' && !form.password) {
+    if (!form.password) {
       toast.error(isHindi ? 'Password enter kijiye' : 'Enter Password');
-      return;
-    }
-    if (loginMethod === 'mobile' && !form.dob) {
-      toast.error(isHindi ? 'Date of Birth enter kijiye' : 'Enter Date of Birth');
       return;
     }
 
     setLoading(true);
     try {
-      const payload = loginMethod === 'id' 
-        ? { student_id: form.student_id, password: form.password }
-        : { mobile: form.mobile, dob: form.dob };
+      const payload = { student_id: form.student_id, password: form.password };
 
       await studentLogin(payload);
       toast.success(isHindi ? 'Login successful!' : 'Login successful!');
       navigate('/student-dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.detail || (isHindi ? 'Login failed' : 'Login failed'));
+      const detail = error.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Login failed');
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -101,7 +92,9 @@ export default function StudyTinoLoginPage() {
         navigate('/parent-portal');
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || (isHindi ? 'Login failed' : 'Login failed'));
+      const detail = error.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Login failed');
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -202,7 +195,7 @@ export default function StudyTinoLoginPage() {
                   onClick={() => {
                     setLoginType('student');
                     setLoginMethod('id');
-                    setForm({ ...form, student_id: '', parent_id: '', mobile: '', password: '', dob: '' });
+                    setForm({ ...form, student_id: '', parent_id: '', mobile: '', password: '' });
                   }}
                   className={`flex-1 p-4 rounded-xl border transition-all ${
                     loginType === 'student'
@@ -219,7 +212,7 @@ export default function StudyTinoLoginPage() {
                   onClick={() => {
                     setLoginType('parent');
                     setLoginMethod('mobile');
-                    setForm({ ...form, student_id: '', parent_id: '', mobile: '', password: '', dob: '' });
+                    setForm({ ...form, student_id: '', parent_id: '', mobile: '', password: '' });
                   }}
                   className={`flex-1 p-4 rounded-xl border transition-all ${
                     loginType === 'parent'
@@ -245,54 +238,67 @@ export default function StudyTinoLoginPage() {
                 </h3>
                 <p className="text-xs text-gray-500">
                   {loginType === 'student'
-                    ? (isHindi ? 'Student ID ya Mobile se login kijiye' : 'Login with Student ID or Mobile')
+                    ? (isHindi ? 'Student ID aur Password se login kijiye' : 'Login with Student ID and Password')
                     : (isHindi ? 'Parent ID ya Mobile se login kijiye' : 'Login with Parent ID or Mobile')}
                 </p>
               </div>
 
-              {/* Login Method Tabs */}
-              <div className="flex gap-2 mb-6">
-                <Button
-                  type="button"
-                  variant={loginMethod === 'id' ? 'default' : 'outline'}
-                  className={`flex-1 ${loginMethod === 'id' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'border-gray-200 text-gray-600'}`}
-                  onClick={() => setLoginMethod('id')}
-                >
-                  <IdCard className="w-4 h-4 mr-2" />
-                  {loginType === 'student' ? 'Student ID' : 'Parent ID'}
-                </Button>
-                <Button
-                  type="button"
-                  variant={loginMethod === 'mobile' ? 'default' : 'outline'}
-                  className={`flex-1 ${loginMethod === 'mobile' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'border-gray-200 text-gray-600'}`}
-                  onClick={() => setLoginMethod('mobile')}
-                >
-                  <Phone className="w-4 h-4 mr-2" />
-                  Mobile
-                </Button>
-              </div>
+              {loginType === 'parent' && (
+                <div className="flex gap-2 mb-6">
+                  <Button
+                    type="button"
+                    variant={loginMethod === 'id' ? 'default' : 'outline'}
+                    className={`flex-1 ${loginMethod === 'id' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'border-gray-200 text-gray-600'}`}
+                    onClick={() => setLoginMethod('id')}
+                  >
+                    <IdCard className="w-4 h-4 mr-2" />
+                    Parent ID
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={loginMethod === 'mobile' ? 'default' : 'outline'}
+                    className={`flex-1 ${loginMethod === 'mobile' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'border-gray-200 text-gray-600'}`}
+                    onClick={() => setLoginMethod('mobile')}
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Mobile
+                  </Button>
+                </div>
+              )}
 
               {/* Login Form */}
               <form onSubmit={loginType === 'student' ? handleStudentLogin : handleParentLogin} className="space-y-4">
-                {loginMethod === 'id' && (
+                {loginType === 'student' && (
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">{loginType === 'student' ? 'Student ID' : 'Parent ID'}</Label>
+                    <Label className="text-sm font-medium text-gray-700">Student ID</Label>
                     <div className="relative mt-2">
                       <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
-                        value={loginType === 'student' ? form.student_id : form.parent_id}
-                        onChange={(e) => setForm({ 
-                          ...form, 
-                          [loginType === 'student' ? 'student_id' : 'parent_id']: e.target.value 
-                        })}
-                        placeholder={loginType === 'student' ? 'STU-2026-00001' : 'PAR-2026-00001'}
+                        value={form.student_id}
+                        onChange={(e) => setForm({ ...form, student_id: e.target.value })}
+                        placeholder="STU-2026-00001"
                         className="pl-10 h-11 border-gray-200 focus:border-blue-500"
                       />
                     </div>
                   </div>
                 )}
 
-                {loginMethod === 'mobile' && (
+                {loginType === 'parent' && loginMethod === 'id' && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Parent ID</Label>
+                    <div className="relative mt-2">
+                      <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        value={form.parent_id}
+                        onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
+                        placeholder="PAR-2026-00001"
+                        className="pl-10 h-11 border-gray-200 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {loginType === 'parent' && loginMethod === 'mobile' && (
                   <div>
                     <Label className="text-sm font-medium text-gray-700">Mobile Number</Label>
                     <div className="relative mt-2">
@@ -309,40 +315,26 @@ export default function StudyTinoLoginPage() {
                   </div>
                 )}
 
-                {(loginType === 'parent' || loginMethod === 'id') && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Password</Label>
-                    <div className="relative mt-2">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        type={showPassword ? 'text' : 'password'}
-                        value={form.password}
-                        onChange={(e) => setForm({ ...form, password: e.target.value })}
-                        placeholder="••••••••"
-                        className="pl-10 pr-10 h-11 border-gray-200 focus:border-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {loginType === 'student' && loginMethod === 'mobile' && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Date of Birth</Label>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Password</Label>
+                  <div className="relative mt-2">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
-                      type="date"
-                      value={form.dob}
-                      onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                      className="h-11 mt-2 border-gray-200 focus:border-blue-500"
+                      type={showPassword ? 'text' : 'password'}
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      placeholder="••••••••"
+                      className="pl-10 pr-10 h-11 border-gray-200 focus:border-blue-500"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
-                )}
+                </div>
 
                 <Button 
                   type="submit" 
