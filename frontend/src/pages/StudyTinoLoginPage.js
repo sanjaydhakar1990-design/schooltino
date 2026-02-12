@@ -18,7 +18,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 export default function StudyTinoLoginPage() {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { studentLogin } = useAuth();
   const isHindi = i18n.language === 'hi';
 
   const [loginType, setLoginType] = useState('student');
@@ -60,14 +60,9 @@ export default function StudyTinoLoginPage() {
         ? { student_id: form.student_id, password: form.password }
         : { mobile: form.mobile, dob: form.dob };
 
-      const response = await axios.post(`${API}/api/students/login`, payload);
-      
-      if (response.data.access_token) {
-        localStorage.setItem('token', response.data.access_token);
-        localStorage.setItem('user', JSON.stringify(response.data.student));
-        toast.success(isHindi ? 'Login successful!' : 'Login successful!');
-        navigate('/student-dashboard');
-      }
+      await studentLogin(payload);
+      toast.success(isHindi ? 'Login successful!' : 'Login successful!');
+      navigate('/student-dashboard');
     } catch (error) {
       toast.error(error.response?.data?.detail || (isHindi ? 'Login failed' : 'Login failed'));
     } finally {

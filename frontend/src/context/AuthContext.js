@@ -89,15 +89,15 @@ export const AuthProvider = ({ children }) => {
     return newUser;
   };
 
-  const studentLogin = async (studentId, password) => {
-    const response = await axios.post(`${API}/students/login?student_id=${encodeURIComponent(studentId)}&password=${encodeURIComponent(password)}`);
+  const studentLogin = async (payload) => {
+    const response = await axios.post(`${API}/students/login`, payload);
     const { access_token, student } = response.data;
     
     localStorage.setItem('token', access_token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
     
-    // Add role to student object for consistency
     const userData = { ...student, role: 'student' };
+    localStorage.setItem('user', JSON.stringify(userData));
     
     setToken(access_token);
     setUser(userData);
