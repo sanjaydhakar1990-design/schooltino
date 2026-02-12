@@ -108,6 +108,11 @@ export default function StudentsPage() {
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [resetPasswordStudent, setResetPasswordStudent] = useState(null);
+  const [newStudentPassword, setNewStudentPassword] = useState('');
+  const [resettingStudentPassword, setResettingStudentPassword] = useState(false);
+  const [showStudentPasswordField, setShowStudentPasswordField] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -544,6 +549,29 @@ Note: First login पर password change करें।`;
     const text = generateCredentialsText(student);
     await navigator.clipboard.writeText(text);
     toast.success('Credentials copied!');
+  };
+
+  const resetStudentPassword = async () => {
+    if (!newStudentPassword || newStudentPassword.length < 4) {
+      toast.error('Password must be at least 4 characters');
+      return;
+    }
+    setResettingStudentPassword(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API}/students/${resetPasswordStudent.id}/reset-password`, 
+        { new_password: newStudentPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(`Password reset for ${resetPasswordStudent.name}`);
+      setShowResetPasswordDialog(false);
+      setResetPasswordStudent(null);
+      setNewStudentPassword('');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Password reset failed');
+    } finally {
+      setResettingStudentPassword(false);
+    }
   };
 
   const openStudentProfile = (student) => {
@@ -2146,6 +2174,15 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-purple-600" onClick={() => viewCredentials(splitViewStudent)}>
                         <Key className="w-3.5 h-3.5" /> Credentials
                       </Button>
+                      {['director', 'principal'].includes(user?.role) && (
+                        <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-amber-600" onClick={() => {
+                          setResetPasswordStudent(splitViewStudent);
+                          setNewStudentPassword('');
+                          setShowResetPasswordDialog(true);
+                        }}>
+                          <Key className="w-3.5 h-3.5" /> Reset Password
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2761,6 +2798,56 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Reset Password Dialog */}
+      {showResetPasswordDialog && resetPasswordStudent && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowResetPasswordDialog(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
+              <Key className="w-5 h-5 text-amber-600" />
+              Reset Student Password
+            </h3>
+            <div className="bg-slate-50 rounded-lg p-3 mb-4">
+              <p className="font-medium">{resetPasswordStudent.name}</p>
+              <p className="text-sm text-slate-500">
+                {resetPasswordStudent.student_id || resetPasswordStudent.admission_no || 'N/A'} • {resetPasswordStudent.class_name || 'N/A'}
+              </p>
+            </div>
+            <div className="space-y-3 mb-4">
+              <Label>New Password (कम से कम 4 characters)</Label>
+              <div className="relative">
+                <Input
+                  type={showStudentPasswordField ? 'text' : 'password'}
+                  value={newStudentPassword}
+                  onChange={e => setNewStudentPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowStudentPasswordField(!showStudentPasswordField)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showStudentPasswordField ? <Eye className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button
+                onClick={resetStudentPassword}
+                disabled={!newStudentPassword || newStudentPassword.length < 4 || resettingStudentPassword}
+                className="flex-1 bg-amber-600 hover:bg-amber-700"
+              >
+                {resettingStudentPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Key className="w-4 h-4 mr-2" />}
+                Reset Password
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

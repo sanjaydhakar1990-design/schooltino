@@ -209,6 +209,10 @@ export default function EmployeeManagementPage() {
   const [showProfile, setShowProfile] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [permissionsData, setPermissionsData] = useState({});
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [resetPasswordEmployee, setResetPasswordEmployee] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   useEffect(() => {
     if (schoolId) {
@@ -556,6 +560,29 @@ export default function EmployeeManagementPage() {
     setShowDeleteDialog(true);
   };
 
+  const resetEmployeePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setResettingPassword(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API}/api/employees/${resetPasswordEmployee.id}/reset-password`, 
+        { new_password: newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(`Password reset for ${resetPasswordEmployee.name}`);
+      setShowResetPasswordDialog(false);
+      setResetPasswordEmployee(null);
+      setNewPassword('');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Password reset failed');
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   // Bulk Print Employee ID Cards
   const handleBulkPrintIDCards = async () => {
     if (employees.length === 0) {
@@ -652,14 +679,14 @@ export default function EmployeeManagementPage() {
   const saveQuickPermissions = async (empId, permissions) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API}/api/employees/${empId}`, 
-        { custom_permissions: permissions, school_id: schoolId },
+      await axios.put(`${API}/api/employees/${empId}/permissions`, 
+        permissions,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Permissions updated!');
       fetchEmployees();
     } catch (error) {
-      toast.error('Permission update failed');
+      toast.error('Permission update failed: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -783,6 +810,7 @@ export default function EmployeeManagementPage() {
           { id: 'staff', label: '👥 All Staff', icon: Users },
           { id: 'permissions', label: '🛡️ Permissions', icon: Shield },
           { id: 'quick_actions', label: '⚡ Quick Actions', icon: Settings },
+          ...(user?.role === 'director' ? [{ id: 'credentials', label: '🔑 Login Credentials', icon: Key }] : []),
         ].map(tab => (
           <button
             key={tab.id}
@@ -1261,6 +1289,173 @@ export default function EmployeeManagementPage() {
                 <div>Teachers: <span className="font-bold text-amber-700">{employees.filter(e => e.designation?.toLowerCase().includes('teacher')).length}</span></div>
                 <div>With Login: <span className="font-bold text-green-700">{employees.filter(e => e.has_login).length}</span></div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== TAB: LOGIN CREDENTIALS ==================== */}
+      {activePageTab === 'credentials' && user?.role === 'director' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-xl border p-4 mb-4">
+            <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
+              <Key className="w-5 h-5 text-amber-600" />
+              Login Credentials (लॉगिन क्रेडेंशियल्स)
+            </h3>
+            <p className="text-sm text-gray-500">सभी कर्मचारियों के login credentials देखें और manage करें</p>
+          </div>
+
+          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b">
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Name</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Employee ID</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Login ID (Email)</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Role</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-700">Login Status</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {employees.map(emp => (
+                    <tr key={emp.id} className="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {emp.photo_url ? (
+                            <img src={emp.photo_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
+                              {emp.name?.charAt(0)?.toUpperCase()}
+                            </div>
+                          )}
+                          <span className="font-medium text-slate-800">{emp.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 font-mono text-xs">{emp.employee_id || '-'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-700 font-mono text-xs">{emp.email || '-'}</span>
+                          {emp.email && (
+                            <button
+                              onClick={() => { navigator.clipboard.writeText(emp.email); toast.success('Login ID copied!'); }}
+                              className="text-blue-500 hover:text-blue-700 p-1"
+                              title="Copy Login ID"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 capitalize">
+                          {emp.role || emp.designation || '-'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {emp.has_login ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            Disabled
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {emp.has_login && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1 border-amber-300 text-amber-700 hover:bg-amber-50"
+                              onClick={() => {
+                                setResetPasswordEmployee(emp);
+                                setNewPassword('');
+                                setShowResetPasswordDialog(true);
+                              }}
+                            >
+                              <Key className="w-3 h-3" />
+                              Reset Password
+                            </Button>
+                          )}
+                          {!emp.has_login && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1 border-green-300 text-green-700 hover:bg-green-50"
+                              onClick={() => toggleLogin(emp, true)}
+                            >
+                              <UserCheck className="w-3 h-3" />
+                              Enable Login
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {employees.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-10 text-center text-slate-400">
+                        <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                        <p>No employees found</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Dialog */}
+      {showResetPasswordDialog && resetPasswordEmployee && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowResetPasswordDialog(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
+              <Key className="w-5 h-5 text-amber-600" />
+              Reset Password
+            </h3>
+            <div className="bg-slate-50 rounded-lg p-3 mb-4">
+              <p className="font-medium">{resetPasswordEmployee.name}</p>
+              <p className="text-sm text-slate-500">{resetPasswordEmployee.email} • {resetPasswordEmployee.role || resetPasswordEmployee.designation}</p>
+            </div>
+            <div className="space-y-3 mb-4">
+              <Label>New Password (कम से कम 6 characters)</Label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button
+                onClick={resetEmployeePassword}
+                disabled={!newPassword || newPassword.length < 6 || resettingPassword}
+                className="flex-1 bg-amber-600 hover:bg-amber-700"
+              >
+                {resettingPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Key className="w-4 h-4 mr-2" />}
+                Reset Password
+              </Button>
             </div>
           </div>
         </div>

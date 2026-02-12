@@ -104,6 +104,48 @@ const SECTION_NAMES = {
   },
 };
 
+const getClassInstructions = (className, lang) => {
+  const isSmall = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2'].includes(className);
+  const isMid = ['Class 3', 'Class 4', 'Class 5'].includes(className);
+
+  if (lang === 'hindi') {
+    if (isSmall) return [
+      'सभी प्रश्न करने अनिवार्य हैं।',
+      'सुंदर और साफ लिखें।',
+      'चित्र रंगीन बनाएं।',
+    ];
+    if (isMid) return [
+      'सभी प्रश्न अनिवार्य हैं।',
+      'प्रत्येक प्रश्न के अंक उसके सामने दिए गए हैं।',
+      'साफ और सुंदर लिखें।',
+      'चित्र स्पष्ट और लेबल सहित बनाएं।',
+    ];
+    return [
+      'सभी प्रश्न अनिवार्य हैं।',
+      'प्रत्येक प्रश्न के अंक उसके सामने दिए गए हैं।',
+      'चित्र स्पष्ट और लेबल सहित बनाएं।',
+      'उत्तर स्पष्ट और व्यवस्थित लिखें।',
+    ];
+  }
+  if (isSmall) return [
+    'All questions are compulsory.',
+    'Write neatly and cleanly.',
+    'Color the pictures properly.',
+  ];
+  if (isMid) return [
+    'All questions are compulsory.',
+    'Marks for each question are indicated against it.',
+    'Write neatly and clearly.',
+    'Draw neat and labeled diagrams wherever required.',
+  ];
+  return [
+    'All questions are compulsory.',
+    'Marks for each question are indicated against it.',
+    'Draw neat and labeled diagrams wherever required.',
+    'Write answers clearly and in proper sequence.',
+  ];
+};
+
 export default function AIPaperPage() {
   const { t, i18n } = useTranslation();
   const { user, schoolId } = useAuth();
@@ -138,6 +180,8 @@ export default function AIPaperPage() {
   const [imageProgress, setImageProgress] = useState({ current: 0, total: 0 });
   const [viewMode, setViewMode] = useState('question_paper');
   const [printLayout, setPrintLayout] = useState('normal');
+  const [showSchoolName, setShowSchoolName] = useState(true);
+  const [schoolName, setSchoolName] = useState('');
 
   const classNames = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
 
@@ -163,6 +207,9 @@ export default function AIPaperPage() {
             else setSchoolBoard('CBSE');
           }
           setUseNcertSyllabus(useNcert);
+          if (response.data.name || response.data.school_name) {
+            setSchoolName(response.data.name || response.data.school_name);
+          }
         }
       } catch (error) {
         console.log('Using default board: CBSE with NCERT');
@@ -865,6 +912,24 @@ export default function AIPaperPage() {
         </div>
       </div>
 
+      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={showSchoolName} onChange={() => setShowSchoolName(!showSchoolName)} className="rounded" />
+          <span className="text-sm font-medium">{isAppHindi ? 'पेपर पर स्कूल का नाम दिखाएं' : 'Show School Name on Paper'}</span>
+        </label>
+        {showSchoolName && (
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">{isAppHindi ? 'स्कूल का नाम' : 'School Name'}</Label>
+            <Input
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              placeholder={isAppHindi ? 'स्कूल का नाम लिखें' : 'Enter school name'}
+              className="h-10"
+            />
+          </div>
+        )}
+      </div>
+
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={() => setStep(1)}>
           <ChevronLeft className="w-5 h-5 mr-2" /> {isAppHindi ? 'पीछे जाएं' : 'Go Back'}
@@ -971,6 +1036,9 @@ export default function AIPaperPage() {
           <div className="bg-white rounded-xl border border-slate-200" data-testid="paper-preview" id="printable-question-paper">
             <div className="p-8">
               <div className="paper-header text-center border-b-2 border-black pb-4 mb-6">
+                {showSchoolName && schoolName && (
+                  <p className="text-lg font-bold mb-1">{schoolName}</p>
+                )}
                 <h1 className="text-xl font-bold mb-1">{paper?.exam_name || (formData.language === 'hindi' ? 'परीक्षा' : 'Examination')}</h1>
                 <h2 className="text-lg font-semibold">{displaySubject} - {paper?.class_name}</h2>
                 <p className="text-sm text-gray-600 mt-1">{BOARDS[schoolBoard]?.name} | 2025-26</p>
@@ -983,9 +1051,9 @@ export default function AIPaperPage() {
               <div className="mb-6 p-3 bg-gray-50 rounded-lg text-sm border border-gray-200">
                 <p className="font-semibold mb-2">{langText.instructions}:</p>
                 <ol className="list-decimal list-inside text-gray-700 space-y-1">
-                  <li>{langText.inst1}</li>
-                  <li>{langText.inst2}</li>
-                  <li>{langText.inst3}</li>
+                  {getClassInstructions(formData.class_name, formData.language).map((inst, idx) => (
+                    <li key={idx}>{inst}</li>
+                  ))}
                 </ol>
               </div>
 

@@ -2494,28 +2494,20 @@ async def delete_class(class_id: str, current_user: dict = Depends(get_current_u
 
 async def generate_smart_student_id(school_id: str, admission_year: int = None) -> str:
     """
-    Generate globally unique student ID
-    Format: STU-<YEAR>-<UNIQUE_SEQ>
+    Generate school-scoped unique student ID
+    Format: STU-<YEAR>-<SEQ> (scoped per school)
     Example: STU-2026-00001
     """
     year = admission_year or datetime.now().year
     
-    # Get global count of all students for this year
     count = await db.students.count_documents({
+        "school_id": school_id,
         "student_id": {"$regex": f"^STU-{year}-"}
     })
     
-    # Generate sequence number (00001, 00002, etc.)
     seq_no = str(count + 1).zfill(5)
     
     return f"STU-{year}-{seq_no}"
-    seq_no = str(count + 1).zfill(3)
-    
-    # If sequence > 999, use 4 digits
-    if count >= 999:
-        seq_no = str(count + 1).zfill(4)
-    
-    return f"STU-{school_abbr}-{year}-{seq_no}"
 
 def generate_student_id(school_id: str) -> str:
     """Generate unique student ID (legacy sync version) like STD-2026-000123"""
@@ -2658,6 +2650,7 @@ class StudentLoginRequest(BaseModel):
     password: Optional[str] = None
     mobile: Optional[str] = None
     dob: Optional[str] = None
+    school_id: Optional[str] = None
 
 @api_router.post("/students/login")
 async def student_login(request: StudentLoginRequest):
@@ -2666,8 +2659,10 @@ async def student_login(request: StudentLoginRequest):
     student = None
     
     if request.student_id and request.password:
-        # Login with Student ID + Password
-        student = await db.students.find_one({"student_id": request.student_id}, {"_id": 0})
+        query = {"student_id": request.student_id}
+        if request.school_id:
+            query["school_id"] = request.school_id
+        student = await db.students.find_one(query, {"_id": 0})
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Student ID")
         
@@ -2675,8 +2670,10 @@ async def student_login(request: StudentLoginRequest):
             raise HTTPException(status_code=401, detail="Invalid password")
     
     elif request.mobile and request.dob:
-        # Login with Mobile + DOB
-        student = await db.students.find_one({"mobile": request.mobile, "dob": request.dob}, {"_id": 0})
+        query = {"mobile": request.mobile, "dob": request.dob}
+        if request.school_id:
+            query["school_id"] = request.school_id
+        student = await db.students.find_one(query, {"_id": 0})
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Mobile or Date of Birth")
     
@@ -2781,6 +2778,49 @@ async def unsuspend_student(id: str, current_user: dict = Depends(get_current_us
     await log_audit(current_user["id"], "unsuspend_student", "students", {"student_id": id})
     
     return {"message": "Student unsuspended"}
+
+@api_router.put("/students/{student_id}/reset-password")
+async def reset_student_password(
+    student_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Director resets student password"""
+    if current_user["role"] not in ["director", "principal"]:
+        raise HTTPException(status_code=403, detail="Only Director/Principal can reset passwords")
+    
+    new_password = body.get("new_password")
+    if not new_password or len(new_password) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
+    
+    school_id = current_user.get("school_id")
+    student = await db.students.find_one(
+        {"$and": [
+            {"school_id": school_id},
+            {"$or": [{"id": student_id}, {"admission_no": student_id}]}
+        ]},
+        {"_id": 0}
+    )
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    
+    await db.students.update_one(
+        {"$and": [
+            {"school_id": school_id},
+            {"$or": [{"id": student_id}, {"admission_no": student_id}]}
+        ]},
+        {"$set": {"password": hashed, "plain_password": new_password}}
+    )
+    
+    if student.get("user_id"):
+        await db.users.update_one(
+            {"id": student["user_id"]},
+            {"$set": {"password": hashed}}
+        )
+    
+    return {"message": f"Password reset for {student.get('name', 'student')}", "student_id": student_id}
 
 @api_router.post("/students/{id}/mark-left")
 async def mark_student_left(id: str, reason: str, tc_number: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -3448,6 +3488,42 @@ async def update_employee_permissions(
         )
     
     return {"message": "Permissions updated", "permissions": permissions}
+
+@api_router.put("/employees/{employee_id}/reset-password")
+async def reset_employee_password(
+    employee_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Director resets employee password"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can reset passwords")
+    
+    new_password = body.get("new_password")
+    if not new_password or len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    school_id = current_user.get("school_id")
+    employee = await db.staff.find_one(
+        {"$and": [
+            {"school_id": school_id},
+            {"$or": [{"id": employee_id}, {"employee_id": employee_id}]}
+        ]},
+        {"_id": 0}
+    )
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    if not employee.get("user_id"):
+        raise HTTPException(status_code=400, detail="Employee does not have a login account")
+    
+    hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    await db.users.update_one(
+        {"id": employee["user_id"]},
+        {"$set": {"password": hashed}}
+    )
+    
+    return {"message": f"Password reset for {employee['name']}", "employee_id": employee_id}
 
 @api_router.post("/employees/{employee_id}/toggle-login")
 async def toggle_employee_login(
@@ -4780,10 +4856,23 @@ BOARD PATTERN 2025-26:
 🧩 CLASS-WISE AUTO LOGIC
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {"• Nursery–UKG: Picture, match, oral, draw, colour" if request.class_name in ["Nursery", "LKG", "UKG"] else ""}
-{"• Class 1–5: Objective, picture/diagram based" if request.class_name in ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"] else ""}
+{"• Class 1–2: Objective, picture/diagram based, visual activities" if request.class_name in ["Class 1", "Class 2"] else ""}
+{"• Class 3–5: Objective, picture/diagram based" if request.class_name in ["Class 3", "Class 4", "Class 5"] else ""}
 {"• Class 6–8: MCQ, very short, short, diagrams" if request.class_name in ["Class 6", "Class 7", "Class 8"] else ""}
 {"• Class 9–10: MCQ, assertion-reason, case study, numericals" if request.class_name in ["Class 9", "Class 10"] else ""}
 {"• Class 11–12: Competency-based, analytical, case study" if request.class_name in ["Class 11", "Class 12"] else ""}
+
+{'''━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧒 YOUNG CHILDREN PAPER (SPECIAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This is a paper for young children. Include image/picture-based questions like:
+matching, coloring, identifying pictures, tracing, connecting dots, circling correct answers with pictures.
+Each question should describe what image/picture to draw alongside it in a 'diagram_description' field.
+At least 60% questions should be visual/picture-based.
+Use simple language appropriate for young learners.
+Every question that involves a picture MUST have a "diagram_description" field describing the image to be drawn.
+Example: "diagram_description": "Draw a row of 5 fruits: apple, banana, mango, grapes, orange. Student circles the biggest fruit."
+''' if request.class_name in ["Nursery", "LKG", "UKG", "Class 1", "Class 2"] else ""}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🖼️ DIAGRAM QUESTIONS (AUTO)

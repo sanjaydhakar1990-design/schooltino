@@ -270,6 +270,18 @@ export default function SettingsPage() {
     toast.success('School selected');
   };
 
+  if (user?.role !== 'director') {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center bg-white rounded-xl shadow-md p-8 max-w-md">
+          <div className="text-5xl mb-4">🔒</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Access Denied</h2>
+          <p className="text-gray-500">Only the Director/Admin can access Settings. Contact your school director for permission changes.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8" data-testid="settings-page">
       {/* Header */}

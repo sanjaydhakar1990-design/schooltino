@@ -4,6 +4,15 @@
 Schooltino is a comprehensive, AI-powered school management platform inspired by NextOS K-12 Suite. It features a clean, simplified architecture with ~25 core modules across three portals (SchoolTino Admin, TeachTino Teachers, StudyTino Students/Parents). The platform covers student/staff management, finance, attendance, communication, and AI tools.
 
 ## Recent Changes (Feb 2026)
+- **Permission Update Fix**: Fixed quick permissions save in EmployeeManagementPage - now calls dedicated /api/employees/{id}/permissions endpoint instead of full employee update endpoint that was failing validation.
+- **Security Fix - Director-Only Settings**: SettingsPage now blocks non-director users with "Access Denied" screen. Previously principal/staff could access settings and module management.
+- **Login Credentials Viewer**: New "Login Credentials" tab in Employee Management (director-only) showing employee login IDs, roles, login status with password reset functionality. Similar password reset added for students.
+- **Password Reset Endpoints**: New PUT /api/employees/{id}/reset-password and PUT /api/students/{id}/reset-password - both scoped by school_id for multi-school security.
+- **Multi-School Data Isolation**: Student ID generation now scoped per school (STU-{year}-{seq} per school). Student login accepts school_id parameter to prevent cross-school access. Password reset endpoints enforce school_id matching.
+- **Staff Can Teach Multitasking**: can_teach checkbox in employee add/edit form allows principal/admin staff to be assigned to classes as teachers. Backend queries staff with can_teach=True for class assignment.
+- **AI Paper - Optional School Name**: Added showSchoolName toggle and editable school name input in paper settings. School name on printed paper is now optional.
+- **AI Paper - Class-wise Instructions**: Dynamic instructions based on selected class - simple instructions for Nursery-Class 2, moderate for Class 3-5, formal for Class 6+. Both Hindi and English supported.
+- **AI Paper - Small Class Diagrams**: Enhanced AI prompt for Nursery/LKG/UKG/Class 1-2 to generate picture-based, activity-based questions with diagram_description fields. At least 60% visual questions for young children.
 - **Premium Admin ID Cards**: 3 exclusive VIP templates (Royal gold borders, Executive purple gradient, Gold Shield crest) for director/admin staff only. "My ID Card" button on ProfilePage.
 - **AI Paper Generator - Language Fix**: Subject name mapping (SUBJECT_MAP_HI_TO_EN) so paper language controls subject display. English paper shows "Mathematics" even for MP Board Hindi subjects.
 - **AI Paper Generator - Answer Key Rewrite**: Step 3 now has separate Question Paper and Answer Key tabs with individual print buttons. Answer key shows marking_points, diagram_steps, explanations per question.
