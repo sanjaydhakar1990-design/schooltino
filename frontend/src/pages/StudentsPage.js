@@ -1029,7 +1029,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
   if (!schoolId) {
     return (
       <div className="text-center py-20">
-        <p className="text-slate-500">Please select a school first</p>
+        <p className="text-slate-500">{t('select_school_first')}</p>
       </div>
     );
   }
@@ -1040,7 +1040,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold font-heading text-slate-900">{t('students')}</h1>
-          <p className="text-slate-500 mt-1">Student Admission & Management</p>
+          <p className="text-slate-500 mt-1">{t('student_admission')}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {/* Bulk Import Button */}
@@ -1057,7 +1057,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             data-testid="promote-students-btn"
           >
             <GraduationCap className="w-4 h-4" />
-            Promote Students
+            {t('promote_students')}
           </Button>
           {/* Bulk Print Button */}
           <Button 
@@ -1068,18 +1068,18 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             data-testid="bulk-print-btn"
           >
             {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
-            Bulk Print ID Cards
+            {t('bulk_print_id_cards')}
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="btn-primary" data-testid="add-student-btn">
               <UserPlus className="w-5 h-5 mr-2" />
-              New Admission
+              {t('new_admissions')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-xl">{editingStudent ? 'Edit Student' : '📝 New Student Admission Form'}</DialogTitle>
+              <DialogTitle className="text-xl">{editingStudent ? `${t('edit')} ${t('students')}` : `📝 ${t('new_admissions')}`}</DialogTitle>
               <DialogDescription>
                 {!editingStudent && 'Student ID और Password automatically generate होंगे। सभी * fields भरना जरूरी है।'}
               </DialogDescription>
@@ -1142,7 +1142,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       <Input name="dob" type="date" value={formData.dob} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="dob-input" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Admission Date *</Label>
+                      <Label>{t('admission_date')} *</Label>
                       <Input name="admission_date" type="date" value={formData.admission_date} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="admission-date-input" />
                     </div>
                     <div className="space-y-2">
@@ -1623,7 +1623,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           data-testid="capture-btn"
                         >
                           <Camera className="w-5 h-5 mr-2" />
-                          Capture
+                          {t('capture')}
                         </Button>
                         <Button
                           type="button"
@@ -1632,7 +1632,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           className="bg-white/80 text-red-600 border-red-300"
                         >
                           <X className="w-5 h-5 mr-2" />
-                          Cancel
+                          {t('cancel')}
                         </Button>
                       </div>
                     </div>
@@ -1655,7 +1655,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           onClick={removePhoto}
                         >
                           <X className="w-4 h-4 mr-1" />
-                          Remove
+                          {t('remove')}
                         </Button>
                       </div>
                       <div className="absolute bottom-2 left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
@@ -1719,7 +1719,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </Button>
                 <Button type="submit" className="btn-primary" disabled={submitting} data-testid="save-student-btn">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  {editingStudent ? t('save') : 'Admit Student'}
+                  {editingStudent ? t('save') : t('admit_student')}
                 </Button>
               </div>
             </form>
@@ -1899,11 +1899,11 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsSuspendDialogOpen(false)}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button type="submit" className="bg-amber-600 hover:bg-amber-700" disabled={submitting}>
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Suspend Student
+                {t('suspend')} {t('students')}
               </Button>
             </div>
           </form>
@@ -1918,7 +1918,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Search by name or ID..."
+                placeholder={t('search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -1931,7 +1931,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
               className="w-full h-9 rounded-lg border border-slate-200 px-3 text-sm"
               data-testid="filter-class"
             >
-              <option value="">All Classes</option>
+              <option value="">{t('all_classes')}</option>
               {classes.map(cls => (
                 <option key={cls.id} value={cls.id}>
                   {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
@@ -1944,11 +1944,11 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             <TabsList className="mx-3 mt-2 shrink-0">
               <TabsTrigger value="active" className="text-xs gap-1">
                 <User className="w-3.5 h-3.5" />
-                Active ({students.length})
+                {t('active')} ({students.length})
               </TabsTrigger>
               <TabsTrigger value="suspended" className="text-xs gap-1">
                 <Ban className="w-3.5 h-3.5" />
-                Suspended ({suspendedStudents.length})
+                {t('suspended')} ({suspendedStudents.length})
               </TabsTrigger>
             </TabsList>
 
@@ -2005,15 +2005,15 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openStudentProfile(student)}>
                               <Eye className="w-4 h-4 mr-2 text-blue-600" />
-                              View Full Profile
+                              {t('view_profile')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(student)}>
                               <Edit className="w-4 h-4 mr-2" />
-                              Edit Details
+                              {t('edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => { setIdCardStudent(student); setShowIDCard(true); }}>
                               <CreditCard className="w-4 h-4 mr-2 text-blue-600" />
-                              View ID Card
+                              {t('id_card')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => viewCredentials(student)}>
                               <Key className="w-4 h-4 mr-2 text-purple-600" />
@@ -2021,12 +2021,12 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => { setNewStudentCredentials({ student_id: student.student_id || student.id, name: student.name }); setShowFaceEnrollment(true); }}>
                               <Camera className="w-4 h-4 mr-2 text-emerald-600" />
-                              Face Enrollment
+                              {t('face_enrollment')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => openSuspendDialog(student)}>
                               <Ban className="w-4 h-4 mr-2 text-amber-500" />
-                              Suspend
+                              {t('suspend')}
                             </DropdownMenuItem>
                             {['director', 'principal'].includes(user?.role) && (
                               <DropdownMenuItem onClick={() => handleMarkLeft(student.id)} className="text-rose-600">
@@ -2039,7 +2039,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => openDeleteDialog(student)} className="text-red-600 bg-red-50 hover:bg-red-100">
                                   <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete Permanently
+                                  {t('delete')}
                                 </DropdownMenuItem>
                               </>
                             )}
@@ -2163,13 +2163,13 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                     </div>
                     <div className="flex gap-2 mt-4 flex-wrap">
                       <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => printStudentProfile(splitViewStudent)}>
-                        <Printer className="w-3.5 h-3.5" /> Print
+                        <Printer className="w-3.5 h-3.5" /> {t('print')}
                       </Button>
                       <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs" onClick={() => handleEdit(splitViewStudent)}>
-                        <Edit className="w-3.5 h-3.5" /> Edit
+                        <Edit className="w-3.5 h-3.5" /> {t('edit')}
                       </Button>
                       <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-blue-600" onClick={() => { setIdCardStudent(splitViewStudent); setShowIDCard(true); }}>
-                        <CreditCard className="w-3.5 h-3.5" /> ID Card
+                        <CreditCard className="w-3.5 h-3.5" /> {t('id_card')}
                       </Button>
                       <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-purple-600" onClick={() => viewCredentials(splitViewStudent)}>
                         <Key className="w-3.5 h-3.5" /> Credentials
@@ -2180,7 +2180,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           setNewStudentPassword('');
                           setShowResetPasswordDialog(true);
                         }}>
-                          <Key className="w-3.5 h-3.5" /> Reset Password
+                          <Key className="w-3.5 h-3.5" /> {t('reset_password')}
                         </Button>
                       )}
                     </div>
@@ -2191,28 +2191,28 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
               {/* Section: Personal Info */}
               <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <User className="w-4 h-4" /> Personal Information
+                  <User className="w-4 h-4" /> {t('personal_info')}
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
                   {[
-                    ['Name', splitViewStudent.name],
-                    ['Student ID', splitViewStudent.student_id || splitViewStudent.admission_no],
-                    ['Class', splitViewStudent.class_name],
-                    ['Section', splitViewStudent.section || 'A'],
-                    ['Gender', splitViewStudent.gender],
-                    ['DOB', splitViewStudent.dob],
-                    ['Blood Group', splitViewStudent.blood_group],
-                    ['Admission Date', splitViewStudent.admission_date],
-                    ['Category', splitViewStudent.category],
-                    ['Caste', splitViewStudent.caste],
+                    [t('name'), splitViewStudent.name],
+                    [t('student_id'), splitViewStudent.student_id || splitViewStudent.admission_no],
+                    [t('classes'), splitViewStudent.class_name],
+                    [t('section'), splitViewStudent.section || 'A'],
+                    [t('gender'), splitViewStudent.gender],
+                    [t('dob'), splitViewStudent.dob],
+                    [t('blood_group'), splitViewStudent.blood_group],
+                    [t('admission_date'), splitViewStudent.admission_date],
+                    [t('category'), splitViewStudent.category],
+                    [t('caste'), splitViewStudent.caste],
                     ['Sub Caste', splitViewStudent.sub_caste],
-                    ['Religion', splitViewStudent.religion],
-                    ['Nationality', splitViewStudent.nationality],
+                    [t('religion'), splitViewStudent.religion],
+                    [t('nationality'), splitViewStudent.nationality],
                     ['Mother Tongue', splitViewStudent.mother_tongue],
                     ['Birth Place', splitViewStudent.birth_place],
                     ['Identification Mark', splitViewStudent.identification_mark],
                     ['RTE Status', splitViewStudent.rte_status ? 'Yes' : 'No'],
-                    ['Aadhar No', splitViewStudent.aadhar_no],
+                    [t('aadhar_number'), splitViewStudent.aadhar_no],
                     ['Scholar No', splitViewStudent.scholar_no],
                     ['PEN Number', splitViewStudent.pen_number],
                     ['SSSMID', splitViewStudent.sssmid],
@@ -2230,26 +2230,26 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
               {/* Section: Family & Contact */}
               <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <Users className="w-4 h-4" /> Family & Contact
+                  <Users className="w-4 h-4" /> {t('family_details')}
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
                   {[
-                    ['Father Name', splitViewStudent.father_name],
+                    [t('father_name'), splitViewStudent.father_name],
                     ['Father Occupation', splitViewStudent.father_occupation],
                     ['Father Qualification', splitViewStudent.father_qualification],
-                    ['Mother Name', splitViewStudent.mother_name],
+                    [t('mother_name'), splitViewStudent.mother_name],
                     ['Mother Occupation', splitViewStudent.mother_occupation],
                     ['Mother Qualification', splitViewStudent.mother_qualification],
-                    ['Guardian Name', splitViewStudent.guardian_name],
+                    [t('guardian_name'), splitViewStudent.guardian_name],
                     ['Guardian Relation', splitViewStudent.guardian_relation],
                     ['Guardian Mobile', splitViewStudent.guardian_mobile],
                     ['Guardian Occupation', splitViewStudent.guardian_occupation],
                     ['Annual Income', splitViewStudent.annual_income],
-                    ['Mobile', splitViewStudent.mobile],
+                    [t('mobile'), splitViewStudent.mobile],
                     ['Parent Phone', splitViewStudent.parent_phone],
-                    ['Email', splitViewStudent.email],
-                    ['Address', splitViewStudent.address],
-                    ['Emergency Contact', splitViewStudent.emergency_contact],
+                    [t('email'), splitViewStudent.email],
+                    [t('address'), splitViewStudent.address],
+                    [t('emergency_contact'), splitViewStudent.emergency_contact],
                     ['Emergency Name', splitViewStudent.emergency_contact_name],
                   ].filter(([, v]) => v).map(([label, value], i) => (
                     <div key={i} className="bg-white p-3">
@@ -2263,11 +2263,11 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
               {/* Section: Bank Details */}
               <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <Wallet className="w-4 h-4" /> Bank Details (Scholarship)
+                  <Wallet className="w-4 h-4" /> {t('bank_details')}
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
                   {[
-                    ['Bank Name', splitViewStudent.bank_name],
+                    [t('bank_name'), splitViewStudent.bank_name],
                     ['Account No', splitViewStudent.bank_account_no],
                     ['IFSC Code', splitViewStudent.ifsc_code],
                     ['Branch', splitViewStudent.bank_branch],
@@ -2286,7 +2286,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
               {/* Section: Transport & Medical */}
               <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <Bus className="w-4 h-4" /> Transport & Medical
+                  <Bus className="w-4 h-4" /> {t('transport')}
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
                   {[
@@ -2315,7 +2315,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
                   {[
-                    ['Previous School', splitViewStudent.previous_school],
+                    [t('previous_school'), splitViewStudent.previous_school],
                     ['Previous Class', splitViewStudent.previous_class],
                     ['Previous Percentage', splitViewStudent.previous_percentage],
                     ['TC Number', splitViewStudent.tc_number],
@@ -2495,10 +2495,10 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                   <Printer className="w-4 h-4" /> Print Profile
                 </Button>
                 <Button size="sm" variant="outline" className="gap-2" onClick={() => { setShowProfileModal(false); handleEdit(profileStudent); }}>
-                  <Edit className="w-4 h-4" /> Edit
+                  <Edit className="w-4 h-4" /> {t('edit')}
                 </Button>
                 <Button size="sm" variant="outline" className="gap-2 text-blue-600" onClick={() => { setShowProfileModal(false); setIdCardStudent(profileStudent); setShowIDCard(true); }}>
-                  <CreditCard className="w-4 h-4" /> ID Card
+                  <CreditCard className="w-4 h-4" /> {t('id_card')}
                 </Button>
               </div>
 
@@ -2509,19 +2509,19 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
                   {[
-                    ['Name (नाम)', profileStudent.name],
-                    ['Student ID', profileStudent.student_id || profileStudent.admission_no],
-                    ['Class (कक्षा)', profileStudent.class_name],
-                    ['Section', profileStudent.section || 'A'],
-                    ['Gender (लिंग)', profileStudent.gender],
-                    ['DOB (जन्म तिथि)', profileStudent.dob],
-                    ['Blood Group (रक्त समूह)', profileStudent.blood_group],
-                    ['Admission Date (प्रवेश तिथि)', profileStudent.admission_date],
-                    ['Category (श्रेणी)', profileStudent.category],
-                    ['Caste (जाति)', profileStudent.caste],
+                    [t('name'), profileStudent.name],
+                    [t('student_id'), profileStudent.student_id || profileStudent.admission_no],
+                    [t('classes'), profileStudent.class_name],
+                    [t('section'), profileStudent.section || 'A'],
+                    [t('gender'), profileStudent.gender],
+                    [t('dob'), profileStudent.dob],
+                    [t('blood_group'), profileStudent.blood_group],
+                    [t('admission_date'), profileStudent.admission_date],
+                    [t('category'), profileStudent.category],
+                    [t('caste'), profileStudent.caste],
                     ['Sub Caste', profileStudent.sub_caste],
-                    ['Religion (धर्म)', profileStudent.religion],
-                    ['Nationality', profileStudent.nationality],
+                    [t('religion'), profileStudent.religion],
+                    [t('nationality'), profileStudent.nationality],
                     ['Mother Tongue', profileStudent.mother_tongue],
                     ['Birth Place', profileStudent.birth_place],
                     ['Identification Mark', profileStudent.identification_mark],
@@ -2542,8 +2542,8 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
                   {[
-                    ['Aadhar No (आधार नं.)', profileStudent.aadhar_no],
-                    ['Scholar No (विद्यार्थी क्रमांक)', profileStudent.scholar_no],
+                    [t('aadhar_number'), profileStudent.aadhar_no],
+                    ['Scholar No', profileStudent.scholar_no],
                     ['PEN Number', profileStudent.pen_number],
                     ['SSSMID', profileStudent.sssmid],
                     ['Samagra Family ID', profileStudent.samagra_family_id],
@@ -2567,13 +2567,13 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
                   {[
-                    ['Father Name (पिता)', profileStudent.father_name],
+                    [t('father_name'), profileStudent.father_name],
                     ['Father Occupation', profileStudent.father_occupation],
                     ['Father Qualification', profileStudent.father_qualification],
-                    ['Mother Name (माता)', profileStudent.mother_name],
+                    [t('mother_name'), profileStudent.mother_name],
                     ['Mother Occupation', profileStudent.mother_occupation],
                     ['Mother Qualification', profileStudent.mother_qualification],
-                    ['Guardian Name', profileStudent.guardian_name],
+                    [t('guardian_name'), profileStudent.guardian_name],
                     ['Guardian Relation', profileStudent.guardian_relation],
                     ['Guardian Mobile', profileStudent.guardian_mobile],
                     ['Guardian Occupation', profileStudent.guardian_occupation],
@@ -2594,11 +2594,11 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
                   {[
-                    ['Mobile (मोबाइल)', profileStudent.mobile],
+                    [t('mobile'), profileStudent.mobile],
                     ['Parent Phone', profileStudent.parent_phone],
-                    ['Email', profileStudent.email],
-                    ['Address (पता)', profileStudent.address],
-                    ['Emergency Contact', profileStudent.emergency_contact],
+                    [t('email'), profileStudent.email],
+                    [t('address'), profileStudent.address],
+                    [t('emergency_contact'), profileStudent.emergency_contact],
                     ['Emergency Contact Name', profileStudent.emergency_contact_name],
                   ].filter(([, v]) => v).map(([label, value], i) => (
                     <div key={i} className="bg-white p-3">
@@ -2616,7 +2616,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
                   {[
-                    ['Bank Name', profileStudent.bank_name],
+                    [t('bank_name'), profileStudent.bank_name],
                     ['Account No', profileStudent.bank_account_no],
                     ['IFSC Code', profileStudent.ifsc_code],
                     ['Branch', profileStudent.bank_branch],
@@ -2834,7 +2834,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} className="flex-1">
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 onClick={resetStudentPassword}
@@ -2842,7 +2842,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 className="flex-1 bg-amber-600 hover:bg-amber-700"
               >
                 {resettingStudentPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Key className="w-4 h-4 mr-2" />}
-                Reset Password
+                {t('reset_password')}
               </Button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -48,6 +49,7 @@ const demoPurchaseOrders = [
 ];
 
 export default function InventoryPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('stock');
   const [searchQuery, setSearchQuery] = useState('');
@@ -143,7 +145,7 @@ export default function InventoryPage() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <Warehouse className="w-8 h-8" />
-              Inventory Management
+              {t('inventory')}
             </h1>
             <p className="text-slate-200 mt-2">
               Track, issue, and manage — complete stock control
@@ -160,7 +162,7 @@ export default function InventoryPage() {
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{lowStockItems.length}</p>
-              <p className="text-xs text-slate-200">Low Stock</p>
+              <p className="text-xs text-slate-200">{t('low_stock')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{pendingPOs.length}</p>
@@ -173,7 +175,7 @@ export default function InventoryPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 h-12">
           <TabsTrigger value="stock" className="flex items-center gap-2">
-            <Package className="w-4 h-4" /> Stock
+            <Package className="w-4 h-4" /> {t('in_stock')}
           </TabsTrigger>
           <TabsTrigger value="issue" className="flex items-center gap-2">
             <ArrowLeftRight className="w-4 h-4" /> Issue/Return
@@ -182,7 +184,7 @@ export default function InventoryPage() {
             <ShoppingCart className="w-4 h-4" /> Purchase
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" /> Reports
+            <BarChart3 className="w-4 h-4" /> {t('reports')}
           </TabsTrigger>
         </TabsList>
 
@@ -200,7 +202,7 @@ export default function InventoryPage() {
               ))}
             </div>
             <Button onClick={() => setShowAddItemDialog(true)} className="bg-slate-700 hover:bg-slate-800">
-              <Plus className="w-4 h-4 mr-2" /> Add Item
+              <Plus className="w-4 h-4 mr-2" /> {t('add_item')}
             </Button>
           </div>
 
@@ -210,13 +212,13 @@ export default function InventoryPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100 bg-gray-50/50">
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Item Name</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Category</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Qty</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Unit Price</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('item_name')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('categories')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('quantity')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('unit_price')}</th>
                       <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Total Value</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Location</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Status</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('location')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('status')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -415,7 +417,7 @@ export default function InventoryPage() {
       <Dialog open={showAddItemDialog} onOpenChange={setShowAddItemDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Inventory Item (नया आइटम जोड़ें)</DialogTitle>
+            <DialogTitle>{t('add_item')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

@@ -16,7 +16,7 @@ Schooltino is a comprehensive, AI-powered school management platform, inspired b
 ### UI/UX Decisions
 The design is heavily inspired by NextOS K-12, emphasizing simplicity and clarity. Key UI/UX elements include:
 - A clean, flat sidebar navigation with a maximum of 20 items, avoiding nested groups.
-- A light blue gradient sidebar (blue-50 to sky-50 to indigo-50) with a distinct blue-500 active state.
+- A light blue gradient sidebar (default, customizable via theme presets) with a distinct active state color matching the chosen theme.
 - A prominent school branding header displaying the logo, name, address, contact information, and registration details.
 - A card-based module layout for the dashboard to enhance readability and access.
 - A floating Tino AI chat panel accessible from the header.
@@ -30,7 +30,8 @@ The design is heavily inspired by NextOS K-12, emphasizing simplicity and clarit
 - **ID Card System**: Enhanced with 5+3 templates, 8 color themes, and configurable field visibility.
 - **Multi-School Data Isolation**: Student ID generation and login processes are scoped per school to ensure data segregation.
 - **Teacher Approval System**: Teacher actions (e.g., notices) require admin approval, with a notification system for requests.
-- **Global Language Toggle**: A header-level Hindi/English toggle for immediate language switching.
+- **Global Language Toggle**: A header-level Hindi/English toggle for immediate language switching. Uses react-i18next with comprehensive i18n translations (500+ keys) covering all 25+ pages, sidebar, breadcrumbs, and forms.
+- **Theme/Customization System**: ThemeContext provides 8 color presets (Default Blue, Teal, Purple, Rose, Amber, Slate, Green, Indigo), dark/light mode toggle, custom header color picker, and header logo size slider. Settings stored in localStorage. Sidebar and header dynamically respond to theme changes.
 - **WhatsApp Integration**: Dual mode with Free (wa.me link) and Paid API (BotBiz) options.
 - **Login Credentials Viewer**: Director-only access to view and reset employee and student login credentials.
 - **Security**: Settings page access restricted to director-level users.

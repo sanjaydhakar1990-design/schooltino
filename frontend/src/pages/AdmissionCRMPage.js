@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -29,6 +30,7 @@ const statusColors = {
 };
 
 export default function AdmissionCRMPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('enquiries');
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,7 +172,7 @@ export default function AdmissionCRMPage() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <UserPlus className="w-8 h-8" />
-              Admission CRM
+              {t('admissions')}
             </h1>
             <p className="text-cyan-100 mt-2">
               Track every lead, analyse every campaign — never miss an admission
@@ -196,16 +198,16 @@ export default function AdmissionCRMPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="enquiries" className="flex items-center gap-2">
-            <Users className="w-4 h-4" /> Enquiries
+            <Users className="w-4 h-4" /> {t('enquiry')}
           </TabsTrigger>
           <TabsTrigger value="followups" className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" /> Follow-ups
+            <CalendarDays className="w-4 h-4" /> {t('follow_up')}
           </TabsTrigger>
           <TabsTrigger value="campaigns" className="flex items-center gap-2">
             <Megaphone className="w-4 h-4" /> Campaigns
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" /> Analytics
+            <BarChart3 className="w-4 h-4" /> {t('analytics')}
           </TabsTrigger>
         </TabsList>
 
@@ -221,7 +223,7 @@ export default function AdmissionCRMPage() {
               />
             </div>
             <Button onClick={() => { setEditingEnquiry(null); setEnquiryForm({ name: '', phone: '', email: '', class: '', source: 'Website', status: 'New', followUpDate: '', notes: '' }); setShowEnquiryDialog(true); }} className="bg-cyan-600 hover:bg-cyan-700">
-              <Plus className="w-4 h-4 mr-2" /> Add Enquiry
+              <Plus className="w-4 h-4 mr-2" /> {t('new_enquiry')}
             </Button>
           </div>
 
@@ -242,13 +244,13 @@ export default function AdmissionCRMPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-200 bg-gray-50">
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Name</th>
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Phone</th>
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Class</th>
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Source</th>
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Status</th>
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Follow-up</th>
-                      <th className="text-right py-3 px-4 text-gray-500 font-medium">Actions</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('name')}</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('phone')}</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('classes') || 'Class'}</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('source')}</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('status')}</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('follow_up')}</th>
+                      <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('actions')}</th>
                     </tr>
                   </thead>
                   <tbody>

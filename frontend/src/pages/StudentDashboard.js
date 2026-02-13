@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -50,6 +51,7 @@ const loadRazorpayScript = () => {
 };
 
 export default function StudyTinoDashboard() {
+  const { t } = useTranslation();
   const { user, logout, schoolData } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -328,21 +330,21 @@ export default function StudyTinoDashboard() {
           <Lock className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h1 className="text-xl font-bold text-gray-800 mb-2">Account Blocked</h1>
           <p className="text-gray-600 mb-6">Please contact school office.</p>
-          <Button onClick={handleLogout} variant="outline" className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
+          <Button onClick={handleLogout} variant="outline" className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg"><LogOut className="w-4 h-4 mr-2" /> {t('logout')}</Button>
         </Card>
       </div>
     );
   }
 
   const statCards = [
-    { label: 'Attendance', value: `${attendance.present}%`, icon: CheckCircle, subtext: 'Your attendance percentage', bgColor: 'bg-green-50', textColor: 'text-green-500' },
-    { label: 'Pending Homework', value: pendingHomework, icon: BookOpen, subtext: 'Assignments due', bgColor: 'bg-amber-50', textColor: 'text-amber-500' },
-    { label: 'Notices', value: notices.length, icon: Bell, subtext: 'School announcements', bgColor: 'bg-blue-50', textColor: 'text-blue-500' },
-    { label: 'Subjects', value: syllabus.length, icon: ClipboardList, subtext: 'Enrolled subjects', bgColor: 'bg-indigo-50', textColor: 'text-indigo-500' },
+    { label: t('attendance'), value: `${attendance.present}%`, icon: CheckCircle, subtext: 'Your attendance percentage', bgColor: 'bg-green-50', textColor: 'text-green-500' },
+    { label: t('homework'), value: pendingHomework, icon: BookOpen, subtext: 'Assignments due', bgColor: 'bg-amber-50', textColor: 'text-amber-500' },
+    { label: t('notices'), value: notices.length, icon: Bell, subtext: 'School announcements', bgColor: 'bg-blue-50', textColor: 'text-blue-500' },
+    { label: t('subjects'), value: syllabus.length, icon: ClipboardList, subtext: 'Enrolled subjects', bgColor: 'bg-indigo-50', textColor: 'text-indigo-500' },
     { label: 'Syllabus Completed', value: `${Math.round(syllabus.reduce((a, b) => a + b.completed, 0) / (syllabus.length || 1))}%`, icon: Award, subtext: 'Overall syllabus progress', bgColor: 'bg-purple-50', textColor: 'text-purple-500' },
-    { label: 'Fee Status', value: '₹0', icon: Wallet, subtext: 'Pending fee balance', bgColor: 'bg-red-50', textColor: 'text-red-500' },
+    { label: t('fees'), value: '₹0', icon: Wallet, subtext: 'Pending fee balance', bgColor: 'bg-red-50', textColor: 'text-red-500' },
     { label: 'Activities', value: 0, icon: Trophy, subtext: 'Extra-curricular activities', bgColor: 'bg-orange-50', textColor: 'text-orange-500' },
-    { label: 'Exams', value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-cyan-50', textColor: 'text-cyan-500' },
+    { label: t('exams'), value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-cyan-50', textColor: 'text-cyan-500' },
   ];
 
   const studentModuleCards = [
@@ -438,10 +440,10 @@ export default function StudyTinoDashboard() {
       <main className="max-w-5xl mx-auto px-4 py-5 space-y-6 pb-24">
         <div className="flex items-center gap-2 text-sm">
           <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors">
-            <Home className="w-3.5 h-3.5" /> Home
+            <Home className="w-3.5 h-3.5" /> {t('home')}
           </button>
           <span className="text-gray-300">›</span>
-          <span className="text-gray-500 text-xs">Student Dashboard</span>
+          <span className="text-gray-500 text-xs">{t('dashboard')}</span>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -543,7 +545,7 @@ export default function StudyTinoDashboard() {
         {homework.length > 0 && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-5 pt-5 pb-4">
-              <h2 className="text-xl font-bold text-gray-900">Homework</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t('homework')}</h2>
               <p className="text-sm text-gray-500 mt-1">Pending and completed homework assignments.</p>
             </div>
             <div className="overflow-x-auto">
@@ -564,7 +566,7 @@ export default function StudyTinoDashboard() {
                       <td className="px-5 py-3.5 text-sm text-gray-500">{new Date(hw.due_date).toLocaleDateString('hi-IN')}</td>
                       <td className="px-5 py-3.5 text-right">
                         <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${hw.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
-                          {hw.status === 'pending' ? 'Pending' : 'Done'}
+                          {hw.status === 'pending' ? t('pending') : t('completed')}
                         </span>
                       </td>
                     </tr>
@@ -612,7 +614,7 @@ export default function StudyTinoDashboard() {
         {notices.length > 0 && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-5 pt-5 pb-4">
-              <h2 className="text-xl font-bold text-gray-900">Notices</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t('notices')}</h2>
               <p className="text-sm text-gray-500 mt-1">Latest school announcements.</p>
             </div>
             <div className="overflow-x-auto">
@@ -648,10 +650,10 @@ export default function StudyTinoDashboard() {
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50" style={{boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'}}>
         <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
           {[
-            { icon: Home, label: 'Home', active: true },
+            { icon: Home, label: t('home'), active: true },
             { icon: BookOpen, label: 'Study', action: () => navigate('/app/exams') },
-            { icon: Bell, label: 'Notices' },
-            { icon: Wallet, label: 'Fees', action: () => setShowPaymentDialog(true) },
+            { icon: Bell, label: t('notices') },
+            { icon: Wallet, label: t('fees'), action: () => setShowPaymentDialog(true) },
             { icon: Brain, label: 'AI', action: () => setShowAIHelper(true) },
           ].map((item, idx) => (
             <button key={idx} onClick={item.action || undefined} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${item.active ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-gray-600'}`}>
@@ -691,7 +693,7 @@ export default function StudyTinoDashboard() {
 
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle className="text-base font-semibold text-gray-800">My Profile</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-base font-semibold text-gray-800">{t('profile')}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center"><User className="w-8 h-8 text-blue-500" /></div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, Loader2, Crown, GraduationCap, Users, Wallet, Shield, Brain, MessageSquare, Smartphone, BarChart3, BookOpen, Fingerprint, CheckCircle2, ArrowRight, Globe, Layers, Lock, Zap, Cloud, Cpu, School, Apple, UserCircle } from 'lucide-react';
 import axios from 'axios';
@@ -150,6 +151,7 @@ const stats = [
 ];
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, setUser, setToken } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -311,7 +313,7 @@ export default function LoginPage() {
               <button type="submit" className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold" disabled={superAdminLoading}>
                 {superAdminLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Access'}
               </button>
-              <button type="button" className="w-full py-2 text-gray-400 hover:text-white text-sm" onClick={() => {setShowSuperAdmin(false); setError('');}}>Cancel</button>
+              <button type="button" className="w-full py-2 text-gray-400 hover:text-white text-sm" onClick={() => {setShowSuperAdmin(false); setError('');}}>{t('cancel')}</button>
             </form>
           </div>
         </div>
@@ -333,7 +335,7 @@ export default function LoginPage() {
             </div>
             <div className="flex items-center gap-4 sm:gap-6 text-sm text-white/70">
               <a href="#features" className="hidden sm:inline hover:text-white transition-colors">Features</a>
-              <a href="#login" className="px-4 py-2 bg-white/10 backdrop-blur rounded-lg hover:bg-white/20 transition-colors border border-white/20 text-white text-xs sm:text-sm">Sign In</a>
+              <a href="#login" className="px-4 py-2 bg-white/10 backdrop-blur rounded-lg hover:bg-white/20 transition-colors border border-white/20 text-white text-xs sm:text-sm">{t('sign_in')}</a>
             </div>
           </nav>
 
@@ -386,11 +388,11 @@ export default function LoginPage() {
                         <input name="name" value={formData.name} onChange={handleChange} placeholder="Director Name" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('email')}</label>
                         <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="director@school.com" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('password')}</label>
                         <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Create password" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                       </div>
                       <button type="submit" className="w-full py-3 btn-primary" disabled={loading}>
@@ -400,8 +402,8 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <h2 className="text-xl font-bold text-gray-900 mb-1">Welcome Back</h2>
-                    <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
+                    <h2 className="text-xl font-bold text-gray-900 mb-1">{t('welcome_back')}</h2>
+                    <p className="text-sm text-gray-500 mb-6">{t('login_subtitle')}</p>
 
                     <div className="grid grid-cols-3 gap-2 mb-6">
                       {portalTabs.map(tab => {
@@ -424,38 +426,38 @@ export default function LoginPage() {
                     {activeTab !== 'student' ? (
                       <form onSubmit={handleAdminLogin} className="space-y-4">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('email')}</label>
                           <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder={activeTab === 'teacher' ? 'teacher@school.com' : 'admin@school.com'} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('password')}</label>
                           <div className="relative">
-                            <input name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange} placeholder="Enter password" required className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                            <input name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange} placeholder={t('enter_password')} required className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
                         </div>
                         <button type="submit" className="w-full py-3 btn-primary" disabled={loading}>
-                          {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Sign in'}
+                          {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t('sign_in')}
                         </button>
                       </form>
                     ) : (
                       <>
                         <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
-                          <button onClick={() => setStudentLoginMethod('id')} className={`flex-1 py-2 text-xs font-semibold rounded-md transition-all ${studentLoginMethod === 'id' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'}`}>Student ID</button>
+                          <button onClick={() => setStudentLoginMethod('id')} className={`flex-1 py-2 text-xs font-semibold rounded-md transition-all ${studentLoginMethod === 'id' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'}`}>{t('student_id')}</button>
                           <button onClick={() => setStudentLoginMethod('mobile')} className={`flex-1 py-2 text-xs font-semibold rounded-md transition-all ${studentLoginMethod === 'mobile' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'}`}>Mobile + DOB</button>
                         </div>
                         <form onSubmit={handleStudentLogin} className="space-y-4">
                           {studentLoginMethod === 'id' ? (
                             <>
                               <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student ID</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('student_id')}</label>
                                 <input name="student_id" value={studentForm.student_id} onChange={handleStudentChange} placeholder="STD-2025-XXXXXX" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                               </div>
                               <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
-                                <input name="password" type="password" value={studentForm.password} onChange={handleStudentChange} placeholder="Enter password" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('password')}</label>
+                                <input name="password" type="password" value={studentForm.password} onChange={handleStudentChange} placeholder={t('enter_password')} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                               </div>
                             </>
                           ) : (
@@ -471,7 +473,7 @@ export default function LoginPage() {
                             </>
                           )}
                           <button type="submit" className="w-full py-3 btn-primary" disabled={loading}>
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Sign in'}
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t('sign_in')}
                           </button>
                         </form>
                       </>

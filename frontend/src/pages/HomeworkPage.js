@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -29,6 +30,7 @@ const statusColors = {
 
 export default function HomeworkPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('assign');
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedHomework, setSelectedHomework] = useState(null);
@@ -141,24 +143,24 @@ export default function HomeworkPage() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <BookOpen className="w-8 h-8" />
-              Homework & Assignments
+              {t('homework')}
             </h1>
             <p className="text-teal-100 mt-2">
-              Assign, track, and grade — homework reinvented
+              {t('assign_homework')}
             </p>
           </div>
           <div className="hidden md:flex items-center gap-3">
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{totalHomeworks}</p>
-              <p className="text-xs text-teal-100">Assigned</p>
+              <p className="text-xs text-teal-100">{t('assigned_by')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{totalSubmissions}</p>
-              <p className="text-xs text-teal-100">Submissions</p>
+              <p className="text-xs text-teal-100">{t('submitted')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{totalGraded}</p>
-              <p className="text-xs text-teal-100">Graded</p>
+              <p className="text-xs text-teal-100">{t('grade')}</p>
             </div>
           </div>
         </div>
@@ -167,16 +169,16 @@ export default function HomeworkPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="assign" className="flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Assign
+            <Plus className="w-4 h-4" /> {t('assign_homework')}
           </TabsTrigger>
           <TabsTrigger value="track" className="flex items-center gap-2">
-            <ClipboardList className="w-4 h-4" /> Track
+            <ClipboardList className="w-4 h-4" /> {t('homework_list')}
           </TabsTrigger>
           <TabsTrigger value="grade" className="flex items-center gap-2">
-            <PenTool className="w-4 h-4" /> Grade
+            <PenTool className="w-4 h-4" /> {t('grade')}
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" /> Analytics
+            <BarChart3 className="w-4 h-4" /> {t('analytics')}
           </TabsTrigger>
         </TabsList>
 
@@ -185,14 +187,14 @@ export default function HomeworkPage() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
-                placeholder="Search homework..."
+                placeholder={t('search_placeholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
             <Button onClick={() => { setAssignForm({ title: '', subject: '', class: '', description: '', dueDate: '', maxMarks: '', attachments: false }); setShowAssignDialog(true); }} className="bg-teal-600 hover:bg-teal-700">
-              <Plus className="w-4 h-4 mr-2" /> Assign Homework
+              <Plus className="w-4 h-4 mr-2" /> {t('assign_homework')}
             </Button>
           </div>
 
@@ -219,38 +221,38 @@ export default function HomeworkPage() {
                     {hw.description && <p className="text-xs text-gray-500 mb-3">{hw.description}</p>}
                     <div className="flex items-center gap-2 mb-3">
                       <Badge variant="outline" className="text-xs">
-                        <CalendarDays className="w-3 h-3 mr-1" /> Due: {hw.dueDate}
+                        <CalendarDays className="w-3 h-3 mr-1" /> {t('due_date')}: {hw.dueDate}
                       </Badge>
                       {hw.maxMarks > 0 && (
                         <Badge variant="outline" className="text-xs">
-                          <Star className="w-3 h-3 mr-1" /> {hw.maxMarks} marks
+                          <Star className="w-3 h-3 mr-1" /> {hw.maxMarks} {t('total_marks')}
                         </Badge>
                       )}
                       {hw.attachments && (
                         <Badge variant="outline" className="text-xs">
-                          <Paperclip className="w-3 h-3 mr-1" /> Files
+                          <Paperclip className="w-3 h-3 mr-1" /> {t('attachments')}
                         </Badge>
                       )}
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       <div className="bg-yellow-50 rounded p-1.5 text-center">
                         <p className="text-sm font-bold text-yellow-700">{stats.pending}</p>
-                        <p className="text-[10px] text-yellow-600">Pending</p>
+                        <p className="text-[10px] text-yellow-600">{t('pending')}</p>
                       </div>
                       <div className="bg-blue-50 rounded p-1.5 text-center">
                         <p className="text-sm font-bold text-blue-700">{stats.submitted}</p>
-                        <p className="text-[10px] text-blue-600">Submitted</p>
+                        <p className="text-[10px] text-blue-600">{t('submitted')}</p>
                       </div>
                       <div className="bg-green-50 rounded p-1.5 text-center">
                         <p className="text-sm font-bold text-green-700">{stats.graded}</p>
-                        <p className="text-[10px] text-green-600">Graded</p>
+                        <p className="text-[10px] text-green-600">{t('grade')}</p>
                       </div>
                       <div className="bg-orange-50 rounded p-1.5 text-center">
                         <p className="text-sm font-bold text-orange-700">{stats.returned}</p>
-                        <p className="text-[10px] text-orange-600">Returned</p>
+                        <p className="text-[10px] text-orange-600">{t('completed')}</p>
                       </div>
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-2">By {hw.createdBy} • {hw.createdAt}</p>
+                    <p className="text-[10px] text-gray-400 mt-2">{t('assigned_by')} {hw.createdBy} • {hw.createdAt}</p>
                   </CardContent>
                 </Card>
               );
@@ -261,19 +263,19 @@ export default function HomeworkPage() {
         <TabsContent value="track" className="space-y-4">
           <Card className="border-0 shadow-md">
             <CardContent className="p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Homework Tracking</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t('homework_list')}</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-200 bg-gray-50">
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Homework</th>
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Class</th>
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Due Date</th>
-                      <th className="text-center py-3 px-4 text-gray-500 font-medium">Pending</th>
-                      <th className="text-center py-3 px-4 text-gray-500 font-medium">Submitted</th>
-                      <th className="text-center py-3 px-4 text-gray-500 font-medium">Graded</th>
-                      <th className="text-center py-3 px-4 text-gray-500 font-medium">Returned</th>
-                      <th className="text-right py-3 px-4 text-gray-500 font-medium">Actions</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('homework')}</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('class_section')}</th>
+                      <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('due_date')}</th>
+                      <th className="text-center py-3 px-4 text-gray-500 font-medium">{t('pending')}</th>
+                      <th className="text-center py-3 px-4 text-gray-500 font-medium">{t('submitted')}</th>
+                      <th className="text-center py-3 px-4 text-gray-500 font-medium">{t('grade')}</th>
+                      <th className="text-center py-3 px-4 text-gray-500 font-medium">{t('completed')}</th>
+                      <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -293,7 +295,7 @@ export default function HomeworkPage() {
                             <span className={`text-sm ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>
                               {hw.dueDate}
                             </span>
-                            {isOverdue && <Badge className="bg-red-100 text-red-700 ml-2 text-[10px]">Overdue</Badge>}
+                            {isOverdue && <Badge className="bg-red-100 text-red-700 ml-2 text-[10px]">{t('overdue')}</Badge>}
                           </td>
                           <td className="py-3 px-4 text-center">
                             <Badge className="bg-yellow-100 text-yellow-700">{stats.pending}</Badge>
@@ -324,7 +326,7 @@ export default function HomeworkPage() {
 
         <TabsContent value="grade" className="space-y-4">
           <div className="flex items-center gap-4 mb-4">
-            <Label className="text-sm font-medium">Select Homework:</Label>
+            <Label className="text-sm font-medium">{t('select')} {t('homework')}:</Label>
             <select
               className="border rounded-md p-2 text-sm flex-1 max-w-md"
               value={selectedHomework?.id || ''}
@@ -333,7 +335,7 @@ export default function HomeworkPage() {
                 setSelectedHomework(hw || null);
               }}
             >
-              <option value="">-- Select --</option>
+              <option value="">-- {t('select')} --</option>
               {homeworks.map(hw => (
                 <option key={hw.id} value={hw.id}>{hw.title} ({hw.class})</option>
               ))}
@@ -346,20 +348,20 @@ export default function HomeworkPage() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">{selectedHomework.title}</h3>
-                    <p className="text-sm text-gray-500">{selectedHomework.subject} • {selectedHomework.class} • Max: {selectedHomework.maxMarks} marks</p>
+                    <p className="text-sm text-gray-500">{selectedHomework.subject} • {selectedHomework.class} • Max: {selectedHomework.maxMarks} {t('total_marks')}</p>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-200 bg-gray-50">
-                        <th className="text-left py-3 px-4 text-gray-500 font-medium">Roll</th>
-                        <th className="text-left py-3 px-4 text-gray-500 font-medium">Student</th>
-                        <th className="text-left py-3 px-4 text-gray-500 font-medium">Status</th>
-                        <th className="text-left py-3 px-4 text-gray-500 font-medium">Submitted</th>
-                        <th className="text-left py-3 px-4 text-gray-500 font-medium">Marks</th>
-                        <th className="text-left py-3 px-4 text-gray-500 font-medium">Feedback</th>
-                        <th className="text-right py-3 px-4 text-gray-500 font-medium">Action</th>
+                        <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('roll_no')}</th>
+                        <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('student')}</th>
+                        <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('status')}</th>
+                        <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('submitted')}</th>
+                        <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('obtained_marks')}</th>
+                        <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('remarks')}</th>
+                        <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('action')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -404,7 +406,7 @@ export default function HomeworkPage() {
                           <td className="py-3 px-4 text-right">
                             {(sub.status === 'Submitted' || sub.status === 'Returned') && (
                               <Button size="sm" className="bg-teal-600 hover:bg-teal-700" onClick={() => handleGradeSubmission(sub.id)}>
-                                <CheckCircle className="w-3 h-3 mr-1" /> Save
+                                <CheckCircle className="w-3 h-3 mr-1" /> {t('save')}
                               </Button>
                             )}
                           </td>
@@ -419,8 +421,8 @@ export default function HomeworkPage() {
             <Card className="border-0 shadow-sm">
               <CardContent className="p-12 text-center">
                 <PenTool className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-lg">Select a homework to start grading</p>
-                <p className="text-gray-400 text-sm mt-1">Choose from the dropdown above</p>
+                <p className="text-gray-500 text-lg">{t('select')} {t('homework')}</p>
+                <p className="text-gray-400 text-sm mt-1">{t('select')}</p>
               </CardContent>
             </Card>
           )}
@@ -432,7 +434,7 @@ export default function HomeworkPage() {
               <CardContent className="p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-teal-600">Total Assigned</p>
+                    <p className="text-sm text-teal-600">{t('total')} {t('assign_homework')}</p>
                     <p className="text-3xl font-bold text-teal-900">{totalHomeworks}</p>
                   </div>
                   <BookOpen className="w-10 h-10 text-teal-500 opacity-50" />
@@ -443,7 +445,7 @@ export default function HomeworkPage() {
               <CardContent className="p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-blue-600">Total Submissions</p>
+                    <p className="text-sm text-blue-600">{t('total')} {t('submitted')}</p>
                     <p className="text-3xl font-bold text-blue-900">{totalSubmissions}</p>
                   </div>
                   <FileText className="w-10 h-10 text-blue-500 opacity-50" />
@@ -454,7 +456,7 @@ export default function HomeworkPage() {
               <CardContent className="p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-600">Graded</p>
+                    <p className="text-sm text-green-600">{t('grade')}</p>
                     <p className="text-3xl font-bold text-green-900">{totalGraded}</p>
                   </div>
                   <CheckCircle className="w-10 h-10 text-green-500 opacity-50" />
@@ -465,7 +467,7 @@ export default function HomeworkPage() {
               <CardContent className="p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-600">Avg Score</p>
+                    <p className="text-sm text-purple-600">{t('average_marks')}</p>
                     <p className="text-3xl font-bold text-purple-900">{avgScore}%</p>
                   </div>
                   <Award className="w-10 h-10 text-purple-500 opacity-50" />
@@ -476,7 +478,7 @@ export default function HomeworkPage() {
 
           <Card className="border-0 shadow-md">
             <CardContent className="p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Submission Rates by Class</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t('submitted')} - {t('class_section')}</h3>
               <div className="space-y-4">
                 {classAnalytics.map(ca => (
                   <div key={ca.class}>
@@ -496,7 +498,7 @@ export default function HomeworkPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="border-0 shadow-md">
               <CardContent className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Average Scores</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('average_marks')}</h3>
                 <div className="space-y-3">
                   {classAnalytics.map(ca => (
                     <div key={ca.class} className="flex items-center gap-3">
@@ -513,7 +515,7 @@ export default function HomeworkPage() {
 
             <Card className="border-0 shadow-md">
               <CardContent className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">On-time vs Late Submissions</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('submitted')} - {t('late')}</h3>
                 <div className="space-y-4">
                   {classAnalytics.map(ca => (
                     <div key={ca.class}>
@@ -521,7 +523,7 @@ export default function HomeworkPage() {
                         <span className="text-sm text-gray-600">{ca.class}</span>
                         <div className="flex items-center gap-3 text-xs">
                           <span className="text-green-600">{ca.onTime}% on-time</span>
-                          <span className="text-red-500">{ca.late}% late</span>
+                          <span className="text-red-500">{ca.late}% {t('late')}</span>
                         </div>
                       </div>
                       <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden flex">
@@ -540,18 +542,18 @@ export default function HomeworkPage() {
       <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Assign New Homework</DialogTitle>
+            <DialogTitle>{t('assign_homework')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Title *</Label>
+              <Label>{t('title')} *</Label>
               <Input value={assignForm.title} onChange={e => setAssignForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g., Chapter 5 Exercises" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Subject *</Label>
+                <Label>{t('subject')} *</Label>
                 <select className="w-full border rounded-md p-2 text-sm" value={assignForm.subject} onChange={e => setAssignForm(f => ({ ...f, subject: e.target.value }))}>
-                  <option value="">Select Subject</option>
+                  <option value="">{t('select')} {t('subject')}</option>
                   <option value="Mathematics">Mathematics</option>
                   <option value="English">English</option>
                   <option value="Hindi">Hindi</option>
@@ -561,9 +563,9 @@ export default function HomeworkPage() {
                 </select>
               </div>
               <div>
-                <Label>Class *</Label>
+                <Label>{t('class_section')} *</Label>
                 <select className="w-full border rounded-md p-2 text-sm" value={assignForm.class} onChange={e => setAssignForm(f => ({ ...f, class: e.target.value }))}>
-                  <option value="">Select Class</option>
+                  <option value="">{t('select_class')}</option>
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={`Class ${i + 1}`}>Class {i + 1}</option>
                   ))}
@@ -571,27 +573,27 @@ export default function HomeworkPage() {
               </div>
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t('description')}</Label>
               <Textarea value={assignForm.description} onChange={e => setAssignForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe the homework..." rows={3} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Due Date</Label>
+                <Label>{t('due_date')}</Label>
                 <Input type="date" value={assignForm.dueDate} onChange={e => setAssignForm(f => ({ ...f, dueDate: e.target.value }))} />
               </div>
               <div>
-                <Label>Max Marks</Label>
+                <Label>{t('max_marks')}</Label>
                 <Input type="number" value={assignForm.maxMarks} onChange={e => setAssignForm(f => ({ ...f, maxMarks: e.target.value }))} placeholder="e.g., 20" />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <Label>Allow Attachments</Label>
+              <Label>{t('attachments')}</Label>
               <Switch checked={assignForm.attachments} onCheckedChange={v => setAssignForm(f => ({ ...f, attachments: v }))} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setShowAssignDialog(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowAssignDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleCreateHomework} className="bg-teal-600 hover:bg-teal-700">
-                <Send className="w-4 h-4 mr-2" /> Assign
+                <Send className="w-4 h-4 mr-2" /> {t('assign_homework')}
               </Button>
             </div>
           </div>

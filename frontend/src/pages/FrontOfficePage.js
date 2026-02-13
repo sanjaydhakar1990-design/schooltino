@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { 
   UserPlus, Users, Clock, CheckCircle2, LogOut, Search,
@@ -40,6 +41,7 @@ const purposeColors = {
 
 export default function FrontOfficePage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [visitors, setVisitors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -150,20 +152,20 @@ export default function FrontOfficePage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
             <Building className="w-8 h-8 text-blue-500" />
-            Visit Management
+            {t('visitor_management')}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Know who's in — real-time visitor tracking with OTP approval
+            {t('front_office')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={fetchVisitors}>
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+            {t('refresh')}
           </Button>
           <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
             <UserPlus className="w-4 h-4 mr-2" />
-            New Visitor
+            {t('add_visitor')}
           </Button>
         </div>
       </div>
@@ -174,7 +176,7 @@ export default function FrontOfficePage() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Today</p>
+                <p className="text-sm text-muted-foreground">{t('total_today')}</p>
                 <p className="text-3xl font-bold">{stats.total}</p>
               </div>
               <Users className="w-10 h-10 text-blue-500" />
@@ -185,7 +187,7 @@ export default function FrontOfficePage() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Currently In</p>
+                <p className="text-sm text-muted-foreground">{t('check_in')}</p>
                 <p className="text-3xl font-bold text-green-600">{stats.in}</p>
               </div>
               <CheckCircle2 className="w-10 h-10 text-green-500" />
@@ -196,7 +198,7 @@ export default function FrontOfficePage() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Checked Out</p>
+                <p className="text-sm text-muted-foreground">{t('check_out')}</p>
                 <p className="text-3xl font-bold text-slate-600">{stats.out}</p>
               </div>
               <LogOut className="w-10 h-10 text-slate-500" />
@@ -209,7 +211,7 @@ export default function FrontOfficePage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name, phone or whom to meet..."
+          placeholder={t('search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"
@@ -280,7 +282,7 @@ export default function FrontOfficePage() {
                       data-testid={`checkout-btn-${visitor.visitor_id}`}
                     >
                       <LogOut className="w-4 h-4 mr-1" />
-                      Check Out
+                      {t('check_out')}
                     </Button>
                   )}
                 </div>
@@ -294,16 +296,16 @@ export default function FrontOfficePage() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>New Visitor Check-in</DialogTitle>
+            <DialogTitle>{t('add_visitor')} - {t('check_in')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCheckin} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Name *</label>
+                <label className="text-sm font-medium">{t('name')} *</label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm({...form, name: e.target.value})}
-                  placeholder="Visitor name"
+                  placeholder={t('visitor_name')}
                   data-testid="visitor-name-input"
                 />
               </div>
@@ -318,7 +320,7 @@ export default function FrontOfficePage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Purpose *</label>
+                <label className="text-sm font-medium">{t('purpose')} *</label>
                 <select
                   value={form.purpose}
                   onChange={(e) => setForm({...form, purpose: e.target.value})}
@@ -367,7 +369,7 @@ export default function FrontOfficePage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Vehicle Number</label>
+                <label className="text-sm font-medium">{t('vehicle_number')}</label>
                 <Input
                   value={form.vehicle_number}
                   onChange={(e) => setForm({...form, vehicle_number: e.target.value})}
@@ -413,11 +415,11 @@ export default function FrontOfficePage() {
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                 <BadgeCheck className="w-4 h-4 mr-2" />
-                Check In & Print Pass
+                {t('check_in')} & {t('print')}
               </Button>
             </div>
           </form>

@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -29,6 +30,7 @@ import { toast } from 'sonner';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function ImprovedAttendancePage() {
+  const { t } = useTranslation();
   const { schoolId, user } = useAuth();
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
@@ -226,16 +228,16 @@ export default function ImprovedAttendancePage() {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <CalendarCheck className="w-8 h-8" />
-              Attendance Management
+              {t('attendance')}
             </h1>
-            <p className="text-blue-100 mt-1">Mark attendance • Manage leaves • Upload old records</p>
+            <p className="text-blue-100 mt-1">{t('mark_attendance')} • {t('leave_management')} • {t('bulk_upload')}</p>
           </div>
           <Button 
             onClick={() => setShowBulkUploadDialog(true)}
             className="bg-white text-blue-600 hover:bg-blue-50"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Bulk Upload
+            {t('bulk_upload')}
           </Button>
         </div>
       </div>
@@ -245,19 +247,19 @@ export default function ImprovedAttendancePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-emerald-50 rounded-xl p-4 border-2 border-emerald-200">
             <div className="text-3xl font-bold text-emerald-600">{stats.present || 0}</div>
-            <div className="text-sm text-emerald-700">Present Today</div>
+            <div className="text-sm text-emerald-700">{t('present')}</div>
           </div>
           <div className="bg-rose-50 rounded-xl p-4 border-2 border-rose-200">
             <div className="text-3xl font-bold text-rose-600">{stats.absent || 0}</div>
-            <div className="text-sm text-rose-700">Absent Today</div>
+            <div className="text-sm text-rose-700">{t('absent')}</div>
           </div>
           <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
             <div className="text-3xl font-bold text-blue-600">{stats.on_leave || 0}</div>
-            <div className="text-sm text-blue-700">On Leave</div>
+            <div className="text-sm text-blue-700">{t('on_leave')}</div>
           </div>
           <div className="bg-amber-50 rounded-xl p-4 border-2 border-amber-200">
             <div className="text-3xl font-bold text-amber-600">{stats.late || 0}</div>
-            <div className="text-sm text-amber-700">Late</div>
+            <div className="text-sm text-amber-700">{t('late')}</div>
           </div>
         </div>
       )}
@@ -266,13 +268,13 @@ export default function ImprovedAttendancePage() {
       <div className="bg-white rounded-xl border shadow-sm p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <Label>Select Class *</Label>
+            <Label>{t('select_class')} *</Label>
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
               className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1"
             >
-              <option value="">Choose Class</option>
+              <option value="">{t('select_class')}</option>
               {classes.map(cls => (
                 <option key={cls.id} value={cls.id}>{cls.name}</option>
               ))}
@@ -280,7 +282,7 @@ export default function ImprovedAttendancePage() {
           </div>
 
           <div>
-            <Label>Select Date *</Label>
+            <Label>{t('select_date')} *</Label>
             <Input
               type="date"
               value={selectedDate}
@@ -297,7 +299,7 @@ export default function ImprovedAttendancePage() {
               disabled={saving || !selectedClass}
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-              Save Attendance
+              {t('save_attendance')}
             </Button>
           </div>
         </div>
@@ -312,7 +314,7 @@ export default function ImprovedAttendancePage() {
             className="bg-emerald-50 hover:bg-emerald-100 border-emerald-300"
           >
             <CheckCircle className="w-4 h-4 mr-2 text-emerald-600" />
-            All Present
+            {t('all_present')}
           </Button>
           <Button
             variant="outline"
@@ -320,7 +322,7 @@ export default function ImprovedAttendancePage() {
             className="bg-rose-50 hover:bg-rose-100 border-rose-300"
           >
             <XCircle className="w-4 h-4 mr-2 text-rose-600" />
-            All Absent
+            {t('all_absent')}
           </Button>
           <Button
             variant="outline"
@@ -328,7 +330,7 @@ export default function ImprovedAttendancePage() {
             className="bg-purple-50 hover:bg-purple-100 border-purple-300"
           >
             <Users className="w-4 h-4 mr-2 text-purple-600" />
-            All Half Day
+            {t('half_day')}
           </Button>
         </div>
       )}
@@ -337,7 +339,7 @@ export default function ImprovedAttendancePage() {
       {!selectedClass ? (
         <div className="bg-white rounded-xl border-2 border-dashed p-12 text-center">
           <CalendarCheck className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">Select a class to mark attendance</p>
+          <p className="text-gray-600">{t('select_class')}</p>
         </div>
       ) : loading ? (
         <div className="flex justify-center py-20">
@@ -346,7 +348,7 @@ export default function ImprovedAttendancePage() {
       ) : students.length === 0 ? (
         <div className="bg-white rounded-xl border-2 border-dashed p-12 text-center">
           <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No students in this class</p>
+          <p className="text-gray-600">{t('no_students_in_class')}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -355,10 +357,10 @@ export default function ImprovedAttendancePage() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">#</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Admission No</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Student Name</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Status</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Quick Actions</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">{t('admission_no')}</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">{t('student_name')}</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">{t('status')}</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">{t('quick_actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -392,7 +394,7 @@ export default function ImprovedAttendancePage() {
                               ? 'bg-emerald-100 ring-2 ring-emerald-500' 
                               : 'hover:bg-emerald-50'
                           }`}
-                          title="Present"
+                          title={t('present')}
                         >
                           <CheckCircle className={`w-5 h-5 ${
                             attendance[student.id] === 'present' ? 'text-emerald-600' : 'text-gray-400'
@@ -407,7 +409,7 @@ export default function ImprovedAttendancePage() {
                               ? 'bg-rose-100 ring-2 ring-rose-500' 
                               : 'hover:bg-rose-50'
                           }`}
-                          title="Absent"
+                          title={t('absent')}
                         >
                           <XCircle className={`w-5 h-5 ${
                             attendance[student.id] === 'absent' ? 'text-rose-600' : 'text-gray-400'
@@ -422,7 +424,7 @@ export default function ImprovedAttendancePage() {
                               ? 'bg-amber-100 ring-2 ring-amber-500' 
                               : 'hover:bg-amber-50'
                           }`}
-                          title="Late"
+                          title={t('late')}
                         >
                           <Clock className={`w-5 h-5 ${
                             attendance[student.id] === 'late' ? 'text-amber-600' : 'text-gray-400'
@@ -437,7 +439,7 @@ export default function ImprovedAttendancePage() {
                               ? 'bg-blue-100 ring-2 ring-blue-500' 
                               : 'hover:bg-blue-50'
                           }`}
-                          title="On Leave"
+                          title={t('on_leave')}
                         >
                           <Heart className={`w-5 h-5 ${
                             attendance[student.id] === 'on_leave' ? 'text-blue-600' : 'text-gray-400'
@@ -452,7 +454,7 @@ export default function ImprovedAttendancePage() {
                               ? 'bg-purple-100 ring-2 ring-purple-500' 
                               : 'hover:bg-purple-50'
                           }`}
-                          title="Half Day"
+                          title={t('half_day')}
                         >
                           <Users className={`w-5 h-5 ${
                             attendance[student.id] === 'half_day' ? 'text-purple-600' : 'text-gray-400'
@@ -474,29 +476,29 @@ export default function ImprovedAttendancePage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Heart className="w-6 h-6 text-blue-600" />
-              Mark Leave - {selectedStudent?.name}
+              {t('on_leave')} - {selectedStudent?.name}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <Label>Leave Type</Label>
+              <Label>{t('leave_type')}</Label>
               <select
                 value={leaveForm.leave_type}
                 onChange={(e) => setLeaveForm({...leaveForm, leave_type: e.target.value})}
                 className="w-full p-2 border rounded-lg mt-1"
               >
-                <option value="sick">Sick Leave (बीमारी की छुट्टी)</option>
-                <option value="casual">Casual Leave (आकस्मिक छुट्टी)</option>
-                <option value="medical">Medical Leave (चिकित्सा छुट्टी)</option>
-                <option value="family">Family Function (पारिवारिक कार्य)</option>
-                <option value="other">Other (अन्य)</option>
+                <option value="sick">{t('sick_leave')}</option>
+                <option value="casual">{t('casual_leave')}</option>
+                <option value="medical">{t('on_leave')}</option>
+                <option value="family">{t('leave_management')}</option>
+                <option value="other">{t('other')}</option>
               </select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Start Date</Label>
+                <Label>{t('start_date')}</Label>
                 <Input
                   type="date"
                   value={leaveForm.start_date}
@@ -505,7 +507,7 @@ export default function ImprovedAttendancePage() {
                 />
               </div>
               <div>
-                <Label>End Date</Label>
+                <Label>{t('end_date')}</Label>
                 <Input
                   type="date"
                   value={leaveForm.end_date}
@@ -516,13 +518,13 @@ export default function ImprovedAttendancePage() {
             </div>
 
             <div>
-              <Label>Reason (Optional)</Label>
+              <Label>{t('reason')} ({t('optional')})</Label>
               <textarea
                 value={leaveForm.reason}
                 onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})}
                 className="w-full p-2 border rounded-lg mt-1"
                 rows="3"
-                placeholder="Leave reason..."
+                placeholder={t('reason')}
               />
             </div>
 
@@ -532,13 +534,13 @@ export default function ImprovedAttendancePage() {
                 onClick={() => setShowLeaveDialog(false)}
                 className="flex-1"
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button 
                 onClick={submitLeave}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
-                Mark Leave
+                {t('mark_attendance')}
               </Button>
             </div>
           </div>
@@ -551,18 +553,18 @@ export default function ImprovedAttendancePage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Upload className="w-6 h-6 text-blue-600" />
-              Bulk Attendance Upload
+              {t('bulk_upload')}
             </DialogTitle>
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto pr-2">
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-900 mb-2">📋 Upload Options:</h3>
+                <h3 className="font-semibold text-blue-900 mb-2">📋 {t('bulk_upload')}:</h3>
                 <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                  <li>Upload old attendance register photos (mobile se click kiya hua)</li>
-                  <li>Excel/CSV format mein bulk data upload</li>
-                  <li>Date range select kar ke multiple days ka data ek saath</li>
+                  <li>{t('upload')} {t('attendance')} {t('photo')}</li>
+                  <li>Excel/CSV {t('bulk_upload')}</li>
+                  <li>{t('select_date')} {t('bulk_upload')}</li>
                 </ul>
               </div>
 
@@ -570,10 +572,10 @@ export default function ImprovedAttendancePage() {
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-all">
                 <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  Upload Attendance Register Photos
+                  {t('upload')} {t('attendance')} {t('photo')}
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  Mobile se old attendance register की photos upload karein
+                  {t('bulk_upload')} {t('attendance')}
                 </p>
                 <input
                   type="file"
@@ -592,7 +594,7 @@ export default function ImprovedAttendancePage() {
                   className="inline-flex items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700 h-10 px-6 cursor-pointer"
                 >
                   <Camera className="w-4 h-4 mr-2" />
-                  Choose Photos
+                  {t('choose_file')}
                 </label>
               </div>
 
@@ -600,10 +602,10 @@ export default function ImprovedAttendancePage() {
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition-all">
                 <FileSpreadsheet className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  Upload Excel/CSV File
+                  {t('upload')} Excel/CSV
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  Bulk attendance data upload via Excel
+                  {t('bulk_upload')} {t('attendance')} Excel
                 </p>
                 <div className="flex gap-3 justify-center flex-wrap">
                   <Button 
@@ -622,7 +624,7 @@ export default function ImprovedAttendancePage() {
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Download Template
+                    {t('download')}
                   </Button>
                   <input
                     type="file"
@@ -640,7 +642,7 @@ export default function ImprovedAttendancePage() {
                     className="inline-flex items-center justify-center rounded-md bg-green-600 text-white hover:bg-green-700 h-10 px-6 cursor-pointer"
                   >
                     <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    Upload Excel
+                    {t('upload')} Excel
                   </label>
                 </div>
               </div>

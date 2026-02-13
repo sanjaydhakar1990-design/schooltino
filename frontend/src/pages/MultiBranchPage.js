@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -18,6 +19,7 @@ import { toast } from 'sonner';
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
 export default function MultiBranchPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const schoolId = user?.school_id;
   const [branches, setBranches] = useState([]);
@@ -106,12 +108,12 @@ export default function MultiBranchPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
               <Building className="w-5 h-5 text-white" />
             </div>
-            Multi-Branch Management
+            {t('multi_branch')}
           </h1>
           <p className="text-gray-500 mt-1">Unify, monitor, and lead - stay smartly synced</p>
         </div>
         <Button onClick={() => { setEditingBranch(null); setForm({ name: '', address: '', city: '', state: '', pincode: '', principal_name: '', phone: '', email: '', code: '' }); setShowAddDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4 mr-2" /> Add Branch
+          <Plus className="w-4 h-4 mr-2" /> {t('add_branch')}
         </Button>
       </div>
 
@@ -120,7 +122,7 @@ export default function MultiBranchPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600">Total Branches</p>
+                <p className="text-sm text-blue-600">{t('total_branches')}</p>
                 <p className="text-3xl font-bold text-blue-900">{branches.length}</p>
               </div>
               <Building className="w-10 h-10 text-blue-500 opacity-50" />
@@ -131,7 +133,7 @@ export default function MultiBranchPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600">Total Students</p>
+                <p className="text-sm text-green-600">{t('total_students')}</p>
                 <p className="text-3xl font-bold text-green-900">{totalStudents}</p>
               </div>
               <GraduationCap className="w-10 h-10 text-green-500 opacity-50" />
@@ -142,7 +144,7 @@ export default function MultiBranchPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600">Total Staff</p>
+                <p className="text-sm text-purple-600">{t('total_staff')}</p>
                 <p className="text-3xl font-bold text-purple-900">{totalStaff}</p>
               </div>
               <Users className="w-10 h-10 text-purple-500 opacity-50" />
@@ -153,7 +155,7 @@ export default function MultiBranchPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-amber-600">Active</p>
+                <p className="text-sm text-amber-600">{t('active')}</p>
                 <p className="text-3xl font-bold text-amber-900">{branches.filter(b => b.is_active !== false).length}</p>
               </div>
               <Shield className="w-10 h-10 text-amber-500 opacity-50" />
@@ -178,7 +180,7 @@ export default function MultiBranchPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900">{branch.name}</h3>
-                      {branch.is_main && <Badge className="bg-blue-100 text-blue-700 text-[10px]">Main Campus</Badge>}
+                      {branch.is_main && <Badge className="bg-blue-100 text-blue-700 text-[10px]">{t('main_branch')}</Badge>}
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => openEdit(branch)}>
@@ -192,11 +194,11 @@ export default function MultiBranchPage() {
                 )}
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
-                    <p className="text-xs text-gray-500">Students</p>
+                    <p className="text-xs text-gray-500">{t('students')}</p>
                     <p className="text-lg font-bold text-gray-900">{branch.students || 0}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
-                    <p className="text-xs text-gray-500">Staff</p>
+                    <p className="text-xs text-gray-500">{t('staff')}</p>
                     <p className="text-lg font-bold text-gray-900">{branch.staff || 0}</p>
                   </div>
                 </div>
@@ -217,16 +219,16 @@ export default function MultiBranchPage() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingBranch ? 'Edit Branch' : 'Add New Branch'}</DialogTitle>
+            <DialogTitle>{editingBranch ? t('edit') : t('add_branch')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Branch Name *</Label>
+                <Label>{t('branch_name')} *</Label>
                 <Input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="e.g., City Center Branch" />
               </div>
               <div>
-                <Label>Branch Code</Label>
+                <Label>{t('branch_code')}</Label>
                 <Input value={form.code} onChange={e => setForm(f => ({...f, code: e.target.value}))} placeholder="e.g., BR-001" />
               </div>
             </div>
@@ -244,12 +246,12 @@ export default function MultiBranchPage() {
               <Input value={form.principal_name} onChange={e => setForm(f => ({...f, principal_name: e.target.value}))} />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Phone</Label><Input value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} /></div>
-              <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} /></div>
+              <div><Label>{t('phone')}</Label><Input value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} /></div>
+              <div><Label>{t('email')}</Label><Input value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} /></div>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
-              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">{editingBranch ? 'Update' : 'Add Branch'}</Button>
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>{t('cancel')}</Button>
+              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">{editingBranch ? t('save') : t('add_branch')}</Button>
             </div>
           </div>
         </DialogContent>

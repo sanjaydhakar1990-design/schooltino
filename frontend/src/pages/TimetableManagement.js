@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -92,6 +93,7 @@ const generateTimeSlots = (settings) => {
 };
 
 export default function TimetableManagement() {
+  const { t } = useTranslation();
   const { schoolId, user } = useAuth();
 
   const [classes, setClasses] = useState([]);
@@ -433,7 +435,7 @@ export default function TimetableManagement() {
     w.document.close();
   };
 
-  if (!schoolId) return <div className="text-center py-20"><p className="text-slate-500">Please select a school first</p></div>;
+  if (!schoolId) return <div className="text-center py-20"><p className="text-slate-500">{t('select_class')}</p></div>;
 
   const classTT = timetables[selectedClass?.id] || {};
   const classTeacher = selectedClass ? getClassTeacherInfo(selectedClass) : null;
@@ -444,19 +446,19 @@ export default function TimetableManagement() {
         <div>
           <h1 className="text-3xl font-bold font-heading text-slate-900 flex items-center gap-2">
             <Clock className="w-8 h-8 text-indigo-600" />
-            Timetable Management
+            {t('timetable')}
           </h1>
-          <p className="text-slate-500 mt-1">Class-wise & Teacher-wise scheduling with Homeroom system</p>
+          <p className="text-slate-500 mt-1">{t('view_timetable')}</p>
         </div>
         <div className="flex gap-2">
           {activeTab === 'class' && (
             <>
               <Button onClick={handleGenerateTimetable} disabled={generating || !selectedClass} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
                 {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
-                {generating ? 'Generating...' : 'Auto Generate'}
+                {generating ? t('loading') : t('create_timetable')}
               </Button>
               <Button variant="outline" onClick={handlePrint} className="gap-2">
-                <Printer className="w-4 h-4" /> Print
+                <Printer className="w-4 h-4" /> {t('print')}
               </Button>
             </>
           )}
@@ -466,16 +468,16 @@ export default function TimetableManagement() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 max-w-2xl">
           <TabsTrigger value="class" className="gap-1.5">
-            <GraduationCap className="w-4 h-4" /> Class Timetable
+            <GraduationCap className="w-4 h-4" /> {t('timetable')}
           </TabsTrigger>
           <TabsTrigger value="teacher" className="gap-1.5">
-            <User className="w-4 h-4" /> Teacher Schedule
+            <User className="w-4 h-4" /> {t('teacher')}
           </TabsTrigger>
           <TabsTrigger value="substitutions" className="gap-1.5">
-            <RefreshCw className="w-4 h-4" /> Substitutions
+            <RefreshCw className="w-4 h-4" /> {t('substitution')}
           </TabsTrigger>
           <TabsTrigger value="settings" className="gap-1.5">
-            <Settings className="w-4 h-4" /> Settings
+            <Settings className="w-4 h-4" /> {t('settings')}
           </TabsTrigger>
         </TabsList>
 
@@ -484,10 +486,10 @@ export default function TimetableManagement() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle>Class Timetable</CardTitle>
+                <CardTitle>{t('timetable')}</CardTitle>
                 <div className="flex items-center gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <Label>Class:</Label>
+                    <Label>{t('select_class')}:</Label>
                     <select
                       className="border rounded-md px-3 py-2 text-sm bg-white min-w-[160px]"
                       value={selectedClass?.id || ''}
@@ -500,20 +502,20 @@ export default function TimetableManagement() {
                   {classTeacher ? (
                     <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
                       <UserCheck className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-800">Class Teacher: {classTeacher.teacher.name}</span>
+                      <span className="text-sm font-medium text-blue-800">{t('class_teacher')}: {classTeacher.teacher.name}</span>
                     </div>
                   ) : (
                     <Button size="sm" variant="outline" onClick={() => setShowAssignDialog(true)} className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50">
-                      <AlertCircle className="w-4 h-4" /> Assign Class Teacher
+                      <AlertCircle className="w-4 h-4" /> {t('class_teacher')}
                     </Button>
                   )}
 
                   <Button size="sm" variant="ghost" onClick={() => setShowAssignDialog(true)} className="gap-1">
-                    <Edit className="w-3.5 h-3.5" /> Change
+                    <Edit className="w-3.5 h-3.5" /> {t('edit')}
                   </Button>
                   <Button size="sm" variant="outline" onClick={handleOpenSubjectAssign} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
                     <BookOpen className="w-3.5 h-3.5" />
-                    {selectedClass?.subjects?.length > 0 ? `Subjects (${selectedClass.subjects.length})` : 'Assign Subjects / विषय जोड़ें'}
+                    {selectedClass?.subjects?.length > 0 ? `${t('subjects')} (${selectedClass.subjects.length})` : t('subjects')}
                   </Button>
                 </div>
               </div>
@@ -560,7 +562,7 @@ export default function TimetableManagement() {
                                 <td key={slot.id} className="border-2 border-blue-300 bg-blue-50 p-2 cursor-not-allowed" title="Reserved for Class Teacher - Attendance Period (+10 mins)">
                                   <div className="flex flex-col items-center gap-0.5">
                                     <span className="text-lg">👨‍🏫</span>
-                                    <span className="text-xs font-bold text-blue-800">Homeroom</span>
+                                    <span className="text-xs font-bold text-blue-800">{t('homeroom')}</span>
                                     <span className="text-[10px] text-blue-600">उपस्थिति</span>
                                     <span className="text-[10px] text-blue-700 font-medium truncate max-w-[80px]">{ctName}</span>
                                     <span className="inline-block px-1 py-0.5 rounded-full text-[8px] font-bold bg-blue-200 text-blue-700">+{settings.first_period_extra_mins} min</span>
@@ -582,7 +584,7 @@ export default function TimetableManagement() {
                                     <span className="text-[10px] text-slate-500">{cellData.teacher_name}</span>
                                   </div>
                                 ) : (
-                                  <span className="text-slate-300 text-xs">+ Add</span>
+                                  <span className="text-slate-300 text-xs">+ {t('add')}</span>
                                 )}
                               </td>
                             );
@@ -598,7 +600,7 @@ export default function TimetableManagement() {
                 {Object.keys(SUBJECT_COLORS).filter(k => k !== 'default').map(sub => (
                   <span key={sub} className={`px-2 py-0.5 rounded text-[10px] font-medium border ${SUBJECT_COLORS[sub]}`}>{sub}</span>
                 ))}
-                <span className="px-2 py-0.5 rounded text-[10px] font-medium border bg-blue-100 border-blue-300 text-blue-800">🏠 Homeroom</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-medium border bg-blue-100 border-blue-300 text-blue-800">🏠 {t('homeroom')}</span>
               </div>
             </CardContent>
           </Card>
@@ -609,15 +611,15 @@ export default function TimetableManagement() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle>Teacher Schedule</CardTitle>
+                <CardTitle>{t('teacher')}</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Label>Teacher:</Label>
+                  <Label>{t('teacher')}:</Label>
                   <select
                     className="border rounded-md px-3 py-2 text-sm bg-white min-w-[200px]"
                     value={selectedTeacher?.id || ''}
                     onChange={e => setSelectedTeacher(teachers.find(t => t.id === e.target.value))}
                   >
-                    <option value="">-- Select Teacher --</option>
+                    <option value="">-- {t('subject_teacher')} --</option>
                     {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
@@ -625,7 +627,7 @@ export default function TimetableManagement() {
             </CardHeader>
             <CardContent>
               {!selectedTeacher ? (
-                <div className="text-center py-12 text-slate-400"><Users className="w-12 h-12 mx-auto mb-3 opacity-40" /><p>Select a teacher to view schedule</p></div>
+                <div className="text-center py-12 text-slate-400"><Users className="w-12 h-12 mx-auto mb-3 opacity-40" /><p>{t('subject_teacher')}</p></div>
               ) : (() => {
                 const schedule = getTeacherSchedule(selectedTeacher.id);
                 const isClassTeacherOf = classes.filter(c => {
@@ -639,7 +641,7 @@ export default function TimetableManagement() {
                       <div className="mb-3 flex gap-2 flex-wrap">
                         {isClassTeacherOf.map(c => (
                           <span key={c.id} className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
-                            Class Teacher: {c.name}
+                            {t('class_teacher')}: {c.name}
                           </span>
                         ))}
                       </div>
@@ -648,7 +650,7 @@ export default function TimetableManagement() {
                       <table className="w-full border-collapse min-w-[800px]">
                         <thead>
                           <tr>
-                            <th className="border border-slate-200 bg-slate-100 p-2 text-sm font-semibold w-28">Day</th>
+                            <th className="border border-slate-200 bg-slate-100 p-2 text-sm font-semibold w-28">{t('date')}</th>
                             {periods.map(p => (
                               <th key={p.id} className={`border border-slate-200 p-2 text-xs font-semibold ${p.id === 1 ? 'bg-blue-100 border-blue-300' : 'bg-slate-100'}`}>
                                 <div>{p.label}</div>
@@ -674,7 +676,7 @@ export default function TimetableManagement() {
                                     <td key={p.id} className="border-2 border-blue-300 bg-blue-50 p-2">
                                       <div className="flex flex-col items-center gap-0.5">
                                         <span className="text-lg">👨‍🏫</span>
-                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-600 text-white">HOMEROOM</span>
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-600 text-white">{t('homeroom')}</span>
                                         <span className="text-[10px] text-blue-700">{isClassTeacherOf.map(c => c.name).join(', ')}</span>
                                       </div>
                                     </td>
@@ -689,7 +691,7 @@ export default function TimetableManagement() {
                                         <span className="text-[10px] text-slate-500">{slot.class_name}</span>
                                       </div>
                                     ) : (
-                                      <span className="text-green-500 text-xs font-medium">Free</span>
+                                      <span className="text-green-500 text-xs font-medium">{t('available')}</span>
                                     )}
                                   </td>
                                 );
@@ -711,11 +713,11 @@ export default function TimetableManagement() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle>Substitutions / प्रतिस्थापन</CardTitle>
+                <CardTitle>{t('substitution')}</CardTitle>
                 <div className="flex items-center gap-3">
                   <Input type="date" value={subDate} onChange={e => setSubDate(e.target.value)} className="w-40" />
                   <Button onClick={() => { setSubForm({ class_id: '', period_id: '', original_teacher_id: '', substitute_teacher_id: '', reason: '', is_homeroom: false }); setShowSubDialog(true); }} className="gap-1.5 bg-indigo-600 hover:bg-indigo-700">
-                    <Plus className="w-4 h-4" /> Add Substitution
+                    <Plus className="w-4 h-4" /> {t('assign_substitute')}
                   </Button>
                 </div>
               </div>
@@ -724,19 +726,19 @@ export default function TimetableManagement() {
               {substitutions.length === 0 ? (
                 <div className="text-center py-12 text-slate-400">
                   <RefreshCw className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                  <p>No substitutions for {subDate}</p>
+                  <p>{t('no_data')}</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-slate-50">
-                        <th className="border border-slate-200 p-2 text-sm text-left">Class</th>
-                        <th className="border border-slate-200 p-2 text-sm text-left">Period</th>
-                        <th className="border border-slate-200 p-2 text-sm text-left">Original Teacher</th>
-                        <th className="border border-slate-200 p-2 text-sm text-left">Substitute Teacher</th>
-                        <th className="border border-slate-200 p-2 text-sm text-left">Reason</th>
-                        <th className="border border-slate-200 p-2 text-sm text-center w-20">Action</th>
+                        <th className="border border-slate-200 p-2 text-sm text-left">{t('classes')}</th>
+                        <th className="border border-slate-200 p-2 text-sm text-left">{t('period')}</th>
+                        <th className="border border-slate-200 p-2 text-sm text-left">{t('teacher')}</th>
+                        <th className="border border-slate-200 p-2 text-sm text-left">{t('substitution')}</th>
+                        <th className="border border-slate-200 p-2 text-sm text-left">{t('reason')}</th>
+                        <th className="border border-slate-200 p-2 text-sm text-center w-20">{t('actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -748,8 +750,8 @@ export default function TimetableManagement() {
                           <tr key={sub.id || sub._id} className="hover:bg-slate-50">
                             <td className="border border-slate-200 p-2 text-sm">{cls?.name || sub.class_id}</td>
                             <td className="border border-slate-200 p-2 text-sm">
-                              Period {sub.period_id}
-                              {(sub.is_homeroom || sub.period_id === 1) && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-700">Homeroom</span>}
+                              {t('period')} {sub.period_id}
+                              {(sub.is_homeroom || sub.period_id === 1) && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-700">{t('homeroom')}</span>}
                             </td>
                             <td className="border border-slate-200 p-2 text-sm">{origT?.name || sub.original_teacher_name || '-'}</td>
                             <td className="border border-slate-200 p-2 text-sm font-medium text-green-700">{subT?.name || sub.substitute_teacher_name || '-'}</td>
@@ -774,52 +776,52 @@ export default function TimetableManagement() {
         <TabsContent value="settings" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Settings className="w-5 h-5" /> Timetable Settings</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Settings className="w-5 h-5" /> {t('settings')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label>Normal Period Duration (minutes)</Label>
+                    <Label>{t('period')} ({t('time_slot')})</Label>
                     <Input type="number" min={20} max={90} value={settings.normal_period_duration} onChange={e => setSettings(s => ({ ...s, normal_period_duration: parseInt(e.target.value) || 40 }))} />
                   </div>
                   <div>
-                    <Label>First Period Extra Time (minutes)</Label>
+                    <Label>{t('start_time')}</Label>
                     <Input type="number" min={0} max={30} value={settings.first_period_extra_mins} onChange={e => setSettings(s => ({ ...s, first_period_extra_mins: parseInt(e.target.value) || 10 }))} />
                     <p className="text-xs text-slate-400 mt-1">Period 1 = {settings.normal_period_duration + settings.first_period_extra_mins} mins (Homeroom / उपस्थिति)</p>
                   </div>
                   <div>
-                    <Label>School Start Time</Label>
+                    <Label>{t('start_time')}</Label>
                     <Input type="time" value={settings.school_start_time} onChange={e => setSettings(s => ({ ...s, school_start_time: e.target.value }))} />
                   </div>
                   <div>
-                    <Label>Periods Per Day</Label>
+                    <Label>{t('period')}</Label>
                     <Input type="number" min={4} max={12} value={settings.periods_per_day} onChange={e => setSettings(s => ({ ...s, periods_per_day: parseInt(e.target.value) || 8 }))} />
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <Label>Break Duration (minutes)</Label>
+                    <Label>{t('break_time')}</Label>
                     <Input type="number" min={5} max={30} value={settings.break_duration} onChange={e => setSettings(s => ({ ...s, break_duration: parseInt(e.target.value) || 15 }))} />
                   </div>
                   <div>
-                    <Label>Lunch Duration (minutes)</Label>
+                    <Label>{t('lunch')}</Label>
                     <Input type="number" min={15} max={60} value={settings.lunch_duration} onChange={e => setSettings(s => ({ ...s, lunch_duration: parseInt(e.target.value) || 30 }))} />
                   </div>
                   <div>
-                    <Label>Break After Period</Label>
+                    <Label>{t('break_time')}</Label>
                     <Input type="number" min={1} max={10} value={settings.break_after_period} onChange={e => setSettings(s => ({ ...s, break_after_period: parseInt(e.target.value) || 3 }))} />
                   </div>
                   <div>
-                    <Label>Lunch After Period</Label>
+                    <Label>{t('lunch')}</Label>
                     <Input type="number" min={1} max={10} value={settings.lunch_after_period} onChange={e => setSettings(s => ({ ...s, lunch_after_period: parseInt(e.target.value) || 5 }))} />
                   </div>
                 </div>
               </div>
 
               <div className="mt-6">
-                <Label className="mb-2 block">Working Days</Label>
+                <Label className="mb-2 block">{t('working_days')}</Label>
                 <div className="flex flex-wrap gap-3">
                   {DAYS.map((day, i) => (
                     <label key={day} className="flex items-center gap-2 cursor-pointer">
@@ -845,18 +847,18 @@ export default function TimetableManagement() {
               <div className="mt-6">
                 <Button onClick={handleSaveSettings} disabled={saving} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Save Settings
+                  {t('save_settings')}
                 </Button>
               </div>
 
               <div className="mt-8 border-t pt-6">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Time Slots Preview</h3>
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">{t('time_slot')}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {timeSlots.map(slot => (
                     <div key={slot.id} className={`p-2 rounded-lg border text-center text-xs ${slot.isBreak ? 'bg-amber-50 border-amber-200' : slot.id === 1 ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}>
                       <div className="font-medium">{slot.label}</div>
                       <div className="text-slate-500">{slot.start} - {slot.end}</div>
-                      {slot.id === 1 && <span className="text-[9px] text-blue-600 font-bold">Homeroom +{settings.first_period_extra_mins}m</span>}
+                      {slot.id === 1 && <span className="text-[9px] text-blue-600 font-bold">{t('homeroom')} +{settings.first_period_extra_mins}m</span>}
                     </div>
                   ))}
                 </div>
@@ -870,12 +872,12 @@ export default function TimetableManagement() {
       <Dialog open={showSlotDialog} onOpenChange={setShowSlotDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Period</DialogTitle>
-            <DialogDescription>{slotForm.day} - Period {slotForm.period}</DialogDescription>
+            <DialogTitle>{t('period')}</DialogTitle>
+            <DialogDescription>{slotForm.day} - {t('period')} {slotForm.period}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Subject / विषय</Label>
+              <Label>{t('subject')}</Label>
               {(!selectedClass?.subjects || selectedClass.subjects.length === 0) && (
                 <p className="text-xs text-amber-600 mb-1 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
@@ -883,14 +885,14 @@ export default function TimetableManagement() {
                 </p>
               )}
               <select className="w-full border rounded-md px-3 py-2 text-sm bg-white" value={slotForm.subject_id} onChange={e => setSlotForm(f => ({ ...f, subject_id: e.target.value }))}>
-                <option value="">-- Select Subject / विषय चुनें --</option>
+                <option value="">-- {t('subject')} --</option>
                 {getClassSubjects().map(s => <option key={s.id} value={s.id}>{s.name}{s.name_hi ? ` (${s.name_hi})` : ''}</option>)}
               </select>
             </div>
             <div>
-              <Label>Teacher</Label>
+              <Label>{t('teacher')}</Label>
               <select className="w-full border rounded-md px-3 py-2 text-sm bg-white" value={slotForm.teacher_id} onChange={e => setSlotForm(f => ({ ...f, teacher_id: e.target.value }))}>
-                <option value="">-- Select Teacher --</option>
+                <option value="">-- {t('teacher')} --</option>
                 {teachers.map(t => {
                   const busy = isTeacherBusy(t.id, slotForm.day, slotForm.period);
                   return <option key={t.id} value={t.id} disabled={!!busy}>{t.name}{busy ? ` (Busy: ${busy})` : ''}</option>;
@@ -898,17 +900,17 @@ export default function TimetableManagement() {
               </select>
             </div>
             <div>
-              <Label>Room (optional)</Label>
+              <Label>{t('room_number')} ({t('optional')})</Label>
               <Input value={slotForm.room} onChange={e => setSlotForm(f => ({ ...f, room: e.target.value }))} placeholder="Room number" />
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="destructive" size="sm" onClick={handleDeleteSlot} disabled={saving} className="gap-1">
-                <Trash2 className="w-3.5 h-3.5" /> Remove
+                <Trash2 className="w-3.5 h-3.5" /> {t('delete')}
               </Button>
               <div className="flex-1" />
-              <Button variant="outline" onClick={() => setShowSlotDialog(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowSlotDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleSaveSlot} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 gap-1">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {t('save')}
               </Button>
             </div>
           </div>
@@ -919,16 +921,16 @@ export default function TimetableManagement() {
       <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Assign Class Teacher</DialogTitle>
+            <DialogTitle>{t('class_teacher')}</DialogTitle>
             <DialogDescription>
               {selectedClass?.name} - Assigning will auto-create Period 1 Homeroom entries
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Select Teacher</Label>
+              <Label>{t('teacher')}</Label>
               <select className="w-full border rounded-md px-3 py-2 text-sm bg-white" value={assignTeacherId} onChange={e => setAssignTeacherId(e.target.value)}>
-                <option value="">-- Select Teacher --</option>
+                <option value="">-- {t('teacher')} --</option>
                 {teachers.map(t => <option key={t.id} value={t.id}>{t.name}{t.subject ? ` (${t.subject})` : ''}</option>)}
               </select>
             </div>
@@ -938,9 +940,9 @@ export default function TimetableManagement() {
               </p>
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowAssignDialog(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowAssignDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleAssignClassTeacher} disabled={saving || !assignTeacherId} className="bg-indigo-600 hover:bg-indigo-700 gap-1">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />} Assign
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />} {t('save')}
               </Button>
             </div>
           </div>
@@ -951,12 +953,12 @@ export default function TimetableManagement() {
       <Dialog open={showSubDialog} onOpenChange={setShowSubDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Substitution</DialogTitle>
+            <DialogTitle>{t('substitution')}</DialogTitle>
             <DialogDescription>Date: {subDate}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Class</Label>
+              <Label>{t('classes')}</Label>
               <select
                 className="w-full border rounded-md px-3 py-2 text-sm bg-white"
                 value={subForm.class_id}
@@ -965,12 +967,12 @@ export default function TimetableManagement() {
                   setSubForm(f => ({ ...f, class_id: cid, period_id: '', original_teacher_id: '' }));
                 }}
               >
-                <option value="">-- Select Class --</option>
+                <option value="">-- {t('select_class')} --</option>
                 {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
-              <Label>Period</Label>
+              <Label>{t('period')}</Label>
               <select
                 className="w-full border rounded-md px-3 py-2 text-sm bg-white"
                 value={subForm.period_id}
@@ -980,25 +982,25 @@ export default function TimetableManagement() {
                   setSubForm(f => ({ ...f, period_id: pid, original_teacher_id: slot?.teacher_id || '', is_homeroom: pid === '1' }));
                 }}
               >
-                <option value="">-- Select Period --</option>
+                <option value="">-- {t('period')} --</option>
                 {periods.map(p => (
                   <option key={p.id} value={p.id}>
-                    Period {p.id}{p.id === 1 ? ' (Homeroom / उपस्थिति)' : ''}
+                    {t('period')} {p.id}{p.id === 1 ? ` (${t('homeroom')})` : ''}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <Label>Original Teacher</Label>
+              <Label>{t('teacher')}</Label>
               <select className="w-full border rounded-md px-3 py-2 text-sm bg-white" value={subForm.original_teacher_id} onChange={e => setSubForm(f => ({ ...f, original_teacher_id: e.target.value }))}>
-                <option value="">-- Select --</option>
+                <option value="">-- {t('teacher')} --</option>
                 {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </div>
             <div>
-              <Label>Substitute Teacher</Label>
+              <Label>{t('substitution')}</Label>
               <select className="w-full border rounded-md px-3 py-2 text-sm bg-white" value={subForm.substitute_teacher_id} onChange={e => setSubForm(f => ({ ...f, substitute_teacher_id: e.target.value }))}>
-                <option value="">-- Select Substitute --</option>
+                <option value="">-- {t('assign_substitute')} --</option>
                 {teachers.filter(t => t.id !== subForm.original_teacher_id).map(t => {
                   const busy = subForm.period_id ? isTeacherBusy(t.id, workingDays[0], parseInt(subForm.period_id)) : null;
                   return <option key={t.id} value={t.id} disabled={!!busy}>{t.name}{busy ? ` (Busy: ${busy})` : ''}</option>;
@@ -1006,13 +1008,13 @@ export default function TimetableManagement() {
               </select>
             </div>
             <div>
-              <Label>Reason</Label>
-              <Input value={subForm.reason} onChange={e => setSubForm(f => ({ ...f, reason: e.target.value }))} placeholder="Reason for substitution" />
+              <Label>{t('reason')}</Label>
+              <Input value={subForm.reason} onChange={e => setSubForm(f => ({ ...f, reason: e.target.value }))} placeholder={t('reason')} />
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowSubDialog(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowSubDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleAddSubstitution} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 gap-1">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Add
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t('save')}
               </Button>
             </div>
           </div>
@@ -1023,7 +1025,7 @@ export default function TimetableManagement() {
       <Dialog open={showSubjectAssignDialog} onOpenChange={setShowSubjectAssignDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Assign Subjects to {selectedClass?.name} / विषय जोड़ें</DialogTitle>
+            <DialogTitle>{t('subjects')} - {selectedClass?.name}</DialogTitle>
             <DialogDescription>इस कक्षा में पढ़ाए जाने वाले विषय चुनें। केवल चुने हुए विषय ही टाइमटेबल में दिखेंगे।</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -1046,9 +1048,9 @@ export default function TimetableManagement() {
           <div className="flex items-center justify-between pt-3 border-t">
             <p className="text-xs text-slate-500">{selectedSubjectIds.length} विषय चुने गए / {selectedSubjectIds.length} subjects selected</p>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowSubjectAssignDialog(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowSubjectAssignDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleSaveClassSubjects} disabled={saving || selectedSubjectIds.length === 0} className="bg-indigo-600 hover:bg-indigo-700 gap-1">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save / सेव करें
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {t('save')}
               </Button>
             </div>
           </div>

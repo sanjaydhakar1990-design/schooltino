@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -71,6 +72,7 @@ const curriculumContent = [
 
 export default function DigitalLibraryPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const schoolId = user?.school_id || localStorage.getItem('school_id');
   const [activeTab, setActiveTab] = useState('library');
   const [searchQuery, setSearchQuery] = useState('');
@@ -204,28 +206,28 @@ export default function DigitalLibraryPage() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <Library className="w-8 h-8" />
-              Digital Library & EdTech
+              {t('digital_library')} & EdTech
             </h1>
             <p className="text-purple-100 mt-2">
-              From books to labs — immersive learning tools at your fingertips
+              {t('digital_library')} & EdTech
             </p>
           </div>
           <div className="hidden md:flex items-center gap-3">
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{books.length}</p>
-              <p className="text-xs text-purple-100">Total Books</p>
+              <p className="text-xs text-purple-100">{t('total_books')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{ebooks.length}</p>
-              <p className="text-xs text-purple-100">E-Books</p>
+              <p className="text-xs text-purple-100">{t('digital_library')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{edtechTools.length}</p>
-              <p className="text-xs text-purple-100">EdTech Tools</p>
+              <p className="text-xs text-purple-100">{t('actions')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{issues.filter(i => i.status === 'issued').length}</p>
-              <p className="text-xs text-purple-100">Books Issued</p>
+              <p className="text-xs text-purple-100">{t('issued')}</p>
             </div>
           </div>
         </div>
@@ -234,16 +236,16 @@ export default function DigitalLibraryPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 h-12">
           <TabsTrigger value="library" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" /> Library
+            <BookOpen className="w-4 h-4" /> {t('library')}
           </TabsTrigger>
           <TabsTrigger value="ebooks" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" /> E-Books
+            <FileText className="w-4 h-4" /> {t('digital_library')}
           </TabsTrigger>
           <TabsTrigger value="edtech" className="flex items-center gap-2">
-            <Monitor className="w-4 h-4" /> EdTech Labs
+            <Monitor className="w-4 h-4" /> {t('online_class')}
           </TabsTrigger>
           <TabsTrigger value="content" className="flex items-center gap-2">
-            <Layers className="w-4 h-4" /> Content Library
+            <Layers className="w-4 h-4" /> {t('content')} {t('library')}
           </TabsTrigger>
         </TabsList>
 
@@ -254,7 +256,7 @@ export default function DigitalLibraryPage() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search books by title or author..."
+                placeholder={t('search_placeholder')}
                 className="pl-10"
               />
             </div>
@@ -266,12 +268,12 @@ export default function DigitalLibraryPage() {
                   size="sm"
                   onClick={() => setCategoryFilter(cat)}
                 >
-                  {cat === 'all' ? 'All' : cat}
+                  {cat === 'all' ? t('all') : cat}
                 </Button>
               ))}
             </div>
             <Button onClick={() => setShowAddBookDialog(true)} className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="w-4 h-4 mr-2" /> Add Book
+              <Plus className="w-4 h-4 mr-2" /> {t('add_book')}
             </Button>
           </div>
 
@@ -281,12 +283,12 @@ export default function DigitalLibraryPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100 bg-gray-50/50">
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Title / Author</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">ISBN</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Category</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Copies</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Available</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Location</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('title')} / {t('author')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('isbn')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('category')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('quantity')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('available')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('location')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -318,18 +320,18 @@ export default function DigitalLibraryPage() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-6">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <ArrowLeftRight className="w-5 h-5 text-purple-600" /> Issue / Return Tracking
+                <ArrowLeftRight className="w-5 h-5 text-purple-600" /> {t('issue_book')} / {t('return_book')}
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100 bg-gray-50/50">
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Book</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Student</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Issue Date</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Due Date</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Status</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">Action</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('book_title')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('student')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('issue_date')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('due_date')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('status')}</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider py-3 px-4">{t('action')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -338,7 +340,7 @@ export default function DigitalLibraryPage() {
                         <td className="py-3.5 px-4 text-sm font-semibold text-gray-900">{issue.book}</td>
                         <td className="py-3.5 px-4">
                           <p className="text-sm text-gray-900">{issue.student}</p>
-                          <p className="text-xs text-gray-400">Class {issue.class}</p>
+                          <p className="text-xs text-gray-400">{t('classes')} {issue.class}</p>
                         </td>
                         <td className="py-3.5 px-4 text-sm text-gray-600">{issue.issueDate}</td>
                         <td className="py-3.5 px-4 text-sm text-gray-600">{issue.dueDate}</td>
@@ -348,13 +350,13 @@ export default function DigitalLibraryPage() {
                             issue.status === 'overdue' ? 'bg-red-100 text-red-700' :
                             'bg-blue-100 text-blue-700'
                           }>
-                            {issue.status === 'returned' ? 'Returned' : issue.status === 'overdue' ? 'Overdue' : 'Issued'}
+                            {issue.status === 'returned' ? t('completed') : issue.status === 'overdue' ? t('overdue') : t('issued')}
                           </Badge>
                         </td>
                         <td className="py-3.5 px-4">
                           {issue.status !== 'returned' && (
                             <Button size="sm" variant="outline" onClick={() => handleReturnBook(issue.id)}>
-                              Return
+                              {t('return_book')}
                             </Button>
                           )}
                         </td>
@@ -369,9 +371,9 @@ export default function DigitalLibraryPage() {
 
         <TabsContent value="ebooks" className="mt-6 space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">E-Books & Digital Resources</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('digital_library')}</h3>
             <Button onClick={() => setShowUploadEbookDialog(true)} className="bg-purple-600 hover:bg-purple-700">
-              <Upload className="w-4 h-4 mr-2" /> Upload E-Book
+              <Upload className="w-4 h-4 mr-2" /> {t('upload')}
             </Button>
           </div>
 
@@ -385,17 +387,17 @@ export default function DigitalLibraryPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-gray-900 text-sm truncate">{ebook.title}</h4>
-                      <p className="text-xs text-gray-500 mt-1">Subject: {ebook.subject} | Class: {ebook.class}</p>
+                      <p className="text-xs text-gray-500 mt-1">{t('subject')}: {ebook.subject} | {t('classes')}: {ebook.class}</p>
                       <div className="flex items-center gap-3 mt-2">
                         <span className="text-xs text-gray-400">{ebook.size}</span>
                         <Badge variant="outline" className="text-xs">{ebook.format}</Badge>
                       </div>
                       <div className="flex items-center gap-2 mt-3">
                         <Button size="sm" variant="outline" className="text-xs">
-                          <Eye className="w-3 h-3 mr-1" /> View
+                          <Eye className="w-3 h-3 mr-1" /> {t('view')}
                         </Button>
                         <Button size="sm" variant="outline" className="text-xs">
-                          <Download className="w-3 h-3 mr-1" /> Download
+                          <Download className="w-3 h-3 mr-1" /> {t('download')}
                         </Button>
                       </div>
                     </div>
@@ -407,7 +409,7 @@ export default function DigitalLibraryPage() {
         </TabsContent>
 
         <TabsContent value="edtech" className="mt-6 space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">Interactive EdTech Labs (इंटरैक्टिव लैब्स)</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('online_class')}</h3>
 
           {['Science', 'Math', 'Language', 'Art'].map(category => (
             <div key={category} className="space-y-3">
@@ -416,7 +418,7 @@ export default function DigitalLibraryPage() {
                 {category === 'Math' && <Calculator className="w-5 h-5 text-purple-600" />}
                 {category === 'Language' && <Globe className="w-5 h-5 text-teal-600" />}
                 {category === 'Art' && <Palette className="w-5 h-5 text-pink-600" />}
-                {category} Tools
+                {category}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {edtechTools.filter(t => t.category === category).map(tool => (
@@ -431,7 +433,7 @@ export default function DigitalLibraryPage() {
                       <div className="flex items-center justify-between mt-4">
                         <span className="text-xs text-gray-400">{tool.users} users</span>
                         <Button size="sm" onClick={() => handleLaunchTool(tool)} className="bg-purple-600 hover:bg-purple-700">
-                          <Play className="w-3 h-3 mr-1" /> Launch
+                          <Play className="w-3 h-3 mr-1" /> {t('view')}
                         </Button>
                       </div>
                     </CardContent>
@@ -444,9 +446,9 @@ export default function DigitalLibraryPage() {
 
         <TabsContent value="content" className="mt-6 space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">K-12 Curriculum Content (पाठ्यक्रम सामग्री)</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('content')} {t('library')}</h3>
             <Button onClick={() => setShowUploadContentDialog(true)} className="bg-purple-600 hover:bg-purple-700">
-              <Upload className="w-4 h-4 mr-2" /> Upload Content
+              <Upload className="w-4 h-4 mr-2" /> {t('upload')} {t('content')}
             </Button>
           </div>
 
@@ -454,7 +456,7 @@ export default function DigitalLibraryPage() {
             <div key={classGroup} className="space-y-3">
               <h4 className="text-md font-semibold text-gray-700">
                 <GraduationCap className="w-4 h-4 inline mr-2" />
-                Class {classGroup}
+                {t('classes')} {classGroup}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {curriculumContent.filter(c => c.class === classGroup).map(content => (
@@ -463,8 +465,8 @@ export default function DigitalLibraryPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <h5 className="font-semibold text-gray-900">{content.subject}</h5>
-                          <p className="text-xs text-gray-500 mt-1">{content.resources} resources</p>
-                          <p className="text-xs text-gray-400">Updated: {content.lastUpdated}</p>
+                          <p className="text-xs text-gray-500 mt-1">{content.resources} {t('results')}</p>
+                          <p className="text-xs text-gray-400">{t('updated')}: {content.lastUpdated}</p>
                         </div>
                         <div className="flex gap-1">
                           <Button size="sm" variant="outline">
@@ -487,23 +489,23 @@ export default function DigitalLibraryPage() {
       <Dialog open={showAddBookDialog} onOpenChange={setShowAddBookDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Book (नई किताब जोड़ें)</DialogTitle>
+            <DialogTitle>{t('add_book')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Book Title</Label>
+              <Label>{t('book_title')}</Label>
               <Input value={bookForm.title} onChange={(e) => setBookForm(f => ({ ...f, title: e.target.value }))} placeholder="Enter book title" />
             </div>
             <div className="space-y-2">
-              <Label>Author</Label>
+              <Label>{t('author')}</Label>
               <Input value={bookForm.author} onChange={(e) => setBookForm(f => ({ ...f, author: e.target.value }))} placeholder="Author name" />
             </div>
             <div className="space-y-2">
-              <Label>ISBN</Label>
+              <Label>{t('isbn')}</Label>
               <Input value={bookForm.isbn} onChange={(e) => setBookForm(f => ({ ...f, isbn: e.target.value }))} placeholder="ISBN number" />
             </div>
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>{t('category')}</Label>
               <select value={bookForm.category} onChange={(e) => setBookForm(f => ({ ...f, category: e.target.value }))} className="w-full h-10 rounded-lg border border-slate-200 px-3">
                 <option value="Textbooks">Textbooks</option>
                 <option value="Reference">Reference</option>
@@ -513,16 +515,16 @@ export default function DigitalLibraryPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>No. of Copies</Label>
+                <Label>{t('quantity')}</Label>
                 <Input type="number" value={bookForm.copies} onChange={(e) => setBookForm(f => ({ ...f, copies: e.target.value }))} placeholder="1" />
               </div>
               <div className="space-y-2">
-                <Label>Location</Label>
+                <Label>{t('location')}</Label>
                 <Input value={bookForm.location} onChange={(e) => setBookForm(f => ({ ...f, location: e.target.value }))} placeholder="Shelf A-1" />
               </div>
             </div>
             <Button onClick={handleAddBook} className="w-full bg-purple-600 hover:bg-purple-700">
-              <Plus className="w-4 h-4 mr-2" /> Add Book
+              <Plus className="w-4 h-4 mr-2" /> {t('add_book')}
             </Button>
           </div>
         </DialogContent>
@@ -531,28 +533,28 @@ export default function DigitalLibraryPage() {
       <Dialog open={showUploadEbookDialog} onOpenChange={setShowUploadEbookDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Upload E-Book</DialogTitle>
+            <DialogTitle>{t('upload')} E-Book</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Title</Label>
+              <Label>{t('title')}</Label>
               <Input value={ebookForm.title} onChange={(e) => setEbookForm(f => ({ ...f, title: e.target.value }))} placeholder="E-Book title" />
             </div>
             <div className="space-y-2">
-              <Label>Subject</Label>
-              <Input value={ebookForm.subject} onChange={(e) => setEbookForm(f => ({ ...f, subject: e.target.value }))} placeholder="Subject" />
+              <Label>{t('subject')}</Label>
+              <Input value={ebookForm.subject} onChange={(e) => setEbookForm(f => ({ ...f, subject: e.target.value }))} placeholder={t('subject')} />
             </div>
             <div className="space-y-2">
-              <Label>Class</Label>
+              <Label>{t('classes')}</Label>
               <Input value={ebookForm.class} onChange={(e) => setEbookForm(f => ({ ...f, class: e.target.value }))} placeholder="e.g. 9-10" />
             </div>
             <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
               <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500">Click to upload or drag & drop</p>
+              <p className="text-sm text-gray-500">{t('choose_file')}</p>
               <p className="text-xs text-gray-400">PDF, EPUB up to 50MB</p>
             </div>
             <Button onClick={handleUploadEbook} className="w-full bg-purple-600 hover:bg-purple-700">
-              <Upload className="w-4 h-4 mr-2" /> Upload
+              <Upload className="w-4 h-4 mr-2" /> {t('upload')}
             </Button>
           </div>
         </DialogContent>
@@ -561,17 +563,17 @@ export default function DigitalLibraryPage() {
       <Dialog open={showUploadContentDialog} onOpenChange={setShowUploadContentDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Upload Curriculum Content (पाठ्यक्रम सामग्री)</DialogTitle>
+            <DialogTitle>{t('upload')} {t('content')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Title</Label>
+              <Label>{t('title')}</Label>
               <Input value={contentForm.title} onChange={(e) => setContentForm(f => ({ ...f, title: e.target.value }))} placeholder="Content title" />
             </div>
             <div className="space-y-2">
-              <Label>Class</Label>
+              <Label>{t('classes')}</Label>
               <select value={contentForm.class} onChange={(e) => setContentForm(f => ({ ...f, class: e.target.value }))} className="w-full h-10 rounded-lg border border-slate-200 px-3">
-                <option value="">Select Class</option>
+                <option value="">{t('select_class')}</option>
                 <option value="1-5">Class 1-5</option>
                 <option value="6-8">Class 6-8</option>
                 <option value="9-10">Class 9-10</option>
@@ -579,11 +581,11 @@ export default function DigitalLibraryPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Subject</Label>
-              <Input value={contentForm.subject} onChange={(e) => setContentForm(f => ({ ...f, subject: e.target.value }))} placeholder="Subject name" />
+              <Label>{t('subject')}</Label>
+              <Input value={contentForm.subject} onChange={(e) => setContentForm(f => ({ ...f, subject: e.target.value }))} placeholder={t('subject')} />
             </div>
             <div className="space-y-2">
-              <Label>Type</Label>
+              <Label>{t('type')}</Label>
               <select value={contentForm.type} onChange={(e) => setContentForm(f => ({ ...f, type: e.target.value }))} className="w-full h-10 rounded-lg border border-slate-200 px-3">
                 <option value="Worksheet">Worksheet</option>
                 <option value="Lesson Plan">Lesson Plan</option>
@@ -593,10 +595,10 @@ export default function DigitalLibraryPage() {
             </div>
             <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
               <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500">Upload file</p>
+              <p className="text-sm text-gray-500">{t('choose_file')}</p>
             </div>
             <Button onClick={handleUploadContent} className="w-full bg-purple-600 hover:bg-purple-700">
-              <Upload className="w-4 h-4 mr-2" /> Upload Content
+              <Upload className="w-4 h-4 mr-2" /> {t('upload')} {t('content')}
             </Button>
           </div>
         </DialogContent>

@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -110,6 +111,7 @@ const ALL_PERMISSIONS = {
 };
 
 export default function EmployeeManagementPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const schoolId = user?.school_id;
   
@@ -777,9 +779,9 @@ export default function EmployeeManagementPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Users className="w-7 h-7 text-blue-600" />
-            Employee Management
+            {t('staff_management')}
           </h1>
-          <p className="text-gray-500 text-sm">Staff + Users एक जगह manage करें</p>
+          <p className="text-gray-500 text-sm">{t('manage_staff_users')}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {/* Bulk Import Button */}
@@ -796,10 +798,10 @@ export default function EmployeeManagementPage() {
             data-testid="bulk-print-employee-btn"
           >
             {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
-            Bulk Print ID Cards
+            {t('bulk_print_id_cards')}
           </Button>
           <Button onClick={openAddForm} className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4" /> Add Employee
+            <Plus className="w-4 h-4" /> {t('add_employee')}
           </Button>
         </div>
       </div>
@@ -807,10 +809,10 @@ export default function EmployeeManagementPage() {
       {/* Page Level Tabs */}
       <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-6 overflow-x-auto">
         {[
-          { id: 'staff', label: '👥 All Staff', icon: Users },
-          { id: 'permissions', label: '🛡️ Permissions', icon: Shield },
-          { id: 'quick_actions', label: '⚡ Quick Actions', icon: Settings },
-          ...(user?.role === 'director' ? [{ id: 'credentials', label: '🔑 Login Credentials', icon: Key }] : []),
+          { id: 'staff', label: `👥 ${t('staff')}`, icon: Users },
+          { id: 'permissions', label: `🛡️ ${t('permissions')}`, icon: Shield },
+          { id: 'quick_actions', label: `⚡ ${t('quick_actions')}`, icon: Settings },
+          ...(user?.role === 'director' ? [{ id: 'credentials', label: `🔑 ${t('login_credentials')}`, icon: Key }] : []),
         ].map(tab => (
           <button
             key={tab.id}
@@ -836,7 +838,7 @@ export default function EmployeeManagementPage() {
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
-                placeholder="Search staff..."
+                placeholder={t('search')}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleSearch()}
@@ -849,7 +851,7 @@ export default function EmployeeManagementPage() {
                 value={filterDesignation}
                 onChange={e => { setFilterDesignation(e.target.value); setTimeout(handleSearch, 100); }}
               >
-                <option value="">All Roles</option>
+                <option value="">{t('all_roles')}</option>
                 {designations.map(d => (
                   <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
@@ -859,14 +861,14 @@ export default function EmployeeManagementPage() {
                 value={filterHasLogin}
                 onChange={e => { setFilterHasLogin(e.target.value); setTimeout(handleSearch, 100); }}
               >
-                <option value="">All</option>
-                <option value="true">Login</option>
-                <option value="false">No Login</option>
+                <option value="">{t('all')}</option>
+                <option value="true">{t('login')}</option>
+                <option value="false">{t('no_login')}</option>
               </select>
             </div>
             <div className="flex items-center justify-between text-xs text-gray-500 px-1">
-              <span>{employees.length} staff members</span>
-              <span className="text-green-600">{employees.filter(e => e.has_login).length} active</span>
+              <span>{employees.length} {t('staff_members')}</span>
+              <span className="text-green-600">{employees.filter(e => e.has_login).length} {t('active')}</span>
             </div>
           </div>
 
@@ -874,7 +876,7 @@ export default function EmployeeManagementPage() {
             {employees.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-400 p-6">
                 <Users className="w-10 h-10 mb-2" />
-                <p className="text-sm">No staff found</p>
+                <p className="text-sm">{t('no_data')}</p>
               </div>
             ) : (
               employees.map(emp => (
@@ -906,11 +908,11 @@ export default function EmployeeManagementPage() {
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     {emp.has_login ? (
                       <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px]">
-                        <UserCheck className="w-2.5 h-2.5" /> Active
+                        <UserCheck className="w-2.5 h-2.5" /> {t('active')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-[10px]">
-                        <UserX className="w-2.5 h-2.5" /> Off
+                        <UserX className="w-2.5 h-2.5" /> {t('inactive')}
                       </span>
                     )}
                   </div>
@@ -925,8 +927,8 @@ export default function EmployeeManagementPage() {
           {!selectedProfile ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <User className="w-16 h-16 mb-3 text-gray-300" />
-              <p className="text-lg font-medium text-gray-400">Select a staff member to view profile</p>
-              <p className="text-sm text-gray-300 mt-1">Click on any staff from the list</p>
+              <p className="text-lg font-medium text-gray-400">{t('select_staff_profile')}</p>
+              <p className="text-sm text-gray-300 mt-1">{t('click_staff_list')}</p>
             </div>
           ) : (
             <div className="h-full overflow-y-auto">
@@ -963,11 +965,11 @@ export default function EmployeeManagementPage() {
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {selectedProfile.has_login ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-100 rounded-full text-xs">
-                          <UserCheck className="w-3 h-3" /> Login Active
+                          <UserCheck className="w-3 h-3" /> {t('login_active')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/15 text-white/70 rounded-full text-xs">
-                          <UserX className="w-3 h-3" /> No Login
+                          <UserX className="w-3 h-3" /> {t('no_login')}
                         </span>
                       )}
                       {selectedProfile.role && (
@@ -975,7 +977,7 @@ export default function EmployeeManagementPage() {
                       )}
                       {selectedProfile.can_teach && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-100 rounded-full text-xs">
-                          <GraduationCap className="w-3 h-3" /> Can Teach
+                          <GraduationCap className="w-3 h-3" /> {t('can_teach')}
                         </span>
                       )}
                     </div>
@@ -985,7 +987,7 @@ export default function EmployeeManagementPage() {
                         className="bg-white text-blue-700 hover:bg-blue-50 gap-1 h-8 text-xs"
                         onClick={() => openEditForm(selectedProfile)}
                       >
-                        <Edit2 className="w-3 h-3" /> Edit
+                        <Edit2 className="w-3 h-3" /> {t('edit')}
                       </Button>
                       <Button
                         size="sm"
@@ -993,7 +995,7 @@ export default function EmployeeManagementPage() {
                         className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs"
                         onClick={() => printProfile(selectedProfile)}
                       >
-                        <Printer className="w-3 h-3" /> Print
+                        <Printer className="w-3 h-3" /> {t('print')}
                       </Button>
                       <Button
                         size="sm"
@@ -1001,20 +1003,20 @@ export default function EmployeeManagementPage() {
                         className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs"
                         onClick={() => { setSelectedEmployeeForID(selectedProfile); setShowIDCard(true); }}
                       >
-                        <CreditCard className="w-3 h-3" /> ID Card
+                        <CreditCard className="w-3 h-3" /> {t('id_card')}
                       </Button>
                       {selectedProfile.has_login ? (
                         <Button size="sm" variant="outline" className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, false)}>
-                          <Key className="w-3 h-3" /> Disable Login
+                          <Key className="w-3 h-3" /> {t('disable_login')}
                         </Button>
                       ) : (
                         <Button size="sm" variant="outline" className="border-white/60 text-white hover:bg-white/25 bg-white/10 gap-1 h-8 text-xs" onClick={() => toggleLogin(selectedProfile, true)}>
-                          <Key className="w-3 h-3" /> Enable Login
+                          <Key className="w-3 h-3" /> {t('enable_login')}
                         </Button>
                       )}
                       {(user?.role === 'director' || user?.role === 'admin') && selectedProfile.role !== 'director' && (
                         <Button size="sm" variant="outline" className="border-red-300/50 text-red-200 hover:bg-red-500/20 gap-1 h-8 text-xs" onClick={() => openDeleteDialog(selectedProfile)}>
-                          <Trash2 className="w-3 h-3" /> Delete
+                          <Trash2 className="w-3 h-3" /> {t('delete')}
                         </Button>
                       )}
                     </div>
@@ -1026,30 +1028,30 @@ export default function EmployeeManagementPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
                     <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2 text-sm">
-                      <Phone className="w-4 h-4" /> Contact
+                      <Phone className="w-4 h-4" /> {t('contact')}
                     </h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Mobile</span><span className="font-medium">{selectedProfile.mobile || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-medium text-xs">{selectedProfile.email || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Address</span><span className="font-medium text-xs text-right max-w-[60%]">{selectedProfile.address || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">City</span><span className="font-medium">{selectedProfile.city || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('mobile')}</span><span className="font-medium">{selectedProfile.mobile || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('email')}</span><span className="font-medium text-xs">{selectedProfile.email || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('address')}</span><span className="font-medium text-xs text-right max-w-[60%]">{selectedProfile.address || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('city')}</span><span className="font-medium">{selectedProfile.city || '-'}</span></div>
                       {selectedProfile.emergency_contact && (
-                        <div className="flex justify-between"><span className="text-gray-500">Emergency</span><span className="font-medium text-red-600">{selectedProfile.emergency_contact}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-500">{t('emergency_contact')}</span><span className="font-medium text-red-600">{selectedProfile.emergency_contact}</span></div>
                       )}
                     </div>
                   </div>
 
                   <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
                     <h4 className="font-semibold text-purple-800 mb-3 flex items-center gap-2 text-sm">
-                      <User className="w-4 h-4" /> Personal Info
+                      <User className="w-4 h-4" /> {t('personal_info')}
                     </h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Gender</span><span className="font-medium capitalize">{selectedProfile.gender || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">DOB</span><span className="font-medium">{selectedProfile.dob || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Blood Group</span><span className="font-medium">{selectedProfile.blood_group || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Father</span><span className="font-medium">{selectedProfile.father_name || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Joining Date</span><span className="font-medium">{selectedProfile.joining_date || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Qualification</span><span className="font-medium">{selectedProfile.qualification || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('gender')}</span><span className="font-medium capitalize">{selectedProfile.gender || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('dob')}</span><span className="font-medium">{selectedProfile.dob || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('blood_group')}</span><span className="font-medium">{selectedProfile.blood_group || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('father_name')}</span><span className="font-medium">{selectedProfile.father_name || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('joining_date')}</span><span className="font-medium">{selectedProfile.joining_date || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('qualification')}</span><span className="font-medium">{selectedProfile.qualification || '-'}</span></div>
                     </div>
                   </div>
                 </div>
@@ -1057,32 +1059,32 @@ export default function EmployeeManagementPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
                     <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2 text-sm">
-                      <CreditCard className="w-4 h-4" /> Identity Documents
+                      <CreditCard className="w-4 h-4" /> {t('identity_documents')}
                     </h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Aadhar</span><span className="font-medium">{selectedProfile.aadhar_no || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">PAN</span><span className="font-medium">{selectedProfile.pan_number || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">UAN (EPF)</span><span className="font-medium">{selectedProfile.uan_number || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Voter ID</span><span className="font-medium">{selectedProfile.voter_id || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('aadhar_number')}</span><span className="font-medium">{selectedProfile.aadhar_no || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('pan_number')}</span><span className="font-medium">{selectedProfile.pan_number || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('uan_epf')}</span><span className="font-medium">{selectedProfile.uan_number || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('voter_id')}</span><span className="font-medium">{selectedProfile.voter_id || '-'}</span></div>
                     </div>
                   </div>
 
                   <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
                     <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2 text-sm">
-                      <Wallet className="w-4 h-4" /> Bank & Salary
+                      <Wallet className="w-4 h-4" /> {t('bank_details')}
                     </h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between"><span className="text-gray-500">Salary</span><span className="font-bold text-green-700">{selectedProfile.salary ? '₹' + selectedProfile.salary : '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Bank</span><span className="font-medium">{selectedProfile.bank_name || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Account</span><span className="font-medium">{selectedProfile.bank_account_no || '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">IFSC</span><span className="font-medium">{selectedProfile.ifsc_code || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('salary')}</span><span className="font-bold text-green-700">{selectedProfile.salary ? '₹' + selectedProfile.salary : '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('bank_name')}</span><span className="font-medium">{selectedProfile.bank_name || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('bank_account')}</span><span className="font-medium">{selectedProfile.bank_account_no || '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">{t('ifsc_code')}</span><span className="font-medium">{selectedProfile.ifsc_code || '-'}</span></div>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
                   <h4 className="font-semibold text-indigo-800 mb-3 flex items-center gap-2 text-sm">
-                    <Shield className="w-4 h-4" /> Permissions
+                    <Shield className="w-4 h-4" /> {t('permissions')}
                   </h4>
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
@@ -1130,13 +1132,13 @@ export default function EmployeeManagementPage() {
           <div className="bg-white rounded-xl border p-4 mb-4">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
               <Shield className="w-5 h-5 text-indigo-600" />
-              Quick Permission Manager (त्वरित अनुमति प्रबंधक)
+              {t('quick_permission_manager')}
             </h3>
-            <p className="text-sm text-gray-500">Preset apply करें या individual permissions toggle करें</p>
+            <p className="text-sm text-gray-500">{t('quick_permission_presets')}</p>
           </div>
 
           {employees.length === 0 ? (
-            <div className="bg-white rounded-xl border p-8 text-center text-gray-500">No employees found</div>
+            <div className="bg-white rounded-xl border p-8 text-center text-gray-500">{t('no_data')}</div>
           ) : (
             employees.map(emp => {
               const empPerms = permissionsData[emp.id] || emp.permissions || {};
@@ -1201,9 +1203,9 @@ export default function EmployeeManagementPage() {
           <div className="bg-white rounded-xl border p-4 mb-4">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
               <Settings className="w-5 h-5 text-amber-600" />
-              Quick Actions (त्वरित कार्य)
+              {t('quick_actions')}
             </h3>
-            <p className="text-sm text-gray-500">Bulk operations aur quick shortcuts</p>
+            <p className="text-sm text-gray-500">{t('manage_staff_users')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1215,9 +1217,9 @@ export default function EmployeeManagementPage() {
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <Plus className="w-5 h-5 text-blue-600" />
                 </div>
-                <div className="font-semibold text-slate-800">Add New Employee</div>
+                <div className="font-semibold text-slate-800">{t('add_employee')}</div>
               </div>
-              <p className="text-sm text-gray-500">नया कर्मचारी जोड़ें</p>
+              <p className="text-sm text-gray-500">{t('add_staff')}</p>
             </button>
 
             <button
@@ -1229,9 +1231,9 @@ export default function EmployeeManagementPage() {
                 <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
                   <Printer className="w-5 h-5 text-purple-600" />
                 </div>
-                <div className="font-semibold text-slate-800">Bulk Print ID Cards</div>
+                <div className="font-semibold text-slate-800">{t('bulk_print_id_cards')}</div>
               </div>
-              <p className="text-sm text-gray-500">{employees.length} employees ke ID cards print करें</p>
+              <p className="text-sm text-gray-500">{employees.length} {t('bulk_print_id_cards')}</p>
             </button>
 
             <button
@@ -1242,9 +1244,9 @@ export default function EmployeeManagementPage() {
                 <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
                   <Shield className="w-5 h-5 text-indigo-600" />
                 </div>
-                <div className="font-semibold text-slate-800">Manage Permissions</div>
+                <div className="font-semibold text-slate-800">{t('permissions')}</div>
               </div>
-              <p className="text-sm text-gray-500">सभी कर्मचारियों की permissions manage करें</p>
+              <p className="text-sm text-gray-500">{t('permissions')}</p>
             </button>
 
             <button
@@ -1259,9 +1261,9 @@ export default function EmployeeManagementPage() {
                 <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
                   <Key className="w-5 h-5 text-green-600" />
                 </div>
-                <div className="font-semibold text-slate-800">Login Status Overview</div>
+                <div className="font-semibold text-slate-800">{t('login_status_overview')}</div>
               </div>
-              <p className="text-sm text-gray-500">Login enable/disable status देखें</p>
+              <p className="text-sm text-gray-500">{t('login_status_overview')}</p>
             </button>
 
             <button
@@ -1272,9 +1274,9 @@ export default function EmployeeManagementPage() {
                 <div className="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center group-hover:bg-cyan-200 transition-colors">
                   <Search className="w-5 h-5 text-cyan-600" />
                 </div>
-                <div className="font-semibold text-slate-800">Refresh Data</div>
+                <div className="font-semibold text-slate-800">{t('refresh_data')}</div>
               </div>
-              <p className="text-sm text-gray-500">Employee list refresh करें</p>
+              <p className="text-sm text-gray-500">{t('refresh')}</p>
             </button>
 
             <div className="bg-white rounded-xl border p-6">
@@ -1282,12 +1284,12 @@ export default function EmployeeManagementPage() {
                 <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
                   <Award className="w-5 h-5 text-amber-600" />
                 </div>
-                <div className="font-semibold text-slate-800">Staff Summary</div>
+                <div className="font-semibold text-slate-800">{t('staff_summary')}</div>
               </div>
               <div className="text-sm text-gray-600 space-y-1">
-                <div>Total: <span className="font-bold text-blue-700">{employees.length}</span></div>
-                <div>Teachers: <span className="font-bold text-amber-700">{employees.filter(e => e.designation?.toLowerCase().includes('teacher')).length}</span></div>
-                <div>With Login: <span className="font-bold text-green-700">{employees.filter(e => e.has_login).length}</span></div>
+                <div>{t('total')}: <span className="font-bold text-blue-700">{employees.length}</span></div>
+                <div>{t('teaching_staff')}: <span className="font-bold text-amber-700">{employees.filter(e => e.designation?.toLowerCase().includes('teacher')).length}</span></div>
+                <div>{t('with_login')}: <span className="font-bold text-green-700">{employees.filter(e => e.has_login).length}</span></div>
               </div>
             </div>
           </div>
@@ -1300,9 +1302,9 @@ export default function EmployeeManagementPage() {
           <div className="bg-white rounded-xl border p-4 mb-4">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
               <Key className="w-5 h-5 text-amber-600" />
-              Login Credentials (लॉगिन क्रेडेंशियल्स)
+              {t('login_credentials')}
             </h3>
-            <p className="text-sm text-gray-500">सभी कर्मचारियों के login credentials देखें और manage करें</p>
+            <p className="text-sm text-gray-500">{t('manage_staff_users')}</p>
           </div>
 
           <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -1310,12 +1312,12 @@ export default function EmployeeManagementPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 border-b">
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Name</th>
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Employee ID</th>
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Login ID (Email)</th>
-                    <th className="text-left px-4 py-3 font-semibold text-slate-700">Role</th>
-                    <th className="text-center px-4 py-3 font-semibold text-slate-700">Login Status</th>
-                    <th className="text-center px-4 py-3 font-semibold text-slate-700">Actions</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('name')}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('employee_id')}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('email')}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('role')}</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-700">{t('status')}</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-700">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1357,12 +1359,12 @@ export default function EmployeeManagementPage() {
                         {emp.has_login ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
                             <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                            Active
+                            {t('active')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
                             <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                            Disabled
+                            {t('disabled')}
                           </span>
                         )}
                       </td>
@@ -1380,7 +1382,7 @@ export default function EmployeeManagementPage() {
                               }}
                             >
                               <Key className="w-3 h-3" />
-                              Reset Password
+                              {t('reset_password')}
                             </Button>
                           )}
                           {!emp.has_login && (
@@ -1391,7 +1393,7 @@ export default function EmployeeManagementPage() {
                               onClick={() => toggleLogin(emp, true)}
                             >
                               <UserCheck className="w-3 h-3" />
-                              Enable Login
+                              {t('enable_login')}
                             </Button>
                           )}
                         </div>
@@ -1402,7 +1404,7 @@ export default function EmployeeManagementPage() {
                     <tr>
                       <td colSpan="6" className="px-4 py-10 text-center text-slate-400">
                         <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                        <p>No employees found</p>
+                        <p>{t('no_data')}</p>
                       </td>
                     </tr>
                   )}
@@ -1419,20 +1421,20 @@ export default function EmployeeManagementPage() {
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
               <Key className="w-5 h-5 text-amber-600" />
-              Reset Password
+              {t('reset_password')}
             </h3>
             <div className="bg-slate-50 rounded-lg p-3 mb-4">
               <p className="font-medium">{resetPasswordEmployee.name}</p>
               <p className="text-sm text-slate-500">{resetPasswordEmployee.email} • {resetPasswordEmployee.role || resetPasswordEmployee.designation}</p>
             </div>
             <div className="space-y-3 mb-4">
-              <Label>New Password (कम से कम 6 characters)</Label>
+              <Label>{t('password')}</Label>
               <div className="relative">
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
+                  placeholder={t('enter_new_password')}
                   className="pr-10"
                 />
                 <button
@@ -1446,7 +1448,7 @@ export default function EmployeeManagementPage() {
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} className="flex-1">
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 onClick={resetEmployeePassword}
@@ -1454,7 +1456,7 @@ export default function EmployeeManagementPage() {
                 className="flex-1 bg-amber-600 hover:bg-amber-700"
               >
                 {resettingPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Key className="w-4 h-4 mr-2" />}
-                Reset Password
+                {t('reset_password')}
               </Button>
             </div>
           </div>
@@ -1467,17 +1469,17 @@ export default function EmployeeManagementPage() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 my-8">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <User className="w-6 h-6 text-blue-600" />
-              {editingEmployee ? '✏️ Edit Employee' : '👤 Add New Employee'}
+              {editingEmployee ? `✏️ ${t('edit_employee')}` : `👤 ${t('add_employee')}`}
             </h3>
             
             {/* Form Tabs Navigation - Merged tabs */}
             <div className="flex gap-1 p-1 bg-slate-100 rounded-lg mb-4 overflow-x-auto">
               {[
-                { id: 'basic', label: '📋 Basic' },
-                { id: 'personal', label: '👤 Personal & Contact' },
-                { id: 'identity', label: '🆔 ID & Documents' },
-                { id: 'bank', label: '🏦 Bank & Salary' },
-                { id: 'login', label: '🔐 Login Access' },
+                { id: 'basic', label: `📋 ${t('basic_info')}` },
+                { id: 'personal', label: `👤 ${t('personal_contact')}` },
+                { id: 'identity', label: `🆔 ${t('id_documents')}` },
+                { id: 'bank', label: `🏦 ${t('bank_salary')}` },
+                { id: 'login', label: `🔐 ${t('login_access')}` },
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -1498,7 +1500,7 @@ export default function EmployeeManagementPage() {
               {/* Tab 1: Basic Info */}
               {activeFormTab === 'basic' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h4 className="font-semibold text-slate-800 border-b pb-2">📋 Basic Information (मूल जानकारी)</h4>
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">📋 {t('basic_info')}</h4>
                   <div className="flex items-center gap-4 mb-2">
                     <input type="file" ref={photoInputRef} className="hidden" accept="image/*" onChange={(e) => { if (e.target.files[0]) handlePhotoUpload(e.target.files[0]); e.target.value = ''; }} />
                     <div 
@@ -1518,22 +1520,22 @@ export default function EmployeeManagementPage() {
                       )}
                     </div>
                     <div className="text-sm text-slate-500">
-                      <p className="font-medium text-slate-700">Staff Photo</p>
-                      <p>Click to upload (Max 5MB)</p>
+                      <p className="font-medium text-slate-700">{t('staff_photo')}</p>
+                      <p>{t('click_to_upload')}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label>Name * (नाम)</Label>
+                      <Label>{t('name')} *</Label>
                       <Input
                         value={formData.name}
                         onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
-                        placeholder="Full Name"
+                        placeholder={t('name')}
                         data-testid="employee-name-input"
                       />
                     </div>
                     <div>
-                      <Label>Designation * (पदनाम)</Label>
+                      <Label>{t('designation')} *</Label>
                       <select
                         className="w-full border rounded-lg px-3 py-2 h-10"
                         value={formData.designation}
@@ -1546,13 +1548,13 @@ export default function EmployeeManagementPage() {
                       </select>
                     </div>
                     <div>
-                      <Label>Department (विभाग)</Label>
+                      <Label>{t('department')} </Label>
                       <select
                         className="w-full border rounded-lg px-3 py-2 h-10"
                         value={formData.department}
                         onChange={e => setFormData(f => ({ ...f, department: e.target.value }))}
                       >
-                        <option value="">Select Department</option>
+                        <option value="">{t('select_department')}</option>
                         <option value="Administration">Administration (प्रशासन)</option>
                         <option value="Academic">Academic (शैक्षणिक)</option>
                         <option value="Science">Science (विज्ञान)</option>
@@ -1569,7 +1571,7 @@ export default function EmployeeManagementPage() {
                       </select>
                     </div>
                     <div>
-                      <Label>Mobile * (मोबाइल)</Label>
+                      <Label>{t('mobile')} *</Label>
                       <Input
                         value={formData.mobile}
                         onChange={e => setFormData(f => ({ ...f, mobile: e.target.value }))}
@@ -1578,7 +1580,7 @@ export default function EmployeeManagementPage() {
                       />
                     </div>
                     <div>
-                      <Label>Email * (ईमेल)</Label>
+                      <Label>{t('email')} *</Label>
                       <Input
                         type="email"
                         value={formData.email}
@@ -1588,7 +1590,7 @@ export default function EmployeeManagementPage() {
                       />
                     </div>
                     <div>
-                      <Label>Joining Date (नियुक्ति तिथि)</Label>
+                      <Label>{t('joining_date')}</Label>
                       <Input
                         type="date"
                         value={formData.joining_date}
@@ -1604,29 +1606,29 @@ export default function EmployeeManagementPage() {
                 <div className="space-y-4 animate-in fade-in">
                   {/* Personal Info */}
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="font-medium text-blue-800 mb-3">👤 Personal Details</h4>
+                    <h4 className="font-medium text-blue-800 mb-3">👤 {t('personal_info')}</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div>
-                        <Label>Gender</Label>
+                        <Label>{t('gender')}</Label>
                         <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.gender} onChange={e => setFormData(f => ({ ...f, gender: e.target.value }))}>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
+                          <option value="male">{t('male')}</option>
+                          <option value="female">{t('female')}</option>
+                          <option value="other">{t('other')}</option>
                         </select>
                       </div>
                       <div>
-                        <Label>Date of Birth</Label>
+                        <Label>{t('dob')}</Label>
                         <Input type="date" value={formData.dob} onChange={e => setFormData(f => ({ ...f, dob: e.target.value }))} />
                       </div>
                       <div>
-                        <Label>Blood Group</Label>
+                        <Label>{t('blood_group')}</Label>
                         <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.blood_group || ''} onChange={e => setFormData(f => ({ ...f, blood_group: e.target.value }))}>
                           <option value="">Select</option>
                           {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
                         </select>
                       </div>
                       <div>
-                        <Label>Marital Status</Label>
+                        <Label>{t('marital_status')}</Label>
                         <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.marital_status} onChange={e => setFormData(f => ({ ...f, marital_status: e.target.value }))}>
                           <option value="">Select</option>
                           <option value="Single">Single</option>
@@ -1634,15 +1636,15 @@ export default function EmployeeManagementPage() {
                         </select>
                       </div>
                       <div>
-                        <Label>Father Name</Label>
-                        <Input value={formData.father_name} onChange={e => setFormData(f => ({ ...f, father_name: e.target.value }))} placeholder="Father's name" />
+                        <Label>{t('father_name')}</Label>
+                        <Input value={formData.father_name} onChange={e => setFormData(f => ({ ...f, father_name: e.target.value }))} placeholder={t('father_name')} />
                       </div>
                       <div>
-                        <Label>Spouse Name</Label>
-                        <Input value={formData.spouse_name} onChange={e => setFormData(f => ({ ...f, spouse_name: e.target.value }))} placeholder="If married" />
+                        <Label>{t('spouse_name')}</Label>
+                        <Input value={formData.spouse_name} onChange={e => setFormData(f => ({ ...f, spouse_name: e.target.value }))} placeholder={t('spouse_name')} />
                       </div>
                       <div>
-                        <Label>Nationality</Label>
+                        <Label>{t('nationality')}</Label>
                         <Input value={formData.nationality} onChange={e => setFormData(f => ({ ...f, nationality: e.target.value }))} placeholder="Indian" />
                       </div>
                     </div>
@@ -1650,20 +1652,20 @@ export default function EmployeeManagementPage() {
 
                   {/* Address Section */}
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h4 className="font-medium text-green-800 mb-3">🏠 Address (पता)</h4>
+                    <h4 className="font-medium text-green-800 mb-3">🏠 {t('address')}</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       <div className="col-span-2 md:col-span-3">
-                        <Label>Current Address</Label>
-                        <Input value={formData.address} onChange={e => setFormData(f => ({ ...f, address: e.target.value }))} placeholder="Full current address" />
+                        <Label>{t('address')}</Label>
+                        <Input value={formData.address} onChange={e => setFormData(f => ({ ...f, address: e.target.value }))} placeholder={t('address')} />
                       </div>
                       <div>
-                        <Label>City</Label>
+                        <Label>{t('city')}</Label>
                         <Input value={formData.city} onChange={e => setFormData(f => ({ ...f, city: e.target.value }))} />
                       </div>
                       <div>
-                        <Label>State</Label>
+                        <Label>{t('state')}</Label>
                         <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.state} onChange={e => setFormData(f => ({ ...f, state: e.target.value }))}>
-                          <option value="">Select State</option>
+                          <option value="">{t('select_state')}</option>
                           <option value="Madhya Pradesh">Madhya Pradesh</option>
                           <option value="Rajasthan">Rajasthan</option>
                           <option value="Uttar Pradesh">Uttar Pradesh</option>
@@ -1672,7 +1674,7 @@ export default function EmployeeManagementPage() {
                         </select>
                       </div>
                       <div>
-                        <Label>Pincode</Label>
+                        <Label>{t('pincode')}</Label>
                         <Input value={formData.pincode} onChange={e => setFormData(f => ({ ...f, pincode: e.target.value }))} placeholder="6 digit" />
                       </div>
                     </div>
@@ -1680,18 +1682,18 @@ export default function EmployeeManagementPage() {
 
                   {/* Emergency Contact */}
                   <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                    <h4 className="font-medium text-red-800 mb-3">🆘 Emergency Contact</h4>
+                    <h4 className="font-medium text-red-800 mb-3">🆘 {t('emergency_contact')}</h4>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <Label>Contact Name</Label>
-                        <Input value={formData.emergency_contact_name} onChange={e => setFormData(f => ({ ...f, emergency_contact_name: e.target.value }))} placeholder="Family member" />
+                        <Label>{t('emergency_contact')}</Label>
+                        <Input value={formData.emergency_contact_name} onChange={e => setFormData(f => ({ ...f, emergency_contact_name: e.target.value }))} placeholder={t('name')} />
                       </div>
                       <div>
-                        <Label>Contact Number</Label>
+                        <Label>{t('mobile')}</Label>
                         <Input value={formData.emergency_contact || ''} onChange={e => setFormData(f => ({ ...f, emergency_contact: e.target.value }))} placeholder="10 digit mobile" />
                       </div>
                       <div>
-                        <Label>Relation</Label>
+                        <Label>{t('relation')}</Label>
                         <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.emergency_relation} onChange={e => setFormData(f => ({ ...f, emergency_relation: e.target.value }))}>
                           <option value="">Select</option>
                           <option value="Spouse">Spouse</option>
@@ -1710,37 +1712,37 @@ export default function EmployeeManagementPage() {
                 <div className="space-y-4 animate-in fade-in">
                   {/* Identity Documents Section */}
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                    <h4 className="font-medium text-slate-800 mb-3">🆔 Identity Documents (पहचान दस्तावेज़)</h4>
+                    <h4 className="font-medium text-slate-800 mb-3">🆔 {t('identity_documents')}</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       <div>
-                        <Label>Aadhar Number</Label>
+                        <Label>{t('aadhar_number')}</Label>
                         <Input value={formData.aadhar_no} onChange={e => setFormData(f => ({ ...f, aadhar_no: e.target.value }))} placeholder="12 digit Aadhar" />
                       </div>
                       <div>
-                        <Label>PAN Number</Label>
+                        <Label>{t('pan_number')}</Label>
                         <Input value={formData.pan_number} onChange={e => setFormData(f => ({ ...f, pan_number: e.target.value.toUpperCase() }))} placeholder="ABCDE1234F" />
                       </div>
                       <div>
-                        <Label>Voter ID</Label>
-                        <Input value={formData.voter_id} onChange={e => setFormData(f => ({ ...f, voter_id: e.target.value }))} placeholder="Voter ID" />
+                        <Label>{t('voter_id')}</Label>
+                        <Input value={formData.voter_id} onChange={e => setFormData(f => ({ ...f, voter_id: e.target.value }))} placeholder={t('voter_id')} />
                       </div>
                       <div>
-                        <Label>UAN (EPF)</Label>
-                        <Input value={formData.uan_number} onChange={e => setFormData(f => ({ ...f, uan_number: e.target.value }))} placeholder="UAN Number" />
+                        <Label>{t('uan_epf')}</Label>
+                        <Input value={formData.uan_number} onChange={e => setFormData(f => ({ ...f, uan_number: e.target.value }))} placeholder={t('uan_epf')} />
                       </div>
                       <div>
-                        <Label>ESI Number</Label>
-                        <Input value={formData.esi_number} onChange={e => setFormData(f => ({ ...f, esi_number: e.target.value }))} placeholder="ESI number" />
+                        <Label>{t('esi_number')}</Label>
+                        <Input value={formData.esi_number} onChange={e => setFormData(f => ({ ...f, esi_number: e.target.value }))} placeholder={t('esi_number')} />
                       </div>
                     </div>
                   </div>
 
                   {/* Qualification Section */}
                   <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                    <h4 className="font-medium text-purple-800 mb-3">🎓 Qualification & Experience</h4>
+                    <h4 className="font-medium text-purple-800 mb-3">🎓 {t('qualification')}</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div>
-                        <Label>Highest Qualification</Label>
+                        <Label>{t('qualification')}</Label>
                         <select className="w-full border rounded-lg px-3 py-2 h-10 text-sm" value={formData.qualification} onChange={e => setFormData(f => ({ ...f, qualification: e.target.value }))}>
                           <option value="">Select</option>
                           <option value="10th Pass">10th Pass</option>
@@ -1753,28 +1755,28 @@ export default function EmployeeManagementPage() {
                         </select>
                       </div>
                       <div>
-                        <Label>Specialization</Label>
+                        <Label>{t('specialization')}</Label>
                         <Input value={formData.specialization} onChange={e => setFormData(f => ({ ...f, specialization: e.target.value }))} placeholder="e.g., Maths, Physics" />
                       </div>
                       <div>
-                        <Label>Experience (Years)</Label>
-                        <Input type="number" value={formData.experience_years} onChange={e => setFormData(f => ({ ...f, experience_years: e.target.value }))} placeholder="Years" />
+                        <Label>{t('experience')}</Label>
+                        <Input type="number" value={formData.experience_years} onChange={e => setFormData(f => ({ ...f, experience_years: e.target.value }))} placeholder={t('experience')} />
                       </div>
                       <div>
-                        <Label>Previous Employer</Label>
-                        <Input value={formData.previous_employer} onChange={e => setFormData(f => ({ ...f, previous_employer: e.target.value }))} placeholder="Previous school" />
+                        <Label>{t('previous_employer')}</Label>
+                        <Input value={formData.previous_employer} onChange={e => setFormData(f => ({ ...f, previous_employer: e.target.value }))} placeholder={t('previous_employer')} />
                       </div>
                     </div>
                   </div>
 
                   {/* Documents Upload Section */}
                   <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                    <h4 className="font-medium text-amber-800 mb-3">📄 Documents Upload</h4>
+                    <h4 className="font-medium text-amber-800 mb-3">📄 {t('documents_upload')}</h4>
                     {editingEmployee ? (
                       <DocumentUpload personId={editingEmployee.id} personType="employee" schoolId={schoolId} existingDocuments={[]} />
                     ) : (
                       <div className="text-center py-4">
-                        <p className="text-sm text-amber-600">💡 Employee add होने के बाद Edit करके documents upload करें</p>
+                        <p className="text-sm text-amber-600">💡 {t('upload_docs_after_add')}</p>
                       </div>
                     )}
                     
@@ -1791,14 +1793,14 @@ export default function EmployeeManagementPage() {
               {/* Tab 5: Bank & Salary */}
               {activeFormTab === 'bank' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h4 className="font-semibold text-slate-800 border-b pb-2">🏦 Bank & Salary Details (बैंक और वेतन)</h4>
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">🏦 {t('bank_details')}</h4>
                   
                   {/* Salary Section */}
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h5 className="font-medium text-green-800 mb-3">💰 Salary Details (वेतन विवरण)</h5>
+                    <h5 className="font-medium text-green-800 mb-3">💰 {t('salary')}</h5>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <Label>Monthly Salary (₹)</Label>
+                        <Label>{t('salary')} (₹)</Label>
                         <Input
                           type="number"
                           value={formData.salary}
@@ -1807,7 +1809,7 @@ export default function EmployeeManagementPage() {
                         />
                       </div>
                       <div>
-                        <Label>Salary Type</Label>
+                        <Label>{t('salary_type')}</Label>
                         <select
                           className="w-full border rounded-lg px-3 py-2 h-10"
                           value={formData.salary_type}
@@ -1826,7 +1828,7 @@ export default function EmployeeManagementPage() {
                           onChange={e => setFormData(f => ({ ...f, pf_applicable: e.target.checked }))}
                           className="w-4 h-4"
                         />
-                        PF Applicable (PF लागू)
+                        {t('pf_applicable')}
                       </label>
                       <label className="flex items-center gap-2 text-sm">
                         <input
@@ -1835,7 +1837,7 @@ export default function EmployeeManagementPage() {
                           onChange={e => setFormData(f => ({ ...f, esi_applicable: e.target.checked }))}
                           className="w-4 h-4"
                         />
-                        ESI Applicable (ESI लागू)
+                        {t('esi_applicable')}
                       </label>
                       <label className="flex items-center gap-2 text-sm">
                         <input
@@ -1844,33 +1846,33 @@ export default function EmployeeManagementPage() {
                           onChange={e => setFormData(f => ({ ...f, tds_applicable: e.target.checked }))}
                           className="w-4 h-4"
                         />
-                        TDS Applicable (TDS लागू)
+                        {t('tds_applicable')}
                       </label>
                     </div>
                   </div>
                   
                   {/* Bank Section */}
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h5 className="font-medium text-blue-800 mb-3">🏦 Bank Details (बैंक विवरण)</h5>
+                    <h5 className="font-medium text-blue-800 mb-3">🏦 {t('bank_details')}</h5>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label>Bank Name</Label>
+                        <Label>{t('bank_name')}</Label>
                         <Input
                           value={formData.bank_name}
                           onChange={e => setFormData(f => ({ ...f, bank_name: e.target.value }))}
-                          placeholder="State Bank of India"
+                          placeholder={t('bank_name')}
                         />
                       </div>
                       <div>
-                        <Label>Account Number</Label>
+                        <Label>{t('bank_account')}</Label>
                         <Input
                           value={formData.bank_account_no}
                           onChange={e => setFormData(f => ({ ...f, bank_account_no: e.target.value }))}
-                          placeholder="Account number"
+                          placeholder={t('bank_account')}
                         />
                       </div>
                       <div>
-                        <Label>IFSC Code</Label>
+                        <Label>{t('ifsc_code')}</Label>
                         <Input
                           value={formData.ifsc_code}
                           onChange={e => setFormData(f => ({ ...f, ifsc_code: e.target.value.toUpperCase() }))}
@@ -1878,11 +1880,11 @@ export default function EmployeeManagementPage() {
                         />
                       </div>
                       <div>
-                        <Label>Branch Name</Label>
+                        <Label>{t('branch_name')}</Label>
                         <Input
                           value={formData.bank_branch}
                           onChange={e => setFormData(f => ({ ...f, bank_branch: e.target.value }))}
-                          placeholder="Branch name"
+                          placeholder={t('branch_name')}
                         />
                       </div>
                     </div>
@@ -1893,7 +1895,7 @@ export default function EmployeeManagementPage() {
               {/* Tab 4: Login Access */}
               {activeFormTab === 'login' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h4 className="font-semibold text-slate-800 border-b pb-2">🔐 Login Access (लॉगिन एक्सेस)</h4>
+                  <h4 className="font-semibold text-slate-800 border-b pb-2">🔐 {t('login_access')}</h4>
                   
                   {/* Can Also Teach - for non-teacher roles */}
                   {!['teacher', 'senior_teacher', 'sports_teacher', 'music_teacher', 'computer_teacher', 'yoga_teacher'].includes(formData.designation) && (
@@ -1905,15 +1907,15 @@ export default function EmployeeManagementPage() {
                         className="w-5 h-5 rounded"
                       />
                       <div>
-                        <div className="font-medium text-amber-800">Can Also Teach (कक्षा भी ले सकते हैं)</div>
-                        <div className="text-sm text-amber-600">Enable this if this staff member should also appear in teacher lists for class assignment</div>
+                        <div className="font-medium text-amber-800">{t('can_also_teach')}</div>
+                        <div className="text-sm text-amber-600">{t('can_also_teach_desc')}</div>
                       </div>
                     </label>
                   )}
 
                   {/* Role Selection */}
                   <div>
-                    <Label>System Role * (सिस्टम भूमिका)</Label>
+                    <Label>{t('role')} *</Label>
                     <select
                       className="w-full border rounded-lg px-3 py-2 h-10 bg-white"
                       value={formData.role}
@@ -1931,7 +1933,7 @@ export default function EmployeeManagementPage() {
                       <option value="driver">Driver (चालक)</option>
                       <option value="guard">Guard (सुरक्षा)</option>
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">Role determines ID card color and permissions</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('role_determines_permissions')}</p>
                   </div>
                   
                   <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer">
@@ -1942,21 +1944,21 @@ export default function EmployeeManagementPage() {
                       className="w-5 h-5 rounded"
                     />
                     <div>
-                      <div className="font-medium">Create Login Account</div>
-                      <div className="text-sm text-gray-500">Employee can login to system</div>
+                      <div className="font-medium">{t('create_login_account')}</div>
+                      <div className="text-sm text-gray-500">{t('employee_can_login')}</div>
                     </div>
                   </label>
                   
                   {formData.create_login && (
                     <>
                       <div>
-                        <Label>Password (Default: Mobile Number)</Label>
+                        <Label>{t('password')}</Label>
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
                             value={formData.password}
                             onChange={e => setFormData(f => ({ ...f, password: e.target.value }))}
-                            placeholder="Leave empty for mobile as password"
+                            placeholder={t('leave_empty_mobile_password')}
                           />
                           <button
                             type="button"
@@ -1975,14 +1977,14 @@ export default function EmployeeManagementPage() {
                         className="gap-2"
                       >
                         <Shield className="w-4 h-4" />
-                        {showPermissions ? 'Hide' : 'Show'} Permissions
+                        {showPermissions ? t('hide') : t('show_all')} {t('permissions')}
                       </Button>
                       
                       {showPermissions && (
                         <div className="bg-gray-50 rounded-lg p-4 space-y-4">
                           {/* Permission Presets */}
                           <div>
-                            <p className="text-sm font-medium text-gray-700 mb-2">🎯 Quick Permission Presets:</p>
+                            <p className="text-sm font-medium text-gray-700 mb-2">🎯 {t('quick_permission_presets')}:</p>
                             <div className="flex gap-2 flex-wrap">
                               {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
                                 <button
@@ -2006,7 +2008,7 @@ export default function EmployeeManagementPage() {
                           
                           {/* Individual Permissions */}
                           <div className="border-t pt-4">
-                            <p className="text-sm font-medium text-gray-700 mb-2">🔐 Individual Permissions:</p>
+                            <p className="text-sm font-medium text-gray-700 mb-2">🔐 {t('individual_permissions')}:</p>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                               {Object.entries(ALL_PERMISSIONS).map(([key, perm]) => (
                                 <label 
@@ -2049,11 +2051,11 @@ export default function EmployeeManagementPage() {
             
             <div className="flex gap-3 mt-6 pt-4 border-t">
               <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={handleSubmit} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {editingEmployee ? 'Update' : 'Add'} Employee
+                {editingEmployee ? t('update') : t('save')}
               </Button>
             </div>
           </div>
@@ -2080,7 +2082,7 @@ export default function EmployeeManagementPage() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-red-600 flex items-center gap-2 mb-4">
               <Trash2 className="w-6 h-6" />
-              ⚠️ DANGER: Permanent Delete
+              ⚠️ {t('permanent_delete_warning')}
             </h3>
             
             {/* Risk Warning */}
@@ -2113,7 +2115,7 @@ export default function EmployeeManagementPage() {
               <Input
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
-                placeholder="Type DELETE here"
+                placeholder={t('type_delete_here')}
                 className="border-red-200 focus:border-red-400"
               />
             </div>
@@ -2125,7 +2127,7 @@ export default function EmployeeManagementPage() {
                 onClick={() => setShowDeleteDialog(false)}
                 className="flex-1"
               >
-                Cancel (रद्द करें)
+                {t('cancel')}
               </Button>
               <Button 
                 onClick={handleDeleteEmployee}
@@ -2137,7 +2139,7 @@ export default function EmployeeManagementPage() {
                 ) : (
                   <Trash2 className="w-4 h-4 mr-2" />
                 )}
-                Delete Permanently
+                {t('delete_permanently')}
               </Button>
             </div>
           </div>

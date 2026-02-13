@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -90,6 +91,7 @@ const REPORT_DESIGNS = [
 ];
 
 export default function ExamReportCard() {
+  const { t } = useTranslation();
   const { schoolId, user } = useAuth();
   
   const [classes, setClasses] = useState([]);
@@ -476,25 +478,25 @@ export default function ExamReportCard() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <ClipboardList className="w-8 h-8" />
-              Exam & Report Card Management
+              {t('exams')} & {t('report_card')}
             </h1>
             <p className="text-blue-100 mt-2">
-              Conduct, compute, and release — results in minutes
+              {t('exams_reports')}
             </p>
           </div>
           <div className="flex gap-2">
             <Button onClick={() => setShowExamDialog(true)} className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30" variant="outline">
               <Plus className="w-4 h-4" />
-              Create Exam
+              {t('create_exam')}
             </Button>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
           {[
-            { label: 'Exams Created', value: exams.length || EXAM_TYPES.length, icon: Calendar },
-            { label: 'Classes', value: classes.length, icon: GraduationCap },
-            { label: 'Students', value: students.length, icon: Users },
-            { label: 'Grading', value: gradingSystem.toUpperCase(), icon: Award }
+            { label: t('exams'), value: exams.length || EXAM_TYPES.length, icon: Calendar },
+            { label: t('classes'), value: classes.length, icon: GraduationCap },
+            { label: t('students'), value: students.length, icon: Users },
+            { label: t('grade'), value: gradingSystem.toUpperCase(), icon: Award }
           ].map((stat, i) => (
             <div key={i} className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
               <div className="flex items-center gap-2">
@@ -511,27 +513,27 @@ export default function ExamReportCard() {
         <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 max-w-4xl">
           <TabsTrigger value="marks" className="gap-1 text-xs">
             <Edit className="w-3.5 h-3.5" />
-            Marks Entry
+            {t('marks_entry')}
           </TabsTrigger>
           <TabsTrigger value="results" className="gap-1 text-xs">
             <BarChart3 className="w-3.5 h-3.5" />
-            Results
+            {t('result')}
           </TabsTrigger>
           <TabsTrigger value="reports" className="gap-1 text-xs">
             <FileText className="w-3.5 h-3.5" />
-            Report Cards
+            {t('report_card')}
           </TabsTrigger>
           <TabsTrigger value="hierarchy" className="gap-1 text-xs">
             <Layers className="w-3.5 h-3.5" />
-            Exam Structure
+            {t('exam_schedule')}
           </TabsTrigger>
           <TabsTrigger value="design" className="gap-1 text-xs">
             <Palette className="w-3.5 h-3.5" />
-            Design
+            {t('settings')}
           </TabsTrigger>
           <TabsTrigger value="grading" className="gap-1 text-xs">
             <Settings className="w-3.5 h-3.5" />
-            Grading
+            {t('grade')}
           </TabsTrigger>
         </TabsList>
 
@@ -539,23 +541,23 @@ export default function ExamReportCard() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle>Enter Marks</CardTitle>
+                <CardTitle>{t('enter_marks')}</CardTitle>
                 <div className="flex items-center gap-3 flex-wrap">
                   <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
-                    <option value="">Select Class</option>
+                    <option value="">{t('select_class')}</option>
                     {classes.map(cls => (
                       <option key={cls.id} value={cls.id}>{cls.name}</option>
                     ))}
                   </select>
                   <select value={selectedExam} onChange={(e) => setSelectedExam(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
-                    <option value="">Select Exam</option>
+                    <option value="">{t('exam_type')}</option>
                     {EXAM_TYPES.map(exam => (
                       <option key={exam.id} value={exam.id}>{exam.name}</option>
                     ))}
                   </select>
                   <Button onClick={handleSaveMarks} disabled={saving || !selectedClass || !selectedExam} className="gap-2 bg-green-600 hover:bg-green-700">
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save
+                    {t('save')}
                   </Button>
                 </div>
               </div>
@@ -568,18 +570,18 @@ export default function ExamReportCard() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-12">S.No</TableHead>
-                        <TableHead>Student Name</TableHead>
-                        <TableHead>Roll No</TableHead>
+                        <TableHead className="w-12">{t('serial_no')}</TableHead>
+                        <TableHead>{t('student_name')}</TableHead>
+                        <TableHead>{t('roll_no')}</TableHead>
                         {subjects.map(subject => (
                           <TableHead key={subject.id} className="text-center min-w-[80px]">
                             <div className="text-xs">{subject.name}</div>
                             <div className="text-[10px] font-normal text-slate-400">Max: {subject.max_marks}</div>
                           </TableHead>
                         ))}
-                        <TableHead className="text-center">Total</TableHead>
+                        <TableHead className="text-center">{t('total')}</TableHead>
                         <TableHead className="text-center">%</TableHead>
-                        <TableHead className="text-center">Grade</TableHead>
+                        <TableHead className="text-center">{t('grade')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -613,7 +615,7 @@ export default function ExamReportCard() {
               ) : (
                 <div className="text-center py-10">
                   <BookOpen className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-                  <p className="text-slate-500">Select class and exam to enter marks</p>
+                  <p className="text-slate-500">{t('select_class')}</p>
                 </div>
               )}
             </CardContent>
@@ -624,14 +626,14 @@ export default function ExamReportCard() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <CardTitle>Class Results</CardTitle>
+                <CardTitle>{t('exam_results')}</CardTitle>
                 <div className="flex gap-3">
                   <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
-                    <option value="">Select Class</option>
+                    <option value="">{t('select_class')}</option>
                     {classes.map(cls => (<option key={cls.id} value={cls.id}>{cls.name}</option>))}
                   </select>
                   <Button variant="outline" className="gap-2 text-sm" onClick={() => toast.success('Exporting results...')}>
-                    <Download className="w-4 h-4" /> Export
+                    <Download className="w-4 h-4" /> {t('export')}
                   </Button>
                 </div>
               </div>
@@ -646,10 +648,10 @@ export default function ExamReportCard() {
                       const avgPct = results.reduce((s, r) => s + parseFloat(r.percentage), 0) / results.length;
                       const topGrade = results.filter(r => r.grade.startsWith('A')).length;
                       return [
-                        { label: 'Pass Rate', value: `${((passed/results.length)*100).toFixed(0)}%`, color: 'bg-green-50 text-green-700' },
-                        { label: 'Average %', value: `${avgPct.toFixed(1)}%`, color: 'bg-blue-50 text-blue-700' },
-                        { label: 'Top Grades (A)', value: topGrade, color: 'bg-purple-50 text-purple-700' },
-                        { label: 'Total Students', value: results.length, color: 'bg-slate-50 text-slate-700' }
+                        { label: t('pass_percentage'), value: `${((passed/results.length)*100).toFixed(0)}%`, color: 'bg-green-50 text-green-700' },
+                        { label: t('average_marks'), value: `${avgPct.toFixed(1)}%`, color: 'bg-blue-50 text-blue-700' },
+                        { label: t('highest_marks'), value: topGrade, color: 'bg-purple-50 text-purple-700' },
+                        { label: t('total_students'), value: results.length, color: 'bg-slate-50 text-slate-700' }
                       ].map((s, i) => (
                         <div key={i} className={`p-3 rounded-xl ${s.color}`}>
                           <p className="text-xs opacity-75">{s.label}</p>
@@ -661,13 +663,13 @@ export default function ExamReportCard() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Rank</TableHead>
-                        <TableHead>Student Name</TableHead>
-                        <TableHead>Roll No</TableHead>
-                        <TableHead className="text-center">Total</TableHead>
+                        <TableHead>{t('rank')}</TableHead>
+                        <TableHead>{t('student_name')}</TableHead>
+                        <TableHead>{t('roll_no')}</TableHead>
+                        <TableHead className="text-center">{t('total')}</TableHead>
                         <TableHead className="text-center">%</TableHead>
-                        <TableHead className="text-center">Grade</TableHead>
-                        <TableHead className="text-center">Result</TableHead>
+                        <TableHead className="text-center">{t('grade')}</TableHead>
+                        <TableHead className="text-center">{t('result')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -688,7 +690,7 @@ export default function ExamReportCard() {
                             </TableCell>
                             <TableCell className="text-center">
                               <Badge variant={student.result.passed ? 'default' : 'destructive'}>
-                                {student.result.passed ? 'PASS' : 'FAIL'}
+                                {student.result.passed ? t('pass') : t('fail')}
                               </Badge>
                             </TableCell>
                           </TableRow>
@@ -699,7 +701,7 @@ export default function ExamReportCard() {
               ) : (
                 <div className="text-center py-10">
                   <BarChart3 className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-                  <p className="text-slate-500">Select a class to view results</p>
+                  <p className="text-slate-500">{t('select_class')}</p>
                 </div>
               )}
             </CardContent>
@@ -711,19 +713,19 @@ export default function ExamReportCard() {
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <CardTitle>Generate Report Cards</CardTitle>
-                  <CardDescription>Print or publish digital report cards</CardDescription>
+                  <CardTitle>{t('report_card')}</CardTitle>
+                  <CardDescription>{t('generate_report')}</CardDescription>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
-                    <option value="">Select Class</option>
+                    <option value="">{t('select_class')}</option>
                     {classes.map(cls => (<option key={cls.id} value={cls.id}>{cls.name}</option>))}
                   </select>
                   <Button variant="outline" className="gap-2 text-sm" onClick={handleBulkPrint}>
-                    <Printer className="w-4 h-4" /> Bulk Print
+                    <Printer className="w-4 h-4" /> {t('print')}
                   </Button>
                   <Button className="gap-2 text-sm bg-green-600 hover:bg-green-700" onClick={handleDigitalPublish}>
-                    <Share2 className="w-4 h-4" /> Publish Digital
+                    <Share2 className="w-4 h-4" /> {t('generate_report')}
                   </Button>
                 </div>
               </div>
@@ -747,24 +749,24 @@ export default function ExamReportCard() {
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-center text-sm mb-3">
                           <div className="bg-slate-50 rounded-lg p-2">
-                            <p className="text-[10px] text-slate-400">Total</p>
+                            <p className="text-[10px] text-slate-400">{t('total')}</p>
                             <p className="font-semibold">{result.totalObtained}</p>
                           </div>
                           <div className="bg-slate-50 rounded-lg p-2">
-                            <p className="text-[10px] text-slate-400">Percentage</p>
+                            <p className="text-[10px] text-slate-400">{t('percentage')}</p>
                             <p className="font-semibold">{result.percentage}%</p>
                           </div>
                           <div className={`rounded-lg p-2 ${result.passed ? 'bg-green-50' : 'bg-red-50'}`}>
-                            <p className="text-[10px] text-slate-400">Result</p>
-                            <p className={`font-semibold text-xs ${result.passed ? 'text-green-700' : 'text-red-700'}`}>{result.passed ? 'PASS' : 'FAIL'}</p>
+                            <p className="text-[10px] text-slate-400">{t('result')}</p>
+                            <p className={`font-semibold text-xs ${result.passed ? 'text-green-700' : 'text-red-700'}`}>{result.passed ? t('pass') : t('fail')}</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <Button onClick={() => generateReportCard(student)} variant="outline" className="flex-1 gap-1 text-sm" size="sm">
-                            <Eye className="w-3.5 h-3.5" /> Preview
+                            <Eye className="w-3.5 h-3.5" /> {t('view')}
                           </Button>
                           <Button onClick={() => { setSelectedStudent(student); handlePrintReportCard(); }} className="flex-1 gap-1 text-sm bg-blue-600 hover:bg-blue-700" size="sm">
-                            <Printer className="w-3.5 h-3.5" /> Print
+                            <Printer className="w-3.5 h-3.5" /> {t('print')}
                           </Button>
                         </div>
                       </div>
@@ -774,7 +776,7 @@ export default function ExamReportCard() {
               ) : (
                 <div className="text-center py-10">
                   <FileText className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-                  <p className="text-slate-500">Select a class to generate report cards</p>
+                  <p className="text-slate-500">{t('select_class')}</p>
                 </div>
               )}
             </CardContent>
@@ -786,11 +788,11 @@ export default function ExamReportCard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2"><Layers className="w-5 h-5 text-blue-600" /> Exam Structure</CardTitle>
-                  <CardDescription>Define your exam hierarchy - Term, Assessment, Subject, Activity, Rubric</CardDescription>
+                  <CardTitle className="flex items-center gap-2"><Layers className="w-5 h-5 text-blue-600" /> {t('exam_schedule')}</CardTitle>
+                  <CardDescription>{t('exam_schedule')}</CardDescription>
                 </div>
                 <Button className="gap-2 bg-blue-600 hover:bg-blue-700" onClick={() => { toast.success('Exam structure saved!'); }}>
-                  <Save className="w-4 h-4" /> Save Structure
+                  <Save className="w-4 h-4" /> {t('save')}
                 </Button>
               </div>
             </CardHeader>
@@ -861,7 +863,7 @@ export default function ExamReportCard() {
                         updated[ti].children.push({ id: `new_${Date.now()}`, name: 'New Assessment', weight: 10, max_marks: 20 });
                         setExamHierarchy(updated);
                       }}>
-                        <Plus className="w-3 h-3" /> Add Assessment
+                        <Plus className="w-3 h-3" /> {t('create_exam')}
                       </Button>
                     </div>
                   </div>
@@ -869,12 +871,12 @@ export default function ExamReportCard() {
                 <Button variant="outline" className="gap-2 w-full" onClick={() => {
                   setExamHierarchy([...examHierarchy, { id: `term_${Date.now()}`, name: 'New Term', weight: 0, children: [] }]);
                 }}>
-                  <Plus className="w-4 h-4" /> Add Term / Exam Group
+                  <Plus className="w-4 h-4" /> {t('create_exam')}
                 </Button>
               </div>
 
               <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <h4 className="font-medium text-blue-800 flex items-center gap-2"><Target className="w-4 h-4" /> Hierarchy Guide</h4>
+                <h4 className="font-medium text-blue-800 flex items-center gap-2"><Target className="w-4 h-4" /> {t('exam_schedule')}</h4>
                 <div className="mt-2 text-sm text-blue-700 space-y-1">
                   <p>Term &gt; Assessment (Unit Test, Half Yearly, Annual)</p>
                   <p>Each assessment can have its own max marks and weightage</p>
@@ -891,8 +893,8 @@ export default function ExamReportCard() {
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Palette className="w-5 h-5 text-purple-600" /> Report Card Design</CardTitle>
-                  <CardDescription>Choose and customize report card template</CardDescription>
+                  <CardTitle className="flex items-center gap-2"><Palette className="w-5 h-5 text-purple-600" /> {t('report_card')}</CardTitle>
+                  <CardDescription>{t('report_card')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -907,7 +909,7 @@ export default function ExamReportCard() {
                     ))}
                   </div>
 
-                  <h4 className="font-medium text-slate-700 mb-3">Co-Scholastic Activities</h4>
+                  <h4 className="font-medium text-slate-700 mb-3">{t('class_performance')}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
                     {coScholastic.map((activity, i) => (
                       <div key={activity.id} className="flex items-center gap-2 p-2 border rounded-lg">
@@ -930,7 +932,7 @@ export default function ExamReportCard() {
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => {
                     setCoScholastic([...coScholastic, { id: `act_${Date.now()}`, name: 'New Activity', grade: '' }]);
                   }}>
-                    <Plus className="w-3 h-3" /> Add Activity
+                    <Plus className="w-3 h-3" /> {t('add')}
                   </Button>
                 </CardContent>
               </Card>
@@ -939,18 +941,18 @@ export default function ExamReportCard() {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Report Card Settings</CardTitle>
+                  <CardTitle className="text-sm">{t('settings')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {[
-                    { key: 'show_rank', label: 'Show Rank' },
-                    { key: 'show_attendance', label: 'Show Attendance' },
-                    { key: 'show_remarks', label: 'Teacher Remarks' },
-                    { key: 'show_co_scholastic', label: 'Co-Scholastic Section' },
-                    { key: 'show_photo', label: 'Student Photo' },
-                    { key: 'show_graph', label: 'Performance Graph' },
-                    { key: 'watermark', label: 'School Watermark' },
-                    { key: 'digital_publish', label: 'Digital Publishing' }
+                    { key: 'show_rank', label: t('rank') },
+                    { key: 'show_attendance', label: t('attendance') },
+                    { key: 'show_remarks', label: t('remarks') },
+                    { key: 'show_co_scholastic', label: t('class_performance') },
+                    { key: 'show_photo', label: t('photo') },
+                    { key: 'show_graph', label: t('percentage') },
+                    { key: 'watermark', label: t('settings') },
+                    { key: 'digital_publish', label: t('generate_report') }
                   ].map(setting => (
                     <div key={setting.key} className="flex items-center justify-between">
                       <Label className="text-sm">{setting.label}</Label>
@@ -958,25 +960,25 @@ export default function ExamReportCard() {
                     </div>
                   ))}
                   <div className="pt-2 border-t">
-                    <Label className="text-sm">Principal Name</Label>
+                    <Label className="text-sm">{t('name')}</Label>
                     <Input value={reportSettings.principal_name} onChange={(e) => setReportSettings(prev => ({ ...prev, principal_name: e.target.value }))} placeholder="Principal's name" className="mt-1" />
                   </div>
                   <Button className="w-full gap-2 bg-blue-600 hover:bg-blue-700" onClick={() => toast.success('Design settings saved!')}>
-                    <Save className="w-4 h-4" /> Save Settings
+                    <Save className="w-4 h-4" /> {t('save_settings')}
                   </Button>
                 </CardContent>
               </Card>
 
               <Card className="mt-4">
                 <CardContent className="p-4">
-                  <h4 className="font-medium text-sm mb-2 flex items-center gap-2"><Share2 className="w-4 h-4 text-green-600" /> Digital Publishing</h4>
+                  <h4 className="font-medium text-sm mb-2 flex items-center gap-2"><Share2 className="w-4 h-4 text-green-600" /> {t('generate_report')}</h4>
                   <p className="text-xs text-slate-500 mb-3">Published report cards are visible to parents on the StudyTino mobile app.</p>
                   <div className="space-y-2">
                     <Button variant="outline" className="w-full gap-2 text-sm" onClick={() => toast.success('Report cards shared via WhatsApp!')}>
-                      <Smartphone className="w-4 h-4" /> Share via WhatsApp
+                      <Smartphone className="w-4 h-4" /> {t('share')}
                     </Button>
                     <Button variant="outline" className="w-full gap-2 text-sm" onClick={() => toast.success('Report cards emailed to parents!')}>
-                      <Mail className="w-4 h-4" /> Email to Parents
+                      <Mail className="w-4 h-4" /> {t('send')}
                     </Button>
                   </div>
                 </CardContent>
@@ -989,8 +991,8 @@ export default function ExamReportCard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Settings className="w-5 h-5 text-orange-600" /> Grading System</CardTitle>
-                <CardDescription>Configure grading scale for your school</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Settings className="w-5 h-5 text-orange-600" /> {t('grade')}</CardTitle>
+                <CardDescription>{t('grade')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -1008,14 +1010,14 @@ export default function ExamReportCard() {
                   ))}
                 </div>
 
-                <h4 className="font-medium text-slate-700 mb-3">Current Grading Scale: {gradingSystem.toUpperCase()}</h4>
+                <h4 className="font-medium text-slate-700 mb-3">{t('grade')}: {gradingSystem.toUpperCase()}</h4>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Min %</TableHead>
-                      <TableHead>Grade</TableHead>
+                      <TableHead>{t('grade')}</TableHead>
                       <TableHead>Points</TableHead>
-                      <TableHead>Remark</TableHead>
+                      <TableHead>{t('remarks')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1074,34 +1076,34 @@ export default function ExamReportCard() {
             <div className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2"><Target className="w-4 h-4 text-blue-600" /> Pass/Fail Criteria</CardTitle>
+                  <CardTitle className="text-sm flex items-center gap-2"><Target className="w-4 h-4 text-blue-600" /> {t('pass')}/{t('fail')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label className="text-sm">Minimum Pass Percentage</Label>
+                    <Label className="text-sm">{t('min_marks')}</Label>
                     <Input type="number" defaultValue={33} className="mt-1" />
                   </div>
                   <div>
-                    <Label className="text-sm">Minimum Pass in Each Subject</Label>
+                    <Label className="text-sm">{t('min_marks')} ({t('subject')})</Label>
                     <Input type="number" defaultValue={33} className="mt-1" />
                   </div>
                   <div className="flex items-center justify-between pt-2">
-                    <Label className="text-sm">Allow Grace Marks</Label>
+                    <Label className="text-sm">{t('max_marks')}</Label>
                     <Switch defaultChecked={true} />
                   </div>
                   <div>
-                    <Label className="text-sm">Maximum Grace Marks</Label>
+                    <Label className="text-sm">{t('max_marks')}</Label>
                     <Input type="number" defaultValue={5} className="mt-1" />
                   </div>
                   <Button className="w-full gap-2 bg-orange-600 hover:bg-orange-700 mt-2" onClick={() => toast.success('Grading criteria saved!')}>
-                    <Save className="w-4 h-4" /> Save Criteria
+                    <Save className="w-4 h-4" /> {t('save')}
                   </Button>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardContent className="p-4">
-                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-600" /> Scoring Options</h4>
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-600" /> {t('total_marks')}</h4>
                   <div className="space-y-3">
                     {[
                       { label: 'Auto-calculate totals', checked: true },
@@ -1126,17 +1128,17 @@ export default function ExamReportCard() {
       <Dialog open={showExamDialog} onOpenChange={setShowExamDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Exam</DialogTitle>
-            <DialogDescription>Set up a new examination</DialogDescription>
+            <DialogTitle>{t('create_exam')}</DialogTitle>
+            <DialogDescription>{t('create_exam')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>Exam Name *</Label>
+              <Label>{t('exam_name')} *</Label>
               <Input value={examForm.name} onChange={(e) => setExamForm(prev => ({ ...prev, name: e.target.value }))} placeholder="e.g., Half Yearly Exam 2025" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Exam Type</Label>
+                <Label>{t('exam_type')}</Label>
                 <select value={examForm.type} onChange={(e) => {
                   const type = EXAM_TYPES.find(t => t.id === e.target.value);
                   setExamForm(prev => ({ ...prev, type: e.target.value, max_marks: type?.max_marks || 20 }));
@@ -1145,28 +1147,28 @@ export default function ExamReportCard() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Class *</Label>
+                <Label>{t('classes')} *</Label>
                 <select value={examForm.class_id} onChange={(e) => setExamForm(prev => ({ ...prev, class_id: e.target.value }))} className="w-full px-3 py-2 border rounded-lg">
-                  <option value="">Select Class</option>
+                  <option value="">{t('select_class')}</option>
                   {classes.map(cls => (<option key={cls.id} value={cls.id}>{cls.name}</option>))}
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Start Date</Label>
+                <Label>{t('start_date')}</Label>
                 <Input type="date" value={examForm.start_date} onChange={(e) => setExamForm(prev => ({ ...prev, start_date: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>End Date</Label>
+                <Label>{t('end_date')}</Label>
                 <Input type="date" value={examForm.end_date} onChange={(e) => setExamForm(prev => ({ ...prev, end_date: e.target.value }))} />
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowExamDialog(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowExamDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleCreateExam} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                Create Exam
+                {t('create_exam')}
               </Button>
             </div>
           </div>
@@ -1176,7 +1178,7 @@ export default function ExamReportCard() {
       <Dialog open={showReportCard} onOpenChange={setShowReportCard}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Report Card Preview</DialogTitle>
+            <DialogTitle>{t('report_card')}</DialogTitle>
           </DialogHeader>
           {selectedStudent && (
             <div className="border rounded-lg p-6 bg-white">
@@ -1184,22 +1186,22 @@ export default function ExamReportCard() {
                 {school?.logo_url && <img src={school.logo_url} alt="" className="w-16 h-16 mx-auto mb-2 object-contain" />}
                 <h2 className="text-xl font-bold" style={{ color: REPORT_DESIGNS.find(d => d.id === selectedDesign)?.color }}>{school?.name}</h2>
                 <p className="text-sm text-slate-500">{school?.address}</p>
-                <h3 className="text-lg font-semibold mt-2 underline">Progress Report / प्रगति पत्र</h3>
+                <h3 className="text-lg font-semibold mt-2 underline">{t('report_card')}</h3>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                <div><b>Name:</b> {selectedStudent.name}</div>
-                <div><b>Roll No:</b> {selectedStudent.roll_no || selectedStudent.student_id}</div>
-                <div><b>Father:</b> {selectedStudent.father_name}</div>
-                <div><b>Class:</b> {classes.find(c => c.id === selectedStudent.class_id)?.name}</div>
+                <div><b>{t('name')}:</b> {selectedStudent.name}</div>
+                <div><b>{t('roll_no')}:</b> {selectedStudent.roll_no || selectedStudent.student_id}</div>
+                <div><b>{t('father_name')}:</b> {selectedStudent.father_name}</div>
+                <div><b>{t('classes')}:</b> {classes.find(c => c.id === selectedStudent.class_id)?.name}</div>
               </div>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Subject</TableHead>
-                    <TableHead className="text-center">Max</TableHead>
-                    <TableHead className="text-center">Obtained</TableHead>
-                    <TableHead className="text-center">Grade</TableHead>
-                    <TableHead className="text-center">Remark</TableHead>
+                    <TableHead>{t('subject')}</TableHead>
+                    <TableHead className="text-center">{t('max_marks')}</TableHead>
+                    <TableHead className="text-center">{t('obtained_marks')}</TableHead>
+                    <TableHead className="text-center">{t('grade')}</TableHead>
+                    <TableHead className="text-center">{t('remarks')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1221,7 +1223,7 @@ export default function ExamReportCard() {
               </Table>
               {reportSettings.show_co_scholastic && (
                 <div className="mt-4">
-                  <h4 className="font-medium text-sm mb-2">Co-Scholastic Activities</h4>
+                  <h4 className="font-medium text-sm mb-2">{t('class_performance')}</h4>
                   <div className="grid grid-cols-3 gap-2">
                     {coScholastic.map(a => (
                       <div key={a.id} className="flex items-center justify-between p-2 bg-slate-50 rounded text-sm">
@@ -1233,16 +1235,16 @@ export default function ExamReportCard() {
                 </div>
               )}
               <div className="mt-4 p-4 bg-slate-50 rounded-lg text-center">
-                <p>Percentage: <b>{calculateResult(selectedStudent.id).percentage}%</b></p>
-                <p>Grade: <b>{calculateResult(selectedStudent.id).grade}</b> ({calculateResult(selectedStudent.id).remark})</p>
+                <p>{t('percentage')}: <b>{calculateResult(selectedStudent.id).percentage}%</b></p>
+                <p>{t('grade')}: <b>{calculateResult(selectedStudent.id).grade}</b> ({calculateResult(selectedStudent.id).remark})</p>
                 <p className={`font-bold ${calculateResult(selectedStudent.id).passed ? 'text-green-600' : 'text-red-600'}`}>
-                  {calculateResult(selectedStudent.id).passed ? 'PASSED' : 'FAILED'}
+                  {calculateResult(selectedStudent.id).passed ? t('pass') : t('fail')}
                 </p>
               </div>
               <div className="flex justify-end gap-3 mt-4">
-                <Button variant="outline" onClick={() => setShowReportCard(false)}>Close</Button>
+                <Button variant="outline" onClick={() => setShowReportCard(false)}>{t('close')}</Button>
                 <Button onClick={handlePrintReportCard} className="gap-2 bg-blue-600 hover:bg-blue-700">
-                  <Printer className="w-4 h-4" /> Print
+                  <Printer className="w-4 h-4" /> {t('print')}
                 </Button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { 
   Bus, MapPin, Users, Phone, Car, Plus, RefreshCw,
@@ -23,6 +24,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function TransportPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [vehicles, setVehicles] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -214,16 +216,16 @@ export default function TransportPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
             <Bus className="w-8 h-8 text-amber-500" />
-            Transport Management
+            {t('transport')}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Vehicle Tracking, Routes & Student Transport
+            {t('live_tracking')}, {t('routes')} & {t('transport')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={fetchData}>
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+            {t('refresh')}
           </Button>
         </div>
       </div>
@@ -235,7 +237,7 @@ export default function TransportPage() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Vehicles</p>
+                  <p className="text-sm text-muted-foreground">{t('vehicles')}</p>
                   <p className="text-3xl font-bold">{analytics.total_vehicles}</p>
                 </div>
                 <Bus className="w-10 h-10 text-amber-500" />
@@ -246,7 +248,7 @@ export default function TransportPage() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Routes</p>
+                  <p className="text-sm text-muted-foreground">{t('routes')}</p>
                   <p className="text-3xl font-bold">{analytics.total_routes}</p>
                 </div>
                 <Route className="w-10 h-10 text-blue-500" />
@@ -257,7 +259,7 @@ export default function TransportPage() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Students</p>
+                  <p className="text-sm text-muted-foreground">{t('students')}</p>
                   <p className="text-3xl font-bold">{analytics.students_using_transport}</p>
                 </div>
                 <Users className="w-10 h-10 text-green-500" />
@@ -280,10 +282,10 @@ export default function TransportPage() {
 
       <Tabs defaultValue="tracking" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="tracking">Live Tracking</TabsTrigger>
-          <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
-          <TabsTrigger value="routes">Routes</TabsTrigger>
-          <TabsTrigger value="nfc-gps">NFC & GPS Tracking</TabsTrigger>
+          <TabsTrigger value="tracking">{t('live_tracking')}</TabsTrigger>
+          <TabsTrigger value="vehicles">{t('vehicles')}</TabsTrigger>
+          <TabsTrigger value="routes">{t('routes')}</TabsTrigger>
+          <TabsTrigger value="nfc-gps">NFC & {t('gps_tracking')}</TabsTrigger>
         </TabsList>
 
         {/* Live Tracking Tab */}
@@ -292,7 +294,7 @@ export default function TransportPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Navigation className="w-5 h-5 text-green-500 animate-pulse" />
-                Live Vehicle Tracking
+                {t('live_tracking')}
               </CardTitle>
               <CardDescription>
                 Real-time vehicle locations (GPS SIMULATED - Live GPS pending)
@@ -315,7 +317,7 @@ export default function TransportPage() {
                               {vehicle.vehicle_number}
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              Driver: {vehicle.driver_name}
+                              {t('driver_name')}: {vehicle.driver_name}
                             </p>
                             <p className="text-sm text-muted-foreground flex items-center gap-1">
                               <Phone className="w-3 h-3" /> {vehicle.driver_phone}
@@ -358,7 +360,7 @@ export default function TransportPage() {
           <div className="flex justify-end mb-4">
             <Button onClick={() => setShowAddVehicle(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Add Vehicle
+              {t('add_vehicle')}
             </Button>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -396,7 +398,7 @@ export default function TransportPage() {
           <div className="flex justify-end mb-4">
             <Button onClick={() => setShowAddRoute(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Add Route
+              {t('add_route')}
             </Button>
           </div>
           <div className="grid gap-4">
@@ -604,12 +606,12 @@ export default function TransportPage() {
       <Dialog open={showAddVehicle} onOpenChange={setShowAddVehicle}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Vehicle</DialogTitle>
+            <DialogTitle>{t('add_vehicle')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddVehicle} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Vehicle Number *</label>
+                <label className="text-sm font-medium">{t('vehicle_number')} *</label>
                 <Input
                   value={vehicleForm.vehicle_number}
                   onChange={(e) => setVehicleForm({...vehicleForm, vehicle_number: e.target.value})}
@@ -617,7 +619,7 @@ export default function TransportPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Type</label>
+                <label className="text-sm font-medium">{t('type')}</label>
                 <select
                   value={vehicleForm.vehicle_type}
                   onChange={(e) => setVehicleForm({...vehicleForm, vehicle_type: e.target.value})}
@@ -631,7 +633,7 @@ export default function TransportPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Capacity</label>
+                <label className="text-sm font-medium">{t('capacity')}</label>
                 <Input
                   type="number"
                   value={vehicleForm.capacity}
@@ -639,7 +641,7 @@ export default function TransportPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Driver Name *</label>
+                <label className="text-sm font-medium">{t('driver_name')} *</label>
                 <Input
                   value={vehicleForm.driver_name}
                   onChange={(e) => setVehicleForm({...vehicleForm, driver_name: e.target.value})}
@@ -649,7 +651,7 @@ export default function TransportPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Driver Phone</label>
+                <label className="text-sm font-medium">{t('driver_phone')}</label>
                 <Input
                   value={vehicleForm.driver_phone}
                   onChange={(e) => setVehicleForm({...vehicleForm, driver_phone: e.target.value})}
@@ -667,10 +669,10 @@ export default function TransportPage() {
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setShowAddVehicle(false)}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button type="submit" className="bg-amber-600 hover:bg-amber-700">
-                Add Vehicle
+                {t('add_vehicle')}
               </Button>
             </div>
           </form>
@@ -681,12 +683,12 @@ export default function TransportPage() {
       <Dialog open={showAddRoute} onOpenChange={setShowAddRoute}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create New Route</DialogTitle>
+            <DialogTitle>{t('add_route')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddRoute} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Route Name *</label>
+                <label className="text-sm font-medium">{t('route_name')} *</label>
                 <Input
                   value={routeForm.route_name}
                   onChange={(e) => setRouteForm({...routeForm, route_name: e.target.value})}
@@ -694,7 +696,7 @@ export default function TransportPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Route Number *</label>
+                <label className="text-sm font-medium">{t('route_number')} *</label>
                 <Input
                   value={routeForm.route_number}
                   onChange={(e) => setRouteForm({...routeForm, route_number: e.target.value})}
@@ -741,10 +743,10 @@ export default function TransportPage() {
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setShowAddRoute(false)}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Create Route
+                {t('add_route')}
               </Button>
             </div>
           </form>
@@ -756,7 +758,7 @@ export default function TransportPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Navigation className="w-5 h-5 text-blue-500" />
-              Add GPS Device
+              {t('add')} GPS Device
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddGpsDevice} className="space-y-4">
@@ -834,10 +836,10 @@ export default function TransportPage() {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => setShowAddGps(false)}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Add Device
+                {t('add')} Device
               </Button>
             </div>
           </form>

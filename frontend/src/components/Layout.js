@@ -6,35 +6,37 @@ import Sidebar from './Sidebar';
 import { GlobalWatermark } from './SchoolLogoWatermark';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
-const breadcrumbMap = {
-  '/app/dashboard': 'Dashboard',
-  '/app/students': 'Students',
-  '/app/staff': 'Staff Management',
-  '/app/classes': 'Classes',
-  '/app/attendance': 'Attendance',
-  '/app/fees': 'Fee Management',
-  '/app/admissions': 'Admissions',
-  '/app/exams': 'Exams & Reports',
-  '/app/timetable': 'Timetable',
-  '/app/library': 'Digital Library',
-  '/app/homework': 'Homework',
-  '/app/live-classes': 'Live Classes',
-  '/app/communication': 'Communication Hub',
-  '/app/front-office': 'Front Office',
-  '/app/transport': 'Transport',
-  '/app/calendar': 'Calendar',
-  '/app/analytics': 'Analytics',
-  '/app/ai-tools': 'AI Tools',
-  '/app/cctv': 'CCTV Integration',
-  '/app/inventory': 'Inventory',
-  '/app/multi-branch': 'Multi-Branch',
-  '/app/settings': 'Settings',
-  '/app/subscription': 'Subscription',
-  '/app/profile': 'Profile',
-  '/app/school-feed': 'School Feed',
-  '/app/leave': 'Leave Management',
-  '/app/setup-wizard': 'Setup Wizard',
+const breadcrumbKeyMap = {
+  '/app/dashboard': 'dashboard',
+  '/app/students': 'students',
+  '/app/staff': 'staff_management',
+  '/app/classes': 'classes',
+  '/app/attendance': 'attendance',
+  '/app/fees': 'fee_management',
+  '/app/admissions': 'admissions',
+  '/app/exams': 'exams_reports',
+  '/app/timetable': 'timetable',
+  '/app/library': 'digital_library',
+  '/app/homework': 'homework',
+  '/app/live-classes': 'live_classes',
+  '/app/communication': 'communication_hub',
+  '/app/front-office': 'front_office',
+  '/app/transport': 'transport',
+  '/app/calendar': 'calendar',
+  '/app/analytics': 'analytics',
+  '/app/ai-tools': 'ai_tools',
+  '/app/cctv': 'cctv_integration',
+  '/app/inventory': 'inventory',
+  '/app/multi-branch': 'multi_branch',
+  '/app/settings': 'settings',
+  '/app/subscription': 'subscription',
+  '/app/profile': 'profile',
+  '/app/school-feed': 'school_feed',
+  '/app/leave': 'leave_management',
+  '/app/setup-wizard': 'setup_wizard',
 };
 
 export const Layout = () => {
@@ -50,12 +52,15 @@ export const Layout = () => {
   const chatEndRef = useRef(null);
   const { user, schoolData } = useAuth();
   const { isHindi, toggleLanguage } = useLanguage();
+  const { t } = useTranslation();
+  const { isDarkMode, getHeaderBg, getHeaderText, headerLogoSize, darkTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
   const schoolLogo = schoolData?.logo_url || schoolData?.logo;
   const schoolName = schoolData?.name || user?.school_name;
-  const currentPage = breadcrumbMap[location.pathname] || 'Page';
+  const breadcrumbKey = breadcrumbKeyMap[location.pathname];
+  const currentPage = breadcrumbKey ? t(breadcrumbKey) : 'Page';
 
   const isTinoChatEnabled = () => {
     try {
@@ -163,7 +168,7 @@ export const Layout = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden" style={{height: '100dvh'}}>
+    <div className={`h-screen flex overflow-hidden ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}`} style={{height: '100dvh'}}>
       <GlobalWatermark />
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -178,14 +183,14 @@ export const Layout = () => {
 
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <div className="flex-shrink-0 z-30">
-          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white px-4 lg:px-6 py-2.5" style={{paddingTop: 'max(0.625rem, env(safe-area-inset-top))'}}>
+          <div className="text-white px-4 lg:px-6 py-2.5" style={{paddingTop: 'max(0.625rem, env(safe-area-inset-top))', backgroundColor: getHeaderBg(), color: getHeaderText()}}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-white/80 hover:bg-white/10 rounded-lg flex-shrink-0">
                   <Menu className="w-5 h-5" />
                 </button>
                 {schoolLogo ? (
-                  <img src={schoolLogo} alt={schoolName} className="rounded-lg object-cover bg-white/10 p-0.5 flex-shrink-0" style={{ width: `${Math.max(36, Math.min(56, (schoolData?.logo_size || 100) * 0.44))}px`, height: `${Math.max(36, Math.min(56, (schoolData?.logo_size || 100) * 0.44))}px`, opacity: (schoolData?.logo_opacity || 100) / 100 }} />
+                  <img src={schoolLogo} alt={schoolName} className="rounded-lg object-cover bg-white/10 p-0.5 flex-shrink-0" style={{ width: `${headerLogoSize}px`, height: `${headerLogoSize}px`, opacity: (schoolData?.logo_opacity || 100) / 100 }} />
                 ) : (
                   <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
                     <GraduationCap className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
@@ -194,7 +199,7 @@ export const Layout = () => {
                 <div className="min-w-0">
                   <h1 className="text-sm lg:text-lg font-bold leading-tight tracking-tight truncate">{schoolName || 'Schooltino'}</h1>
                   {schoolData?.address && (
-                    <p className="text-[10px] lg:text-xs text-blue-200/70 leading-tight truncate">
+                    <p className="text-[10px] lg:text-xs opacity-70 leading-tight truncate">
                       {schoolData.city || ''}{schoolData.state ? `, ${schoolData.state}` : ''}
                     </p>
                   )}
@@ -269,22 +274,22 @@ export const Layout = () => {
             </div>
           </div>
 
-          <header className="h-10 lg:h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 shadow-sm">
+          <header className={`h-10 lg:h-12 flex items-center justify-between px-4 lg:px-6 shadow-sm ${isDarkMode ? 'bg-slate-800 border-b border-slate-700' : 'bg-white border-b border-gray-200'}`}>
             <div className="flex items-center gap-2 text-sm min-w-0">
-              <span className="text-gray-400 text-xs">Home</span>
-              <span className="text-gray-300 text-xs">/</span>
-              <span className="text-gray-800 font-medium text-xs lg:text-sm truncate">{currentPage}</span>
+              <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>{t('home')}</span>
+              <span className={`text-xs ${isDarkMode ? 'text-slate-600' : 'text-gray-300'}`}>/</span>
+              <span className={`font-medium text-xs lg:text-sm truncate ${isDarkMode ? 'text-slate-200' : 'text-gray-800'}`}>{currentPage}</span>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
-              <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
+              <button className={`hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors border ${isDarkMode ? 'text-slate-400 bg-slate-700 hover:bg-slate-600 border-slate-600' : 'text-gray-400 bg-gray-50 hover:bg-gray-100 border-gray-200'}`}>
                 <Search className="w-3.5 h-3.5" />
-                <span className="hidden md:inline text-xs">Search...</span>
+                <span className="hidden md:inline text-xs">{t('search_placeholder')}</span>
               </button>
             </div>
           </header>
         </div>
 
-        <main className="flex-1 overflow-y-auto overscroll-contain" style={{WebkitOverflowScrolling: 'touch'}}>
+        <main className={`flex-1 overflow-y-auto overscroll-contain ${isDarkMode ? 'bg-slate-900' : ''}`} style={{WebkitOverflowScrolling: 'touch'}}>
           <div className="p-3 md:p-6 lg:p-8 pb-6" style={{paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))'}}>
             <Outlet />
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import {
@@ -15,6 +16,7 @@ import {
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { schoolId, user, schoolData } = useAuth();
   const [stats, setStats] = useState(null);
@@ -118,7 +120,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        <p className="text-sm text-gray-400">Loading dashboard...</p>
+        <p className="text-sm text-gray-400">{t('loading')}</p>
       </div>
     );
   }
@@ -129,10 +131,10 @@ export default function DashboardPage() {
         <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
           <GraduationCap className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Welcome to SchoolTino</h2>
-        <p className="text-sm text-gray-500 mb-6">Set up your school to get started.</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{t('welcome_to_dashboard')}</h2>
+        <p className="text-sm text-gray-500 mb-6">{t('setup_school_desc')}</p>
         <button onClick={() => navigate('/app/settings')} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 inline-flex items-center gap-2">
-          <Settings className="w-4 h-4" />Get Started
+          <Settings className="w-4 h-4" />{t('get_started')}
         </button>
       </div>
     );
@@ -141,67 +143,67 @@ export default function DashboardPage() {
   const safeStats = stats || { total_students: 0, total_staff: 0, fee_collection_month: 0, attendance_today: { present: 0 }, pending_fees: 0 };
 
   const statCards = [
-    { label: 'Total Students', value: safeStats.total_students || 0, icon: Users, gradient: 'from-blue-500 to-blue-600', trend: '+12%', trendUp: true },
-    { label: 'Total Staff', value: safeStats.total_staff || 0, icon: UserCog, gradient: 'from-purple-500 to-purple-600', trend: '+5%', trendUp: true },
-    { label: 'Fee Collected', value: `₹${((safeStats.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee, gradient: 'from-emerald-500 to-teal-600', trend: '+18%', trendUp: true },
-    { label: 'Attendance Today', value: `${safeStats.attendance_today?.present || 0}%`, icon: CalendarCheck, gradient: 'from-orange-500 to-amber-600', trend: '+2%', trendUp: true },
-    { label: 'Pending Fees', value: `₹${((safeStats.pending_fees || 0) / 1000).toFixed(0)}K`, icon: Wallet, gradient: 'from-red-500 to-rose-600', trend: '-8%', trendUp: false },
+    { label: t('total_students'), value: safeStats.total_students || 0, icon: Users, gradient: 'from-blue-500 to-blue-600', trend: '+12%', trendUp: true },
+    { label: t('total_staff'), value: safeStats.total_staff || 0, icon: UserCog, gradient: 'from-purple-500 to-purple-600', trend: '+5%', trendUp: true },
+    { label: t('fee_collected'), value: `₹${((safeStats.fee_collection_month || 0) / 1000).toFixed(0)}K`, icon: IndianRupee, gradient: 'from-emerald-500 to-teal-600', trend: '+18%', trendUp: true },
+    { label: t('attendance_today'), value: `${safeStats.attendance_today?.present || 0}%`, icon: CalendarCheck, gradient: 'from-orange-500 to-amber-600', trend: '+2%', trendUp: true },
+    { label: t('pending_fees'), value: `₹${((safeStats.pending_fees || 0) / 1000).toFixed(0)}K`, icon: Wallet, gradient: 'from-red-500 to-rose-600', trend: '-8%', trendUp: false },
   ];
 
   const quickActions = [
-    { icon: UserPlus, label: 'New Admission', path: '/app/students', color: 'bg-blue-500', lightBg: 'bg-blue-50', textColor: 'text-blue-600' },
-    { icon: CalendarCheck, label: 'Mark Attendance', path: '/app/attendance', color: 'bg-purple-500', lightBg: 'bg-purple-50', textColor: 'text-purple-600' },
-    { icon: IndianRupee, label: 'Collect Fee', path: '/app/fees', color: 'bg-emerald-500', lightBg: 'bg-emerald-50', textColor: 'text-emerald-600' },
-    { icon: Bell, label: 'Send Notice', path: '/app/communication', color: 'bg-orange-500', lightBg: 'bg-orange-50', textColor: 'text-orange-600' },
-    { icon: FileText, label: 'Create Exam', path: '/app/exams', color: 'bg-pink-500', lightBg: 'bg-pink-50', textColor: 'text-pink-600' },
-    { icon: Brain, label: 'AI Tools', path: '/app/ai-tools', color: 'bg-indigo-500', lightBg: 'bg-indigo-50', textColor: 'text-indigo-600' },
+    { icon: UserPlus, label: t('new_admissions'), path: '/app/students', color: 'bg-blue-500', lightBg: 'bg-blue-50', textColor: 'text-blue-600' },
+    { icon: CalendarCheck, label: t('mark_attendance'), path: '/app/attendance', color: 'bg-purple-500', lightBg: 'bg-purple-50', textColor: 'text-purple-600' },
+    { icon: IndianRupee, label: t('collect_fee'), path: '/app/fees', color: 'bg-emerald-500', lightBg: 'bg-emerald-50', textColor: 'text-emerald-600' },
+    { icon: Bell, label: t('send_notice'), path: '/app/communication', color: 'bg-orange-500', lightBg: 'bg-orange-50', textColor: 'text-orange-600' },
+    { icon: FileText, label: t('create_exam'), path: '/app/exams', color: 'bg-pink-500', lightBg: 'bg-pink-50', textColor: 'text-pink-600' },
+    { icon: Brain, label: t('ai_tools'), path: '/app/ai-tools', color: 'bg-indigo-500', lightBg: 'bg-indigo-50', textColor: 'text-indigo-600' },
   ];
 
   const isEnabled = (key) => !key || !moduleVis[key] || moduleVis[key].schooltino !== false;
 
   const allModules = [
-    { icon: Users, label: 'Students', desc: 'Student records & profiles', path: '/app/students', gradient: 'from-blue-500 to-blue-600', mk: 'students' },
-    { icon: UserCog, label: 'Staff', desc: 'Employee management', path: '/app/staff', gradient: 'from-purple-500 to-violet-500', mk: 'staff' },
-    { icon: GraduationCap, label: 'Classes', desc: 'Class management', path: '/app/classes', gradient: 'from-cyan-500 to-blue-500', mk: 'classes' },
-    { icon: CalendarCheck, label: 'Attendance', desc: 'Track attendance', path: '/app/attendance', gradient: 'from-teal-500 to-emerald-500', mk: 'attendance' },
-    { icon: IndianRupee, label: 'Fees', desc: 'Fee management', path: '/app/fees', gradient: 'from-emerald-500 to-green-500', mk: 'fee_management' },
-    { icon: Target, label: 'Admissions', desc: 'Admission & CRM', path: '/app/admissions', gradient: 'from-cyan-500 to-blue-500', mk: 'admissions' },
-    { icon: FileText, label: 'Exams', desc: 'Exam & reports', path: '/app/exams', gradient: 'from-pink-500 to-rose-500', mk: 'exams_reports' },
-    { icon: Clock, label: 'Timetable', desc: 'Schedule classes', path: '/app/timetable', gradient: 'from-indigo-500 to-blue-500', mk: 'timetable' },
-    { icon: BookOpen, label: 'Library', desc: 'Digital library', path: '/app/library', gradient: 'from-purple-500 to-fuchsia-500', mk: 'digital_library' },
-    { icon: Clipboard, label: 'Homework', desc: 'Assignments', path: '/app/homework', gradient: 'from-amber-500 to-orange-500', mk: 'homework' },
-    { icon: Tv, label: 'Live Classes', desc: 'Online teaching', path: '/app/live-classes', gradient: 'from-red-500 to-rose-500', mk: 'live_classes' },
-    { icon: MessageSquare, label: 'Communication', desc: 'SMS & WhatsApp', path: '/app/communication', gradient: 'from-sky-500 to-cyan-500', mk: 'communication_hub' },
-    { icon: Shield, label: 'Front Office', desc: 'Visitor management', path: '/app/front-office', gradient: 'from-teal-500 to-cyan-500', mk: 'front_office' },
-    { icon: Bus, label: 'Transport', desc: 'Routes & GPS', path: '/app/transport', gradient: 'from-orange-500 to-red-500', mk: 'transport' },
-    { icon: Calendar, label: 'Calendar', desc: 'Events & schedule', path: '/app/calendar', gradient: 'from-emerald-500 to-teal-500', mk: 'calendar' },
-    { icon: BarChart3, label: 'Analytics', desc: 'Reports & insights', path: '/app/analytics', gradient: 'from-blue-500 to-indigo-500', mk: 'analytics' },
-    { icon: Brain, label: 'AI Tools', desc: 'Paper, Events, Calendar', path: '/app/ai-tools', gradient: 'from-purple-500 to-pink-500', mk: 'ai_tools' },
-    { icon: Video, label: 'CCTV', desc: 'Camera monitoring', path: '/app/cctv', gradient: 'from-red-500 to-rose-500', mk: 'cctv' },
-    { icon: Package, label: 'Inventory', desc: 'Stock management', path: '/app/inventory', gradient: 'from-slate-500 to-zinc-600', mk: 'inventory' },
-    { icon: Building, label: 'Multi-Branch', desc: 'Branch management', path: '/app/multi-branch', gradient: 'from-blue-500 to-indigo-500', mk: 'multi_branch' },
+    { icon: Users, label: t('students'), desc: t('student_list'), path: '/app/students', gradient: 'from-blue-500 to-blue-600', mk: 'students' },
+    { icon: UserCog, label: t('staff'), desc: t('staff_management'), path: '/app/staff', gradient: 'from-purple-500 to-violet-500', mk: 'staff' },
+    { icon: GraduationCap, label: t('classes'), desc: t('class_list'), path: '/app/classes', gradient: 'from-cyan-500 to-blue-500', mk: 'classes' },
+    { icon: CalendarCheck, label: t('attendance'), desc: t('view_attendance'), path: '/app/attendance', gradient: 'from-teal-500 to-emerald-500', mk: 'attendance' },
+    { icon: IndianRupee, label: t('fees'), desc: t('fee_management'), path: '/app/fees', gradient: 'from-emerald-500 to-green-500', mk: 'fee_management' },
+    { icon: Target, label: t('admissions'), desc: t('admissions_crm'), path: '/app/admissions', gradient: 'from-cyan-500 to-blue-500', mk: 'admissions' },
+    { icon: FileText, label: t('exams'), desc: t('exams_reports'), path: '/app/exams', gradient: 'from-pink-500 to-rose-500', mk: 'exams_reports' },
+    { icon: Clock, label: t('timetable'), desc: t('schedule_class'), path: '/app/timetable', gradient: 'from-indigo-500 to-blue-500', mk: 'timetable' },
+    { icon: BookOpen, label: t('library'), desc: t('digital_library'), path: '/app/library', gradient: 'from-purple-500 to-fuchsia-500', mk: 'digital_library' },
+    { icon: Clipboard, label: t('homework'), desc: t('homework_list'), path: '/app/homework', gradient: 'from-amber-500 to-orange-500', mk: 'homework' },
+    { icon: Tv, label: t('live_classes'), desc: t('online_class'), path: '/app/live-classes', gradient: 'from-red-500 to-rose-500', mk: 'live_classes' },
+    { icon: MessageSquare, label: t('communication'), desc: t('communication_hub'), path: '/app/communication', gradient: 'from-sky-500 to-cyan-500', mk: 'communication_hub' },
+    { icon: Shield, label: t('front_office'), desc: t('visitor_management'), path: '/app/front-office', gradient: 'from-teal-500 to-cyan-500', mk: 'front_office' },
+    { icon: Bus, label: t('transport'), desc: t('gps_tracking'), path: '/app/transport', gradient: 'from-orange-500 to-red-500', mk: 'transport' },
+    { icon: Calendar, label: t('calendar'), desc: t('events'), path: '/app/calendar', gradient: 'from-emerald-500 to-teal-500', mk: 'calendar' },
+    { icon: BarChart3, label: t('analytics'), desc: t('reports'), path: '/app/analytics', gradient: 'from-blue-500 to-indigo-500', mk: 'analytics' },
+    { icon: Brain, label: t('ai_tools'), desc: t('ai_paper'), path: '/app/ai-tools', gradient: 'from-purple-500 to-pink-500', mk: 'ai_tools' },
+    { icon: Video, label: t('cctv'), desc: t('cctv_integration'), path: '/app/cctv', gradient: 'from-red-500 to-rose-500', mk: 'cctv' },
+    { icon: Package, label: t('inventory'), desc: t('item_list'), path: '/app/inventory', gradient: 'from-slate-500 to-zinc-600', mk: 'inventory' },
+    { icon: Building, label: t('multi_branch'), desc: t('branch_list'), path: '/app/multi-branch', gradient: 'from-blue-500 to-indigo-500', mk: 'multi_branch' },
   ];
   const modules = allModules.filter(m => isEnabled(m.mk));
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const greeting = hour < 12 ? t('good_morning') : hour < 17 ? t('good_afternoon') : t('good_evening');
 
   return (
     <div className="space-y-8 max-w-7xl">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <p className="text-sm text-gray-500 mb-1">{greeting}</p>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{user?.name?.split(' ')[0] || 'Admin'}</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{schoolData?.name || 'Dashboard'}</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{user?.name?.split(' ')[0] || t('dashboard')}</h1>
+          <p className="text-sm text-gray-400 mt-0.5">{schoolData?.name || t('dashboard')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/app/analytics')} className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
             <BarChart3 className="w-4 h-4 text-blue-500" />
-            <span className="hidden sm:inline">Analytics</span>
+            <span className="hidden sm:inline">{t('analytics')}</span>
           </button>
           <button onClick={() => navigate('/app/settings')} className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm">
             <Settings className="w-4 h-4" />
-            <span className="hidden sm:inline">Settings</span>
+            <span className="hidden sm:inline">{t('settings')}</span>
           </button>
         </div>
       </div>
@@ -225,7 +227,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">{t('quick_actions')}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {quickActions.map((action, idx) => (
             <button key={idx} onClick={() => navigate(action.path)} className={`flex flex-col items-center gap-2.5 p-4 ${action.lightBg} rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border border-transparent hover:border-gray-200`}>
@@ -246,8 +248,8 @@ export default function DashboardPage() {
                 <Bell className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Teacher Requests (Pending Approval)</h2>
-                <p className="text-xs text-gray-500">{teacherRequests.length} request(s) waiting for your action</p>
+                <h2 className="text-lg font-bold text-gray-900">{t('teacher_requests_pending')}</h2>
+                <p className="text-xs text-gray-500">{teacherRequests.length} {t('requests_waiting_action')}</p>
               </div>
             </div>
           </div>
@@ -263,8 +265,8 @@ export default function DashboardPage() {
                   <p className="text-[10px] text-gray-400 mt-1">{new Date(req.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
                 <div className="flex items-center gap-2 ml-4">
-                  <button onClick={() => handleApproveRequest(req.id)} className="px-4 py-2 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors">Approve</button>
-                  <button onClick={() => handleRejectRequest(req.id)} className="px-4 py-2 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors">Reject</button>
+                  <button onClick={() => handleApproveRequest(req.id)} className="px-4 py-2 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors">{t('approve')}</button>
+                  <button onClick={() => handleRejectRequest(req.id)} className="px-4 py-2 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors">{t('reject')}</button>
                 </div>
               </div>
             ))}
@@ -274,8 +276,8 @@ export default function DashboardPage() {
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">All Modules</h2>
-          <span className="text-xs text-gray-400 font-medium">{modules.length} modules</span>
+          <h2 className="text-lg font-bold text-gray-900">{t('all_modules')}</h2>
+          <span className="text-xs text-gray-400 font-medium">{modules.length}</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
           {modules.map((mod, idx) => (
@@ -295,12 +297,12 @@ export default function DashboardPage() {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="text-lg font-bold mb-1">Need Help Setting Up?</h3>
-            <p className="text-white/70 text-sm">Use Setup Wizard to configure your school quickly.</p>
+            <h3 className="text-lg font-bold mb-1">{t('need_help_setup')}</h3>
+            <p className="text-white/70 text-sm">{t('setup_wizard_desc')}</p>
           </div>
           <button onClick={() => navigate('/app/setup-wizard')} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold text-sm hover:bg-blue-50 transition-all shadow-lg">
             <Wrench className="w-4 h-4" />
-            Setup Wizard
+            {t('setup_wizard')}
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

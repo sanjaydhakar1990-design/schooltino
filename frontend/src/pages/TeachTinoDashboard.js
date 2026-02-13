@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -36,6 +37,7 @@ const SortIcon = () => (
 );
 
 export default function TeachTinoDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -136,14 +138,14 @@ export default function TeachTinoDashboard() {
   }
 
   const statCards = [
-    { label: 'My Classes', value: myClasses.length, icon: BookOpen, subtext: 'Assigned class sections', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
-    { label: 'Present Today', value: todayAttendance.present, icon: CheckCircle, subtext: 'Students present today', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
-    { label: 'Absent Today', value: todayAttendance.absent, icon: XCircle, subtext: 'Students absent today', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
-    { label: 'Total Students', value: todayAttendance.total, icon: Users, subtext: 'Across all your classes', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-500' },
-    { label: 'Pending Leaves', value: pendingLeaves.length, icon: Calendar, subtext: 'Awaiting your approval', bgColor: 'bg-amber-50', iconColor: 'text-amber-500' },
-    { label: 'Notices', value: recentNotices.length, icon: Bell, subtext: 'Published announcements', bgColor: 'bg-cyan-50', iconColor: 'text-cyan-500' },
-    { label: 'Exams Scheduled', value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
-    { label: 'Attendance Rate', value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3, subtext: 'Overall attendance percentage', bgColor: 'bg-emerald-50', iconColor: 'text-emerald-500' },
+    { label: t('classes'), value: myClasses.length, icon: BookOpen, subtext: 'Assigned class sections', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
+    { label: t('present'), value: todayAttendance.present, icon: CheckCircle, subtext: 'Students present today', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
+    { label: t('absent'), value: todayAttendance.absent, icon: XCircle, subtext: 'Students absent today', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
+    { label: t('total_students'), value: todayAttendance.total, icon: Users, subtext: 'Across all your classes', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-500' },
+    { label: t('leave'), value: pendingLeaves.length, icon: Calendar, subtext: 'Awaiting your approval', bgColor: 'bg-amber-50', iconColor: 'text-amber-500' },
+    { label: t('notices'), value: recentNotices.length, icon: Bell, subtext: 'Published announcements', bgColor: 'bg-cyan-50', iconColor: 'text-cyan-500' },
+    { label: t('exams'), value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
+    { label: t('attendance'), value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3, subtext: 'Overall attendance percentage', bgColor: 'bg-emerald-50', iconColor: 'text-emerald-500' },
   ];
 
   const teacherModuleCards = [
@@ -218,15 +220,15 @@ export default function TeachTinoDashboard() {
         <div className="flex items-center gap-2 text-sm">
           <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors shadow-sm">
             <Home className="w-3.5 h-3.5" />
-            Home
+            {t('home')}
           </button>
           <span className="text-gray-400">›</span>
-          <span className="text-gray-500 text-xs">Teacher Dashboard</span>
+          <span className="text-gray-500 text-xs">{t('dashboard')}</span>
         </div>
 
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
           <h2 className="text-xl font-bold text-gray-800">Welcome back, {user?.name || 'Teacher'}!</h2>
-          <p className="text-sm text-gray-500 mt-1">Teacher Dashboard</p>
+          <p className="text-sm text-gray-500 mt-1">{t('dashboard')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -344,8 +346,8 @@ export default function TeachTinoDashboard() {
                       <td className="px-5 py-3.5 text-sm text-gray-500 hidden md:table-cell">{leave.reason}</td>
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => handleApproveLeave(leave.id)} className="px-4 py-1.5 bg-green-500 text-white text-xs font-medium rounded hover:bg-green-600 transition-colors">Approve</button>
-                          <button onClick={() => handleRejectLeave(leave.id)} className="px-4 py-1.5 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors">Reject</button>
+                          <button onClick={() => handleApproveLeave(leave.id)} className="px-4 py-1.5 bg-green-500 text-white text-xs font-medium rounded hover:bg-green-600 transition-colors">{t('approve')}</button>
+                          <button onClick={() => handleRejectLeave(leave.id)} className="px-4 py-1.5 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors">{t('reject')}</button>
                         </div>
                       </td>
                     </tr>
@@ -410,7 +412,7 @@ export default function TeachTinoDashboard() {
                           req.status === 'rejected' ? 'bg-red-100 text-red-700' :
                           'bg-amber-100 text-amber-700'
                         }`}>
-                          {req.status === 'pending' ? 'Pending Approval' : req.status === 'approved' ? 'Approved' : 'Rejected'}
+                          {req.status === 'pending' ? t('pending') : req.status === 'approved' ? t('approved') : t('rejected')}
                         </span>
                       </td>
                       <td className="px-5 py-3.5 text-sm text-gray-500 hidden md:table-cell">{req.review_note || '-'}</td>
@@ -426,10 +428,10 @@ export default function TeachTinoDashboard() {
       <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
           {[
-            { icon: Home, label: 'Home', active: true, action: () => {} },
-            { icon: BookOpen, label: 'Classes', action: () => navigate('/app/classes') },
-            { icon: ClipboardCheck, label: 'Attendance', action: () => navigate('/app/attendance') },
-            { icon: Bell, label: 'Notices', action: () => navigate('/app/notices') },
+            { icon: Home, label: t('home'), active: true, action: () => {} },
+            { icon: BookOpen, label: t('classes'), action: () => navigate('/app/classes') },
+            { icon: ClipboardCheck, label: t('attendance'), action: () => navigate('/app/attendance') },
+            { icon: Bell, label: t('notices'), action: () => navigate('/app/notices') },
             { icon: Brain, label: 'Tino AI', action: () => navigate('/app/tino-ai') },
           ].map((item, idx) => (
             <button key={idx} onClick={item.action} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${item.active ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}>
@@ -497,7 +499,7 @@ export default function TeachTinoDashboard() {
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
         <DialogContent className="max-w-md bg-white rounded-xl">
           <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="text-base font-semibold text-gray-800">Profile & Settings</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-800">{t('profile')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-4">

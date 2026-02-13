@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -25,6 +26,7 @@ import { useRazorpay } from 'react-razorpay';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function SubscriptionPage() {
+  const { t } = useTranslation();
   const { user, schoolId } = useAuth();
   const { error: razorpayError, isLoading: razorpayLoading, Razorpay } = useRazorpay();
   const [loading, setLoading] = useState(true);
@@ -199,7 +201,7 @@ export default function SubscriptionPage() {
       <div className="text-center">
         <h1 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-3">
           <Crown className="w-8 h-8 text-amber-500" />
-          Subscription Plans
+          {t('subscription') || 'Subscription Plans'}
         </h1>
         <p className="text-slate-500 mt-2">
           Choose the perfect plan for your school

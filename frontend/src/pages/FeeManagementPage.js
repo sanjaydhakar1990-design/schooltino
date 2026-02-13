@@ -555,7 +555,7 @@ export default function FeeManagementPage() {
   if (!schoolId) {
     return (
       <div className="text-center py-20">
-        <p className="text-slate-500">Please select a school first</p>
+        <p className="text-slate-500">{t('select')} {t('schools')}</p>
       </div>
     );
   }
@@ -566,9 +566,9 @@ export default function FeeManagementPage() {
         <div>
           <h1 className="text-3xl font-bold font-heading text-slate-900 flex items-center gap-2">
             <Wallet className="w-8 h-8 text-emerald-600" />
-            {isHindi ? 'शुल्क प्रबंधन' : 'Fee Management'}
+            {t('fee_management')}
           </h1>
-          <p className="text-slate-500 mt-1">{isHindi ? 'संपूर्ण शुल्क संरचना, संग्रह और ट्रैकिंग' : 'Complete fee structure, collection & tracking'}</p>
+          <p className="text-slate-500 mt-1">{t('fee_structure')}</p>
         </div>
         <div className="flex gap-2 items-center">
           <div className="flex items-center gap-2 bg-white border rounded-lg px-3 py-2">
@@ -591,7 +591,7 @@ export default function FeeManagementPage() {
             data-testid="add-old-due-btn"
           >
             <History className="w-4 h-4" />
-            {isHindi ? 'पुराना बकाया जोड़ें' : 'Add Old Due'}
+            {t('pending')}
           </Button>
           <Button
             onClick={() => setShowCollectionDialog(true)}
@@ -599,7 +599,7 @@ export default function FeeManagementPage() {
             data-testid="collect-fee-btn"
           >
             <IndianRupee className="w-4 h-4" />
-            {isHindi ? 'फीस जमा करें' : 'Collect Fee'}
+            {t('collect_fee')}
           </Button>
         </div>
       </div>
@@ -612,7 +612,7 @@ export default function FeeManagementPage() {
                 <IndianRupee className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">{isHindi ? 'कुल संग्रह' : 'Total Collected'}</p>
+                <p className="text-sm text-slate-500">{t('total_collected')}</p>
                 <p className="text-2xl font-bold text-emerald-600">
                   ₹{feeCollections.reduce((sum, c) => sum + (c.amount || 0), 0).toLocaleString('en-IN')}
                 </p>
@@ -628,7 +628,7 @@ export default function FeeManagementPage() {
                 <Clock className="w-6 h-6 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">{isHindi ? 'पुराना बकाया' : 'Old Dues'}</p>
+                <p className="text-sm text-slate-500">{t('pending')}</p>
                 <p className="text-2xl font-bold text-orange-600">
                   ₹{oldDues.reduce((sum, d) => sum + (d.amount || 0), 0).toLocaleString('en-IN')}
                 </p>
@@ -644,7 +644,7 @@ export default function FeeManagementPage() {
                 <Receipt className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">{isHindi ? 'कुल रसीदें' : 'Total Receipts'}</p>
+                <p className="text-sm text-slate-500">{t('receipt_no')}</p>
                 <p className="text-2xl font-bold text-blue-600">{feeCollections.length}</p>
               </div>
             </div>
@@ -658,7 +658,7 @@ export default function FeeManagementPage() {
                 <GraduationCap className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">{isHindi ? 'संरचना वाली कक्षाएं' : 'Classes with Structure'}</p>
+                <p className="text-sm text-slate-500">{t('fee_structure')}</p>
                 <p className="text-2xl font-bold text-purple-600">{feeStructures.length}/{classes.length}</p>
               </div>
             </div>
@@ -670,27 +670,27 @@ export default function FeeManagementPage() {
         <TabsList className="grid w-full grid-cols-5 bg-slate-100 p-1 rounded-lg">
           <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <Building2 className="w-4 h-4" />
-            <span className="hidden md:inline">{isHindi ? 'शुल्क संरचना' : 'Fee Structure'}</span>
-            <span className="md:hidden">{isHindi ? 'संरचना' : 'Structure'}</span>
+            <span className="hidden md:inline">{t('fee_structure')}</span>
+            <span className="md:hidden">{t('fee_structure')}</span>
           </TabsTrigger>
           <TabsTrigger value="collection" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <CreditCard className="w-4 h-4" />
-            <span className="hidden md:inline">{isHindi ? 'छात्र शुल्क' : 'Student Fees'}</span>
-            <span className="md:hidden">{isHindi ? 'शुल्क' : 'Fees'}</span>
+            <span className="hidden md:inline">{t('total_fee')}</span>
+            <span className="md:hidden">{t('total_fee')}</span>
           </TabsTrigger>
           <TabsTrigger value="scholarships" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <GraduationCap className="w-4 h-4" />
-            <span className="hidden md:inline">{isHindi ? 'सरकारी योजनाएं' : 'Govt Schemes'}</span>
-            <span className="md:hidden">{isHindi ? 'योजनाएं' : 'Schemes'}</span>
+            <span className="hidden md:inline">{t('discount')}</span>
+            <span className="md:hidden">{t('discount')}</span>
           </TabsTrigger>
           <TabsTrigger value="old_dues" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <History className="w-4 h-4" />
-            <span className="hidden md:inline">{isHindi ? 'पुराना बकाया' : 'Old Dues'}</span>
-            <span className="md:hidden">{isHindi ? 'बकाया' : 'Dues'}</span>
+            <span className="hidden md:inline">{t('pending')}</span>
+            <span className="md:hidden">{t('pending')}</span>
           </TabsTrigger>
           <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <FileText className="w-4 h-4" />
-            {isHindi ? 'रिपोर्ट' : 'Reports'}
+            {t('reports')}
           </TabsTrigger>
         </TabsList>
 
@@ -698,8 +698,8 @@ export default function FeeManagementPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>{isHindi ? `कक्षावार शुल्क संरचना (${selectedAcademicYear})` : `Class-wise Fee Structure (${selectedAcademicYear})`}</CardTitle>
-                <CardDescription>{isHindi ? 'प्रत्येक कक्षा के लिए शुल्क निर्धारित करें' : 'Set fees for each class'}</CardDescription>
+                <CardTitle>{`${t('fee_structure')} (${selectedAcademicYear})`}</CardTitle>
+                <CardDescription>{t('fee_structure')}</CardDescription>
               </div>
               <Button onClick={() => {
                 setStructureForm({
@@ -711,7 +711,7 @@ export default function FeeManagementPage() {
                 setShowStructureDialog(true);
               }} className="gap-2">
                 <Plus className="w-4 h-4" />
-                {isHindi ? 'संरचना जोड़ें/संपादित करें' : 'Add/Edit Structure'}
+                {t('fee_structure')}
               </Button>
             </CardHeader>
             <CardContent>
@@ -723,11 +723,11 @@ export default function FeeManagementPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{isHindi ? 'कक्षा' : 'Class'}</TableHead>
-                      <TableHead>{isHindi ? 'शैक्षणिक वर्ष' : 'Academic Year'}</TableHead>
-                      <TableHead>{isHindi ? 'शुल्क विवरण' : 'Fee Details'}</TableHead>
-                      <TableHead>{isHindi ? 'कुल वार्षिक' : 'Total Annual'}</TableHead>
-                      <TableHead>{isHindi ? 'कार्रवाई' : 'Actions'}</TableHead>
+                      <TableHead>{t('select_class')}</TableHead>
+                      <TableHead>{t('date')}</TableHead>
+                      <TableHead>{t('fee_type')}</TableHead>
+                      <TableHead>{t('total_fee')}</TableHead>
+                      <TableHead>{t('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -756,13 +756,13 @@ export default function FeeManagementPage() {
                                   }
                                   return (
                                     <span key={ft.id} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700">
-                                      {isHindi ? ft.name_hi : ft.name}: {label}
+                                      {ft.name}: {label}
                                     </span>
                                   );
                                 })}
                               </div>
                             ) : (
-                              <span className="text-slate-400 text-sm">{isHindi ? 'सेट नहीं है' : 'Not set'}</span>
+                              <span className="text-slate-400 text-sm">{t('not_available')}</span>
                             )}
                           </TableCell>
                           <TableCell className="font-bold text-emerald-600">
@@ -800,8 +800,8 @@ export default function FeeManagementPage() {
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <CardTitle>{isHindi ? `छात्र शुल्क स्थिति (${selectedAcademicYear})` : `Student Fee Status (${selectedAcademicYear})`}</CardTitle>
-                  <CardDescription>{isHindi ? 'प्रत्येक छात्र के लिए शुल्क देखें और जमा करें' : 'View and collect fees for each student'}</CardDescription>
+                  <CardTitle>{`${t('total_fee')} (${selectedAcademicYear})`}</CardTitle>
+                  <CardDescription>{t('collect_fee')}</CardDescription>
                 </div>
                 <div className="flex gap-2">
                   <select
@@ -809,7 +809,7 @@ export default function FeeManagementPage() {
                     onChange={(e) => setSelectedClass(e.target.value)}
                     className="px-3 py-2 border rounded-lg text-sm"
                   >
-                    <option value="">{isHindi ? 'सभी कक्षाएं' : 'All Classes'}</option>
+                    <option value="">{t('select_class')}</option>
                     {classes.map(cls => (
                       <option key={cls.id} value={cls.id}>{cls.name}</option>
                     ))}
@@ -817,7 +817,7 @@ export default function FeeManagementPage() {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
-                      placeholder={isHindi ? 'छात्र खोजें...' : 'Search student...'}
+                      placeholder={t('search')}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       className="pl-9 w-60"
@@ -861,21 +861,21 @@ export default function FeeManagementPage() {
                           
                           <div className="flex items-center gap-6">
                             <div className="text-right">
-                              <p className="text-sm text-slate-500">{isHindi ? 'कुल शुल्क' : 'Total Fee'}</p>
+                              <p className="text-sm text-slate-500">{t('total_fee')}</p>
                               <p className="font-semibold">₹{totalFee.toLocaleString('en-IN')}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm text-slate-500">{isHindi ? 'भुगतान' : 'Paid'}</p>
+                              <p className="text-sm text-slate-500">{t('paid')}</p>
                               <p className="font-semibold text-emerald-600">₹{summary.totalPaid.toLocaleString('en-IN')}</p>
                             </div>
                             {summary.totalOldDue > 0 && (
                               <div className="text-right">
-                                <p className="text-sm text-slate-500">{isHindi ? 'पुराना बकाया' : 'Old Due'}</p>
+                                <p className="text-sm text-slate-500">{t('pending')}</p>
                                 <p className="font-semibold text-orange-600">₹{summary.totalOldDue.toLocaleString('en-IN')}</p>
                               </div>
                             )}
                             <div className="text-right">
-                              <p className="text-sm text-slate-500">{isHindi ? 'बकाया' : 'Pending'}</p>
+                              <p className="text-sm text-slate-500">{t('pending')}</p>
                               <p className={`font-semibold ${pendingAmount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                                 ₹{pendingAmount.toLocaleString('en-IN')}
                               </p>
@@ -888,7 +888,7 @@ export default function FeeManagementPage() {
                               }}
                               className="bg-emerald-600 hover:bg-emerald-700"
                             >
-                              {isHindi ? 'फीस जमा करें' : 'Collect Fee'}
+                              {t('collect_fee')}
                             </Button>
                           </div>
                         </div>
@@ -899,7 +899,7 @@ export default function FeeManagementPage() {
                               <div>
                                 <h4 className="font-medium mb-3 flex items-center gap-2">
                                   <FileText className="w-4 h-4" />
-                                  {isHindi ? 'शुल्क विवरण' : 'Fee Breakdown'}
+                                  {t('fee_type')}
                                 </h4>
                                 {structure ? (
                                   <div className="space-y-2">
@@ -911,21 +911,21 @@ export default function FeeManagementPage() {
                                       }
                                       return (
                                         <div key={feeType.id} className="flex justify-between text-sm">
-                                          <span>{isHindi ? feeType.name_hi : feeType.name}</span>
+                                          <span>{feeType.name}</span>
                                           <span>{display}</span>
                                         </div>
                                       );
                                     })}
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-slate-500">{isHindi ? 'इस कक्षा के लिए शुल्क संरचना सेट नहीं है' : 'No fee structure set for this class'}</p>
+                                  <p className="text-sm text-slate-500">{t('fee_structure')}</p>
                                 )}
                               </div>
                               
                               <div>
                                 <h4 className="font-medium mb-3 flex items-center gap-2">
                                   <Receipt className="w-4 h-4" />
-                                  {isHindi ? 'हाल के भुगतान' : 'Recent Payments'}
+                                  {t('payment_date')}
                                 </h4>
                                 {summary.collections.length > 0 ? (
                                   <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -942,7 +942,7 @@ export default function FeeManagementPage() {
                                     ))}
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-slate-500">{isHindi ? 'अभी तक कोई भुगतान नहीं' : 'No payments yet'}</p>
+                                  <p className="text-sm text-slate-500">{t('paid')}</p>
                                 )}
                               </div>
                             </div>
@@ -955,7 +955,7 @@ export default function FeeManagementPage() {
                   {students.length === 0 && (
                     <div className="text-center py-10 text-slate-500">
                       <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>{isHindi ? 'कोई छात्र नहीं मिला' : 'No students found'}</p>
+                      <p>{t('student')}</p>
                     </div>
                   )}
                 </div>
@@ -971,9 +971,9 @@ export default function FeeManagementPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <GraduationCap className="w-5 h-5 text-emerald-600" />
-                    {isHindi ? 'सरकारी योजनाएं और छात्रवृत्ति' : 'Government Schemes & Scholarships'}
+                    {t('discount')}
                   </CardTitle>
-                  <CardDescription>{isHindi ? 'छात्रों को सरकारी योजनाएं प्रबंधित और असाइन करें' : 'Manage and assign govt schemes to students'}</CardDescription>
+                  <CardDescription>{t('discount')}</CardDescription>
                 </div>
                 <div className="flex gap-2">
                   <Button 
@@ -982,14 +982,14 @@ export default function FeeManagementPage() {
                     className="gap-2"
                   >
                     <Users className="w-4 h-4" />
-                    {isHindi ? 'छात्र को असाइन करें' : 'Assign to Student'}
+                    {t('student')}
                   </Button>
                   <Button 
                     onClick={() => setShowScholarshipDialog(true)} 
                     className="gap-2 bg-emerald-600 hover:bg-emerald-700"
                   >
                     <Plus className="w-4 h-4" />
-                    {isHindi ? 'नई योजना जोड़ें' : 'Add New Scheme'}
+                    {t('discount')}
                   </Button>
                 </div>
               </CardHeader>
@@ -1005,8 +1005,8 @@ export default function FeeManagementPage() {
                         scheme.type === 'state_govt' ? 'bg-purple-100 text-purple-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {scheme.type === 'central_govt' ? (isHindi ? 'केंद्र सरकार' : 'Central Govt') : 
-                         scheme.type === 'state_govt' ? (isHindi ? 'राज्य सरकार' : 'State Govt') : 'Private'}
+                        {scheme.type === 'central_govt' ? t('category') : 
+                         scheme.type === 'state_govt' ? t('state') : t('other')}
                       </span>
                       <span className="text-emerald-600 font-bold">₹{(scheme.amount || 0).toLocaleString()}</span>
                     </div>
@@ -1016,12 +1016,12 @@ export default function FeeManagementPage() {
                   <CardContent className="pt-0">
                     {scheme.eligibility && (
                       <p className="text-xs text-slate-600 mb-2">
-                        <strong>{isHindi ? 'पात्रता:' : 'Eligibility:'}</strong> {scheme.eligibility}
+                        <strong>{t('required')}:</strong> {scheme.eligibility}
                       </p>
                     )}
                     {scheme.documents_required && (
                       <p className="text-xs text-slate-500">
-                        <strong>{isHindi ? 'दस्तावेज:' : 'Documents:'}</strong> {scheme.documents_required}
+                        <strong>{t('documents')}:</strong> {scheme.documents_required}
                       </p>
                     )}
                     <div className="mt-3 pt-2 border-t flex justify-between items-center">
@@ -1034,7 +1034,7 @@ export default function FeeManagementPage() {
                           setShowAssignScholarshipDialog(true);
                         }}
                       >
-                        {isHindi ? 'असाइन करें' : 'Assign'}
+                        {t('save')}
                       </Button>
                     </div>
                   </CardContent>
@@ -1042,7 +1042,7 @@ export default function FeeManagementPage() {
               )) : (
                 <div className="col-span-3 text-center py-12 text-slate-400">
                   <GraduationCap className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>{isHindi ? 'अभी तक कोई योजना नहीं जोड़ी गई। नई योजना बनाने के लिए "नई योजना जोड़ें" पर क्लिक करें।' : 'No schemes added yet. Click "Add New Scheme" to create one.'}</p>
+                  <p>{t('discount')}</p>
                 </div>
               )}
             </div>
@@ -1051,7 +1051,7 @@ export default function FeeManagementPage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  {isHindi ? `छात्रवृत्ति वाले छात्र (${studentScholarships.length})` : `Students with Scholarships (${studentScholarships.length})`}
+                  {`${t('student')} (${studentScholarships.length})`}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1059,11 +1059,11 @@ export default function FeeManagementPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{isHindi ? 'छात्र' : 'Student'}</TableHead>
-                        <TableHead>{isHindi ? 'योजना' : 'Scheme'}</TableHead>
-                        <TableHead>{isHindi ? 'राशि' : 'Amount'}</TableHead>
-                        <TableHead>{isHindi ? 'स्थिति' : 'Status'}</TableHead>
-                        <TableHead>{isHindi ? 'टिप्पणी' : 'Remarks'}</TableHead>
+                        <TableHead>{t('student')}</TableHead>
+                        <TableHead>{t('discount')}</TableHead>
+                        <TableHead>{t('amount')}</TableHead>
+                        <TableHead>{t('status')}</TableHead>
+                        <TableHead>{t('remarks')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1086,9 +1086,9 @@ export default function FeeManagementPage() {
                                 ss.status === 'rejected' ? 'bg-red-100 text-red-700' :
                                 'bg-yellow-100 text-yellow-700'
                               }`}>
-                                {ss.status === 'received' ? (isHindi ? 'प्राप्त' : 'Received') :
-                                 ss.status === 'approved' ? (isHindi ? 'स्वीकृत' : 'Approved') :
-                                 ss.status === 'rejected' ? (isHindi ? 'अस्वीकृत' : 'Rejected') : (isHindi ? 'लंबित' : 'Pending')}
+                                {ss.status === 'received' ? t('completed') :
+                                 ss.status === 'approved' ? t('approved') :
+                                 ss.status === 'rejected' ? t('rejected') : t('pending')}
                               </span>
                             </TableCell>
                             <TableCell className="text-sm text-slate-500">{ss.remarks || '-'}</TableCell>
@@ -1100,7 +1100,7 @@ export default function FeeManagementPage() {
                 ) : (
                   <div className="text-center py-8 text-slate-400">
                     <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>{isHindi ? 'अभी तक कोई छात्रवृत्ति असाइन नहीं' : 'No scholarships assigned yet'}</p>
+                    <p>{t('discount')}</p>
                   </div>
                 )}
               </CardContent>
@@ -1114,13 +1114,13 @@ export default function FeeManagementPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <History className="w-5 h-5 text-orange-600" />
-                  {isHindi ? 'पुराना शुल्क बकाया' : 'Old Fee Dues'}
+                  {t('pending')}
                 </CardTitle>
-                <CardDescription>{isHindi ? 'पिछले वर्षों की लंबित फीस ट्रैक करें' : 'Track pending fees from previous years'}</CardDescription>
+                <CardDescription>{t('pending')}</CardDescription>
               </div>
               <Button onClick={() => setShowOldDueDialog(true)} className="gap-2 bg-orange-600 hover:bg-orange-700">
                 <Plus className="w-4 h-4" />
-                {isHindi ? 'पुराना बकाया जोड़ें' : 'Add Old Due'}
+                {t('pending')}
               </Button>
             </CardHeader>
             <CardContent>
@@ -1128,13 +1128,13 @@ export default function FeeManagementPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{isHindi ? 'छात्र' : 'Student'}</TableHead>
-                      <TableHead>{isHindi ? 'शैक्षणिक वर्ष' : 'Academic Year'}</TableHead>
-                      <TableHead>{isHindi ? 'कक्षा' : 'Class'}</TableHead>
-                      <TableHead>{isHindi ? 'राशि' : 'Amount'}</TableHead>
-                      <TableHead>{isHindi ? 'विवरण' : 'Description'}</TableHead>
-                      <TableHead>{isHindi ? 'स्थिति' : 'Status'}</TableHead>
-                      <TableHead>{isHindi ? 'कार्रवाई' : 'Actions'}</TableHead>
+                      <TableHead>{t('student')}</TableHead>
+                      <TableHead>{t('date')}</TableHead>
+                      <TableHead>{t('select_class')}</TableHead>
+                      <TableHead>{t('amount')}</TableHead>
+                      <TableHead>{t('description')}</TableHead>
+                      <TableHead>{t('status')}</TableHead>
+                      <TableHead>{t('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1158,7 +1158,7 @@ export default function FeeManagementPage() {
                             <span className={`px-2 py-1 rounded-full text-xs ${
                               due.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                             }`}>
-                              {due.status === 'paid' ? (isHindi ? 'भुगतान किया' : 'Paid') : (isHindi ? 'लंबित' : 'Pending')}
+                              {due.status === 'paid' ? t('paid') : t('pending')}
                             </span>
                           </TableCell>
                           <TableCell>
@@ -1171,7 +1171,7 @@ export default function FeeManagementPage() {
                               }}
                               className="bg-emerald-600 hover:bg-emerald-700"
                             >
-                              {isHindi ? 'जमा करें' : 'Collect'}
+                              {t('collect_fee')}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -1182,7 +1182,7 @@ export default function FeeManagementPage() {
               ) : (
                 <div className="text-center py-10 text-slate-500">
                   <Check className="w-12 h-12 mx-auto mb-2 text-emerald-500" />
-                  <p>{isHindi ? 'कोई पुराना बकाया नहीं' : 'No old dues found'}</p>
+                  <p>{t('pending')}</p>
                 </div>
               )}
             </CardContent>
@@ -1192,20 +1192,20 @@ export default function FeeManagementPage() {
         <TabsContent value="reports" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>{isHindi ? `कक्षावार शुल्क सारांश (${selectedAcademicYear})` : `Class-wise Fee Summary (${selectedAcademicYear})`}</CardTitle>
-              <CardDescription>{isHindi ? 'कक्षा अनुसार शुल्क संग्रह का अवलोकन' : 'Overview of fee collection by class'}</CardDescription>
+              <CardTitle>{`${t('fee_reports')} (${selectedAcademicYear})`}</CardTitle>
+              <CardDescription>{t('class_wise')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{isHindi ? 'कक्षा' : 'Class'}</TableHead>
-                    <TableHead>{isHindi ? 'छात्र' : 'Students'}</TableHead>
-                    <TableHead>{isHindi ? 'शुल्क/छात्र' : 'Fee/Student'}</TableHead>
-                    <TableHead>{isHindi ? 'अपेक्षित कुल' : 'Expected Total'}</TableHead>
-                    <TableHead>{isHindi ? 'संग्रहित' : 'Collected'}</TableHead>
-                    <TableHead>{isHindi ? 'बकाया' : 'Pending'}</TableHead>
-                    <TableHead>{isHindi ? 'संग्रह %' : 'Collection %'}</TableHead>
+                    <TableHead>{t('select_class')}</TableHead>
+                    <TableHead>{t('student')}</TableHead>
+                    <TableHead>{t('total_fee')}</TableHead>
+                    <TableHead>{t('total')}</TableHead>
+                    <TableHead>{t('total_collected')}</TableHead>
+                    <TableHead>{t('pending')}</TableHead>
+                    <TableHead>%</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1246,27 +1246,27 @@ export default function FeeManagementPage() {
       <Dialog open={showStructureDialog} onOpenChange={setShowStructureDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isHindi ? 'शुल्क संरचना सेटअप' : 'Fee Structure Setup'}</DialogTitle>
-            <DialogDescription>{isHindi ? 'प्रत्येक शुल्क प्रकार के लिए राशि निर्धारित करें' : 'Set fee amounts for each fee type'}</DialogDescription>
+            <DialogTitle>{t('fee_structure')}</DialogTitle>
+            <DialogDescription>{t('fee_type')}</DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isHindi ? 'कक्षा *' : 'Class *'}</Label>
+                <Label>{t('select_class')} *</Label>
                 <select
                   value={structureForm.class_id}
                   onChange={(e) => setStructureForm(prev => ({ ...prev, class_id: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="">{isHindi ? 'कक्षा चुनें' : 'Select Class'}</option>
+                  <option value="">{t('select_class')}</option>
                   {classes.map(cls => (
                     <option key={cls.id} value={cls.id}>{cls.name}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>{isHindi ? 'शैक्षणिक वर्ष' : 'Academic Year'}</Label>
+                <Label>{t('date')}</Label>
                 <select
                   value={structureForm.academic_year}
                   onChange={(e) => setStructureForm(prev => ({ ...prev, academic_year: e.target.value }))}
@@ -1280,7 +1280,7 @@ export default function FeeManagementPage() {
             </div>
 
             <div className="border rounded-lg p-4 bg-blue-50">
-              <Label className="text-sm font-medium">{isHindi ? 'ट्यूशन फीस आवृत्ति' : 'Tuition Fee Frequency'}</Label>
+              <Label className="text-sm font-medium">{t('fee_type')}</Label>
               <div className="flex gap-4 mt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -1291,7 +1291,7 @@ export default function FeeManagementPage() {
                     onChange={() => setStructureForm(prev => ({ ...prev, tuition_frequency: 'monthly' }))}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm">{isHindi ? 'मासिक' : 'Monthly'}</span>
+                  <span className="text-sm">{t('monthly_fee')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -1302,23 +1302,23 @@ export default function FeeManagementPage() {
                     onChange={() => setStructureForm(prev => ({ ...prev, tuition_frequency: 'yearly' }))}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm">{isHindi ? 'वार्षिक' : 'Yearly'}</span>
+                  <span className="text-sm">{t('annual_fee')}</span>
                 </label>
               </div>
             </div>
             
             <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-4">{isHindi ? 'शुल्क प्रकार' : 'Fee Types'}</h4>
+              <h4 className="font-medium mb-4">{t('fee_type')}</h4>
               <div className="grid grid-cols-2 gap-4">
                 {FEE_TYPES.map(feeType => (
                   <div key={feeType.id} className="space-y-1">
                     <Label className="text-sm">
-                      {isHindi ? `${feeType.name_hi} (${feeType.name})` : `${feeType.name} (${feeType.name_hi})`}
+                      {`${feeType.name} (${feeType.name_hi})`}
                       {MONTHLY_FEE_IDS.includes(feeType.id) && (
                         <span className="text-xs text-slate-400 ml-1">
                           {feeType.id === 'tuition_fee' 
-                            ? (structureForm.tuition_frequency === 'yearly' ? (isHindi ? '(वार्षिक)' : '(Yearly)') : (isHindi ? '(मासिक)' : '(Monthly)'))
-                            : (isHindi ? '(मासिक)' : '(Monthly)')}
+                            ? (structureForm.tuition_frequency === 'yearly' ? `(${t('annual_fee')})` : `(${t('monthly_fee')})`)
+                            : `(${t('monthly_fee')})`}
                         </span>
                       )}
                     </Label>
@@ -1340,10 +1340,10 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowStructureDialog(false)}>{isHindi ? 'रद्द करें' : 'Cancel'}</Button>
+              <Button variant="outline" onClick={() => setShowStructureDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleSaveStructure} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {isHindi ? 'संरचना सेव करें' : 'Save Structure'}
+                {t('save')}
               </Button>
             </div>
           </div>
@@ -1360,16 +1360,16 @@ export default function FeeManagementPage() {
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isHindi ? 'फीस जमा करें' : 'Collect Fee'}</DialogTitle>
+            <DialogTitle>{t('collect_fee')}</DialogTitle>
             <DialogDescription>
-              {selectedStudent ? `${selectedStudent.name} - ${selectedStudent.class_name}` : (isHindi ? 'छात्र चुनें' : 'Select student')}
+              {selectedStudent ? `${selectedStudent.name} - ${selectedStudent.class_name}` : t('student')}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 mt-4">
             {!selectedStudent && (
               <div className="space-y-2">
-                <Label>{isHindi ? 'छात्र चुनें *' : 'Select Student *'}</Label>
+                <Label>{t('student')} *</Label>
                 <select
                   value={collectionForm.student_id}
                   onChange={(e) => {
@@ -1380,7 +1380,7 @@ export default function FeeManagementPage() {
                   }}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="">{isHindi ? 'छात्र चुनें' : 'Select Student'}</option>
+                  <option value="">{t('student')}</option>
                   {students.map(s => (
                     <option key={s.id} value={s.id}>{s.name} ({s.student_id})</option>
                   ))}
@@ -1390,7 +1390,7 @@ export default function FeeManagementPage() {
 
             {selectedStudent && Object.keys(collectionFeeSelections).length > 0 && (
               <div className="border rounded-lg p-4">
-                <h4 className="font-medium mb-3">{isHindi ? 'शुल्क मद' : 'Fee Items'}</h4>
+                <h4 className="font-medium mb-3">{t('fee_type')}</h4>
                 <div className="space-y-3">
                   {Object.entries(collectionFeeSelections).map(([feeId, data]) => {
                     const feeType = FEE_TYPES.find(f => f.id === feeId);
@@ -1412,7 +1412,7 @@ export default function FeeManagementPage() {
                             className="w-4 h-4"
                           />
                           <div className="flex-1">
-                            <span className="text-sm font-medium">{isHindi ? `${feeType.name_hi} (${feeType.name})` : `${feeType.name} (${feeType.name_hi})`}</span>
+                            <span className="text-sm font-medium">{`${feeType.name} (${feeType.name_hi})`}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <span className="text-sm text-slate-500">₹</span>
@@ -1427,13 +1427,13 @@ export default function FeeManagementPage() {
                               }}
                               className="w-24 h-8 text-sm"
                             />
-                            {isMonthly && <span className="text-xs text-slate-400">/month</span>}
+                            {isMonthly && <span className="text-xs text-slate-400">/{t('monthly_fee')}</span>}
                           </div>
                         </div>
                         
                         {isMonthly && data.selected && (
                           <div className="mt-2 ml-7">
-                            <p className="text-xs text-slate-500 mb-1">{isHindi ? 'महीने:' : 'Months:'}</p>
+                            <p className="text-xs text-slate-500 mb-1">{t('monthly_fee')}:</p>
                             <div className="flex flex-wrap gap-1">
                               {MONTHS.map(month => {
                                 const isSelected = (collectionMonthSelections[feeId] || []).includes(month);
@@ -1473,20 +1473,20 @@ export default function FeeManagementPage() {
             {selectedStudent && Object.keys(collectionFeeSelections).length === 0 && (
               <div className="text-center py-6 text-slate-500 border rounded-lg">
                 <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{isHindi ? 'इस कक्षा के लिए शुल्क संरचना नहीं मिली' : 'No fee structure found for this class'}</p>
+                <p className="text-sm">{t('fee_structure')}</p>
               </div>
             )}
 
             {collectionItems.length > 0 && (
               <div className="border rounded-lg p-4 bg-emerald-50">
-                <h4 className="font-medium mb-2 text-emerald-800">{isHindi ? 'विवरण' : 'Breakdown'}</h4>
+                <h4 className="font-medium mb-2 text-emerald-800">{t('description')}</h4>
                 <div className="space-y-1">
                   {collectionItems.map((item, idx) => {
                     const ft = FEE_TYPES.find(f => f.id === item.fee_type);
                     return (
                       <div key={idx} className="flex justify-between text-sm">
                         <span>
-                          {isHindi ? (ft?.name_hi || item.fee_type) : (ft?.name || item.fee_type)}
+                          {ft?.name || item.fee_type}
                           {item.months && item.months.length > 0 && (
                             <span className="text-xs text-slate-500 ml-1">
                               ({item.months.length} months: {item.months.join(', ')})
@@ -1500,7 +1500,7 @@ export default function FeeManagementPage() {
                     );
                   })}
                   <div className="border-t pt-2 mt-2 flex justify-between font-bold text-emerald-700">
-                    <span>{isHindi ? 'कुल' : 'Total'}</span>
+                    <span>{t('total')}</span>
                     <span>₹{collectionTotal.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
@@ -1509,21 +1509,21 @@ export default function FeeManagementPage() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isHindi ? 'भुगतान मोड' : 'Payment Mode'}</Label>
+                <Label>{t('payment_mode')}</Label>
                 <select
                   value={collectionForm.payment_mode}
                   onChange={(e) => setCollectionForm(prev => ({ ...prev, payment_mode: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="cash">{isHindi ? 'नकद' : 'Cash'}</option>
-                  <option value="upi">UPI</option>
-                  <option value="card">{isHindi ? 'कार्ड' : 'Card'}</option>
-                  <option value="bank_transfer">{isHindi ? 'बैंक ट्रांसफर' : 'Bank Transfer'}</option>
-                  <option value="cheque">{isHindi ? 'चेक' : 'Cheque'}</option>
+                  <option value="cash">{t('cash')}</option>
+                  <option value="upi">{t('upi')}</option>
+                  <option value="card">{t('online')}</option>
+                  <option value="bank_transfer">{t('bank_transfer')}</option>
+                  <option value="cheque">{t('cheque')}</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>{isHindi ? 'तारीख' : 'Date'}</Label>
+                <Label>{t('date')}</Label>
                 <Input
                   type="date"
                   value={collectionForm.payment_date}
@@ -1533,11 +1533,11 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'टिप्पणी' : 'Remarks'}</Label>
+              <Label>{t('remarks')}</Label>
               <Input
                 value={collectionForm.remarks}
                 onChange={(e) => setCollectionForm(prev => ({ ...prev, remarks: e.target.value }))}
-                placeholder={isHindi ? 'वैकल्पिक नोट्स' : 'Optional notes'}
+                placeholder={t('remarks')}
               />
             </div>
             
@@ -1547,14 +1547,14 @@ export default function FeeManagementPage() {
                 setSelectedStudent(null);
                 setCollectionFeeSelections({});
                 setCollectionMonthSelections({});
-              }}>{isHindi ? 'रद्द करें' : 'Cancel'}</Button>
+              }}>{t('cancel')}</Button>
               <Button 
                 onClick={handleCollectFee} 
                 disabled={saving || collectionTotal <= 0} 
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                {isHindi ? 'जमा करें' : 'Collect'} ₹{collectionTotal.toLocaleString('en-IN')}
+                {t('collect_fee')} ₹{collectionTotal.toLocaleString('en-IN')}
               </Button>
             </div>
           </div>
@@ -1566,20 +1566,20 @@ export default function FeeManagementPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="w-5 h-5 text-orange-600" />
-              {isHindi ? 'पुराना बकाया जोड़ें' : 'Add Old Due'}
+              {t('pending')}
             </DialogTitle>
-            <DialogDescription>{isHindi ? 'पिछले वर्ष की लंबित फीस जोड़ें' : 'Add pending fee from previous year'}</DialogDescription>
+            <DialogDescription>{t('pending')}</DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>{isHindi ? 'छात्र चुनें *' : 'Select Student *'}</Label>
+              <Label>{t('student')} *</Label>
               <select
                 value={oldDueForm.student_id}
                 onChange={(e) => setOldDueForm(prev => ({ ...prev, student_id: e.target.value }))}
                 className="w-full px-3 py-2 border rounded-lg"
               >
-                <option value="">{isHindi ? 'छात्र चुनें' : 'Select Student'}</option>
+                <option value="">{t('student')}</option>
                 {students.map(s => (
                   <option key={s.id} value={s.id}>{s.name} ({s.student_id})</option>
                 ))}
@@ -1588,13 +1588,13 @@ export default function FeeManagementPage() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isHindi ? 'पिछला वर्ष *' : 'Previous Year *'}</Label>
+                <Label>{t('date')} *</Label>
                 <select
                   value={oldDueForm.academic_year}
                   onChange={(e) => setOldDueForm(prev => ({ ...prev, academic_year: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="">{isHindi ? 'वर्ष चुनें' : 'Select Year'}</option>
+                  <option value="">{t('date')}</option>
                   {Array.from({ length: 5 }, (_, i) => {
                     const year = new Date().getFullYear() - i - 1;
                     return <option key={year} value={`${year}-${year + 1}`}>{year}-{year + 1}</option>;
@@ -1602,7 +1602,7 @@ export default function FeeManagementPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>{isHindi ? 'पिछली कक्षा' : 'Previous Class'}</Label>
+                <Label>{t('select_class')}</Label>
                 <Input
                   value={oldDueForm.class_name}
                   onChange={(e) => setOldDueForm(prev => ({ ...prev, class_name: e.target.value }))}
@@ -1612,7 +1612,7 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'बकाया राशि *' : 'Due Amount *'}</Label>
+              <Label>{t('amount')} *</Label>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-bold">₹</span>
                 <Input
@@ -1626,11 +1626,11 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'विवरण' : 'Description'}</Label>
+              <Label>{t('description')}</Label>
               <Input
                 value={oldDueForm.description}
                 onChange={(e) => setOldDueForm(prev => ({ ...prev, description: e.target.value }))}
-                placeholder={isHindi ? 'जैसे, मार्च की लंबित ट्यूशन फीस' : 'e.g., Pending tuition fee for March'}
+                placeholder={t('description')}
               />
             </div>
             
@@ -1644,15 +1644,15 @@ export default function FeeManagementPage() {
               />
               <Label htmlFor="sendNotification" className="flex items-center gap-2 cursor-pointer">
                 <Bell className="w-4 h-4" />
-                {isHindi ? 'अभिभावक को सूचना भेजें' : 'Send notification to parent'}
+                {t('send')} {t('notifications')}
               </Label>
             </div>
             
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowOldDueDialog(false)}>{isHindi ? 'रद्द करें' : 'Cancel'}</Button>
+              <Button variant="outline" onClick={() => setShowOldDueDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleAddOldDue} disabled={saving} className="bg-orange-600 hover:bg-orange-700">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                {isHindi ? 'पुराना बकाया जोड़ें' : 'Add Old Due'}
+                {t('save')}
               </Button>
             </div>
           </div>
@@ -1664,14 +1664,14 @@ export default function FeeManagementPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-emerald-600" />
-              {isHindi ? 'सरकारी योजना / छात्रवृत्ति जोड़ें' : 'Add Government Scheme / Scholarship'}
+              {t('discount')}
             </DialogTitle>
-            <DialogDescription>{isHindi ? 'नई सरकारी योजना या छात्रवृत्ति जोड़ें' : 'Add a new govt scheme or scholarship'}</DialogDescription>
+            <DialogDescription>{t('discount')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isHindi ? 'योजना का नाम (अंग्रेज़ी) *' : 'Scheme Name (English) *'}</Label>
+                <Label>{t('name')} *</Label>
                 <Input
                   value={scholarshipForm.name}
                   onChange={(e) => setScholarshipForm(prev => ({ ...prev, name: e.target.value }))}
@@ -1679,7 +1679,7 @@ export default function FeeManagementPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>{isHindi ? 'योजना का नाम (हिंदी)' : 'Scheme Name (Hindi)'}</Label>
+                <Label>{t('name')} (Hindi)</Label>
                 <Input
                   value={scholarshipForm.name_hi}
                   onChange={(e) => setScholarshipForm(prev => ({ ...prev, name_hi: e.target.value }))}
@@ -1690,19 +1690,19 @@ export default function FeeManagementPage() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isHindi ? 'योजना प्रकार *' : 'Scheme Type *'}</Label>
+                <Label>{t('type')} *</Label>
                 <select
                   value={scholarshipForm.type}
                   onChange={(e) => setScholarshipForm(prev => ({ ...prev, type: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="central_govt">{isHindi ? 'केंद्र सरकार' : 'Central Govt'}</option>
-                  <option value="state_govt">{isHindi ? 'राज्य सरकार' : 'State Govt'}</option>
-                  <option value="private">Private / NGO</option>
+                  <option value="central_govt">{t('category')}</option>
+                  <option value="state_govt">{t('state')}</option>
+                  <option value="private">{t('other')}</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>{isHindi ? 'शैक्षणिक वर्ष' : 'Academic Year'}</Label>
+                <Label>{t('date')}</Label>
                 <select
                   value={scholarshipForm.academic_year}
                   onChange={(e) => setScholarshipForm(prev => ({ ...prev, academic_year: e.target.value }))}
@@ -1717,7 +1717,7 @@ export default function FeeManagementPage() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isHindi ? 'राशि (₹) *' : 'Amount (₹) *'}</Label>
+                <Label>{t('amount')} (₹) *</Label>
                 <Input
                   type="number"
                   value={scholarshipForm.amount}
@@ -1726,7 +1726,7 @@ export default function FeeManagementPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>{isHindi ? 'या शुल्क का %' : 'Or % of Fee'}</Label>
+                <Label>{t('percentage')}</Label>
                 <Input
                   type="number"
                   value={scholarshipForm.percentage}
@@ -1738,7 +1738,7 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'पात्रता मानदंड' : 'Eligibility Criteria'}</Label>
+              <Label>{t('required')}</Label>
               <Input
                 value={scholarshipForm.eligibility}
                 onChange={(e) => setScholarshipForm(prev => ({ ...prev, eligibility: e.target.value }))}
@@ -1747,7 +1747,7 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'आवश्यक दस्तावेज' : 'Documents Required'}</Label>
+              <Label>{t('documents')}</Label>
               <Input
                 value={scholarshipForm.documents_required}
                 onChange={(e) => setScholarshipForm(prev => ({ ...prev, documents_required: e.target.value }))}
@@ -1756,10 +1756,10 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowScholarshipDialog(false)}>{isHindi ? 'रद्द करें' : 'Cancel'}</Button>
+              <Button variant="outline" onClick={() => setShowScholarshipDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleSaveScholarship} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                {isHindi ? 'योजना सेव करें' : 'Save Scheme'}
+                {t('save')}
               </Button>
             </div>
           </div>
@@ -1771,19 +1771,19 @@ export default function FeeManagementPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="w-5 h-5 text-emerald-600" />
-              {isHindi ? 'छात्र को छात्रवृत्ति असाइन करें' : 'Assign Scholarship to Student'}
+              {t('discount')}
             </DialogTitle>
-            <DialogDescription>{isHindi ? 'छात्र पर योजना लागू करें' : 'Apply a scheme to a student'}</DialogDescription>
+            <DialogDescription>{t('student')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>{isHindi ? 'छात्र चुनें *' : 'Select Student *'}</Label>
+              <Label>{t('student')} *</Label>
               <select
                 value={assignForm.student_id}
                 onChange={(e) => setAssignForm(prev => ({ ...prev, student_id: e.target.value }))}
                 className="w-full px-3 py-2 border rounded-lg"
               >
-                <option value="">{isHindi ? '-- छात्र चुनें --' : '-- Select Student --'}</option>
+                <option value="">-- {t('student')} --</option>
                 {students.map(s => (
                   <option key={s.id} value={s.id}>{s.name} ({s.student_id}) - {s.class_name}</option>
                 ))}
@@ -1791,7 +1791,7 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'योजना चुनें *' : 'Select Scheme *'}</Label>
+              <Label>{t('discount')} *</Label>
               <select
                 value={assignForm.scholarship_id}
                 onChange={(e) => {
@@ -1804,7 +1804,7 @@ export default function FeeManagementPage() {
                 }}
                 className="w-full px-3 py-2 border rounded-lg"
               >
-                <option value="">{isHindi ? '-- योजना चुनें --' : '-- Select Scheme --'}</option>
+                <option value="">-- {t('discount')} --</option>
                 {scholarships.map(s => (
                   <option key={s.id} value={s.id}>{s.name} - ₹{(s.amount || 0).toLocaleString()}</option>
                 ))}
@@ -1812,7 +1812,7 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'राशि (₹)' : 'Amount (₹)'}</Label>
+              <Label>{t('amount')} (₹)</Label>
               <Input
                 type="number"
                 value={assignForm.amount}
@@ -1821,33 +1821,33 @@ export default function FeeManagementPage() {
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'स्थिति' : 'Status'}</Label>
+              <Label>{t('status')}</Label>
               <select
                 value={assignForm.status}
                 onChange={(e) => setAssignForm(prev => ({ ...prev, status: e.target.value }))}
                 className="w-full px-3 py-2 border rounded-lg"
               >
-                <option value="pending">{isHindi ? 'लंबित' : 'Pending'}</option>
-                <option value="approved">{isHindi ? 'स्वीकृत' : 'Approved'}</option>
-                <option value="received">{isHindi ? 'प्राप्त' : 'Received'}</option>
-                <option value="rejected">{isHindi ? 'अस्वीकृत' : 'Rejected'}</option>
+                <option value="pending">{t('pending')}</option>
+                <option value="approved">{t('approved')}</option>
+                <option value="received">{t('completed')}</option>
+                <option value="rejected">{t('rejected')}</option>
               </select>
             </div>
             
             <div className="space-y-2">
-              <Label>{isHindi ? 'टिप्पणी' : 'Remarks'}</Label>
+              <Label>{t('remarks')}</Label>
               <Input
                 value={assignForm.remarks}
                 onChange={(e) => setAssignForm(prev => ({ ...prev, remarks: e.target.value }))}
-                placeholder={isHindi ? 'कोई नोट्स...' : 'Any notes...'}
+                placeholder={t('remarks')}
               />
             </div>
             
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowAssignScholarshipDialog(false)}>{isHindi ? 'रद्द करें' : 'Cancel'}</Button>
+              <Button variant="outline" onClick={() => setShowAssignScholarshipDialog(false)}>{t('cancel')}</Button>
               <Button onClick={handleAssignScholarship} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                {isHindi ? 'छात्रवृत्ति असाइन करें' : 'Assign Scholarship'}
+                {t('save')}
               </Button>
             </div>
           </div>

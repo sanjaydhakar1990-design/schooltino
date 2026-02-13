@@ -163,7 +163,7 @@ export default function ClassesPage() {
   if (!schoolId) {
     return (
       <div className="text-center py-20">
-        <p className="text-slate-500">Please select a school first</p>
+        <p className="text-slate-500">{t('select_class')}</p>
       </div>
     );
   }
@@ -174,7 +174,7 @@ export default function ClassesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold font-heading text-slate-900">{t('classes')}</h1>
-          <p className="text-slate-500 mt-1">Manage classes and sections</p>
+          <p className="text-slate-500 mt-1">{t('manage')} {t('classes')}</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
@@ -199,14 +199,14 @@ export default function ClassesPage() {
                   className="w-full h-10 rounded-lg border border-slate-200 px-3"
                   data-testid="class-name-select"
                 >
-                  <option value="">Select Class</option>
+                  <option value="">{t('select_class')}</option>
                   {classNames.map(c => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>{t('section')} (Optional)</Label>
+                <Label>{t('section')} ({t('optional')})</Label>
                 <select
                   name="section"
                   value={formData.section}
@@ -214,7 +214,7 @@ export default function ClassesPage() {
                   className="w-full h-10 rounded-lg border border-slate-200 px-3"
                   data-testid="section-select"
                 >
-                  <option value="">None (Single Section)</option>
+                  <option value="">{t('no_data')}</option>
                   {sections.filter(s => s !== '').map(s => (
                     <option key={s} value={s}>{s}</option>
                   ))}
@@ -229,7 +229,7 @@ export default function ClassesPage() {
                   className="w-full h-10 rounded-lg border border-slate-200 px-3"
                   data-testid="class-teacher-select"
                 >
-                  <option value="">Select Teacher</option>
+                  <option value="">{t('assign_teacher')}</option>
                   {staff.map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
@@ -258,7 +258,7 @@ export default function ClassesPage() {
         <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
           <GraduationCap className="w-16 h-16 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500">{t('no_data')}</p>
-          <p className="text-sm text-slate-400 mt-1">Add classes to get started</p>
+          <p className="text-sm text-slate-400 mt-1">{t('add_class')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -293,7 +293,7 @@ export default function ClassesPage() {
                 {cls.name}{cls.section ? ` - ${cls.section}` : ''}
               </h3>
               <p className="text-sm text-slate-500 mt-1">
-                {t('class_teacher')}: {getTeacherName(cls.class_teacher_id) || <span className="text-orange-500">Not Assigned</span>}
+                {t('class_teacher')}: {getTeacherName(cls.class_teacher_id) || <span className="text-orange-500">{t('not_available')}</span>}
               </p>
               <div className="mt-auto pt-4">
                 <div className="flex items-center justify-between text-sm">

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme, THEME_PRESETS } from '../context/ThemeContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   const { user, schoolId, selectSchool, refreshSchoolData } = useAuth();
   const { language, changeLanguage } = useLanguage();
+  const { isDarkMode, toggleDarkMode, activePreset, setActivePreset, customHeaderColor, setCustomHeaderColor, headerLogoSize, setHeaderLogoSize } = useTheme();
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -333,7 +335,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center bg-white rounded-xl shadow-md p-8 max-w-md">
           <div className="text-5xl mb-4">🔒</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Access Denied</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">{t('access_denied')}</h2>
           <p className="text-gray-500">Only the Director/Admin can access Settings. Contact your school director for permission changes.</p>
         </div>
       </div>
@@ -350,7 +352,7 @@ export default function SettingsPage() {
 
       {/* User Info */}
       <div className="stat-card">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Profile</h2>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">{t('profile')}</h2>
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
             {user?.name?.charAt(0).toUpperCase()}
@@ -409,14 +411,91 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      <div className="stat-card">
+        <div className="flex items-center gap-3 mb-4">
+          <Sparkles className="w-5 h-5 text-purple-600" />
+          <h2 className="text-lg font-semibold text-slate-900">{t('theme_settings')}</h2>
+        </div>
 
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t('dark_mode')}</Label>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {isDarkMode ? 'Dark theme is active' : 'Switch to dark theme'}
+              </p>
+            </div>
+            <button
+              onClick={toggleDarkMode}
+              className={`relative w-12 h-6 rounded-full transition-colors ${isDarkMode ? 'bg-blue-600' : 'bg-slate-300'}`}
+            >
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isDarkMode ? 'left-[26px]' : 'left-0.5'}`} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Label className="text-sm font-medium text-slate-700 mb-3 block">{t('header_color')}</Label>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-3">
+            {Object.entries(THEME_PRESETS).map(([key, preset]) => (
+              <button
+                key={key}
+                onClick={() => { setActivePreset(key); setCustomHeaderColor(''); }}
+                className={`relative w-full aspect-square rounded-xl border-2 transition-all hover:scale-110 ${activePreset === key && !customHeaderColor ? 'border-slate-900 ring-2 ring-offset-2 ring-blue-400' : 'border-transparent'}`}
+                style={{ backgroundColor: preset.headerBg }}
+                title={preset.name}
+              >
+                {activePreset === key && !customHeaderColor && (
+                  <Check className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 mt-3">
+            <Label className="text-xs text-slate-500 whitespace-nowrap">{t('customize')}:</Label>
+            <input
+              type="color"
+              value={customHeaderColor || '#3b82f6'}
+              onChange={(e) => setCustomHeaderColor(e.target.value)}
+              className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200"
+            />
+            {customHeaderColor && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCustomHeaderColor('')}
+                className="text-xs text-slate-500"
+              >
+                {t('reset')}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-2">
+          <Label className="text-sm font-medium text-slate-700 mb-2 block">{t('logo_size')} ({t('header_color').split(' ')[0]})</Label>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-slate-500">{t('small')}</span>
+            <Slider
+              value={[headerLogoSize]}
+              onValueChange={(val) => setHeaderLogoSize(val[0])}
+              min={24}
+              max={56}
+              step={2}
+              className="flex-1"
+            />
+            <span className="text-xs text-slate-500">{t('large')}</span>
+            <span className="text-xs text-slate-400 w-8 text-right">{headerLogoSize}px</span>
+          </div>
+        </div>
+      </div>
 
       {/* Signature & Seal Upload - Director/Principal only */}
       {(user?.role === 'director' || user?.role === 'principal') && (
         <div className="stat-card">
           <div className="flex items-center gap-3 mb-4">
             <PenTool className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-lg font-semibold text-slate-900">Signature & Seal for Notices</h2>
+            <h2 className="text-lg font-semibold text-slate-900">{t('signature_seal')}</h2>
           </div>
           <p className="text-sm text-slate-500 mb-4">
             Ye signature aur seal notices pe automatically show honge
@@ -455,7 +534,7 @@ export default function SettingsPage() {
                   ) : (
                     <>
                       <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                      <span className="text-sm text-slate-500">Upload Signature</span>
+                      <span className="text-sm text-slate-500">{t('upload_signature')}</span>
                     </>
                   )}
                 </button>
@@ -503,7 +582,7 @@ export default function SettingsPage() {
                   ) : (
                     <>
                       <Stamp className="w-6 h-6 text-slate-400 mb-1" />
-                      <span className="text-sm text-slate-500">Upload Seal</span>
+                      <span className="text-sm text-slate-500">{t('upload_seal')}</span>
                     </>
                   )}
                 </button>
@@ -527,11 +606,11 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Image className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-slate-900">Logo & Branding (लोगो और ब्रांडिंग)</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{t('logo_branding')}</h2>
             </div>
             <Button onClick={saveBrandingSettings} disabled={savingBranding} className="bg-blue-600 hover:bg-blue-700 text-white">
               {savingBranding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-              Save Branding
+              {t('save')}
             </Button>
           </div>
           
@@ -587,7 +666,7 @@ export default function SettingsPage() {
           </div>
           
           <div className="border-t border-slate-200 mt-6 pt-4">
-            <h3 className="text-sm font-semibold text-slate-700 mb-3">Watermark Settings (वॉटरमार्क)</h3>
+            <h3 className="text-sm font-semibold text-slate-700 mb-3">{t('watermark_settings')}</h3>
             <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100 mb-4">
               <input type="checkbox" checked={watermarkEnabled}
                 onChange={(e) => setWatermarkEnabled(e.target.checked)}
@@ -641,7 +720,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <ToggleLeft className="w-5 h-5 text-violet-600" />
-              <h2 className="text-lg font-semibold text-slate-900">Module Management (मॉड्यूल प्रबंधन)</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{t('module_management')}</h2>
             </div>
             <Button
               onClick={saveModuleVisibility}
@@ -650,7 +729,7 @@ export default function SettingsPage() {
               data-testid="save-module-visibility-btn"
             >
               {savingModules ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-              Save Settings
+              {t('save')}
             </Button>
           </div>
           <p className="text-sm text-slate-500 mb-4">Enable or disable modules for each portal. Changes will apply immediately after saving.</p>
@@ -669,7 +748,7 @@ export default function SettingsPage() {
                 <tbody>
                   {MODULE_LIST.map((mod, idx) => (
                     <tr key={mod.key} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                      <td className="py-2.5 px-4 font-medium text-slate-800">{mod.label}</td>
+                      <td className="py-2.5 px-4 font-medium text-slate-800">{t(mod.key)}</td>
                       {PORTALS.map(portal => (
                         <td key={portal} className="text-center py-2.5 px-4">
                           <button

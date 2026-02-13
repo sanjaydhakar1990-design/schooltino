@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import {
@@ -73,6 +74,7 @@ function timeAgo(dateStr) {
 }
 
 export default function SchoolFeedPage() {
+  const { t } = useTranslation();
   const { user, schoolData } = useAuth();
   const schoolId = user?.school_id || schoolData?.id || '';
   const userId = user?.id || '';
@@ -305,7 +307,7 @@ export default function SchoolFeedPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">School Feed</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('school_feed')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">Share updates, activities & announcements</p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -14,6 +15,7 @@ import { toast } from 'sonner';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function SchoolAnalytics() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
@@ -146,8 +148,8 @@ export default function SchoolAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">📊 School Analytics</h1>
-          <p className="text-slate-500">Complete overview of school performance</p>
+          <h1 className="text-2xl font-bold text-slate-900">📊 {t('school_analytics')}</h1>
+          <p className="text-slate-500">{t('complete_overview') || 'Complete overview of school performance'}</p>
         </div>
         <Button onClick={fetchAnalytics} variant="outline">
           <RefreshCw className="w-4 h-4 mr-2" />
@@ -164,7 +166,7 @@ export default function SchoolAnalytics() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{analytics?.total_students}</p>
-              <p className="text-sm text-slate-500">Total Students</p>
+              <p className="text-sm text-slate-500">{t('total_students')}</p>
             </div>
           </div>
         </div>
@@ -176,7 +178,7 @@ export default function SchoolAnalytics() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{analytics?.total_teachers}</p>
-              <p className="text-sm text-slate-500">Teachers</p>
+              <p className="text-sm text-slate-500">{t('staff')}</p>
             </div>
           </div>
         </div>
@@ -209,10 +211,10 @@ export default function SchoolAnalytics() {
       {/* Tabs */}
       <Tabs defaultValue="teachers" className="space-y-4">
         <TabsList className="bg-slate-100">
-          <TabsTrigger value="teachers">👨‍🏫 Teachers Progress</TabsTrigger>
-          <TabsTrigger value="syllabus">📚 Syllabus Status</TabsTrigger>
-          <TabsTrigger value="weak">⚠️ Weak Students</TabsTrigger>
-          <TabsTrigger value="classes">📊 Class Performance</TabsTrigger>
+          <TabsTrigger value="teachers">👨‍🏫 {t('staff')}</TabsTrigger>
+          <TabsTrigger value="syllabus">📚 {t('reports')}</TabsTrigger>
+          <TabsTrigger value="weak">⚠️ {t('students')}</TabsTrigger>
+          <TabsTrigger value="classes">📊 {t('class_performance')}</TabsTrigger>
         </TabsList>
 
         {/* Teachers Progress Tab */}
@@ -225,13 +227,13 @@ export default function SchoolAnalytics() {
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Teacher</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Subject</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Classes</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Syllabus %</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Avg Result</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Weak Students</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('staff')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('subject')}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('classes') || 'Classes'}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('reports')} %</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('exam_analytics')}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('students')}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('status')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -356,12 +358,12 @@ export default function SchoolAnalytics() {
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Student</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Class</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Avg Score</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Weak Subjects</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Class Teacher</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Action</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('students')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('classes') || 'Class'}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('exam_analytics')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('subject')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('staff')}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -413,13 +415,13 @@ export default function SchoolAnalytics() {
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Class</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Students</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Avg Score</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Attendance</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Highest</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Lowest</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Grade</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('classes') || 'Class'}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('students')}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('exam_analytics')}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('attendance')}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('charts') || 'Highest'}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('trends') || 'Lowest'}</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('reports')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">

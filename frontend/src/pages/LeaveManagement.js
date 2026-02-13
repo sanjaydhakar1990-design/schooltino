@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -21,6 +22,7 @@ import { toast } from 'sonner';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function LeaveManagement() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -43,10 +45,10 @@ export default function LeaveManagement() {
   });
 
   const leaveTypes = [
-    { id: 'sick', name: 'Sick Leave', color: 'rose' },
-    { id: 'casual', name: 'Casual Leave', color: 'blue' },
-    { id: 'personal', name: 'Personal Leave', color: 'purple' },
-    { id: 'emergency', name: 'Emergency Leave', color: 'amber' }
+    { id: 'sick', name: t('sick_leave'), color: 'rose' },
+    { id: 'casual', name: t('casual_leave'), color: 'blue' },
+    { id: 'personal', name: t('personal_leave') || 'Personal Leave', color: 'purple' },
+    { id: 'emergency', name: t('emergency_leave') || 'Emergency Leave', color: 'amber' }
   ];
 
   useEffect(() => {
@@ -147,7 +149,7 @@ export default function LeaveManagement() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <Calendar className="w-8 h-8" />
-              Leave Management
+              {t('leave_management')}
             </h1>
             <p className="text-teal-100 mt-2">
               {canApproveLeave && !canApplyLeave 
@@ -161,7 +163,7 @@ export default function LeaveManagement() {
               className="bg-white text-teal-600 hover:bg-teal-50"
             >
               <Send className="w-4 h-4 mr-2" />
-              Apply for Leave
+              {t('apply_leave')}
             </Button>
           )}
         </div>
@@ -195,11 +197,11 @@ export default function LeaveManagement() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-slate-100">
           {canApplyLeave && (
-            <TabsTrigger value="my-leaves">My Leaves</TabsTrigger>
+            <TabsTrigger value="my-leaves">{t('leave_management')}</TabsTrigger>
           )}
           {canApproveLeave && (
             <TabsTrigger value="pending">
-              Pending Approvals
+              {t('pending')}
               {pendingLeaves.length > 0 && (
                 <span className="ml-2 px-2 py-0.5 bg-amber-500 text-white text-xs rounded-full">
                   {pendingLeaves.length}
@@ -274,7 +276,7 @@ export default function LeaveManagement() {
                           onClick={() => handleApprove(leave.id)}
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
-                          Approve
+                          {t('approve')}
                         </Button>
                         <Button 
                           size="sm" 
@@ -282,7 +284,7 @@ export default function LeaveManagement() {
                           onClick={() => handleReject(leave.id)}
                         >
                           <XCircle className="w-4 h-4 mr-1" />
-                          Reject
+                          {t('reject')}
                         </Button>
                       </div>
                     </div>
@@ -298,11 +300,11 @@ export default function LeaveManagement() {
       <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Apply for Leave</DialogTitle>
+            <DialogTitle>{t('apply_leave')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleApply} className="space-y-4">
             <div className="space-y-2">
-              <Label>Leave Type</Label>
+              <Label>{t('leave_type')}</Label>
               <select
                 value={form.leave_type}
                 onChange={(e) => setForm(f => ({ ...f, leave_type: e.target.value }))}
@@ -315,7 +317,7 @@ export default function LeaveManagement() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>From Date</Label>
+                <Label>{t('from_date')}</Label>
                 <Input
                   type="date"
                   value={form.from_date}
@@ -324,7 +326,7 @@ export default function LeaveManagement() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>To Date</Label>
+                <Label>{t('to_date')}</Label>
                 <Input
                   type="date"
                   value={form.to_date}

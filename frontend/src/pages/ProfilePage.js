@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -21,6 +22,7 @@ import IDCardViewer from '../components/IDCardViewer';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, token, logout, schoolId } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -252,7 +254,7 @@ export default function ProfilePage() {
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">My Profile</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t('profile')}</h1>
           <p className="text-slate-500">Manage your account & AI settings</p>
         </div>
 
@@ -369,13 +371,13 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <User className="w-5 h-5 text-indigo-600" />
-                  Profile Information
+                  {t('profile')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label className="text-slate-500 text-xs">Name</Label>
+                    <Label className="text-slate-500 text-xs">{t('name')}</Label>
                     <p className="font-medium">{user?.name}</p>
                   </div>
                   <div className="space-y-1">
@@ -385,7 +387,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label className="text-slate-500 text-xs">Email</Label>
+                    <Label className="text-slate-500 text-xs">{t('email')}</Label>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-slate-400" />
                       <p className="text-sm">{user?.email}</p>
@@ -393,7 +395,7 @@ export default function ProfilePage() {
                   </div>
                   {user?.mobile && (
                     <div className="space-y-1">
-                      <Label className="text-slate-500 text-xs">Mobile</Label>
+                      <Label className="text-slate-500 text-xs">{t('phone')}</Label>
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-slate-400" />
                         <p className="text-sm">{user.mobile}</p>

@@ -1,5 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard, Users, GraduationCap, CalendarCheck,
@@ -12,6 +14,8 @@ import {
 
 export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
+  const { isDarkMode, getSidebarStyle, getSidebarActiveColor } = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleVisibility, setModuleVisibility] = useState({});
@@ -52,67 +56,68 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   };
 
   const navItems = [
-    { path: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard', moduleKey: 'dashboard' },
-    { path: '/app/students', icon: Users, label: 'Students', permKey: 'students', moduleKey: 'students' },
-    { path: '/app/staff', icon: Users, label: 'Staff Management', permKey: 'staff', moduleKey: 'staff' },
-    { path: '/app/classes', icon: GraduationCap, label: 'Classes', permKey: 'classes', moduleKey: 'classes' },
-    { path: '/app/attendance', icon: CalendarCheck, label: 'Attendance', permKey: 'attendance', moduleKey: 'attendance' },
-    { path: '/app/fees', icon: Wallet, label: 'Fee Management', permKey: 'fees', moduleKey: 'fee_management' },
-    { path: '/app/admissions', icon: Target, label: 'Admissions', permKey: 'students', moduleKey: 'admissions' },
-    { path: '/app/exams', icon: FileText, label: 'Exams & Reports', permKey: 'attendance', moduleKey: 'exams_reports' },
-    { path: '/app/timetable', icon: Clock, label: 'Timetable', permKey: 'attendance', moduleKey: 'timetable' },
-    { path: '/app/library', icon: BookOpen, label: 'Digital Library', moduleKey: 'digital_library' },
-    { path: '/app/homework', icon: Clipboard, label: 'Homework', moduleKey: 'homework' },
-    { path: '/app/live-classes', icon: Tv, label: 'Live Classes', moduleKey: 'live_classes' },
-    { path: '/app/communication', icon: MessageSquare, label: 'Communication Hub', permKey: 'sms_center', moduleKey: 'communication_hub' },
-    { path: '/app/front-office', icon: Shield, label: 'Front Office', permKey: 'attendance', moduleKey: 'front_office' },
-    { path: '/app/transport', icon: Bus, label: 'Transport', permKey: 'attendance', moduleKey: 'transport' },
-    { path: '/app/calendar', icon: Calendar, label: 'Calendar', moduleKey: 'calendar' },
-    { path: '/app/analytics', icon: BarChart3, label: 'Analytics', permKey: 'school_analytics', moduleKey: 'analytics' },
-    { path: '/app/ai-tools', icon: Brain, label: 'AI Tools', permKey: 'ai_content', moduleKey: 'ai_tools' },
-    { path: '/app/cctv', icon: Video, label: 'CCTV Integration', permKey: 'cctv', moduleKey: 'cctv' },
-    { path: '/app/inventory', icon: Package, label: 'Inventory', permKey: 'settings', moduleKey: 'inventory' },
-    { path: '/app/multi-branch', icon: Building, label: 'Multi-Branch', directorOnly: true, moduleKey: 'multi_branch' },
-    { path: '/app/settings', icon: Settings, label: 'Settings', directorOnly: true },
+    { path: '/app/dashboard', icon: LayoutDashboard, labelKey: 'dashboard', moduleKey: 'dashboard' },
+    { path: '/app/students', icon: Users, labelKey: 'students', permKey: 'students', moduleKey: 'students' },
+    { path: '/app/staff', icon: Users, labelKey: 'staff_management', permKey: 'staff', moduleKey: 'staff' },
+    { path: '/app/classes', icon: GraduationCap, labelKey: 'classes', permKey: 'classes', moduleKey: 'classes' },
+    { path: '/app/attendance', icon: CalendarCheck, labelKey: 'attendance', permKey: 'attendance', moduleKey: 'attendance' },
+    { path: '/app/fees', icon: Wallet, labelKey: 'fee_management', permKey: 'fees', moduleKey: 'fee_management' },
+    { path: '/app/admissions', icon: Target, labelKey: 'admissions', permKey: 'students', moduleKey: 'admissions' },
+    { path: '/app/exams', icon: FileText, labelKey: 'exams_reports', permKey: 'attendance', moduleKey: 'exams_reports' },
+    { path: '/app/timetable', icon: Clock, labelKey: 'timetable', permKey: 'attendance', moduleKey: 'timetable' },
+    { path: '/app/library', icon: BookOpen, labelKey: 'digital_library', moduleKey: 'digital_library' },
+    { path: '/app/homework', icon: Clipboard, labelKey: 'homework', moduleKey: 'homework' },
+    { path: '/app/live-classes', icon: Tv, labelKey: 'live_classes', moduleKey: 'live_classes' },
+    { path: '/app/communication', icon: MessageSquare, labelKey: 'communication_hub', permKey: 'sms_center', moduleKey: 'communication_hub' },
+    { path: '/app/front-office', icon: Shield, labelKey: 'front_office', permKey: 'attendance', moduleKey: 'front_office' },
+    { path: '/app/transport', icon: Bus, labelKey: 'transport', permKey: 'attendance', moduleKey: 'transport' },
+    { path: '/app/calendar', icon: Calendar, labelKey: 'calendar', moduleKey: 'calendar' },
+    { path: '/app/analytics', icon: BarChart3, labelKey: 'analytics', permKey: 'school_analytics', moduleKey: 'analytics' },
+    { path: '/app/ai-tools', icon: Brain, labelKey: 'ai_tools', permKey: 'ai_content', moduleKey: 'ai_tools' },
+    { path: '/app/cctv', icon: Video, labelKey: 'cctv_integration', permKey: 'cctv', moduleKey: 'cctv' },
+    { path: '/app/inventory', icon: Package, labelKey: 'inventory', permKey: 'settings', moduleKey: 'inventory' },
+    { path: '/app/multi-branch', icon: Building, labelKey: 'multi_branch', directorOnly: true, moduleKey: 'multi_branch' },
+    { path: '/app/settings', icon: Settings, labelKey: 'settings', directorOnly: true },
   ];
 
   const filteredItems = navItems.filter(item => {
     if (item.directorOnly && !isDirector) return false;
     if (item.permKey && !hasPermission(item.permKey)) return false;
     if (!isModuleEnabled(item.moduleKey)) return false;
-    if (searchQuery) return item.label.toLowerCase().includes(searchQuery.toLowerCase());
+    if (searchQuery) return t(item.labelKey).toLowerCase().includes(searchQuery.toLowerCase());
     return true;
   });
 
   return (
-    <aside className={`fixed lg:relative top-0 left-0 h-full ${isCollapsed ? 'w-[60px]' : 'w-[260px]'} z-50 lg:z-auto transform transition-all duration-200 shrink-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col bg-gradient-to-b from-blue-50 via-sky-50 to-indigo-50 border-r border-blue-100`} style={{height: '100dvh'}}>
+    <aside className={`fixed lg:relative top-0 left-0 h-full ${isCollapsed ? 'w-[60px]' : 'w-[260px]'} z-50 lg:z-auto transform transition-all duration-200 shrink-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col border-r ${isDarkMode ? 'border-slate-700' : 'border-blue-100'}`} style={{height: '100dvh', ...getSidebarStyle()}}>
       <button
         onClick={onToggleCollapse}
-        className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 bg-blue-500 rounded-full items-center justify-center text-white shadow-md hover:bg-blue-600 z-10 border-2 border-white"
+        className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 rounded-full items-center justify-center text-white shadow-md z-10 border-2 border-white"
+        style={{ backgroundColor: getSidebarActiveColor() }}
         title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
       </button>
-      <button onClick={onClose} className="absolute top-4 right-3 p-1.5 rounded-lg hover:bg-blue-100 lg:hidden">
-        <X className="w-4 h-4 text-blue-400" />
+      <button onClick={onClose} className={`absolute top-4 right-3 p-1.5 rounded-lg lg:hidden ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-blue-100'}`}>
+        <X className={`w-4 h-4 ${isDarkMode ? 'text-slate-400' : 'text-blue-400'}`} />
       </button>
 
 
-      <NavLink to="/app/profile" onClick={handleNavClick} className="block px-4 py-3 mt-2 border-b border-blue-100 hover:bg-blue-50 transition-colors" style={{paddingTop: 'max(0.75rem, env(safe-area-inset-top))'}}>
+      <NavLink to="/app/profile" onClick={handleNavClick} className={`block px-4 py-3 mt-2 border-b transition-colors ${isDarkMode ? 'border-slate-700 hover:bg-slate-800' : 'border-blue-100 hover:bg-blue-50'}`} style={{paddingTop: 'max(0.75rem, env(safe-area-inset-top))'}}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0">
+          <div className={`w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 ${isDarkMode ? 'border-slate-600' : 'border-blue-200'}`}>
             {user?.photo_url ? (
               <img src={user.photo_url.startsWith('http') ? user.photo_url : `${process.env.REACT_APP_BACKEND_URL}${user.photo_url}`} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${getSidebarActiveColor()}, ${getSidebarActiveColor()}dd)` }}>
                 <span className="text-white font-bold text-xs">{user?.name?.charAt(0) || 'U'}</span>
               </div>
             )}
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-700 text-sm truncate">{user?.name || 'User'}</p>
-              <p className="text-[10px] text-blue-400 capitalize">{user?.role?.replace('_', ' ') || 'Admin'}</p>
+              <p className={`font-semibold text-sm truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>{user?.name || 'User'}</p>
+              <p className={`text-[10px] capitalize ${isDarkMode ? 'text-slate-400' : 'text-blue-400'}`}>{user?.role?.replace('_', ' ') || 'Admin'}</p>
             </div>
           )}
         </div>
@@ -121,13 +126,13 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
       {!isCollapsed && (
         <div className="px-4 pt-3 pb-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-300" />
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDarkMode ? 'text-slate-500' : 'text-blue-300'}`} />
             <input
               type="text"
-              placeholder="Search modules..."
+              placeholder={t('search_modules')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-blue-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 text-slate-700 placeholder-blue-300 shadow-sm"
+              className={`w-full pl-9 pr-3 py-2 text-xs rounded-lg focus:outline-none shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-600 text-slate-200 placeholder-slate-500 focus:border-slate-500' : 'bg-white border border-blue-200 text-slate-700 placeholder-blue-300 focus:border-blue-400 focus:ring-1 focus:ring-blue-200'}`}
             />
           </div>
         </div>
@@ -142,25 +147,28 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
             className={({ isActive }) =>
               `flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg text-[13px] transition-all duration-150 ${
                 isActive
-                  ? 'bg-blue-500 text-white font-medium shadow-md shadow-blue-200'
-                  : 'text-slate-600 hover:bg-blue-100/60 hover:text-blue-700'
+                  ? 'text-white font-medium shadow-md'
+                  : isDarkMode
+                    ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                    : 'text-slate-600 hover:bg-blue-100/60 hover:text-blue-700'
               }`
             }
-            title={isCollapsed ? item.label : undefined}
+            style={({ isActive }) => isActive ? { backgroundColor: getSidebarActiveColor() } : {}}
+            title={isCollapsed ? t(item.labelKey) : undefined}
           >
             <item.icon className="w-4 h-4 flex-shrink-0" />
-            {!isCollapsed && <span className="truncate">{item.label}</span>}
+            {!isCollapsed && <span className="truncate">{t(item.labelKey)}</span>}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-3 border-t border-blue-100" style={{paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))'}}>
+      <div className={`p-3 border-t ${isDarkMode ? 'border-slate-700' : 'border-blue-100'}`} style={{paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))'}}>
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 text-xs text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors`}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors`}
         >
           <LogOut className="w-3.5 h-3.5" />
-          {!isCollapsed && <span>Sign Out</span>}
+          {!isCollapsed && <span>{t('sign_out')}</span>}
         </button>
       </div>
     </aside>

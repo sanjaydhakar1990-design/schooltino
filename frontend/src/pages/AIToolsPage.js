@@ -1883,12 +1883,13 @@ function AIPaperGeneratorTab() {
 }
 
 const AIToolsPage = () => {
+  const { t } = useTranslation();
   const [mainTab, setMainTab] = useState('paper-generator');
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">AI Tools</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('ai_tools')}</h1>
         <p className="text-sm text-gray-500 mt-1">AI-powered tools for paper generation, content creation and event design</p>
       </div>
 
@@ -1896,11 +1897,11 @@ const AIToolsPage = () => {
         <TabsList className="grid w-full grid-cols-3 h-auto p-1">
           <TabsTrigger value="paper-generator" className="py-3 text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <FileText className="w-4 h-4 mr-1.5" />
-            AI Paper Generator
+            {t('paper_generator')}
           </TabsTrigger>
           <TabsTrigger value="event-designer" className="py-3 text-sm data-[state=active]:bg-pink-600 data-[state=active]:text-white">
             <Palette className="w-4 h-4 mr-1.5" />
-            Event Designer
+            {t('event_designer')}
           </TabsTrigger>
           <TabsTrigger value="content-studio" className="py-3 text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <Sparkles className="w-4 h-4 mr-1.5" />

@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import './i18n';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -192,13 +193,15 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <LanguageProvider>
-            <AppRoutes />
-            <Toaster
-              position="top-right"
-              richColors
-              closeButton
-              toastOptions={{ style: { fontFamily: 'Inter, sans-serif' } }}
-            />
+            <ThemeProvider>
+              <AppRoutes />
+              <Toaster
+                position="top-right"
+                richColors
+                closeButton
+                toastOptions={{ style: { fontFamily: 'Inter, sans-serif' } }}
+              />
+            </ThemeProvider>
           </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>

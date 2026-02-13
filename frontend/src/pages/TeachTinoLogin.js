@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -31,6 +32,7 @@ import {
 import { toast } from 'sonner';
 
 export default function TeachTinoLogin() {
+  const { t } = useTranslation();
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -211,13 +213,13 @@ export default function TeachTinoLogin() {
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
                     <GraduationCap className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">Teacher Login</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{t('teacher_login')}</h3>
                   <p className="text-gray-500 text-sm mt-1">Access your TeachTino dashboard</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
-                    <Label className="text-gray-700 text-sm">Email Address</Label>
+                    <Label className="text-gray-700 text-sm">{t('email')}</Label>
                     <Input
                       type="email"
                       value={loginForm.email}
@@ -229,12 +231,12 @@ export default function TeachTinoLogin() {
                   </div>
                   
                   <div>
-                    <Label className="text-gray-700 text-sm">Password</Label>
+                    <Label className="text-gray-700 text-sm">{t('password')}</Label>
                     <Input
                       type="password"
                       value={loginForm.password}
                       onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                      placeholder="Enter your password"
+                      placeholder={t('enter_password')}
                       className="h-11 mt-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                       required
                     />
@@ -250,7 +252,7 @@ export default function TeachTinoLogin() {
                     ) : (
                       <>
                         <Lock className="w-4 h-4 mr-2" />
-                        Login to TeachTino
+                        {t('login')}
                       </>
                     )}
                   </Button>
@@ -261,7 +263,7 @@ export default function TeachTinoLogin() {
                     className="w-full text-center text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center justify-center gap-1 mt-2"
                   >
                     <Key className="w-3 h-3" />
-                    Forgot Password?
+                    {t('forgot_password')}
                   </button>
                 </form>
 

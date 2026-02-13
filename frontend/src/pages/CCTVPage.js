@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Video, Camera, Monitor, Settings, Plus, RefreshCw, Eye, Trash2, Edit2, MapPin } from 'lucide-react';
 
 const CCTVPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [cameras, setCameras] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ const CCTVPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">CCTV Integration</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('cctv_integration')}</h1>
           <p className="text-sm text-gray-500 mt-1">Manage and monitor security cameras</p>
         </div>
         <div className="flex items-center gap-2">
@@ -70,7 +72,7 @@ const CCTVPage = () => {
           </button>
           <button onClick={() => setShowAddForm(!showAddForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2">
             <Plus className="w-4 h-4" />
-            Add Camera
+            {t('add_camera')}
           </button>
         </div>
       </div>
@@ -80,11 +82,11 @@ const CCTVPage = () => {
           <h3 className="font-semibold text-gray-900 mb-4">Add New Camera</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Camera Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('camera_name')}</label>
               <input type="text" value={newCamera.name} onChange={e => setNewCamera({ ...newCamera, name: e.target.value })} placeholder="e.g. Main Gate Camera" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('location')}</label>
               <input type="text" value={newCamera.location} onChange={e => setNewCamera({ ...newCamera, location: e.target.value })} placeholder="e.g. Main Entrance" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
@@ -101,8 +103,8 @@ const CCTVPage = () => {
             </div>
           </div>
           <div className="flex gap-2 mt-4">
-            <button onClick={addCamera} disabled={!newCamera.name || !newCamera.stream_url} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">Save Camera</button>
-            <button onClick={() => setShowAddForm(false)} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
+            <button onClick={addCamera} disabled={!newCamera.name || !newCamera.stream_url} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{t('save')}</button>
+            <button onClick={() => setShowAddForm(false)} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">{t('cancel')}</button>
           </div>
         </div>
       )}
@@ -137,7 +139,7 @@ const CCTVPage = () => {
                 <p className="text-xs text-gray-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" />{cam.location}</p>
                 <div className="flex items-center gap-2 mt-3">
                   <button className="flex-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 flex items-center justify-center gap-1">
-                    <Eye className="w-3 h-3" />Live View
+                    <Eye className="w-3 h-3" />{t('live_feed')}
                   </button>
                   <button onClick={() => deleteCamera(cam.id || cam._id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
                     <Trash2 className="w-3.5 h-3.5" />

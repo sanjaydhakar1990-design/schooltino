@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function StudyTinoLoginPage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { studentLogin } = useAuth();
   const isHindi = i18n.language === 'hi';
@@ -231,9 +231,9 @@ export default function StudyTinoLoginPage() {
               <div className="mb-6">
                 <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2 mb-1">
                   {loginType === 'student' ? (
-                    <><GraduationCap className="w-5 h-5 text-blue-500" /> {isHindi ? 'Student Login' : 'Student Login'}</>
+                    <><GraduationCap className="w-5 h-5 text-blue-500" /> {t('student_login')}</>
                   ) : (
-                    <><Heart className="w-5 h-5 text-blue-500" /> {isHindi ? 'Parent Login' : 'Parent Login'}</>
+                    <><Heart className="w-5 h-5 text-blue-500" /> {t('login')}</>
                   )}
                 </h3>
                 <p className="text-xs text-gray-500">
@@ -270,7 +270,7 @@ export default function StudyTinoLoginPage() {
               <form onSubmit={loginType === 'student' ? handleStudentLogin : handleParentLogin} className="space-y-4">
                 {loginType === 'student' && (
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Student ID</Label>
+                    <Label className="text-sm font-medium text-gray-700">{t('student_id')}</Label>
                     <div className="relative mt-2">
                       <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
@@ -316,7 +316,7 @@ export default function StudyTinoLoginPage() {
                 )}
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Password</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t('password')}</Label>
                   <div className="relative mt-2">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
@@ -346,7 +346,7 @@ export default function StudyTinoLoginPage() {
                   ) : (
                     <LogIn className="w-4 h-4 mr-2" />
                   )}
-                  {isHindi ? 'Login' : 'Login'}
+                  {t('login')}
                 </Button>
               </form>
 

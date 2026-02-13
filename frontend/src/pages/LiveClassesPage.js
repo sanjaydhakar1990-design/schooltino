@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -21,6 +22,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function LiveClassesPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const schoolId = user?.school_id || localStorage.getItem('school_id');
   const [activeTab, setActiveTab] = useState('schedule');
   const [loading, setLoading] = useState(false);
@@ -221,28 +223,28 @@ export default function LiveClassesPage() {
           <div>
             <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
               <Video className="w-8 h-8" />
-              Live Classes
+              {t('live_classes')}
             </h1>
             <p className="text-red-100 mt-2">
-              Go live or schedule — teach anytime, from anywhere
+              {t('schedule_class')}
             </p>
           </div>
           <div className="hidden md:flex items-center gap-3">
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{stats.totalScheduled}</p>
-              <p className="text-xs text-red-100">Scheduled</p>
+              <p className="text-xs text-red-100">{t('scheduled')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{stats.ongoingNow}</p>
-              <p className="text-xs text-red-100">Live Now</p>
+              <p className="text-xs text-red-100">{t('ongoing')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{stats.totalRecordings}</p>
-              <p className="text-xs text-red-100">Recordings</p>
+              <p className="text-xs text-red-100">{t('recording')}</p>
             </div>
             <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
               <p className="text-2xl font-bold">{stats.avgAttendance}%</p>
-              <p className="text-xs text-red-100">Avg Attendance</p>
+              <p className="text-xs text-red-100">{t('attendance')}</p>
             </div>
           </div>
         </div>
@@ -251,16 +253,16 @@ export default function LiveClassesPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 h-12">
           <TabsTrigger value="schedule" className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" /> Schedule
+            <Calendar className="w-4 h-4" /> {t('scheduled')}
           </TabsTrigger>
           <TabsTrigger value="ongoing" className="flex items-center gap-2">
-            <Radio className="w-4 h-4" /> Ongoing
+            <Radio className="w-4 h-4" /> {t('ongoing')}
           </TabsTrigger>
           <TabsTrigger value="recordings" className="flex items-center gap-2">
-            <Play className="w-4 h-4" /> Recordings
+            <Play className="w-4 h-4" /> {t('recording')}
           </TabsTrigger>
           <TabsTrigger value="attendance" className="flex items-center gap-2">
-            <UserCheck className="w-4 h-4" /> Attendance
+            <UserCheck className="w-4 h-4" /> {t('attendance')}
           </TabsTrigger>
         </TabsList>
 
@@ -268,10 +270,10 @@ export default function LiveClassesPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="relative flex-1 max-w-sm">
               <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
-              <Input placeholder="Search classes..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
+              <Input placeholder={t('search_placeholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <Button onClick={() => setShowCreateDialog(true)} className="bg-red-600 hover:bg-red-700">
-              <Plus className="w-4 h-4 mr-2" /> Schedule Class
+              <Plus className="w-4 h-4 mr-2" /> {t('schedule_class')}
             </Button>
           </div>
           <div className="space-y-3">
@@ -291,7 +293,7 @@ export default function LiveClassesPage() {
                           <span>{cls.duration} min</span>
                           <span>{cls.class_name}</span>
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Teacher: {cls.teacher}</p>
+                        <p className="text-xs text-gray-400 mt-1">{t('teacher')}: {cls.teacher}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -312,7 +314,7 @@ export default function LiveClassesPage() {
             {scheduledClasses.length === 0 && (
               <div className="text-center py-12 text-gray-500">
                 <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>No classes scheduled. Click "Schedule Class" to get started.</p>
+                <p>{t('no_data')}</p>
               </div>
             )}
           </div>
@@ -333,7 +335,7 @@ export default function LiveClassesPage() {
                           <Badge className="bg-red-100 text-red-700">LIVE</Badge>
                           {platformIcon(cls.platform)}
                         </div>
-                        <span className="text-sm text-gray-500">{elapsed} min elapsed</span>
+                        <span className="text-sm text-gray-500">{elapsed} {t('duration_minutes')}</span>
                       </div>
                       <h3 className="font-semibold text-gray-900 text-lg">{cls.title}</h3>
                       <p className="text-sm text-gray-500 mt-1">{cls.class_name} • {cls.teacher}</p>
@@ -342,14 +344,14 @@ export default function LiveClassesPage() {
                           <Users className="w-4 h-4" /> {cls.attendees}/{cls.maxAttendees}
                         </div>
                         <div className="flex items-center gap-1 text-sm text-gray-600">
-                          <Clock className="w-4 h-4" /> {remaining > 0 ? `${remaining} min left` : 'Overtime'}
+                          <Clock className="w-4 h-4" /> {remaining > 0 ? `${remaining} ${t('duration_minutes')}` : t('ended')}
                         </div>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
                         <div className="bg-red-500 h-2 rounded-full transition-all" style={{ width: `${Math.min((elapsed / cls.duration) * 100, 100)}%` }} />
                       </div>
                       <Button className="w-full mt-4 bg-red-600 hover:bg-red-700" onClick={() => handleJoinClass(cls)}>
-                        <Monitor className="w-4 h-4 mr-2" /> Join Class
+                        <Monitor className="w-4 h-4 mr-2" /> {t('join_class')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -359,7 +361,7 @@ export default function LiveClassesPage() {
           ) : (
             <div className="text-center py-12 text-gray-500">
               <Radio className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p>No live classes right now. Check the schedule tab for upcoming classes.</p>
+              <p>{t('no_data')}</p>
             </div>
           )}
         </TabsContent>
@@ -382,21 +384,21 @@ export default function LiveClassesPage() {
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {rec.duration}</span>
                           <span>{rec.size}</span>
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Teacher: {rec.teacher} • {rec.views} views</p>
+                        <p className="text-xs text-gray-400 mt-1">{t('teacher')}: {rec.teacher} • {rec.views} views</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {rec.status === 'processing' ? (
                         <Badge className="bg-amber-100 text-amber-700">
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Processing
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" /> {t('loading')}
                         </Badge>
                       ) : (
                         <>
                           <Button size="sm" variant="outline" onClick={() => toast.success('Playing recording...')}>
-                            <Play className="w-3 h-3 mr-1" /> Play
+                            <Play className="w-3 h-3 mr-1" /> {t('view')}
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => toast.success('Download started...')}>
-                            <Download className="w-3 h-3 mr-1" /> Download
+                            <Download className="w-3 h-3 mr-1" /> {t('download')}
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => handleShareRecording(rec)}>
                             <Share2 className="w-4 h-4 text-gray-500" />
@@ -427,7 +429,7 @@ export default function LiveClassesPage() {
                           <span>{att.class_name}</span>
                           <span>{att.subject}</span>
                           <span>{att.date}</span>
-                          <span>Teacher: {att.teacher}</span>
+                          <span>{t('teacher')}: {att.teacher}</span>
                         </div>
                       </div>
                     </div>
@@ -435,16 +437,16 @@ export default function LiveClassesPage() {
                       <div className="text-right">
                         <div className="flex items-center gap-2">
                           <Badge className="bg-green-100 text-green-700">
-                            <CheckCircle className="w-3 h-3 mr-1" /> {att.present} Present
+                            <CheckCircle className="w-3 h-3 mr-1" /> {att.present} {t('present')}
                           </Badge>
                           <Badge className="bg-red-100 text-red-700">
-                            <XCircle className="w-3 h-3 mr-1" /> {att.absent} Absent
+                            <XCircle className="w-3 h-3 mr-1" /> {att.absent} {t('absent')}
                           </Badge>
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">{Math.round(att.present / att.totalStudents * 100)}% attendance</p>
+                        <p className="text-xs text-gray-400 mt-1">{Math.round(att.present / att.totalStudents * 100)}% {t('attendance')}</p>
                       </div>
                       <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleDownloadReport(att); }}>
-                        <FileDown className="w-3 h-3 mr-1" /> Report
+                        <FileDown className="w-3 h-3 mr-1" /> {t('reports')}
                       </Button>
                     </div>
                   </div>
@@ -459,62 +461,62 @@ export default function LiveClassesPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Video className="w-5 h-5 text-red-600" /> Schedule Live Class
+              <Video className="w-5 h-5 text-red-600" /> {t('schedule_class')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Title</Label>
+              <Label>{t('title')}</Label>
               <Input value={classForm.title} onChange={(e) => setClassForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Mathematics - Quadratic Equations" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Subject</Label>
-                <Input value={classForm.subject} onChange={(e) => setClassForm(f => ({ ...f, subject: e.target.value }))} placeholder="Mathematics" />
+                <Label>{t('subject')}</Label>
+                <Input value={classForm.subject} onChange={(e) => setClassForm(f => ({ ...f, subject: e.target.value }))} placeholder={t('subject')} />
               </div>
               <div className="space-y-2">
-                <Label>Class</Label>
+                <Label>{t('class_section')}</Label>
                 <Input value={classForm.class_name} onChange={(e) => setClassForm(f => ({ ...f, class_name: e.target.value }))} placeholder="Class 10-A" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Teacher</Label>
+              <Label>{t('teacher')}</Label>
               {teachers.length > 0 ? (
                 <select 
                   value={classForm.teacher_id} 
                   onChange={(e) => {
-                    const t = teachers.find(t => (t.id || t._id) === e.target.value);
-                    setClassForm(f => ({ ...f, teacher_id: e.target.value, teacher: t?.name || '' }));
+                    const tch = teachers.find(t => (t.id || t._id) === e.target.value);
+                    setClassForm(f => ({ ...f, teacher_id: e.target.value, teacher: tch?.name || '' }));
                   }} 
                   className="w-full h-10 rounded-lg border border-slate-200 px-3"
                 >
-                  <option value="">-- Select Teacher --</option>
-                  {teachers.map(t => (
-                    <option key={t.id || t._id} value={t.id || t._id}>
-                      {t.name} {t.subject ? `(${t.subject})` : ''}
+                  <option value="">-- {t('select')} {t('teacher')} --</option>
+                  {teachers.map(tch => (
+                    <option key={tch.id || tch._id} value={tch.id || tch._id}>
+                      {tch.name} {tch.subject ? `(${tch.subject})` : ''}
                     </option>
                   ))}
                 </select>
               ) : (
-                <Input value={classForm.teacher} onChange={(e) => setClassForm(f => ({ ...f, teacher: e.target.value }))} placeholder="Teacher name" />
+                <Input value={classForm.teacher} onChange={(e) => setClassForm(f => ({ ...f, teacher: e.target.value }))} placeholder={t('teacher')} />
               )}
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Date</Label>
+                <Label>{t('date')}</Label>
                 <Input type="date" value={classForm.date} onChange={(e) => setClassForm(f => ({ ...f, date: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Time</Label>
+                <Label>{t('time')}</Label>
                 <Input type="time" value={classForm.time} onChange={(e) => setClassForm(f => ({ ...f, time: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Duration (min)</Label>
+                <Label>{t('duration_minutes')}</Label>
                 <Input type="number" value={classForm.duration} onChange={(e) => setClassForm(f => ({ ...f, duration: e.target.value }))} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Platform</Label>
+              <Label>{t('online_class')}</Label>
               <div className="grid grid-cols-3 gap-3">
                 {['Zoom', 'Google Meet', 'Built-in'].map(p => (
                   <button key={p} type="button" onClick={() => setClassForm(f => ({ ...f, platform: p }))} className={`p-3 rounded-xl border-2 text-center text-sm font-medium transition-all ${classForm.platform === p ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 hover:border-red-200'}`}>
@@ -525,12 +527,12 @@ export default function LiveClassesPage() {
             </div>
             {classForm.platform !== 'Built-in' && (
               <div className="space-y-2">
-                <Label>Meeting Link</Label>
+                <Label>{t('meeting_link')}</Label>
                 <Input value={classForm.meeting_link} onChange={(e) => setClassForm(f => ({ ...f, meeting_link: e.target.value }))} placeholder="https://zoom.us/j/..." />
               </div>
             )}
             <Button onClick={handleCreateClass} className="w-full bg-red-600 hover:bg-red-700">
-              <Calendar className="w-4 h-4 mr-2" /> Schedule Class
+              <Calendar className="w-4 h-4 mr-2" /> {t('schedule_class')}
             </Button>
           </div>
         </DialogContent>
@@ -540,7 +542,7 @@ export default function LiveClassesPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-green-600" /> Attendance Detail — {selectedAttendance?.session}
+              <UserCheck className="w-5 h-5 text-green-600" /> {t('attendance')} {t('details')} — {selectedAttendance?.session}
             </DialogTitle>
           </DialogHeader>
           {selectedAttendance && (
@@ -554,11 +556,11 @@ export default function LiveClassesPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left p-3 text-sm font-medium text-gray-600">Roll No</th>
-                      <th className="text-left p-3 text-sm font-medium text-gray-600">Name</th>
-                      <th className="text-left p-3 text-sm font-medium text-gray-600">Status</th>
-                      <th className="text-left p-3 text-sm font-medium text-gray-600">Join Time</th>
-                      <th className="text-left p-3 text-sm font-medium text-gray-600">Leave Time</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-600">{t('roll_no')}</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-600">{t('name')}</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-600">{t('status')}</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-600">{t('start_time')}</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-600">{t('end_time')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -569,7 +571,7 @@ export default function LiveClassesPage() {
                         <td className="p-3">
                           <Badge className={s.status === 'present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
                             {s.status === 'present' ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
-                            {s.status}
+                            {s.status === 'present' ? t('present') : t('absent')}
                           </Badge>
                         </td>
                         <td className="p-3 text-sm text-gray-500">{s.joinTime}</td>
@@ -580,7 +582,7 @@ export default function LiveClassesPage() {
                 </table>
               </div>
               <Button variant="outline" onClick={() => handleDownloadReport(selectedAttendance)} className="w-full">
-                <FileDown className="w-4 h-4 mr-2" /> Download Full Report
+                <FileDown className="w-4 h-4 mr-2" /> {t('download')} {t('reports')}
               </Button>
             </div>
           )}
