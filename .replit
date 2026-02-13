@@ -66,7 +66,7 @@ externalPort = 8000
 deploymentTarget = "vm"
 build = ["bash", "-c", "pip install -r backend/requirements.txt"]
 publicDir = "frontend/build"
-run = ["bash", "-c", "pip install -r backend/requirements.txt && cd backend && uvicorn server:app --host 0.0.0.0 --port 5000"]
+run = ["bash", "-c", "cd backend && uvicorn server:app --host 0.0.0.0 --port 5000"]
 
 [userenv]
 
