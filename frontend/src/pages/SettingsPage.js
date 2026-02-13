@@ -22,7 +22,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { user, schoolId, selectSchool } = useAuth();
+  const { user, schoolId, selectSchool, refreshSchoolData } = useAuth();
   const { language, changeLanguage } = useLanguage();
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +36,14 @@ export default function SettingsPage() {
   const [uploadingSeal, setUploadingSeal] = useState(false);
   const signatureInputRef = useRef(null);
   const sealInputRef = useRef(null);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [logoSize, setLogoSize] = useState(100);
+  const [logoOpacity, setLogoOpacity] = useState(100);
+  const [watermarkEnabled, setWatermarkEnabled] = useState(false);
+  const [watermarkOpacity, setWatermarkOpacity] = useState(5);
+  const [watermarkSize, setWatermarkSize] = useState('large');
+  const [savingBranding, setSavingBranding] = useState(false);
+  const logoUploadRef = useRef(null);
   
 
   const [formData, setFormData] = useState({
@@ -152,6 +160,7 @@ export default function SettingsPage() {
     fetchSchools();
     fetchSignatureSeal();
     loadModuleVisibility();
+    fetchBrandingSettings();
   }, []);
 
   const fetchSchools = async () => {
@@ -201,6 +210,55 @@ export default function SettingsPage() {
     } finally {
       setUploadingSignature(false);
     }
+  };
+
+  const fetchBrandingSettings = async () => {
+    if (!schoolId) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/schools/${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data) {
+        setLogoUrl(res.data.logo_url || null);
+        setLogoSize(res.data.logo_size || 100);
+        setLogoOpacity(res.data.logo_opacity || 100);
+        setWatermarkEnabled(res.data.watermark_enabled || false);
+        setWatermarkOpacity(res.data.watermark_opacity || 5);
+        setWatermarkSize(res.data.watermark_size || 'large');
+      }
+    } catch (e) { console.log('Branding settings not loaded'); }
+  };
+
+  const handleLogoUploadSettings = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('File size should be less than 5MB'); return; }
+    try {
+      const reader = new FileReader();
+      reader.onload = (ev) => setLogoUrl(ev.target.result);
+      reader.readAsDataURL(file);
+      toast.success('Logo updated! Save to apply.');
+    } catch (e) { toast.error('Failed to process logo'); }
+  };
+
+  const saveBrandingSettings = async () => {
+    if (!schoolId) { toast.error('No school selected'); return; }
+    setSavingBranding(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/schools/${schoolId}/branding`, {
+        logo_url: logoUrl,
+        logo_size: logoSize,
+        logo_opacity: logoOpacity,
+        watermark_enabled: watermarkEnabled,
+        watermark_opacity: watermarkOpacity,
+        watermark_size: watermarkSize,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Branding settings saved! Changes will reflect across all portals.');
+      if (refreshSchoolData) refreshSchoolData();
+    } catch (e) { toast.error('Failed to save branding settings'); }
+    finally { setSavingBranding(false); }
   };
 
   const handleSealUpload = async (e) => {
@@ -460,6 +518,119 @@ export default function SettingsPage() {
               />
               <p className="text-xs text-slate-400 mt-2">PNG/JPG, max 2MB</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {(user?.role === 'director' || user?.role === 'principal') && (
+        <div className="stat-card border-2 border-blue-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Image className="w-5 h-5 text-blue-600" />
+              <h2 className="text-lg font-semibold text-slate-900">Logo & Branding (लोगो और ब्रांडिंग)</h2>
+            </div>
+            <Button onClick={saveBrandingSettings} disabled={savingBranding} className="bg-blue-600 hover:bg-blue-700 text-white">
+              {savingBranding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+              Save Branding
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">School Logo</h3>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24 border-2 border-dashed border-blue-300 rounded-xl flex items-center justify-center overflow-hidden bg-slate-50">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                  ) : (
+                    <Camera className="w-8 h-8 text-slate-300" />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <input ref={logoUploadRef} type="file" accept="image/*" onChange={handleLogoUploadSettings} className="hidden" />
+                  <Button variant="outline" size="sm" onClick={() => logoUploadRef.current?.click()}>
+                    <Upload className="w-4 h-4 mr-2" /> {logoUrl ? 'Change Logo' : 'Upload Logo'}
+                  </Button>
+                  {logoUrl && (
+                    <Button variant="outline" size="sm" onClick={() => setLogoUrl(null)} className="text-red-500 hover:text-red-700">
+                      <X className="w-4 h-4 mr-2" /> Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-slate-700 mb-2">Logo Size & Transparency</h3>
+              <div>
+                <Label className="text-sm text-slate-600">Size: {logoSize}%</Label>
+                <input type="range" min="30" max="200" value={logoSize}
+                  onChange={(e) => setLogoSize(parseInt(e.target.value))}
+                  className="w-full mt-1 accent-blue-600" />
+                <div className="flex justify-between text-xs text-slate-400"><span>30%</span><span>200%</span></div>
+              </div>
+              <div>
+                <Label className="text-sm text-slate-600">Transparency: {logoOpacity}%</Label>
+                <input type="range" min="10" max="100" value={logoOpacity}
+                  onChange={(e) => setLogoOpacity(parseInt(e.target.value))}
+                  className="w-full mt-1 accent-blue-600" />
+                <div className="flex justify-between text-xs text-slate-400"><span>10%</span><span>100%</span></div>
+              </div>
+              {logoUrl && (
+                <div className="flex items-center justify-center p-3 bg-slate-50 rounded-lg border">
+                  <img src={logoUrl} alt="Preview" 
+                    style={{ transform: `scale(${logoSize / 100})`, opacity: logoOpacity / 100, maxWidth: '150px', maxHeight: '100px' }} 
+                    className="object-contain transition-transform" />
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-200 mt-6 pt-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-3">Watermark Settings (वॉटरमार्क)</h3>
+            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100 mb-4">
+              <input type="checkbox" checked={watermarkEnabled}
+                onChange={(e) => setWatermarkEnabled(e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 text-blue-600 accent-blue-600" />
+              <div>
+                <span className="font-medium text-sm">Enable Logo Watermark (वॉटरमार्क चालू करें)</span>
+                <p className="text-xs text-slate-500">All portals (SchoolTino, TeachTino, StudyTino) mein watermark dikhega</p>
+              </div>
+            </label>
+            
+            {watermarkEnabled && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-slate-600">Watermark Opacity: {watermarkOpacity}%</Label>
+                  <input type="range" min="2" max="20" value={watermarkOpacity}
+                    onChange={(e) => setWatermarkOpacity(parseInt(e.target.value))}
+                    className="w-full mt-1 accent-blue-600" />
+                  <div className="flex justify-between text-xs text-slate-400"><span>Light (2%)</span><span>Dark (20%)</span></div>
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">Watermark Size</Label>
+                  <select value={watermarkSize}
+                    onChange={(e) => setWatermarkSize(e.target.value)}
+                    className="w-full h-10 rounded-md border border-slate-200 px-3 text-sm mt-1">
+                    <option value="small">Small (छोटा)</option>
+                    <option value="medium">Medium (मध्यम)</option>
+                    <option value="large">Large (बड़ा)</option>
+                    <option value="full">Full Page (पूरा पेज)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+            
+            {watermarkEnabled && logoUrl && (
+              <div className="mt-4 relative h-40 bg-white rounded-lg border overflow-hidden flex items-center justify-center">
+                <img src={logoUrl} alt="Watermark Preview" 
+                  style={{ opacity: watermarkOpacity / 100, width: watermarkSize === 'small' ? '80px' : watermarkSize === 'medium' ? '150px' : watermarkSize === 'full' ? '80%' : '250px' }}
+                  className="object-contain" />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-slate-300 text-lg font-bold">Watermark Preview</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

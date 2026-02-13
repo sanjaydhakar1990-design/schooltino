@@ -130,6 +130,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('schoolId', id);
   };
 
+  const refreshSchoolData = async () => {
+    if (!schoolId) return;
+    try {
+      const schoolRes = await axios.get(`${API}/schools/${schoolId}`);
+      setSchoolData(schoolRes.data);
+    } catch (e) {
+      console.error('Failed to refresh school data:', e);
+    }
+  };
+
   const hasPermission = (allowedRoles) => {
     if (!user) return false;
     return allowedRoles.includes(user.role);
@@ -149,6 +159,7 @@ export const AuthProvider = ({ children }) => {
       setupDirector,
       logout,
       selectSchool,
+      refreshSchoolData,
       hasPermission,
       isAuthenticated: !!token && !!user
     }}>

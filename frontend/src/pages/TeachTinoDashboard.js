@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import StaffPhotoUpload from '../components/StaffPhotoUpload';
+import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const ITEMS_PER_PAGE = 5;
@@ -186,7 +187,8 @@ export default function TeachTinoDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" data-testid="teachtino-dashboard">
+    <div className="min-h-screen bg-gray-50 relative" data-testid="teachtino-dashboard">
+      <GlobalWatermark />
       <header className="bg-white sticky top-0 z-40 shadow-sm">
         <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
         <div className="max-w-7xl mx-auto px-4 py-3">

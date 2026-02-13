@@ -350,6 +350,8 @@ class SchoolResponse(BaseModel):
 
     signature_url: Optional[str] = None
     seal_url: Optional[str] = None
+    logo_size: Optional[int] = None
+    logo_opacity: Optional[int] = None
     watermark_enabled: Optional[bool] = None
     watermark_opacity: Optional[float] = None
     watermark_size: Optional[str] = None
@@ -2329,6 +2331,40 @@ async def update_school_logo(school_id: str, request: LogoUpdateRequest, current
     )
     
     return {"success": True, "message": "Logo saved successfully", "logo_url": request.logo_url}
+
+
+# ==================== BRANDING SETTINGS ENDPOINT ====================
+class BrandingRequest(BaseModel):
+    logo_url: Optional[str] = None
+    logo_size: Optional[int] = 100
+    logo_opacity: Optional[int] = 100
+    watermark_enabled: Optional[bool] = False
+    watermark_opacity: Optional[int] = 5
+    watermark_size: Optional[str] = "large"
+
+@api_router.post("/schools/{school_id}/branding")
+async def update_school_branding(school_id: str, request: BrandingRequest, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "admin", "principal"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    existing = await db.schools.find_one({"id": school_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    update_data = {
+        "logo_url": request.logo_url,
+        "logo_size": request.logo_size,
+        "logo_opacity": request.logo_opacity,
+        "watermark_enabled": request.watermark_enabled,
+        "watermark_opacity": request.watermark_opacity,
+        "watermark_size": request.watermark_size,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.schools.update_one({"id": school_id}, {"$set": update_data})
+    await log_audit(current_user["id"], "update", "school_branding", {"school_id": school_id})
+    
+    return {"success": True, "message": "Branding settings saved successfully"}
 
 
 # ==================== WATERMARK SETTINGS ENDPOINT ====================

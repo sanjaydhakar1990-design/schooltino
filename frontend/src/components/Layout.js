@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Bell, Search, Phone, Mail, Hash, GraduationCap, Brain, Send, X } from 'lucide-react';
 import axios from 'axios';
 import Sidebar from './Sidebar';
+import { GlobalWatermark } from './SchoolLogoWatermark';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -163,6 +164,7 @@ export const Layout = () => {
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden" style={{height: '100dvh'}}>
+      <GlobalWatermark />
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -183,7 +185,7 @@ export const Layout = () => {
                   <Menu className="w-5 h-5" />
                 </button>
                 {schoolLogo ? (
-                  <img src={schoolLogo} alt={schoolName} className="w-9 h-9 lg:w-11 lg:h-11 rounded-lg object-cover bg-white/10 p-0.5 flex-shrink-0" />
+                  <img src={schoolLogo} alt={schoolName} className="rounded-lg object-cover bg-white/10 p-0.5 flex-shrink-0" style={{ width: `${Math.max(36, Math.min(56, (schoolData?.logo_size || 100) * 0.44))}px`, height: `${Math.max(36, Math.min(56, (schoolData?.logo_size || 100) * 0.44))}px`, opacity: (schoolData?.logo_opacity || 100) / 100 }} />
                 ) : (
                   <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
                     <GraduationCap className="w-5 h-5 lg:w-6 lg:h-6 text-white" />

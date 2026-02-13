@@ -43,6 +43,7 @@ export default function SetupWizard() {
     principal_name: '', principal_message: '', about_school: '', vision: '', mission: '',
     logo_url: '',
     logo_size: 100, logo_opacity: 100,
+    watermark_enabled: false, watermark_opacity: 5, watermark_size: 'large',
     logo_apply_to: {
       idCards: true, notices: true, calendar: true, appHeader: true,
       certificates: true, feeBills: true, appIcon: true
@@ -84,6 +85,7 @@ export default function SetupWizard() {
           },
           school_start_time: d.school_start_time || '08:00', school_end_time: d.school_end_time || '14:00',
           logo_size: d.logo_size || 100, logo_opacity: d.logo_opacity || 100,
+          watermark_enabled: d.watermark_enabled || false, watermark_opacity: d.watermark_opacity || 5, watermark_size: d.watermark_size || 'large',
           razorpay_key_id: d.razorpay_key_id || '', razorpay_key_secret: d.razorpay_key_secret || '',
           upi_ids: d.upi_ids || [{ name: 'Default UPI', upi_id: d.upi_id || '' }],
           payment_mode: d.payment_mode || '',
@@ -359,7 +361,7 @@ export default function SetupWizard() {
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-center p-4 bg-slate-50 rounded-lg">
-                  <img src={logoPreview} alt="Preview" style={{ width: `${formData.logo_size}px`, opacity: formData.logo_opacity / 100 }} className="object-contain max-h-24" />
+                  <img src={logoPreview} alt="Preview" style={{ transform: `scale(${formData.logo_size / 100})`, opacity: formData.logo_opacity / 100, maxWidth: '200px', maxHeight: '200px' }} className="object-contain transition-transform" />
                 </div>
               </div>
             )}
@@ -398,6 +400,53 @@ export default function SetupWizard() {
                   );
                 })}
               </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <h3 className="text-sm font-semibold text-slate-900 mb-2">Watermark Settings (वॉटरमार्क सेटिंग्स)</h3>
+              <p className="text-xs text-slate-500 mb-3">Logo ka watermark sabhi pages pe dikhega</p>
+              
+              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-slate-50 border hover:bg-blue-50 mb-3">
+                <input type="checkbox" checked={formData.watermark_enabled || false}
+                  onChange={(e) => setFormData(prev => ({ ...prev, watermark_enabled: e.target.checked }))}
+                  className="w-5 h-5 rounded border-gray-300 text-blue-600 accent-blue-600" />
+                <div>
+                  <span className="font-medium text-sm">Enable Logo Watermark (वॉटरमार्क चालू करें)</span>
+                  <p className="text-xs text-slate-500">Logo background mein halka dikhega sabhi pages pe</p>
+                </div>
+              </label>
+              
+              {formData.watermark_enabled && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2">
+                  <div>
+                    <Label className="text-sm text-slate-600">Watermark Opacity: {formData.watermark_opacity || 5}%</Label>
+                    <input type="range" min="2" max="20" value={formData.watermark_opacity || 5}
+                      onChange={(e) => setFormData(prev => ({ ...prev, watermark_opacity: parseInt(e.target.value) }))}
+                      className="w-full mt-1 accent-blue-600" />
+                    <div className="flex justify-between text-xs text-slate-400"><span>Light (2%)</span><span>Dark (20%)</span></div>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-slate-600">Watermark Size</Label>
+                    <select value={formData.watermark_size || 'large'}
+                      onChange={(e) => setFormData(prev => ({ ...prev, watermark_size: e.target.value }))}
+                      className="w-full h-10 rounded-md border border-slate-200 px-3 text-sm mt-1">
+                      <option value="small">Small</option>
+                      <option value="medium">Medium</option>
+                      <option value="large">Large</option>
+                      <option value="full">Full Page</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+              
+              {formData.watermark_enabled && logoPreview && (
+                <div className="mt-3 relative h-32 bg-white rounded-lg border overflow-hidden flex items-center justify-center">
+                  <img src={logoPreview} alt="Watermark Preview" 
+                    style={{ opacity: (formData.watermark_opacity || 5) / 100, width: formData.watermark_size === 'small' ? '60px' : formData.watermark_size === 'medium' ? '120px' : formData.watermark_size === 'full' ? '80%' : '200px' }}
+                    className="object-contain" />
+                  <span className="absolute bottom-2 text-xs text-slate-400">Watermark Preview</span>
+                </div>
+              )}
             </div>
           </div>
         )}

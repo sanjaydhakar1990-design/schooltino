@@ -51,16 +51,26 @@ export default function SchoolLogoWatermark({
 export function GlobalWatermark() {
   const { schoolData } = useAuth();
   const logoUrl = schoolData?.logo_url || schoolData?.logo;
+  const watermarkEnabled = schoolData?.watermark_enabled;
+  const watermarkOpacity = schoolData?.watermark_opacity || 5;
+  const watermarkSize = schoolData?.watermark_size || 'large';
 
-  if (!logoUrl) return null;
+  if (!logoUrl || !watermarkEnabled) return null;
+
+  const sizeMap = {
+    small: 'w-[150px] h-[150px]',
+    medium: 'w-[300px] h-[300px]',
+    large: 'w-[500px] h-[500px]',
+    full: 'w-[80%] h-[80%] max-w-[800px] max-h-[800px]'
+  };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden print:hidden">
       <img 
         src={logoUrl} 
         alt="" 
-        className="w-[500px] h-[500px] object-contain"
-        style={{ opacity: 0.04 }}
+        className={`${sizeMap[watermarkSize] || sizeMap.large} object-contain`}
+        style={{ opacity: watermarkOpacity / 100 }}
         aria-hidden="true"
       />
     </div>
