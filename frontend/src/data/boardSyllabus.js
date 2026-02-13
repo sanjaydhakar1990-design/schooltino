@@ -1772,23 +1772,22 @@ export const BOARD_MARKS_PATTERN = {
   },
 };
 
-// Class-wise default paper configuration
 export const CLASS_PAPER_DEFAULTS = {
-  'Nursery': { totalMarks: 20, time: 30, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false },
-  'LKG': { totalMarks: 25, time: 30, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false },
-  'UKG': { totalMarks: 30, time: 45, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false },
-  'Class 1': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false },
-  'Class 2': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false },
-  'Class 3': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false },
-  'Class 4': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: true },
-  'Class 5': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true },
-  'Class 6': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true },
-  'Class 7': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true },
-  'Class 8': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
-  'Class 9': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
-  'Class 10': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
-  'Class 11': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
-  'Class 12': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true },
+  'Nursery': { totalMarks: 20, time: 30, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 1 } },
+  'LKG': { totalMarks: 25, time: 30, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 1 } },
+  'UKG': { totalMarks: 30, time: 45, questionTypes: ['mcq', 'fill_blank', 'true_false'], hasLong: false, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 1 } },
+  'Class 1': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2 } },
+  'Class 2': { totalMarks: 40, time: 60, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2 } },
+  'Class 3': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short'], hasLong: false, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2 } },
+  'Class 4': { totalMarks: 50, time: 90, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 3 } },
+  'Class 5': { totalMarks: 50, time: 120, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 3 } },
+  'Class 6': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 4 } },
+  'Class 7': { totalMarks: 80, time: 150, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 4 } },
+  'Class 8': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 4, very_long: 5 } },
+  'Class 9': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 4, very_long: 5 } },
+  'Class 10': { totalMarks: 80, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 4, very_long: 5 } },
+  'Class 11': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 5, very_long: 6 } },
+  'Class 12': { totalMarks: 100, time: 180, questionTypes: ['mcq', 'fill_blank', 'true_false', 'short', 'long', 'very_long'], hasLong: true, marks: { mcq: 1, fill_blank: 1, true_false: 1, short: 2, long: 5, very_long: 6 } },
 };
 
 // Drawing subject paper - all image-based questions

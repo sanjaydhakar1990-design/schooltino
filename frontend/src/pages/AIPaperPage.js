@@ -384,13 +384,13 @@ export default function AIPaperPage() {
           class_name: value,
           total_marks: defaults.totalMarks,
           time_duration: defaults.time,
-          question_types: prev.question_types.filter(qt => {
-            if (!defaults.hasLong && ['long', 'very_long'].includes(qt)) {
-              return false;
-            }
-            return true;
-          })
+          question_types: defaults.questionTypes,
+          custom_marks: defaults.marks || {}
         }));
+        
+        toast.success(isAppHindi 
+          ? `${value}: ${defaults.totalMarks} अंक, ${defaults.time} मिनट सेट हुआ` 
+          : `${value}: ${defaults.totalMarks} marks, ${defaults.time} min set`);
         
         if (!defaults.hasLong) {
           toast.info(isAppHindi ? `${value}: दीर्घ उत्तरीय प्रश्न इस कक्षा के लिए उपलब्ध नहीं हैं` : `${value}: Long answer questions not available for this class`);
@@ -892,6 +892,21 @@ export default function AIPaperPage() {
           ))}
         </div>
       </div>
+
+      {formData.class_name && CLASS_PAPER_DEFAULTS[formData.class_name] && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm font-medium text-blue-800 mb-1">
+            {isAppHindi ? `📋 ${formData.class_name} के लिए ऑटो-सेटिंग:` : `📋 Auto-settings for ${formData.class_name}:`}
+          </p>
+          <div className="flex flex-wrap gap-3 text-xs text-blue-700">
+            <span className="bg-blue-100 px-2 py-1 rounded">{isAppHindi ? 'कुल अंक' : 'Total Marks'}: {CLASS_PAPER_DEFAULTS[formData.class_name].totalMarks}</span>
+            <span className="bg-blue-100 px-2 py-1 rounded">{isAppHindi ? 'समय' : 'Time'}: {CLASS_PAPER_DEFAULTS[formData.class_name].time} {isAppHindi ? 'मिनट' : 'min'}</span>
+            {Object.entries(CLASS_PAPER_DEFAULTS[formData.class_name].marks || {}).map(([type, m]) => (
+              <span key={type} className="bg-blue-100 px-2 py-1 rounded">{type}: {m} {isAppHindi ? 'अंक' : 'marks'}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">

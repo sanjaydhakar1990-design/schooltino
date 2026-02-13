@@ -5314,6 +5314,330 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
         logging.error(f"AI Paper generation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate paper: {str(e)}")
 
+def generate_local_svg(question: str, answer: str, subject: str, is_drawing: bool = False) -> str:
+    """Generate a local SVG diagram without any API call"""
+    import html as html_module
+    q_lower = (question + " " + answer).lower()
+    title = question[:60] + "..." if len(question) > 60 else question
+    title = html_module.escape(title)
+    
+    if is_drawing:
+        return generate_drawing_svg(q_lower, title, answer)
+    
+    sub_lower = subject.lower()
+    if any(w in sub_lower for w in ['science', 'विज्ञान', 'biology', 'जीव', 'evs', 'पर्यावरण']):
+        return generate_science_svg(q_lower, title, answer)
+    elif any(w in sub_lower for w in ['math', 'गणित']):
+        return generate_math_svg(q_lower, title, answer)
+    elif any(w in sub_lower for w in ['social', 'सामाजिक', 'geography', 'भूगोल', 'history', 'इतिहास']):
+        return generate_sst_svg(q_lower, title, answer)
+    elif any(w in sub_lower for w in ['physics', 'भौतिक']):
+        return generate_physics_svg(q_lower, title, answer)
+    elif any(w in sub_lower for w in ['chemistry', 'रसायन']):
+        return generate_chemistry_svg(q_lower, title, answer)
+    else:
+        return generate_generic_diagram_svg(title, answer)
+
+def generate_drawing_svg(q_lower, title, answer):
+    """Generate SVG for drawing/art subjects"""
+    if any(w in q_lower for w in ['सेब', 'apple', 'फल', 'fruit']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#FFF8E7"/>
+<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">सेब / Apple - Reference Drawing</text>
+<ellipse cx="250" cy="220" rx="100" ry="110" fill="#FF4444" stroke="#222" stroke-width="3"/>
+<ellipse cx="220" cy="220" rx="80" ry="100" fill="#FF6666" stroke="none"/>
+<path d="M250 110 Q260 80 280 90" stroke="#228B22" stroke-width="4" fill="none"/>
+<ellipse cx="270" cy="85" rx="25" ry="12" fill="#228B22" stroke="#1a6e1a" stroke-width="2"/>
+<rect x="246" y="110" width="8" height="30" rx="3" fill="#8B4513" stroke="#5a2d0c" stroke-width="1"/>
+<ellipse cx="220" cy="190" rx="15" ry="20" fill="rgba(255,255,255,0.3)"/>
+<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">रंग भरें / Color it</text>
+</svg>'''
+    elif any(w in q_lower for w in ['तितली', 'butterfly']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#F0FFF0"/>
+<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">तितली / Butterfly</text>
+<ellipse cx="250" cy="200" rx="12" ry="50" fill="#8B4513" stroke="#333" stroke-width="2"/>
+<ellipse cx="200" cy="170" rx="60" ry="45" fill="#FF69B4" stroke="#333" stroke-width="2.5" transform="rotate(-15 200 170)"/>
+<ellipse cx="300" cy="170" rx="60" ry="45" fill="#FF69B4" stroke="#333" stroke-width="2.5" transform="rotate(15 300 170)"/>
+<ellipse cx="200" cy="230" rx="50" ry="40" fill="#FFB347" stroke="#333" stroke-width="2.5" transform="rotate(10 200 230)"/>
+<ellipse cx="300" cy="230" rx="50" ry="40" fill="#FFB347" stroke="#333" stroke-width="2.5" transform="rotate(-10 300 230)"/>
+<circle cx="195" cy="165" r="12" fill="#4169E1" stroke="#333" stroke-width="1.5"/>
+<circle cx="305" cy="165" r="12" fill="#4169E1" stroke="#333" stroke-width="1.5"/>
+<circle cx="195" cy="225" r="10" fill="#FF4500" stroke="#333" stroke-width="1.5"/>
+<circle cx="305" cy="225" r="10" fill="#FF4500" stroke="#333" stroke-width="1.5"/>
+<circle cx="250" cy="148" r="8" fill="#8B4513" stroke="#333" stroke-width="1.5"/>
+<circle cx="244" cy="145" r="2" fill="#000"/>
+<circle cx="256" cy="145" r="2" fill="#000"/>
+<path d="M242 138 Q230 110 225 105" stroke="#333" stroke-width="2" fill="none"/>
+<path d="M258 138 Q270 110 275 105" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="225" cy="103" r="3" fill="#333"/>
+<circle cx="275" cy="103" r="3" fill="#333"/>
+<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">चित्र पूरा करें और रंग भरें</text>
+</svg>'''
+    elif any(w in q_lower for w in ['घर', 'house', 'home', 'मकान']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#87CEEB"/>
+<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">घर / House</text>
+<rect x="150" y="180" width="200" height="160" fill="#FFD700" stroke="#333" stroke-width="3"/>
+<polygon points="250,80 130,180 370,180" fill="#FF4444" stroke="#333" stroke-width="3"/>
+<rect x="220" y="260" width="60" height="80" fill="#8B4513" stroke="#333" stroke-width="2"/>
+<circle cx="270" cy="300" r="4" fill="#FFD700"/>
+<rect x="170" y="210" width="40" height="40" fill="#87CEEB" stroke="#333" stroke-width="2"/>
+<line x1="190" y1="210" x2="190" y2="250" stroke="#333" stroke-width="1.5"/>
+<line x1="170" y1="230" x2="210" y2="230" stroke="#333" stroke-width="1.5"/>
+<rect x="290" y="210" width="40" height="40" fill="#87CEEB" stroke="#333" stroke-width="2"/>
+<line x1="310" y1="210" x2="310" y2="250" stroke="#333" stroke-width="1.5"/>
+<line x1="290" y1="230" x2="330" y2="230" stroke="#333" stroke-width="1.5"/>
+<rect x="230" y="100" width="15" height="40" fill="#888" stroke="#333" stroke-width="1.5"/>
+<circle cx="400" cy="70" r="35" fill="#FFD700" stroke="#FFA500" stroke-width="2"/>
+<line x1="400" y1="25" x2="400" y2="15" stroke="#FFA500" stroke-width="2"/>
+<line x1="440" y1="70" x2="450" y2="70" stroke="#FFA500" stroke-width="2"/>
+<line x1="360" y1="70" x2="350" y2="70" stroke="#FFA500" stroke-width="2"/>
+<rect x="0" y="340" width="500" height="60" fill="#228B22"/>
+<circle cx="80" cy="310" rx="30" ry="40" fill="#228B22" stroke="#1a6e1a" stroke-width="2"/>
+<rect x="77" y="310" width="6" height="30" fill="#8B4513"/>
+<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#FFF">सुंदर घर बनाइए / Draw a beautiful house</text>
+</svg>'''
+    elif any(w in q_lower for w in ['बगीचा', 'garden', 'पेड़', 'tree', 'फूल', 'flower', 'scenery', 'दृश्य']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#87CEEB"/>
+<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">बगीचा / Garden Scenery</text>
+<circle cx="420" cy="60" r="35" fill="#FFD700"/>
+<path d="M0 280 Q125 230 250 270 Q375 310 500 260 L500 400 L0 400 Z" fill="#228B22"/>
+<rect x="100" y="170" width="12" height="110" fill="#8B4513"/>
+<circle cx="106" cy="140" r="45" fill="#2E8B57"/>
+<circle cx="80" cy="155" r="30" fill="#32CD32"/>
+<circle cx="130" cy="155" r="30" fill="#3CB371"/>
+<rect x="350" y="190" width="10" height="90" fill="#8B4513"/>
+<circle cx="355" cy="165" r="35" fill="#228B22"/>
+<circle cx="340" cy="175" r="25" fill="#32CD32"/>
+<circle cx="370" cy="175" r="25" fill="#2E8B57"/>
+<g transform="translate(200,280)"><path d="M0 0 Q5 -20 0 -40" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-45" r="10" fill="#FF69B4" stroke="#333" stroke-width="1"/><circle cx="0" cy="-45" r="4" fill="#FFD700"/></g>
+<g transform="translate(250,290)"><path d="M0 0 Q5 -25 0 -50" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-55" r="12" fill="#FF4444" stroke="#333" stroke-width="1"/><circle cx="0" cy="-55" r="4" fill="#FFD700"/></g>
+<g transform="translate(300,275)"><path d="M0 0 Q5 -20 0 -35" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-40" r="9" fill="#9370DB" stroke="#333" stroke-width="1"/><circle cx="0" cy="-40" r="3" fill="#FFD700"/></g>
+<g transform="translate(170,285)"><path d="M0 0 Q-3 -18 0 -30" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-35" r="8" fill="#FF6347" stroke="#333" stroke-width="1"/><circle cx="0" cy="-35" r="3" fill="#FFD700"/></g>
+<path d="M80 50 Q100 30 120 50 Q140 30 160 50" fill="#FFF" stroke="none"/>
+<path d="M300 40 Q315 25 330 40 Q345 25 360 40" fill="#FFF" stroke="none"/>
+<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="13" fill="#FFF">सुंदर बगीचे का चित्र बनाइए</text>
+</svg>'''
+    elif any(w in q_lower for w in ['पैटर्न', 'pattern', 'रंगोली', 'rangoli', 'border']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#FFF8DC"/>
+<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">पैटर्न / Pattern</text>
+<g transform="translate(250,200)">
+<polygon points="0,-80 15,-25 75,-25 25,10 45,65 0,30 -45,65 -25,10 -75,-25 -15,-25" fill="#FF6347" stroke="#333" stroke-width="2"/>
+<polygon points="0,-55 10,-18 50,-18 18,7 30,45 0,20 -30,45 -18,7 -50,-18 -10,-18" fill="#FFD700" stroke="#333" stroke-width="1.5"/>
+<circle cx="0" cy="0" r="20" fill="#FF69B4" stroke="#333" stroke-width="2"/>
+<circle cx="0" cy="0" r="10" fill="#FFD700" stroke="#333" stroke-width="1"/>
+<circle cx="0" cy="-50" r="6" fill="#4169E1"/>
+<circle cx="47" cy="-16" r="6" fill="#4169E1"/>
+<circle cx="29" cy="40" r="6" fill="#4169E1"/>
+<circle cx="-29" cy="40" r="6" fill="#4169E1"/>
+<circle cx="-47" cy="-16" r="6" fill="#4169E1"/>
+</g>
+<circle cx="80" cy="80" r="8" fill="#FF4500"/><circle cx="80" cy="120" r="8" fill="#32CD32"/><circle cx="80" cy="160" r="8" fill="#FF4500"/><circle cx="80" cy="200" r="8" fill="#32CD32"/>
+<circle cx="420" cy="80" r="8" fill="#32CD32"/><circle cx="420" cy="120" r="8" fill="#FF4500"/><circle cx="420" cy="160" r="8" fill="#32CD32"/><circle cx="420" cy="200" r="8" fill="#FF4500"/>
+<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">पैटर्न पूरा करें और रंग भरें</text>
+</svg>'''
+    else:
+        import html as html_module
+        safe_title = html_module.escape(answer[:80] if answer else question[:80])
+        return f'''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#FFF5EE"/>
+<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">संदर्भ चित्र / Reference Drawing</text>
+<rect x="50" y="50" width="400" height="300" rx="15" fill="#FFF" stroke="#DDD" stroke-width="2"/>
+<circle cx="250" cy="160" r="60" fill="#FFE4E1" stroke="#FF6B6B" stroke-width="3"/>
+<text x="250" y="155" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">✏️</text>
+<text x="250" y="175" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">Draw Here</text>
+<text x="250" y="270" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">{safe_title}</text>
+<line x1="100" y1="290" x2="400" y2="290" stroke="#DDD" stroke-width="1" stroke-dasharray="5,5"/>
+<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="13" fill="#888">चित्र बनाइए और रंग भरिए</text>
+</svg>'''
+
+def generate_science_svg(q_lower, title, answer):
+    """Generate science diagram SVGs"""
+    if any(w in q_lower for w in ['plant cell', 'पादप कोशिका', 'cell', 'कोशिका']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#F0FFF0"/>
+<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#1a5276">पादप कोशिका / Plant Cell</text>
+<rect x="100" y="50" width="300" height="300" rx="20" fill="#E8F5E9" stroke="#2E7D32" stroke-width="3"/>
+<rect x="115" y="65" width="270" height="270" rx="15" fill="#C8E6C9" stroke="#388E3C" stroke-width="2"/>
+<ellipse cx="250" cy="160" rx="50" ry="40" fill="#BBDEFB" stroke="#1565C0" stroke-width="2"/>
+<circle cx="250" cy="155" r="12" fill="#1565C0"/>
+<ellipse cx="180" cy="250" rx="30" ry="20" fill="#A5D6A7" stroke="#2E7D32" stroke-width="1.5"/>
+<ellipse cx="320" cy="130" rx="25" ry="18" fill="#A5D6A7" stroke="#2E7D32" stroke-width="1.5"/>
+<ellipse cx="300" cy="270" rx="28" ry="22" fill="#A5D6A7" stroke="#2E7D32" stroke-width="1.5"/>
+<rect x="140" y="150" width="40" height="100" rx="8" fill="rgba(255,183,77,0.4)" stroke="#F57C00" stroke-width="1.5"/>
+<ellipse cx="200" cy="300" rx="60" ry="20" fill="rgba(129,212,250,0.5)" stroke="#0288D1" stroke-width="1.5"/>
+<line x1="400" y1="80" x2="310" y2="80" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="405" y="84" font-family="Arial" font-size="11" fill="#333">कोशिका भित्ति / Cell Wall</text>
+<line x1="400" y1="110" x2="320" y2="130" stroke="#333" stroke-width="1"/>
+<text x="405" y="114" font-family="Arial" font-size="11" fill="#333">हरितलवक / Chloroplast</text>
+<line x1="400" y1="160" x2="300" y2="160" stroke="#333" stroke-width="1"/>
+<text x="405" y="164" font-family="Arial" font-size="11" fill="#333">केन्द्रक / Nucleus</text>
+<line x1="400" y1="190" x2="300" y2="200" stroke="#333" stroke-width="1"/>
+<text x="405" y="194" font-family="Arial" font-size="11" fill="#333">कोशिका झिल्ली / Cell Membrane</text>
+<line x1="400" y1="250" x2="310" y2="260" stroke="#333" stroke-width="1"/>
+<text x="405" y="254" font-family="Arial" font-size="11" fill="#333">माइटोकॉन्ड्रिया / Mitochondria</text>
+<line x1="400" y1="310" x2="260" y2="305" stroke="#333" stroke-width="1"/>
+<text x="405" y="314" font-family="Arial" font-size="11" fill="#333">रिक्तिका / Vacuole</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
+</svg>'''
+    elif any(w in q_lower for w in ['water cycle', 'जल चक्र', 'hydrological']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#E3F2FD"/>
+<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#1565C0">जल चक्र / Water Cycle</text>
+<circle cx="420" cy="60" r="30" fill="#FFC107"/>
+<path d="M420 25 L420 15 M445 35 L455 25 M450 60 L460 60 M445 85 L455 95 M420 95 L420 105 M395 85 L385 95 M390 60 L380 60 M395 35 L385 25" stroke="#FFC107" stroke-width="2"/>
+<path d="M0 320 Q50 280 120 310 Q180 260 250 290 Q350 250 400 280 Q450 260 500 300 L500 400 L0 400 Z" fill="#4CAF50"/>
+<path d="M300 400 Q320 340 380 350 Q420 320 500 350 L500 400 Z" fill="#795548"/>
+<path d="M350 350 L380 260 L410 350" fill="#795548" stroke="#5D4037" stroke-width="2"/>
+<ellipse cx="150" cy="370" rx="80" ry="20" fill="#2196F3" stroke="#1565C0" stroke-width="2"/>
+<path d="M130 360 Q140 340 180 345 Q200 330 230 350" stroke="#1565C0" stroke-width="1.5" fill="none"/>
+<path d="M120 350 C140 300 160 250 200 180" stroke="#2196F3" stroke-width="2" fill="none" stroke-dasharray="4,3"/>
+<text x="110" y="230" font-family="Arial" font-size="11" fill="#1565C0" transform="rotate(-60 110 230)">वाष्पीकरण / Evaporation</text>
+<path d="M60 80 Q100 50 140 80 Q180 50 220 80" fill="#B3E5FC" stroke="#29B6F6" stroke-width="2"/>
+<path d="M220 100 Q240 120 230 140 Q240 120 250 140 Q260 120 270 140" stroke="#2196F3" stroke-width="2" fill="none"/>
+<text x="180" y="65" font-family="Arial" font-size="11" fill="#1565C0">बादल / Cloud</text>
+<text x="260" y="155" font-family="Arial" font-size="11" fill="#1565C0">वर्षा / Rain</text>
+<path d="M250 170 Q260 250 200 310" stroke="#2196F3" stroke-width="2" fill="none" stroke-dasharray="4,3"/>
+<text x="280" y="260" font-family="Arial" font-size="11" fill="#1565C0">संघनन / Condensation</text>
+</svg>'''
+    elif any(w in q_lower for w in ['food chain', 'खाद्य श्रृंखला', 'food web']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#F1F8E9"/>
+<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#33691E">खाद्य श्रृंखला / Food Chain</text>
+<rect x="30" y="160" width="90" height="60" rx="10" fill="#A5D6A7" stroke="#2E7D32" stroke-width="2"/>
+<text x="75" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#1B5E20">पौधे / Plants</text>
+<text x="75" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#388E3C">(उत्पादक)</text>
+<rect x="160" y="160" width="90" height="60" rx="10" fill="#FFF9C4" stroke="#F9A825" stroke-width="2"/>
+<text x="205" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#E65100">टिड्डा / Insect</text>
+<text x="205" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#F57F17">(प्राथमिक उपभोक्ता)</text>
+<rect x="290" y="160" width="90" height="60" rx="10" fill="#FFCCBC" stroke="#E64A19" stroke-width="2"/>
+<text x="335" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#BF360C">मेंढक / Frog</text>
+<text x="335" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#D84315">(द्वितीयक उपभोक्ता)</text>
+<rect x="390" y="160" width="90" height="60" rx="10" fill="#FFCDD2" stroke="#C62828" stroke-width="2"/>
+<text x="435" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#B71C1C">सांप / Snake</text>
+<text x="435" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#C62828">(तृतीयक उपभोक्ता)</text>
+<line x1="120" y1="190" x2="155" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
+<line x1="250" y1="190" x2="285" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
+<line x1="380" y1="190" x2="387" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
+<text x="250" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">ऊर्जा का प्रवाह → / Energy Flow →</text>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
+</svg>'''
+    else:
+        return generate_generic_diagram_svg(title, answer)
+
+def generate_math_svg(q_lower, title, answer):
+    """Generate math diagram SVGs"""
+    if any(w in q_lower for w in ['triangle', 'त्रिभुज', 'angle']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#FFF3E0"/>
+<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#E65100">त्रिभुज / Triangle</text>
+<polygon points="250,80 100,320 400,320" fill="none" stroke="#1565C0" stroke-width="3"/>
+<text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">A</text>
+<text x="85" y="340" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">B</text>
+<text x="415" y="340" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">C</text>
+<text x="160" y="195" text-anchor="middle" font-family="Arial" font-size="12" fill="#C62828">a</text>
+<text x="340" y="195" text-anchor="middle" font-family="Arial" font-size="12" fill="#C62828">b</text>
+<text x="250" y="350" text-anchor="middle" font-family="Arial" font-size="12" fill="#C62828">c</text>
+<path d="M120 300 L120 310 L130 310" fill="none" stroke="#333" stroke-width="1.5"/>
+<text x="250" y="390" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">∠A + ∠B + ∠C = 180°</text>
+</svg>'''
+    elif any(w in q_lower for w in ['circle', 'वृत्त', 'radius', 'त्रिज्या']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#E8EAF6"/>
+<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#283593">वृत्त / Circle</text>
+<circle cx="250" cy="210" r="130" fill="none" stroke="#1565C0" stroke-width="3"/>
+<circle cx="250" cy="210" r="3" fill="#C62828"/>
+<text x="258" y="205" font-family="Arial" font-size="12" fill="#C62828">O (केन्द्र)</text>
+<line x1="250" y1="210" x2="380" y2="210" stroke="#C62828" stroke-width="2"/>
+<text x="315" y="200" font-family="Arial" font-size="12" fill="#C62828">r (त्रिज्या)</text>
+<line x1="120" y1="210" x2="380" y2="210" stroke="#2E7D32" stroke-width="2" stroke-dasharray="5,3"/>
+<text x="250" y="235" text-anchor="middle" font-family="Arial" font-size="12" fill="#2E7D32">d = 2r (व्यास / Diameter)</text>
+<text x="250" y="385" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">परिधि = 2πr, क्षेत्रफल = πr²</text>
+</svg>'''
+    else:
+        return generate_generic_diagram_svg(title, answer)
+
+def generate_physics_svg(q_lower, title, answer):
+    """Generate physics diagram SVGs"""
+    if any(w in q_lower for w in ['circuit', 'परिपथ', 'electric']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#ECEFF1"/>
+<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#263238">विद्युत परिपथ / Electric Circuit</text>
+<rect x="100" y="80" width="300" height="250" rx="5" fill="none" stroke="#1565C0" stroke-width="3"/>
+<line x1="150" y1="80" x2="200" y2="80" stroke="#C62828" stroke-width="3"/>
+<line x1="200" y1="70" x2="200" y2="90" stroke="#C62828" stroke-width="3"/>
+<line x1="210" y1="75" x2="210" y2="85" stroke="#C62828" stroke-width="2"/>
+<text x="205" y="60" text-anchor="middle" font-family="Arial" font-size="11" fill="#C62828">बैटरी / Battery</text>
+<circle cx="250" cy="330" r="20" fill="none" stroke="#FF6F00" stroke-width="2.5"/>
+<text x="250" y="335" text-anchor="middle" font-family="Arial" font-size="16" fill="#FF6F00">×</text>
+<text x="250" y="370" text-anchor="middle" font-family="Arial" font-size="11" fill="#FF6F00">बल्ब / Bulb</text>
+<rect x="380" y="170" width="20" height="40" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
+<text x="430" y="195" font-family="Arial" font-size="11" fill="#2E7D32">प्रतिरोध / Resistor</text>
+<circle cx="100" cy="200" r="5" fill="#333" stroke="#333" stroke-width="2"/>
+<text x="60" y="205" font-family="Arial" font-size="11" fill="#333">स्विच / Switch</text>
+</svg>'''
+    else:
+        return generate_generic_diagram_svg(title, answer)
+
+def generate_chemistry_svg(q_lower, title, answer):
+    """Generate chemistry diagram SVGs"""
+    if any(w in q_lower for w in ['atom', 'परमाणु', 'electron', 'structure']):
+        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#EDE7F6"/>
+<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#4A148C">परमाणु संरचना / Atom Structure</text>
+<circle cx="250" cy="210" r="30" fill="#FFCDD2" stroke="#C62828" stroke-width="2"/>
+<text x="250" y="205" text-anchor="middle" font-family="Arial" font-size="10" fill="#B71C1C">प्रोटॉन +</text>
+<text x="250" y="220" text-anchor="middle" font-family="Arial" font-size="10" fill="#333">न्यूट्रॉन</text>
+<circle cx="250" cy="210" r="70" fill="none" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="5,3"/>
+<circle cx="320" cy="210" r="8" fill="#1565C0"/><text x="335" y="215" font-family="Arial" font-size="10" fill="#1565C0">e⁻</text>
+<circle cx="180" cy="210" r="8" fill="#1565C0"/>
+<circle cx="250" cy="210" r="120" fill="none" stroke="#2E7D32" stroke-width="1.5" stroke-dasharray="5,3"/>
+<circle cx="250" cy="90" r="8" fill="#2E7D32"/><text x="270" y="95" font-family="Arial" font-size="10" fill="#2E7D32">e⁻</text>
+<circle cx="370" cy="210" r="8" fill="#2E7D32"/>
+<circle cx="130" cy="210" r="8" fill="#2E7D32"/>
+<circle cx="250" cy="330" r="8" fill="#2E7D32"/>
+<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">केन्द्रक / Nucleus → कक्षा / Orbit → इलेक्ट्रॉन / Electron</text>
+</svg>'''
+    else:
+        return generate_generic_diagram_svg(title, answer)
+
+def generate_sst_svg(q_lower, title, answer):
+    """Generate social science diagram SVGs"""
+    return generate_generic_diagram_svg(title, answer)
+
+def generate_generic_diagram_svg(title, answer):
+    """Generate a generic educational diagram SVG"""
+    import html as html_module
+    safe_title = html_module.escape(title[:70] if title else "Diagram")
+    safe_answer = html_module.escape(answer[:200] if answer else "")
+    lines = safe_answer.split('. ')[:5]
+    
+    svg = f'''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="400" fill="#F5F5F5"/>
+<text x="250" y="28" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#1a237e">{safe_title}</text>
+<line x1="50" y1="38" x2="450" y2="38" stroke="#1a237e" stroke-width="1.5"/>
+<rect x="100" y="60" width="300" height="280" rx="12" fill="#FFF" stroke="#90CAF9" stroke-width="2"/>'''
+    
+    y = 100
+    colors = ['#1565C0', '#2E7D32', '#C62828', '#F57F17', '#6A1B9A']
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if not line:
+            continue
+        color = colors[i % len(colors)]
+        svg += f'''
+<circle cx="130" cy="{y}" r="6" fill="{color}"/>
+<text x="145" y="{y+5}" font-family="Arial" font-size="12" fill="#333">{html_module.escape(line[:45])}</text>'''
+        y += 45
+    
+    svg += '''
+<text x="250" y="375" text-anchor="middle" font-family="Arial" font-size="11" fill="#888">शैक्षणिक चित्र / Educational Diagram</text>
+</svg>'''
+    return svg
+
 @api_router.post("/ai/generate-answer-image")
 async def generate_answer_image(
     question: str = Body(...),
@@ -5323,99 +5647,77 @@ async def generate_answer_image(
     is_drawing: bool = Body(default=False),
     current_user: dict = Depends(get_current_user)
 ):
-    """Generate a detailed diagram description/SVG for paper answer key using Sarvam AI"""
-    sarvam_api_key = os.environ.get("SARVAM_API_KEY")
-    
-    if not sarvam_api_key:
-        raise HTTPException(status_code=500, detail="Sarvam API key not configured")
+    """Generate diagram SVG - uses local generator first, then tries Sarvam AI as enhancement"""
+    import base64
     
     try:
-        import httpx
+        local_svg = generate_local_svg(question, answer, subject, is_drawing)
+        svg_b64 = base64.b64encode(local_svg.encode('utf-8')).decode('utf-8')
+        local_image_url = f"data:image/svg+xml;base64,{svg_b64}"
         
-        if is_drawing:
-            svg_prompt = f"""You are an expert children's drawing/art teacher creating reference images for Indian school drawing exams.
-
-Create a REFERENCE SVG image that a student needs to draw for this Drawing/Art question:
+        sarvam_api_key = os.environ.get("SARVAM_API_KEY")
+        if sarvam_api_key:
+            try:
+                import httpx
+                
+                if is_drawing:
+                    svg_prompt = f"""Create a REFERENCE SVG image for this Drawing/Art question:
 Question: {question}
 Description: {answer}
 
-REQUIREMENTS:
-1. Return ONLY a valid SVG code (no markdown, no explanation)
-2. SVG must be self-contained with width="500" height="400" viewBox="0 0 500 400"
-3. Create a COLORFUL, DETAILED reference drawing that shows exactly what the student should draw
-4. Use bright, child-friendly colors with fills: #FF6B6B (red), #4ECDC4 (teal), #45B7D1 (blue), #96CEB4 (green), #FFEAA7 (yellow), #DDA0DD (purple), #FF9FF3 (pink), #FFA502 (orange)
-5. Add thick black outlines (stroke-width: 2-3) for clarity
-6. Make shapes rounded and appealing for children
-7. Include a title at the top in bold
-8. For fruits/vegetables/animals: draw them large, centered, with details like leaves, eyes, etc.
-9. For scenery: include sun, clouds, trees, mountains, river etc. as appropriate
-10. For patterns/rangoli: use symmetrical geometric designs with multiple colors
-11. For national symbols: draw them accurately with proper proportions
-12. Make the drawing simple enough for a child to replicate but detailed enough to be a good reference
-13. Font: Arial, size 14-16px for title, 12px for labels
-
-Return ONLY the <svg>...</svg> code, nothing else."""
-        else:
-            svg_prompt = f"""You are an expert educational diagram creator for Indian school textbooks.
-
-Create an SVG diagram for this {subject} question:
+Return ONLY valid SVG code with width="500" height="400". Use bright colors (#FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FFEAA7, #DDA0DD). Thick black outlines. Child-friendly. Return ONLY <svg>...</svg> code."""
+                else:
+                    svg_prompt = f"""Create an SVG diagram for this {subject} question:
 Question: {question}
-Answer/Description: {answer}
+Answer: {answer}
 
-REQUIREMENTS:
-1. Return ONLY a valid SVG code (no markdown, no explanation)
-2. SVG must be self-contained with width="500" height="400" viewBox="0 0 500 400"
-3. Use clean lines, proper labels, arrows where needed
-4. Use colors: #1e40af (blue), #059669 (green), #dc2626 (red), #7c3aed (purple), #000000 (black)
-5. Include text labels for all parts
-6. Make it look like NCERT textbook diagrams
-7. Font: Arial, size 12-14px for labels
-8. Include a title at the top
+Return ONLY valid SVG code with width="500" height="400". Use clean lines, labels, arrows. Colors: #1e40af, #059669, #dc2626. NCERT textbook style. Return ONLY <svg>...</svg> code."""
 
-Return ONLY the <svg>...</svg> code, nothing else."""
-
-        async with httpx.AsyncClient() as http_client:
-            resp = await http_client.post(
-                "https://api.sarvam.ai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {sarvam_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "sarvam-m",
-                    "messages": [
-                        {"role": "system", "content": "You are an SVG diagram generator for educational content. Return ONLY valid SVG code."},
-                        {"role": "user", "content": svg_prompt}
-                    ],
-                    "max_tokens": 4000,
-                    "temperature": 0.3
-                },
-                timeout=60.0
-            )
-        
-        if resp.status_code == 200:
-            data = resp.json()
-            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            
-            import re
-            svg_match = re.search(r'<svg[\s\S]*?</svg>', content)
-            if svg_match:
-                svg_code = svg_match.group()
-                import base64
-                svg_b64 = base64.b64encode(svg_code.encode('utf-8')).decode('utf-8')
-                image_url = f"data:image/svg+xml;base64,{svg_b64}"
+                async with httpx.AsyncClient() as http_client:
+                    resp = await http_client.post(
+                        "https://api.sarvam.ai/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {sarvam_api_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "sarvam-m",
+                            "messages": [
+                                {"role": "system", "content": "You are an SVG diagram generator. Return ONLY valid SVG code."},
+                                {"role": "user", "content": svg_prompt}
+                            ],
+                            "max_tokens": 4000,
+                            "temperature": 0.3
+                        },
+                        timeout=30.0
+                    )
                 
-                return {
-                    "success": True,
-                    "image_url": image_url,
-                    "question": question,
-                    "answer": answer
-                }
+                if resp.status_code == 200:
+                    data = resp.json()
+                    content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                    
+                    import re
+                    svg_match = re.search(r'<svg[\s\S]*?</svg>', content)
+                    if svg_match:
+                        svg_code = svg_match.group()
+                        if len(svg_code) > 200 and '<text' in svg_code:
+                            svg_b64_ai = base64.b64encode(svg_code.encode('utf-8')).decode('utf-8')
+                            return {
+                                "success": True,
+                                "image_url": f"data:image/svg+xml;base64,{svg_b64_ai}",
+                                "question": question,
+                                "answer": answer,
+                                "source": "ai"
+                            }
+            except Exception as api_err:
+                logging.warning(f"Sarvam API failed, using local SVG: {str(api_err)}")
         
         return {
-            "success": False,
-            "message": "Could not generate diagram SVG",
-            "fallback_text": answer
+            "success": True,
+            "image_url": local_image_url,
+            "question": question,
+            "answer": answer,
+            "source": "local"
         }
             
     except Exception as e:
