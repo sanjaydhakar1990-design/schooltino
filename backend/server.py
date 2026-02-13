@@ -13206,6 +13206,13 @@ api_router.include_router(integrations_router)
 api_router.include_router(school_feed_router)
 app.include_router(api_router)
 
+@app.get("/")
+async def root():
+    index_file = ROOT_DIR.parent / "frontend" / "build" / "index.html"
+    if index_file.exists():
+        return FileResponse(str(index_file))
+    return {"status": "ok", "app": "Schooltino"}
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
