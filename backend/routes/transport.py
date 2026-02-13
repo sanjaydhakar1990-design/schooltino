@@ -42,10 +42,11 @@ class BusRoute(BaseModel):
     route_name: str
     route_number: str
     vehicle_id: Optional[str] = None
-    stops: List[dict]  # [{name, time, lat, lng}]
+    stops: List[dict] = []
     morning_start_time: str
     evening_start_time: str
     monthly_fee: float = 0
+    yearly_fee: float = 0
 
 class StudentTransport(BaseModel):
     student_id: str
@@ -125,6 +126,7 @@ async def create_route(route: BusRoute, school_id: str):
         "morning_start_time": route.morning_start_time,
         "evening_start_time": route.evening_start_time,
         "monthly_fee": route.monthly_fee,
+        "yearly_fee": route.yearly_fee,
         "total_students": 0,
         "status": "active",
         "created_at": datetime.now(timezone.utc).isoformat()

@@ -50,7 +50,19 @@ export default function TransportPage() {
     morning_start_time: '07:00',
     evening_start_time: '14:00',
     monthly_fee: 1500,
+    yearly_fee: 15000,
     stops: []
+  });
+
+  const [gpsDevices, setGpsDevices] = useState([]);
+  const [showAddGps, setShowAddGps] = useState(false);
+  const [gpsForm, setGpsForm] = useState({
+    vehicle_id: '',
+    device_imei: '',
+    sim_number: '',
+    device_brand: 'generic',
+    server_ip: '',
+    server_port: ''
   });
 
   const fetchData = useCallback(async () => {
@@ -86,18 +98,28 @@ export default function TransportPage() {
     }
   }, [schoolId]);
 
+  const fetchGpsDevices = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/transport/gps-setup/status/${schoolId}`);
+      const data = await res.json();
+      setGpsDevices(data.vehicles || []);
+    } catch (error) {
+      console.error('GPS fetch error:', error);
+    }
+  }, [schoolId]);
+
   useEffect(() => {
     fetchData();
     fetchLiveTracking();
+    fetchGpsDevices();
     
-    // Auto-refresh tracking every 10 seconds
     const interval = setInterval(fetchLiveTracking, 10000);
     setTrackingInterval(interval);
     
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [fetchData, fetchLiveTracking]);
+  }, [fetchData, fetchLiveTracking, fetchGpsDevices]);
 
   const handleAddVehicle = async (e) => {
     e.preventDefault();
@@ -147,6 +169,41 @@ export default function TransportPage() {
       }
     } catch (error) {
       toast.error('Failed to create route');
+    }
+  };
+
+  const handleAddGpsDevice = async (e) => {
+    e.preventDefault();
+    if (!gpsForm.vehicle_id || !gpsForm.device_imei || !gpsForm.sim_number) {
+      toast.error('Vehicle, IMEI aur SIM number required hai');
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams({
+        school_id: schoolId,
+        vehicle_id: gpsForm.vehicle_id,
+        device_imei: gpsForm.device_imei,
+        sim_number: gpsForm.sim_number,
+        device_brand: gpsForm.device_brand
+      });
+      if (gpsForm.server_ip) params.append('server_ip', gpsForm.server_ip);
+      if (gpsForm.server_port) params.append('server_port', gpsForm.server_port);
+
+      const res = await fetch(`${API_URL}/api/transport/gps-setup/add-device?${params}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('GPS Device added successfully!');
+        setShowAddGps(false);
+        setGpsForm({ vehicle_id: '', device_imei: '', sim_number: '', device_brand: 'generic', server_ip: '', server_port: '' });
+        fetchGpsDevices();
+      }
+    } catch (error) {
+      toast.error('Failed to add GPS device');
     }
   };
 
@@ -358,6 +415,7 @@ export default function TransportPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">₹{route.monthly_fee}/month</p>
+                      {route.yearly_fee > 0 && <p className="text-sm font-medium text-green-600">₹{route.yearly_fee}/year</p>}
                       <p className="text-sm text-muted-foreground">{route.total_students || 0} students</p>
                     </div>
                   </div>
@@ -382,71 +440,98 @@ export default function TransportPage() {
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-2">
               <Wifi className="w-5 h-5 text-blue-600" />
-              NFC & GPS Transport Tracking
+              GPS & NFC Configuration
             </h3>
-            <p className="text-sm text-gray-600 mb-4">Board, tap, and track — school transport made easy. Students tap NFC-enabled ID cards on vehicle attender's phone.</p>
+            <p className="text-sm text-gray-600 mb-4">GPS devices aur NFC cards ko configure karein. Vehicles mein GPS lagayein aur students ko NFC cards assign karein.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3">
-                  <Smartphone className="w-5 h-5 text-blue-600" />
+                  <Navigation className="w-5 h-5 text-blue-600" />
                 </div>
-                <h4 className="font-semibold text-gray-900">NFC Tap Attendance</h4>
-                <p className="text-xs text-gray-500 mt-1">Students tap ID cards on attender's phone to mark boarding/drop-off attendance automatically</p>
+                <h4 className="font-semibold text-gray-900">GPS Devices</h4>
+                <p className="text-xs text-gray-500 mt-1">{gpsDevices.filter(d => d.gps_enabled).length} / {gpsDevices.length} vehicles configured</p>
               </div>
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3">
-                  <MapPin className="w-5 h-5 text-green-600" />
+                  <Smartphone className="w-5 h-5 text-green-600" />
                 </div>
-                <h4 className="font-semibold text-gray-900">Live GPS Tracking</h4>
-                <p className="text-xs text-gray-500 mt-1">Real-time GPS tracking of school buses. Parents can see exact bus location on map</p>
+                <h4 className="font-semibold text-gray-900">NFC Cards</h4>
+                <p className="text-xs text-gray-500 mt-1">Mobile-based NFC tap attendance</p>
               </div>
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3">
                   <Bell className="w-5 h-5 text-purple-600" />
                 </div>
-                <h4 className="font-semibold text-gray-900">Instant Notifications</h4>
-                <p className="text-xs text-gray-500 mt-1">Parents get instant alerts when child boards/exits the bus. No costly hardware needed</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Today's NFC Boarding Log</h3>
-              <Badge variant="outline" className="text-xs">Live</Badge>
-            </div>
-            <div className="p-4">
-              <div className="text-center py-8 text-gray-400">
-                <Smartphone className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="font-medium">NFC Boarding System</p>
-                <p className="text-sm mt-1">Vehicle attenders will use their phones for NFC tap attendance</p>
-                <p className="text-xs mt-2 text-blue-500">Requires NFC-enabled devices and student ID cards</p>
+                <h4 className="font-semibold text-gray-900">Notifications</h4>
+                <p className="text-xs text-gray-500 mt-1">Auto alerts on boarding/drop</p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-5">
-                <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                  <Navigation className="w-4 h-4 text-blue-500" /> GPS Device Setup
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-700">GPS Tracking Enabled</span>
-                    <Badge className="bg-green-100 text-green-700">Active</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-700">Update Interval</span>
-                    <span className="text-sm font-medium">10 seconds</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-700">Geo-fence Alerts</span>
-                    <Badge className="bg-blue-100 text-blue-700">Enabled</Badge>
-                  </div>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Navigation className="w-5 h-5 text-blue-500" />
+                    GPS Device Management
+                  </CardTitle>
+                  <CardDescription>Add and manage GPS trackers on your vehicles</CardDescription>
                 </div>
-              </CardContent>
-            </Card>
+                <Button onClick={() => setShowAddGps(true)} className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add GPS Device
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {gpsDevices.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Navigation className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p className="font-medium">No vehicles found</p>
+                  <p className="text-sm mt-1">Pehle Vehicles tab mein vehicles add karein, phir GPS configure karein</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {gpsDevices.map((device) => (
+                    <div key={device.vehicle_id} className={`flex items-center justify-between p-4 rounded-lg border ${device.gps_enabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-lg ${device.gps_enabled ? 'bg-green-100' : 'bg-gray-200'}`}>
+                          <Bus className={`w-5 h-5 ${device.gps_enabled ? 'text-green-600' : 'text-gray-500'}`} />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{device.vehicle_number}</p>
+                          {device.gps_device ? (
+                            <div className="text-xs text-muted-foreground space-y-0.5">
+                              <p>IMEI: {device.gps_device.device_imei}</p>
+                              <p>SIM: {device.gps_device.sim_number} | Brand: {device.gps_device.device_brand}</p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">GPS not configured</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={device.gps_enabled ? 'bg-green-100 text-green-700' : device.status === 'pending_activation' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}>
+                          {device.gps_enabled ? 'Active' : device.gps_device ? 'Pending' : 'Not Configured'}
+                        </Badge>
+                        {!device.gps_enabled && (
+                          <Button size="sm" variant="outline" onClick={() => {
+                            setGpsForm({ ...gpsForm, vehicle_id: device.vehicle_id });
+                            setShowAddGps(true);
+                          }}>
+                            <Settings className="w-3 h-3 mr-1" /> Configure
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardContent className="p-5">
                 <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
@@ -459,11 +544,54 @@ export default function TransportPage() {
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-700">Card Format</span>
-                    <span className="text-sm font-medium">NTAG215</span>
+                    <span className="text-sm font-medium">NTAG215 / NTAG213</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-700">Auto-notification</span>
+                    <span className="text-sm text-gray-700">Auto Notification</span>
                     <Badge className="bg-green-100 text-green-700">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">Geo-fence Alerts</span>
+                    <Badge className="bg-blue-100 text-blue-700">Enabled</Badge>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">Vehicle attender ke NFC-enabled phone par student apna ID card tap karega. Attendance auto-mark hoga.</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-5">
+                <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                  <AlertCircle className="w-4 h-4 text-amber-500" /> GPS Setup Guide
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3 p-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                    <div>
+                      <p className="text-sm font-medium">GPS Device Khareedein</p>
+                      <p className="text-xs text-muted-foreground">Concox GT06N (₹2,500) ya Teltonika FMB920 (₹4,000)</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                    <div>
+                      <p className="text-sm font-medium">M2M SIM Card Lein</p>
+                      <p className="text-xs text-muted-foreground">Jio/Airtel M2M SIM - ₹50-100/month GPRS plan</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                    <div>
+                      <p className="text-sm font-medium">Vehicle mein Install Karein</p>
+                      <p className="text-xs text-muted-foreground">Dashboard ke neeche, ignition wire se connect</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-2">
+                    <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
+                    <div>
+                      <p className="text-sm font-medium">Yahan Device Add Karein</p>
+                      <p className="text-xs text-muted-foreground">IMEI aur SIM number enter karein, 2-5 min mein online</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -592,13 +720,24 @@ export default function TransportPage() {
                 />
               </div>
             </div>
-            <div>
-              <label className="text-sm font-medium">Monthly Fee (₹)</label>
-              <Input
-                type="number"
-                value={routeForm.monthly_fee}
-                onChange={(e) => setRouteForm({...routeForm, monthly_fee: parseFloat(e.target.value)})}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Monthly Fee (₹)</label>
+                <Input
+                  type="number"
+                  value={routeForm.monthly_fee}
+                  onChange={(e) => setRouteForm({...routeForm, monthly_fee: parseFloat(e.target.value)})}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Yearly Fee (₹)</label>
+                <Input
+                  type="number"
+                  value={routeForm.yearly_fee}
+                  onChange={(e) => setRouteForm({...routeForm, yearly_fee: parseFloat(e.target.value)})}
+                  placeholder="Optional - yearly discount"
+                />
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setShowAddRoute(false)}>
@@ -606,6 +745,99 @@ export default function TransportPage() {
               </Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                 Create Route
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAddGps} onOpenChange={setShowAddGps}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-blue-500" />
+              Add GPS Device
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAddGpsDevice} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Vehicle *</label>
+              <select
+                value={gpsForm.vehicle_id}
+                onChange={(e) => setGpsForm({...gpsForm, vehicle_id: e.target.value})}
+                className="w-full h-10 px-3 border rounded-md"
+              >
+                <option value="">-- Select Vehicle --</option>
+                {vehicles.map(v => (
+                  <option key={v.id} value={v.id}>{v.vehicle_number} ({v.vehicle_type})</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Device IMEI *</label>
+                <Input
+                  value={gpsForm.device_imei}
+                  onChange={(e) => setGpsForm({...gpsForm, device_imei: e.target.value})}
+                  placeholder="863456789012345"
+                  maxLength={15}
+                />
+                <p className="text-xs text-muted-foreground mt-1">15 digit IMEI (device par likha hai)</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">SIM Number *</label>
+                <Input
+                  value={gpsForm.sim_number}
+                  onChange={(e) => setGpsForm({...gpsForm, sim_number: e.target.value})}
+                  placeholder="9876543210"
+                />
+                <p className="text-xs text-muted-foreground mt-1">M2M SIM ka number</p>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Device Brand</label>
+              <select
+                value={gpsForm.device_brand}
+                onChange={(e) => setGpsForm({...gpsForm, device_brand: e.target.value})}
+                className="w-full h-10 px-3 border rounded-md"
+              >
+                <option value="generic">Generic / GT06N</option>
+                <option value="concox">Concox</option>
+                <option value="teltonika">Teltonika</option>
+                <option value="queclink">Queclink</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Server IP (Optional)</label>
+                <Input
+                  value={gpsForm.server_ip}
+                  onChange={(e) => setGpsForm({...gpsForm, server_ip: e.target.value})}
+                  placeholder="e.g. 103.x.x.x"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Server Port (Optional)</label>
+                <Input
+                  type="number"
+                  value={gpsForm.server_port}
+                  onChange={(e) => setGpsForm({...gpsForm, server_port: e.target.value})}
+                  placeholder="e.g. 5023"
+                />
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-800">
+                <strong>Note:</strong> Device install karne ke baad 2-5 minute mein online ho jayega. Agar na ho toh SIM balance aur APN settings check karein.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setShowAddGps(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                Add Device
               </Button>
             </div>
           </form>
