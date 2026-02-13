@@ -113,6 +113,8 @@ export default function TimetableManagement() {
   const [showSlotDialog, setShowSlotDialog] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [showSubDialog, setShowSubDialog] = useState(false);
+  const [showSubjectAssignDialog, setShowSubjectAssignDialog] = useState(false);
+  const [selectedSubjectIds, setSelectedSubjectIds] = useState([]);
   const [assignTeacherId, setAssignTeacherId] = useState('');
   const [slotForm, setSlotForm] = useState({ day: '', period: '', subject_id: '', teacher_id: '', room: '' });
   const [subForm, setSubForm] = useState({ class_id: '', period_id: '', original_teacher_id: '', substitute_teacher_id: '', reason: '', is_homeroom: false });
@@ -223,6 +225,40 @@ export default function TimetableManagement() {
       });
     });
     return schedule;
+  };
+
+  const getClassSubjects = () => {
+    if (!selectedClass) return subjects;
+    const classSubjectIds = selectedClass.subjects;
+    if (classSubjectIds && classSubjectIds.length > 0) {
+      return subjects.filter(s => classSubjectIds.includes(s.id));
+    }
+    return subjects;
+  };
+
+  const handleOpenSubjectAssign = () => {
+    setSelectedSubjectIds(selectedClass?.subjects || []);
+    setShowSubjectAssignDialog(true);
+  };
+
+  const handleSaveClassSubjects = async () => {
+    if (!selectedClass) return;
+    setSaving(true);
+    try {
+      await axios.put(`${API}/classes/${selectedClass.id}/subjects`, { subjects: selectedSubjectIds }, { headers });
+      setClasses(prev => prev.map(c => c.id === selectedClass.id ? { ...c, subjects: selectedSubjectIds } : c));
+      setSelectedClass(prev => ({ ...prev, subjects: selectedSubjectIds }));
+      toast.success('Subjects assigned successfully! / विषय सफलतापूर्वक जोड़े गए!');
+      setShowSubjectAssignDialog(false);
+    } catch (error) {
+      toast.error('Failed to save subjects');
+    } finally { setSaving(false); }
+  };
+
+  const toggleSubjectSelection = (subjectId) => {
+    setSelectedSubjectIds(prev =>
+      prev.includes(subjectId) ? prev.filter(id => id !== subjectId) : [...prev, subjectId]
+    );
   };
 
   const handleSlotClick = (day, period) => {
@@ -474,6 +510,10 @@ export default function TimetableManagement() {
 
                   <Button size="sm" variant="ghost" onClick={() => setShowAssignDialog(true)} className="gap-1">
                     <Edit className="w-3.5 h-3.5" /> Change
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleOpenSubjectAssign} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    {selectedClass?.subjects?.length > 0 ? `Subjects (${selectedClass.subjects.length})` : 'Assign Subjects / विषय जोड़ें'}
                   </Button>
                 </div>
               </div>
@@ -835,10 +875,16 @@ export default function TimetableManagement() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Subject</Label>
+              <Label>Subject / विषय</Label>
+              {(!selectedClass?.subjects || selectedClass.subjects.length === 0) && (
+                <p className="text-xs text-amber-600 mb-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  सभी विषय दिख रहे हैं। कक्षा के विषय सेट करने के लिए "Assign Subjects" बटन दबाएं।
+                </p>
+              )}
               <select className="w-full border rounded-md px-3 py-2 text-sm bg-white" value={slotForm.subject_id} onChange={e => setSlotForm(f => ({ ...f, subject_id: e.target.value }))}>
-                <option value="">-- Select Subject --</option>
-                {subjects.map(s => <option key={s.id} value={s.id}>{s.name}{s.name_hi ? ` (${s.name_hi})` : ''}</option>)}
+                <option value="">-- Select Subject / विषय चुनें --</option>
+                {getClassSubjects().map(s => <option key={s.id} value={s.id}>{s.name}{s.name_hi ? ` (${s.name_hi})` : ''}</option>)}
               </select>
             </div>
             <div>
@@ -967,6 +1013,42 @@ export default function TimetableManagement() {
               <Button variant="outline" onClick={() => setShowSubDialog(false)}>Cancel</Button>
               <Button onClick={handleAddSubstitution} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 gap-1">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Add
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============ ASSIGN SUBJECTS TO CLASS DIALOG ============ */}
+      <Dialog open={showSubjectAssignDialog} onOpenChange={setShowSubjectAssignDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Assign Subjects to {selectedClass?.name} / विषय जोड़ें</DialogTitle>
+            <DialogDescription>इस कक्षा में पढ़ाए जाने वाले विषय चुनें। केवल चुने हुए विषय ही टाइमटेबल में दिखेंगे।</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {subjects.map(s => (
+              <label key={s.id} className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${selectedSubjectIds.includes(s.id) ? 'bg-indigo-50 border-indigo-300' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+                <input
+                  type="checkbox"
+                  checked={selectedSubjectIds.includes(s.id)}
+                  onChange={() => toggleSubjectSelection(s.id)}
+                  className="w-4 h-4 text-indigo-600 rounded"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium">{s.name}</span>
+                  {s.name_hi && <span className="text-xs text-slate-500 ml-2">({s.name_hi})</span>}
+                </div>
+                {selectedSubjectIds.includes(s.id) && <Check className="w-4 h-4 text-indigo-600" />}
+              </label>
+            ))}
+          </div>
+          <div className="flex items-center justify-between pt-3 border-t">
+            <p className="text-xs text-slate-500">{selectedSubjectIds.length} विषय चुने गए / {selectedSubjectIds.length} subjects selected</p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowSubjectAssignDialog(false)}>Cancel</Button>
+              <Button onClick={handleSaveClassSubjects} disabled={saving || selectedSubjectIds.length === 0} className="bg-indigo-600 hover:bg-indigo-700 gap-1">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save / सेव करें
               </Button>
             </div>
           </div>

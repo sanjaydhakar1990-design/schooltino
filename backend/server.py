@@ -365,6 +365,7 @@ class ClassCreate(BaseModel):
     section: str  # A, B, C
     school_id: str
     class_teacher_id: Optional[str] = None
+    subjects: Optional[List[str]] = None
 
 class ClassResponse(BaseModel):
     id: str
@@ -374,6 +375,7 @@ class ClassResponse(BaseModel):
     class_teacher_id: Optional[str] = None
     student_count: int = 0
     created_at: str
+    subjects: Optional[List[str]] = None
 
 # Student Models
 class StudentCreate(BaseModel):
@@ -2477,6 +2479,29 @@ async def update_class(class_id: str, class_data: ClassCreate, current_user: dic
     await log_audit(current_user["id"], "update", "classes", {"class_id": class_id})
     updated = await db.classes.find_one({"id": class_id}, {"_id": 0})
     return ClassResponse(**updated)
+
+@api_router.put("/classes/{class_id}/subjects")
+async def update_class_subjects(class_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    subject_ids = data.get("subjects", [])
+    result = await db.classes.update_one(
+        {"id": class_id},
+        {"$set": {"subjects": subject_ids}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Class not found")
+    return {"message": "Class subjects updated", "subjects": subject_ids}
+
+@api_router.get("/subject-allocations")
+async def get_subject_allocations(school_id: str, current_user: dict = Depends(get_current_user)):
+    classes = await db.classes.find({"school_id": school_id}, {"_id": 0, "id": 1, "subjects": 1}).to_list(100)
+    allocations = []
+    for cls in classes:
+        if cls.get("subjects"):
+            for sid in cls["subjects"]:
+                allocations.append({"class_id": cls["id"], "subject_id": sid})
+    return allocations
 
 @api_router.delete("/classes/{class_id}")
 async def delete_class(class_id: str, current_user: dict = Depends(get_current_user)):
