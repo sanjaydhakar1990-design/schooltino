@@ -498,7 +498,10 @@ export default function AIPaperPage() {
       } else {
         const diagramQuestions = response.data.questions
           ?.map((q, idx) => ({ ...q, idx }))
-          .filter(q => q.type === 'diagram' || q.type === 'draw_color' || q.type === 'scenery' || q.requires_drawing || q.hasDrawing) || [];
+          .filter(q => q.type === 'diagram' || q.type === 'draw_color' || q.type === 'scenery' || 
+            q.requires_drawing || q.hasDrawing || q.diagram_required || q.diagram_description ||
+            (q.question && /diagram|चित्र|figure|draw|नामांकित|label/i.test(q.question))
+          ) || [];
         
         if (diagramQuestions.length > 0) {
           toast.info(`${diagramQuestions.length} ${isAppHindi ? 'चित्र generate हो रहे हैं...' : 'images being generated...'}`);
@@ -1110,37 +1113,45 @@ export default function AIPaperPage() {
                                   <div className="flex-1">
                                     <p className="font-medium">{q.question || q.q_text}</p>
                                     <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
-                                    {(q.type === 'diagram' || q.requires_drawing || q.diagram_required) && (
-                                      <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
-                                    )}
-                                    {q.internal_choice && q.choice_question && (
-                                      <div className="mt-2 pl-4 border-l-2 border-amber-300">
-                                        <p className="text-sm text-amber-700 font-medium">{formData.language === 'hindi' ? 'अथवा (OR)' : 'OR'}</p>
-                                        <p className="font-medium mt-1">{q.choice_question}</p>
-                                      </div>
-                                    )}
-                                    {drawingPaper && answerImages[q.originalIdx] && (
-                                      <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
-                                        <p className="text-xs font-semibold text-blue-700 mb-2">
-                                          {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
-                                        </p>
-                                        <img src={answerImages[q.originalIdx]} alt={`Reference Q${globalNum}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
-                                      </div>
-                                    )}
-                                    {drawingPaper && !answerImages[q.originalIdx] && autoGeneratingImages && (
-                                      <div className="mt-2 text-xs text-purple-600 italic print:hidden">
-                                        <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
-                                        {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
-                                      </div>
-                                    )}
-                                    {drawingPaper && (
-                                      <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: '150px' }}>
-                                        <p className="text-center text-gray-400 text-sm">
-                                          {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
-                                        </p>
-                                      </div>
-                                    )}
-                                    {drawingPaper && q.drawing_guide && (
+                                    {(() => {
+                                      const qText = q.question || q.q_text || '';
+                                      const needsDiagram = q.type === 'diagram' || q.requires_drawing || q.diagram_required || q.diagram_description || /diagram|चित्र|figure|draw|नामांकित|label/i.test(qText);
+                                      return (
+                                        <>
+                                          {needsDiagram && (
+                                            <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
+                                          )}
+                                          {q.internal_choice && q.choice_question && (
+                                            <div className="mt-2 pl-4 border-l-2 border-amber-300">
+                                              <p className="text-sm text-amber-700 font-medium">{formData.language === 'hindi' ? 'अथवा (OR)' : 'OR'}</p>
+                                              <p className="font-medium mt-1">{q.choice_question}</p>
+                                            </div>
+                                          )}
+                                          {answerImages[q.originalIdx] && (
+                                            <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
+                                              <p className="text-xs font-semibold text-blue-700 mb-2">
+                                                {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
+                                              </p>
+                                              <img src={answerImages[q.originalIdx]} alt={`Reference Q${globalNum}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
+                                            </div>
+                                          )}
+                                          {!answerImages[q.originalIdx] && autoGeneratingImages && (needsDiagram || drawingPaper) && (
+                                            <div className="mt-2 text-xs text-purple-600 italic print:hidden">
+                                              <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
+                                              {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
+                                            </div>
+                                          )}
+                                          {(needsDiagram || drawingPaper) && (
+                                            <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: drawingPaper ? '150px' : '100px' }}>
+                                              <p className="text-center text-gray-400 text-sm">
+                                                {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
+                                              </p>
+                                            </div>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
+                                    {q.drawing_guide && (
                                       <p className="text-xs text-gray-500 mt-1 italic">{q.drawing_guide}</p>
                                     )}
                                   </div>
@@ -1169,30 +1180,41 @@ export default function AIPaperPage() {
                         <div className="flex-1">
                           <p className="font-medium">{q.question}</p>
                           <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
-                          {drawingPaper && answerImages[idx] && (
-                            <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
-                              <p className="text-xs font-semibold text-blue-700 mb-2">
-                                {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
-                              </p>
-                              <img src={answerImages[idx]} alt={`Reference Q${idx + 1}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
-                            </div>
-                          )}
-                          {drawingPaper && !answerImages[idx] && autoGeneratingImages && (
-                            <div className="mt-2 text-xs text-purple-600 italic print:hidden">
-                              <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
-                              {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
-                            </div>
-                          )}
-                          {drawingPaper && (
-                            <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: '150px' }}>
-                              <p className="text-center text-gray-400 text-sm">
-                                {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
-                              </p>
-                            </div>
-                          )}
-                          {drawingPaper && q.drawing_guide && (
-                            <p className="text-xs text-gray-500 mt-1 italic">{q.drawing_guide}</p>
-                          )}
+                          {(() => {
+                            const qText = q.question || '';
+                            const needsDiagram = q.type === 'diagram' || q.requires_drawing || q.diagram_required || q.diagram_description || /diagram|चित्र|figure|draw|नामांकित|label/i.test(qText);
+                            return (
+                              <>
+                                {needsDiagram && (
+                                  <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
+                                )}
+                                {answerImages[idx] && (
+                                  <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
+                                    <p className="text-xs font-semibold text-blue-700 mb-2">
+                                      {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
+                                    </p>
+                                    <img src={answerImages[idx]} alt={`Reference Q${idx + 1}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
+                                  </div>
+                                )}
+                                {!answerImages[idx] && autoGeneratingImages && (needsDiagram || drawingPaper) && (
+                                  <div className="mt-2 text-xs text-purple-600 italic print:hidden">
+                                    <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
+                                    {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
+                                  </div>
+                                )}
+                                {(needsDiagram || drawingPaper) && (
+                                  <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: drawingPaper ? '150px' : '100px' }}>
+                                    <p className="text-center text-gray-400 text-sm">
+                                      {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
+                                    </p>
+                                  </div>
+                                )}
+                                {q.drawing_guide && (
+                                  <p className="text-xs text-gray-500 mt-1 italic">{q.drawing_guide}</p>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                       {q.options && q.options.length > 0 && (
@@ -1268,28 +1290,38 @@ export default function AIPaperPage() {
                             </div>
                           )}
 
-                          {(qType === 'diagram' || q.diagram_description) && (
-                            <div className="mt-2 p-2 bg-blue-50 rounded text-sm border border-blue-200">
-                              <p className="font-medium text-blue-800">{langText.diagramAnswer}</p>
-                              <p className="text-blue-700">{q.diagram_description || q.drawing_guide || ''}</p>
-                            </div>
-                          )}
+                          {(() => {
+                            const qText = q.question || item.question || '';
+                            const needsDiagram = qType === 'diagram' || q.requires_drawing || q.diagram_required || q.diagram_description ||
+                              qType === 'long' || qType === 'very_long' || qType === 'dirgha' || qType === 'laghu' ||
+                              /diagram|चित्र|figure|draw|नामांकित|label/i.test(qText);
+                            return (
+                              <>
+                                {(qType === 'diagram' || q.diagram_description) && (
+                                  <div className="mt-2 p-2 bg-blue-50 rounded text-sm border border-blue-200">
+                                    <p className="font-medium text-blue-800">{langText.diagramAnswer}</p>
+                                    <p className="text-blue-700">{q.diagram_description || q.drawing_guide || ''}</p>
+                                  </div>
+                                )}
 
-                          {answerImages[idx] && (
-                            <div className="mt-3">
-                              <img src={answerImages[idx]} alt={`Diagram Q${qNum}`} className="max-w-full h-auto rounded-lg border shadow-sm max-h-64 object-contain" />
-                            </div>
-                          )}
-                          
-                          {(qType === 'diagram' || qType === 'long' || qType === 'very_long' || q.requires_drawing) && !answerImages[idx] && (
-                            <Button variant="outline" size="sm" onClick={() => generateAnswerImage(idx, q)} disabled={generatingImage === idx} className="mt-2 print:hidden">
-                              {generatingImage === idx ? (
-                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isAppHindi ? 'चित्र बना रहा...' : 'Generating...'}</>
-                              ) : (
-                                <><Image className="w-4 h-4 mr-2" />{isAppHindi ? 'AI चित्र बनाएं' : 'Generate AI Diagram'}</>
-                              )}
-                            </Button>
-                          )}
+                                {answerImages[idx] && (
+                                  <div className="mt-3">
+                                    <img src={answerImages[idx]} alt={`Diagram Q${qNum}`} className="max-w-full h-auto rounded-lg border shadow-sm max-h-64 object-contain" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
+                                  </div>
+                                )}
+                                
+                                {needsDiagram && !answerImages[idx] && (
+                                  <Button variant="outline" size="sm" onClick={() => generateAnswerImage(idx, q)} disabled={generatingImage === idx} className="mt-2 print:hidden">
+                                    {generatingImage === idx ? (
+                                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isAppHindi ? 'चित्र बना रहा...' : 'Generating...'}</>
+                                    ) : (
+                                      <><Image className="w-4 h-4 mr-2" />{isAppHindi ? 'AI चित्र बनाएं' : 'Generate AI Diagram'}</>
+                                    )}
+                                  </Button>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>

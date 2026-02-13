@@ -4900,14 +4900,27 @@ Example: "diagram_description": "Draw a row of 5 fruits: apple, banana, mango, g
 ''' if request.class_name in ["Nursery", "LKG", "UKG", "Class 1", "Class 2"] else ""}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🖼️ DIAGRAM QUESTIONS (AUTO)
+🖼️ DIAGRAM QUESTIONS (MANDATORY)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-If syllabus requires diagrams/maps/graphs:
-• Include: "Draw a neat and labelled diagram of..."
-• Geography → Maps
-• Biology → Diagrams
-• Physics → Ray/Circuit diagrams
-• Maths → Graphs
+CRITICAL: You MUST include diagram questions for Science, Math, Geography subjects.
+For EVERY diagram question, you MUST include these fields:
+• "type": "diagram"
+• "diagram_required": true
+• "diagram_description": "Detailed description of what the diagram should contain"
+• "requires_drawing": true
+
+Subject-specific diagram requirements:
+• Biology/Science → Cell diagram, plant parts, human body systems, food chain, water cycle
+• Physics → Circuit diagrams, ray diagrams, force diagrams, magnetic field lines
+• Chemistry → Atom structure, periodic table elements, experimental setup
+• Geography/SST → Maps, climate zones, landforms
+• Mathematics → Geometric figures, graphs, number lines, coordinate geometry
+• Hindi/English → No diagrams needed for language subjects
+
+Example diagram question:
+{{"type": "diagram", "question": "Draw a well-labelled diagram of the structure of a plant cell. / पादप कोशिका की संरचना का नामांकित चित्र बनाइए।", "answer": "Diagram with: Cell wall, Cell membrane, Nucleus, Chloroplast, Vacuole, Cytoplasm, Mitochondria", "marks": 3, "difficulty": "medium", "diagram_required": true, "requires_drawing": true, "diagram_description": "Plant cell showing rectangular shape with cell wall, cell membrane inside, large central vacuole, nucleus with nucleolus, chloroplasts (green), mitochondria, endoplasmic reticulum, and cytoplasm. All parts labeled with arrows."}}
+
+MINIMUM DIAGRAM REQUIREMENT: At least 2-3 diagram questions in Science/Math papers.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📥 OUTPUT (SEPARATE SECTIONS)
@@ -5020,13 +5033,15 @@ Return in this EXACT JSON format:
             {{
                 "q_no": 15,
                 "type": "diagram",
-                "model_answer": "Diagram instructions...",
+                "model_answer": "Diagram instructions with all labeled parts...",
                 "diagram_steps": [
-                    "Step 1: Draw main structure",
+                    "Step 1: Draw main structure/outline",
                     "Step 2: Label parts - A: [name], B: [name], C: [name]",
-                    "Step 3: Add arrows/connections"
+                    "Step 3: Add arrows/connections and details"
                 ],
-                "marks": 3
+                "diagram_description": "Detailed description of the diagram showing all parts with proper labels and arrows",
+                "marks": 3,
+                "diagram_required": true
             }}
         ]
     }},
