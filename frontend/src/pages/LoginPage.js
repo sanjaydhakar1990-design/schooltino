@@ -259,12 +259,17 @@ export default function LoginPage() {
       let payload = studentLoginMethod === 'id'
         ? { student_id: studentForm.student_id, password: studentForm.password }
         : { mobile: studentForm.mobile, dob: studentForm.dob };
-      const res = await axios.post(`${API}/api/students/login`, null, { params: payload });
-      localStorage.setItem('token', res.data.access_token);
-      localStorage.setItem('user', JSON.stringify({ ...res.data.student, role: 'student' }));
-      setToken(res.data.access_token);
-      setUser({ ...res.data.student, role: 'student' });
-      axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.access_token}`;
+      const res = await axios.post(`${API}/api/students/login`, payload);
+      const { access_token, student } = res.data;
+      localStorage.setItem('token', access_token);
+      const userData = { ...student, role: 'student' };
+      localStorage.setItem('user', JSON.stringify(userData));
+      setToken(access_token);
+      setUser(userData);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      if (student.school_id) {
+        localStorage.setItem('schoolId', student.school_id);
+      }
       navigate('/student-dashboard');
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed');
