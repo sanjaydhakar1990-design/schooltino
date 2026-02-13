@@ -13206,20 +13206,31 @@ api_router.include_router(integrations_router)
 api_router.include_router(school_feed_router)
 app.include_router(api_router)
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 # Mount static files for uploads and marketing materials
 app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 app.mount("/api/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="static")
 
 FRONTEND_BUILD_DIR = ROOT_DIR.parent / "frontend" / "build"
 if FRONTEND_BUILD_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(FRONTEND_BUILD_DIR / "static")), name="frontend_static")
+    static_dir = FRONTEND_BUILD_DIR / "static"
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="frontend_static")
 
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
+        if full_path == "health":
+            return {"status": "ok"}
         file_path = FRONTEND_BUILD_DIR / full_path
         if file_path.exists() and file_path.is_file():
             return FileResponse(str(file_path))
-        return FileResponse(str(FRONTEND_BUILD_DIR / "index.html"))
+        index_file = FRONTEND_BUILD_DIR / "index.html"
+        if index_file.exists():
+            return FileResponse(str(index_file))
+        return {"status": "ok", "message": "Schooltino API"}
 
 app.add_middleware(
     CORSMiddleware,
