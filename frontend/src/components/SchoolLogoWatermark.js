@@ -65,7 +65,7 @@ export function GlobalWatermark() {
   };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden print:hidden">
+    <div className="fixed inset-0 pointer-events-none z-[1] flex items-center justify-center overflow-hidden print:hidden">
       <img 
         src={logoUrl} 
         alt="" 

@@ -347,11 +347,30 @@ export default function SettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold font-heading text-slate-900">{t('settings')}</h1>
-        <p className="text-slate-500 mt-1">Manage your preferences</p>
+        <p className="text-slate-500 mt-1">{t('manage_preferences')}</p>
+      </div>
+
+      {/* Quick Navigation */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { id: 'profile-section', icon: '👤', label: t('profile') },
+          { id: 'language-section', icon: '🌐', label: 'Language / भाषा' },
+          { id: 'theme-section', icon: '🎨', label: t('theme_settings') },
+          { id: 'branding-section', icon: '🖼️', label: t('logo_branding') },
+          { id: 'modules-section', icon: '📦', label: t('module_management') },
+        ].map(nav => (
+          <button
+            key={nav.id}
+            onClick={() => document.getElementById(nav.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-sm font-medium text-slate-700 shadow-sm"
+          >
+            <span>{nav.icon}</span> {nav.label}
+          </button>
+        ))}
       </div>
 
       {/* User Info */}
-      <div className="stat-card">
+      <div className="stat-card" id="profile-section">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">{t('profile')}</h2>
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
@@ -366,7 +385,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Language Setting */}
-      <div className="stat-card">
+      <div className="stat-card" id="language-section">
         <div className="flex items-center gap-3 mb-4">
           <Globe className="w-5 h-5 text-indigo-600" />
           <h2 className="text-lg font-semibold text-slate-900">Language / भाषा</h2>
@@ -411,7 +430,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="stat-card">
+      <div className="stat-card border-2 border-purple-100" id="theme-section">
         <div className="flex items-center gap-3 mb-4">
           <Sparkles className="w-5 h-5 text-purple-600" />
           <h2 className="text-lg font-semibold text-slate-900">{t('theme_settings')}</h2>
@@ -602,7 +621,7 @@ export default function SettingsPage() {
       )}
 
       {(user?.role === 'director' || user?.role === 'principal') && (
-        <div className="stat-card border-2 border-blue-100">
+        <div className="stat-card border-2 border-blue-100" id="branding-section">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Image className="w-5 h-5 text-blue-600" />
@@ -716,7 +735,7 @@ export default function SettingsPage() {
 
       {/* Module Management */}
       {(user?.role === 'director' || user?.role === 'principal') && (
-        <div className="stat-card border-2 border-violet-100" data-testid="module-management-section">
+        <div className="stat-card border-2 border-violet-100" id="modules-section" data-testid="module-management-section">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <ToggleLeft className="w-5 h-5 text-violet-600" />

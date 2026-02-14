@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -16,24 +17,25 @@ import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const STEPS = [
-  { id: 'basic', title: 'Basic Information', subtitle: 'School ka naam aur address', icon: School },
-  { id: 'contact', title: 'Contact & Registration', subtitle: 'Phone, email aur registration details', icon: Phone },
-  { id: 'details', title: 'School Details', subtitle: 'Type, medium aur capacity', icon: Building2 },
-  { id: 'leadership', title: 'Leadership & About', subtitle: 'Principal aur school ki jaankari', icon: Users },
-  { id: 'logo', title: 'Logo & Branding Settings', subtitle: 'School logo upload aur apply settings', icon: Image },
-  { id: 'payment', title: 'Payment Settings', subtitle: 'Razorpay, UPI aur bank details', icon: Wallet },
-  { id: 'social', title: 'Social Media', subtitle: 'Social media links', icon: Share2 },
-];
-
 export default function SetupWizard() {
   const { user, schoolId } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
   const logoInputRef = useRef(null);
+
+  const STEPS = [
+    { id: 'basic', title: t('basic_information'), subtitle: t('school_name_address'), icon: School },
+    { id: 'contact', title: t('contact_registration'), subtitle: t('contact_details_subtitle'), icon: Phone },
+    { id: 'details', title: t('school_details_step'), subtitle: t('type_medium_capacity'), icon: Building2 },
+    { id: 'leadership', title: t('leadership_about'), subtitle: t('principal_school_info'), icon: Users },
+    { id: 'logo', title: t('logo_branding_settings'), subtitle: t('logo_upload_apply'), icon: Image },
+    { id: 'payment', title: t('payment_settings'), subtitle: t('razorpay_upi_bank'), icon: Wallet },
+    { id: 'social', title: t('social_media'), subtitle: t('social_media_links'), icon: Share2 },
+  ];
 
   const [formData, setFormData] = useState({
     name: '', address: '', city: '', state: '', pincode: '', board_type: 'MPBSE',
@@ -130,17 +132,17 @@ export default function SetupWizard() {
   };
 
   const saveCurrentStep = async () => {
-    if (!schoolId) { toast.error('No school selected'); return false; }
+    if (!schoolId) { toast.error(t('no_school_selected')); return false; }
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
       await axios.put(`${API}/schools/${schoolId}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Saved successfully!');
+      toast.success(t('saved_successfully'));
       return true;
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Save failed');
+      toast.error(err.response?.data?.detail || t('save_failed'));
       return false;
     } finally {
       setSaving(false);
@@ -151,7 +153,7 @@ export default function SetupWizard() {
     const saved = await saveCurrentStep();
     if (saved && currentStep < STEPS.length - 1) setCurrentStep(prev => prev + 1);
     else if (saved && currentStep === STEPS.length - 1) {
-      toast.success('School setup complete!');
+      toast.success(t('school_setup_complete'));
       navigate('/app/settings');
     }
   };
@@ -191,13 +193,13 @@ export default function SetupWizard() {
   return (
     <div className="max-w-3xl mx-auto py-6 px-4">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">School Setup Wizard</h1>
-        <p className="text-slate-500 mt-1">Step-by-step apne school ki details bharein</p>
+        <h1 className="text-2xl font-bold text-slate-900">{t('school_setup_wizard')}</h1>
+        <p className="text-slate-500 mt-1">{t('step_by_step_details')}</p>
       </div>
 
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-slate-600">Step {currentStep + 1} of {STEPS.length}</span>
+          <span className="text-sm font-medium text-slate-600">{t('step_x_of_y', { current: currentStep + 1, total: STEPS.length })}</span>
           <span className="text-sm font-bold text-blue-600">{Math.round(progress)}%</span>
         </div>
         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -232,8 +234,8 @@ export default function SetupWizard() {
 
         {currentStep === 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderField('School Name *', 'name', 'text', 'Enter school name')}
-            {renderField('Board Type', 'board_type', 'text', '', [
+            {renderField(`${t('school_name')} *`, 'name', 'text', 'Enter school name')}
+            {renderField(t('board_type'), 'board_type', 'text', '', [
               { value: 'MPBSE', label: 'MP Board (MPBSE)' },
               { value: 'RBSE', label: 'Rajasthan Board (RBSE)' },
               { value: 'CBSE', label: 'CBSE' },
@@ -246,46 +248,46 @@ export default function SetupWizard() {
               { value: 'IGCSE', label: 'IGCSE' },
               { value: 'Other', label: 'Other' }
             ])}
-            <div className="md:col-span-2">{renderField('Address', 'address', 'text', 'Full school address')}</div>
-            {renderField('City', 'city', 'text', 'City name')}
-            {renderField('State', 'state', 'text', 'State name')}
-            {renderField('Pincode', 'pincode', 'text', '000000')}
+            <div className="md:col-span-2">{renderField(t('address'), 'address', 'text', 'Full school address')}</div>
+            {renderField(t('city'), 'city', 'text', 'City name')}
+            {renderField(t('state'), 'state', 'text', 'State name')}
+            {renderField(t('pincode'), 'pincode', 'text', '000000')}
           </div>
         )}
 
         {currentStep === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderField('Phone Number', 'phone', 'tel', '9876543210')}
-            {renderField('Email', 'email', 'email', 'school@example.com')}
-            {renderField('Website URL', 'website_url', 'url', 'https://www.school.com')}
-            {renderField('Registration Number', 'registration_number', 'text', 'e.g., MPBOARD/2012/12345')}
-            {renderField('Established Year', 'established_year', 'number', '2000')}
+            {renderField(t('phone_number'), 'phone', 'tel', '9876543210')}
+            {renderField(t('email'), 'email', 'email', 'school@example.com')}
+            {renderField(t('website_url'), 'website_url', 'url', 'https://www.school.com')}
+            {renderField(t('registration_number'), 'registration_number', 'text', 'e.g., MPBOARD/2012/12345')}
+            {renderField(t('established_year'), 'established_year', 'number', '2000')}
           </div>
         )}
 
         {currentStep === 2 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderField('School Type', 'school_type', 'text', '', [
-              { value: '', label: 'Select Type' }, { value: 'Co-Ed', label: 'Co-Education' },
-              { value: 'Boys', label: 'Boys Only' }, { value: 'Girls', label: 'Girls Only' }
+            {renderField(t('school_type'), 'school_type', 'text', '', [
+              { value: '', label: t('select_type') }, { value: 'Co-Ed', label: t('co_education') },
+              { value: 'Boys', label: t('boys_only') }, { value: 'Girls', label: t('girls_only') }
             ])}
-            {renderField('Medium', 'medium', 'text', '', [
-              { value: '', label: 'Select Medium' }, { value: 'Hindi', label: 'Hindi Medium' },
-              { value: 'English', label: 'English Medium' }, { value: 'Both', label: 'Hindi + English' }
+            {renderField(t('medium'), 'medium', 'text', '', [
+              { value: '', label: t('select_medium') }, { value: 'Hindi', label: t('hindi_medium') },
+              { value: 'English', label: t('english_medium') }, { value: 'Both', label: t('hindi_english') }
             ])}
-            {renderField('Shift', 'shift', 'text', '', [
-              { value: '', label: 'Select Shift' }, { value: 'Morning', label: 'Morning' },
-              { value: 'Afternoon', label: 'Afternoon' }, { value: 'Both', label: 'Both Shifts' }
+            {renderField(t('shift'), 'shift', 'text', '', [
+              { value: '', label: t('select_shift') }, { value: 'Morning', label: t('morning') },
+              { value: 'Afternoon', label: t('afternoon') }, { value: 'Both', label: t('both_shifts') }
             ])}
-            {renderField('Total Capacity', 'total_capacity', 'number', 'e.g., 500')}
-            <div className="md:col-span-2">{renderField('School Motto', 'motto', 'text', 'Your school motto or tagline')}</div>
+            {renderField(t('total_capacity'), 'total_capacity', 'number', 'e.g., 500')}
+            <div className="md:col-span-2">{renderField(t('school_motto'), 'motto', 'text', 'Your school motto or tagline')}</div>
             <div className="md:col-span-2 border-t border-slate-200 pt-4 mt-2">
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">School Timing (स्कूल का समय)</h3>
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">{t('school_timing')}</h3>
               <div className="grid grid-cols-2 gap-4">
-                {renderField('School Start Time', 'school_start_time', 'time')}
-                {renderField('School End Time', 'school_end_time', 'time')}
+                {renderField(t('school_start_time'), 'school_start_time', 'time')}
+                {renderField(t('school_end_time'), 'school_end_time', 'time')}
               </div>
-              <p className="text-xs text-slate-500 mt-2">Ye timing attendance, timetable aur notifications mein use hogi</p>
+              <p className="text-xs text-slate-500 mt-2">{t('school_timing_note')}</p>
             </div>
           </div>
         )}
@@ -293,13 +295,13 @@ export default function SetupWizard() {
         {currentStep === 3 && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {renderField('Principal Name', 'principal_name', 'text', 'Principal name')}
+              {renderField(t('principal_name'), 'principal_name', 'text', 'Principal name')}
             </div>
-            {renderField('Principal Message', 'principal_message', 'textarea', 'A message from the principal...')}
-            {renderField('About School', 'about_school', 'textarea', 'Brief description of the school...')}
+            {renderField(t('principal_message'), 'principal_message', 'textarea', 'A message from the principal...')}
+            {renderField(t('about_school'), 'about_school', 'textarea', 'Brief description of the school...')}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {renderField('Vision', 'vision', 'textarea', 'School vision statement...')}
-              {renderField('Mission', 'mission', 'textarea', 'School mission statement...')}
+              {renderField(t('vision'), 'vision', 'textarea', 'School vision statement...')}
+              {renderField(t('mission'), 'mission', 'textarea', 'School mission statement...')}
             </div>
           </div>
         )}
@@ -320,7 +322,7 @@ export default function SetupWizard() {
                   ) : (
                     <div className="text-center">
                       <Camera className="w-10 h-10 text-slate-300 mx-auto mb-1" />
-                      <span className="text-xs text-slate-400">No Logo</span>
+                      <span className="text-xs text-slate-400">{t('no_logo')}</span>
                     </div>
                   )}
                 </div>
@@ -328,14 +330,14 @@ export default function SetupWizard() {
               <div className="flex-1 space-y-3">
                 <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                 <Button onClick={() => logoInputRef.current?.click()} variant="outline" className="w-full">
-                  <Upload className="w-4 h-4 mr-2" /> {logoPreview ? 'Change Logo' : 'Upload School Logo'}
+                  <Upload className="w-4 h-4 mr-2" /> {logoPreview ? t('change_logo') : t('upload_school_logo')}
                 </Button>
                 <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
-                  <p className="font-medium mb-1">Tips:</p>
+                  <p className="font-medium mb-1">{t('logo_tips')}:</p>
                   <ul className="space-y-0.5 text-blue-600">
-                    <li>PNG/JPG format, Max 5MB</li>
-                    <li>Square logo best results deta hai</li>
-                    <li>Logo header, ID cards aur notices mein use hoga</li>
+                    <li>{t('logo_tip_format')}</li>
+                    <li>{t('logo_tip_square')}</li>
+                    <li>{t('logo_tip_usage')}</li>
                   </ul>
                 </div>
               </div>
@@ -343,17 +345,17 @@ export default function SetupWizard() {
 
             {logoPreview && (
               <div className="border-t border-slate-200 pt-4">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">Logo Size & Transparency</h3>
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">{t('logo_size_transparency')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm text-slate-600">Size: {formData.logo_size}%</Label>
+                    <Label className="text-sm text-slate-600">{t('size_label')}: {formData.logo_size}%</Label>
                     <input type="range" min="30" max="200" value={formData.logo_size}
                       onChange={(e) => setFormData(prev => ({ ...prev, logo_size: parseInt(e.target.value) }))}
                       className="w-full mt-1 accent-blue-600" />
                     <div className="flex justify-between text-xs text-slate-400"><span>30%</span><span>200%</span></div>
                   </div>
                   <div>
-                    <Label className="text-sm text-slate-600">Transparency: {formData.logo_opacity}%</Label>
+                    <Label className="text-sm text-slate-600">{t('transparency_label')}: {formData.logo_opacity}%</Label>
                     <input type="range" min="10" max="100" value={formData.logo_opacity}
                       onChange={(e) => setFormData(prev => ({ ...prev, logo_opacity: parseInt(e.target.value) }))}
                       className="w-full mt-1 accent-blue-600" />
@@ -367,17 +369,17 @@ export default function SetupWizard() {
             )}
 
             <div className="border-t border-slate-200 pt-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">Logo Apply Settings</h3>
-              <p className="text-xs text-slate-500 mb-3">Select where the logo should appear</p>
+              <h3 className="text-sm font-semibold text-slate-900 mb-2">{t('logo_apply_settings_title')}</h3>
+              <p className="text-xs text-slate-500 mb-3">{t('select_where_logo')}</p>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { key: 'idCards', label: 'Set as ID Cards watermark', icon: CreditCard },
-                  { key: 'notices', label: 'Set on Notices', icon: Bell },
-                  { key: 'calendar', label: 'Set on Calendar', icon: CalendarIcon },
-                  { key: 'appHeader', label: 'Set on App Header (School Name ke saath)', icon: SettingsIcon },
-                  { key: 'certificates', label: 'Set on Certificates', icon: FileText },
-                  { key: 'feeBills', label: 'Set on Fee Bills', icon: FileText },
-                  { key: 'appIcon', label: 'Set as App Icon', icon: Smartphone }
+                  { key: 'idCards', label: t('set_id_cards'), icon: CreditCard },
+                  { key: 'notices', label: t('set_notices'), icon: Bell },
+                  { key: 'calendar', label: t('set_calendar'), icon: CalendarIcon },
+                  { key: 'appHeader', label: t('set_app_header'), icon: SettingsIcon },
+                  { key: 'certificates', label: t('set_certificates'), icon: FileText },
+                  { key: 'feeBills', label: t('set_fee_bills'), icon: FileText },
+                  { key: 'appIcon', label: t('set_app_icon'), icon: Smartphone }
                 ].map(item => {
                   const Icon = item.icon;
                   return (
@@ -403,37 +405,37 @@ export default function SetupWizard() {
             </div>
 
             <div className="border-t border-slate-200 pt-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">Watermark Settings (वॉटरमार्क सेटिंग्स)</h3>
-              <p className="text-xs text-slate-500 mb-3">Logo ka watermark sabhi pages pe dikhega</p>
+              <h3 className="text-sm font-semibold text-slate-900 mb-2">{t('watermark_settings_title')}</h3>
+              <p className="text-xs text-slate-500 mb-3">{t('watermark_desc')}</p>
               
               <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-slate-50 border hover:bg-blue-50 mb-3">
                 <input type="checkbox" checked={formData.watermark_enabled || false}
                   onChange={(e) => setFormData(prev => ({ ...prev, watermark_enabled: e.target.checked }))}
                   className="w-5 h-5 rounded border-gray-300 text-blue-600 accent-blue-600" />
                 <div>
-                  <span className="font-medium text-sm">Enable Logo Watermark (वॉटरमार्क चालू करें)</span>
-                  <p className="text-xs text-slate-500">Logo background mein halka dikhega sabhi pages pe</p>
+                  <span className="font-medium text-sm">{t('enable_watermark')}</span>
+                  <p className="text-xs text-slate-500">{t('watermark_bg_desc')}</p>
                 </div>
               </label>
               
               {formData.watermark_enabled && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2">
                   <div>
-                    <Label className="text-sm text-slate-600">Watermark Opacity: {formData.watermark_opacity || 5}%</Label>
+                    <Label className="text-sm text-slate-600">{t('watermark_opacity')}: {formData.watermark_opacity || 5}%</Label>
                     <input type="range" min="2" max="20" value={formData.watermark_opacity || 5}
                       onChange={(e) => setFormData(prev => ({ ...prev, watermark_opacity: parseInt(e.target.value) }))}
                       className="w-full mt-1 accent-blue-600" />
                     <div className="flex justify-between text-xs text-slate-400"><span>Light (2%)</span><span>Dark (20%)</span></div>
                   </div>
                   <div>
-                    <Label className="text-sm text-slate-600">Watermark Size</Label>
+                    <Label className="text-sm text-slate-600">{t('watermark_size')}</Label>
                     <select value={formData.watermark_size || 'large'}
                       onChange={(e) => setFormData(prev => ({ ...prev, watermark_size: e.target.value }))}
                       className="w-full h-10 rounded-md border border-slate-200 px-3 text-sm mt-1">
-                      <option value="small">Small</option>
-                      <option value="medium">Medium</option>
-                      <option value="large">Large</option>
-                      <option value="full">Full Page</option>
+                      <option value="small">{t('small')}</option>
+                      <option value="medium">{t('medium')}</option>
+                      <option value="large">{t('large')}</option>
+                      <option value="full">{t('full_page')}</option>
                     </select>
                   </div>
                 </div>
@@ -444,7 +446,7 @@ export default function SetupWizard() {
                   <img src={logoPreview} alt="Watermark Preview" 
                     style={{ opacity: (formData.watermark_opacity || 5) / 100, width: formData.watermark_size === 'small' ? '60px' : formData.watermark_size === 'medium' ? '120px' : formData.watermark_size === 'full' ? '80%' : '200px' }}
                     className="object-contain" />
-                  <span className="absolute bottom-2 text-xs text-slate-400">Watermark Preview</span>
+                  <span className="absolute bottom-2 text-xs text-slate-400">{t('watermark_preview')}</span>
                 </div>
               )}
             </div>
@@ -454,23 +456,23 @@ export default function SetupWizard() {
         {currentStep === 5 && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {renderField('Razorpay Key ID', 'razorpay_key_id', 'text', 'rzp_live_xxxxxx')}
-              {renderField('Razorpay Key Secret', 'razorpay_key_secret', 'password', '••••••••')}
-              {renderField('Payment Mode', 'payment_mode', 'text', '', [
-                { value: '', label: 'Select Payment Mode' },
-                { value: 'online', label: 'Online Only' },
-                { value: 'cash', label: 'Cash Only' },
-                { value: 'both', label: 'Both Online & Cash' }
+              {renderField(t('razorpay_key_id'), 'razorpay_key_id', 'text', 'rzp_live_xxxxxx')}
+              {renderField(t('razorpay_key_secret'), 'razorpay_key_secret', 'password', '••••••••')}
+              {renderField(t('payment_mode'), 'payment_mode', 'text', '', [
+                { value: '', label: t('select') + ' ' + t('payment_mode') },
+                { value: 'online', label: t('online') },
+                { value: 'cash', label: t('cash') },
+                { value: 'both', label: t('online') + ' & ' + t('cash') }
               ])}
             </div>
 
             <div className="border-t border-slate-200 pt-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-900">UPI IDs (PhonePe, GPay, Paytm, etc.)</h3>
+                <h3 className="text-sm font-semibold text-slate-900">{t('upi_ids_title')}</h3>
                 <Button type="button" variant="outline" size="sm" onClick={() => setFormData(prev => ({
                   ...prev, upi_ids: [...(prev.upi_ids || []), { name: '', upi_id: '' }]
                 }))}>
-                  <Plus className="w-3 h-3 mr-1" /> Add UPI
+                  <Plus className="w-3 h-3 mr-1" /> {t('add_upi')}
                 </Button>
               </div>
               <div className="space-y-3">
@@ -481,7 +483,7 @@ export default function SetupWizard() {
                       updated[idx] = { ...updated[idx], name: e.target.value };
                       setFormData(prev => ({ ...prev, upi_ids: updated }));
                     }} className="w-40 border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
-                      <option value="">Select App</option>
+                      <option value="">{t('select_app')}</option>
                       <option value="PhonePe">PhonePe</option>
                       <option value="Google Pay">Google Pay (GPay)</option>
                       <option value="Paytm">Paytm</option>
@@ -509,38 +511,38 @@ export default function SetupWizard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
-              {renderField('Bank Name', 'bank_name', 'text', 'e.g., State Bank of India')}
-              {renderField('Bank Account Number', 'bank_account_no', 'text', 'Account number')}
-              {renderField('IFSC Code', 'bank_ifsc', 'text', 'e.g., SBIN0001234')}
-              {renderField('Branch Name', 'bank_branch', 'text', 'Branch name')}
+              {renderField(t('bank_name'), 'bank_name', 'text', 'e.g., State Bank of India')}
+              {renderField(t('bank_account_number'), 'bank_account_no', 'text', 'Account number')}
+              {renderField(t('ifsc_code_label'), 'bank_ifsc', 'text', 'e.g., SBIN0001234')}
+              {renderField(t('branch_name'), 'bank_branch', 'text', 'Branch name')}
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-              <p className="font-medium mb-1">Note:</p>
-              <p>Payment settings will be used in Fee Management. Multiple UPI IDs parents ko different payment apps ka option dete hain.</p>
+              <p className="font-medium mb-1">{t('note_label')}:</p>
+              <p>{t('payment_note')}</p>
             </div>
           </div>
         )}
 
         {currentStep === 6 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderField('Facebook URL', 'facebook_url', 'url', 'https://facebook.com/school')}
-            {renderField('Instagram URL', 'instagram_url', 'url', 'https://instagram.com/school')}
-            {renderField('YouTube URL', 'youtube_url', 'url', 'https://youtube.com/school')}
-            {renderField('WhatsApp Number', 'whatsapp_number', 'tel', '9876543210')}
+            {renderField(t('facebook_url'), 'facebook_url', 'url', 'https://facebook.com/school')}
+            {renderField(t('instagram_url'), 'instagram_url', 'url', 'https://instagram.com/school')}
+            {renderField(t('youtube_url'), 'youtube_url', 'url', 'https://youtube.com/school')}
+            {renderField(t('whatsapp_number'), 'whatsapp_number', 'tel', '9876543210')}
           </div>
         )}
       </div>
 
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={handlePrev} disabled={currentStep === 0} className="gap-2">
-          <ChevronLeft className="w-4 h-4" /> Previous
+          <ChevronLeft className="w-4 h-4" /> {t('previous')}
         </Button>
         <Button variant="ghost" onClick={handleSkip} className="text-slate-500">
-          <SkipForward className="w-4 h-4 mr-1" /> Skip
+          <SkipForward className="w-4 h-4 mr-1" /> {t('skip')}
         </Button>
         <Button onClick={handleNext} disabled={saving} className="gap-2 bg-blue-600 hover:bg-blue-700">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {currentStep === STEPS.length - 1 ? 'Finish Setup' : 'Save & Next'}
+          {currentStep === STEPS.length - 1 ? t('finish_setup') : t('save_next')}
           {currentStep < STEPS.length - 1 && <ChevronRight className="w-4 h-4" />}
         </Button>
       </div>
