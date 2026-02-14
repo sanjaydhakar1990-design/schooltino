@@ -13611,11 +13611,28 @@ if FRONTEND_BUILD_DIR.exists():
             return {"status": "ok"}
         file_path = FRONTEND_BUILD_DIR / full_path
         if file_path.exists() and file_path.is_file():
-            return FileResponse(str(file_path))
+            media_type = None
+            if str(file_path).endswith('.js'):
+                media_type = 'application/javascript'
+            elif str(file_path).endswith('.css'):
+                media_type = 'text/css'
+            elif str(file_path).endswith('.json'):
+                media_type = 'application/json'
+            elif str(file_path).endswith('.png'):
+                media_type = 'image/png'
+            elif str(file_path).endswith('.ico'):
+                media_type = 'image/x-icon'
+            elif str(file_path).endswith('.svg'):
+                media_type = 'image/svg+xml'
+            return FileResponse(str(file_path), media_type=media_type)
         index_file = FRONTEND_BUILD_DIR / "index.html"
         if index_file.exists():
-            return FileResponse(str(index_file))
+            return FileResponse(str(index_file), media_type='text/html', headers={"Cache-Control": "no-cache"})
         return {"status": "ok", "message": "Schooltino API"}
+else:
+    @app.get("/{full_path:path}")
+    async def serve_fallback(full_path: str):
+        return {"status": "ok", "message": "Schooltino API - frontend build not found"}
 
 app.add_middleware(
     CORSMiddleware,
