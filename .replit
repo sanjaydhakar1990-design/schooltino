@@ -67,6 +67,14 @@ localPort = 5051
 externalPort = 4200
 
 [[ports]]
+localPort = 5054
+externalPort = 3003
+
+[[ports]]
+localPort = 5055
+externalPort = 5000
+
+[[ports]]
 localPort = 8000
 externalPort = 8000
 
@@ -74,7 +82,7 @@ externalPort = 8000
 deploymentTarget = "vm"
 build = ["pip", "install", "-r", "backend/requirements.txt"]
 publicDir = "frontend/build"
-run = ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--app-dir", "backend"]
+run = ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "5000", "--app-dir", "backend"]
 
 [userenv]
 
