@@ -1,48 +1,55 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import './i18n';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
-
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import StudentsPage from './pages/StudentsPage';
-import ClassesPage from './pages/ClassesPage';
-import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
-import EmployeeManagementPage from './pages/EmployeeManagementPage';
-import FeeManagementPage from './pages/FeeManagementPage';
-import AdmissionCRMPage from './pages/AdmissionCRMPage';
-import ExamReportCard from './pages/ExamReportCard';
-import TimetableManagement from './pages/TimetableManagement';
-import DigitalLibraryPage from './pages/DigitalLibraryPage';
-import HomeworkPage from './pages/HomeworkPage';
-import LiveClassesPage from './pages/LiveClassesPage';
-import IntegratedCommunicationPage from './pages/IntegratedCommunicationPage';
-import FrontOfficePage from './pages/FrontOfficePage';
-import TransportPage from './pages/TransportPage';
-import SchoolCalendarPage from './pages/SchoolCalendarPage';
-import SchoolAnalytics from './pages/SchoolAnalytics';
-import AIToolsPage from './pages/AIToolsPage';
-import CCTVPage from './pages/CCTVPage';
-import InventoryPage from './pages/InventoryPage';
-import MultiBranchPage from './pages/MultiBranchPage';
-import SettingsPage from './pages/SettingsPage';
-import SubscriptionPage from './pages/SubscriptionPage';
-import ProfilePage from './pages/ProfilePage';
-import SchoolFeedPage from './pages/SchoolFeedPage';
-import LeaveManagement from './pages/LeaveManagement';
-import SetupWizard from './pages/SetupWizard';
-
-import TeachTinoLogin from './pages/TeachTinoLogin';
-import TeachTinoDashboard from './pages/TeachTinoDashboard';
-import StudyTinoLoginPage from './pages/StudyTinoLoginPage';
-import StudentDashboard from './pages/StudentDashboard';
-
 import Layout from './components/Layout';
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+      <p className="text-sm text-gray-500">Loading...</p>
+    </div>
+  </div>
+);
+
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
+const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
+const StudentsPage = React.lazy(() => import('./pages/StudentsPage'));
+const ClassesPage = React.lazy(() => import('./pages/ClassesPage'));
+const ImprovedAttendancePage = React.lazy(() => import('./pages/ImprovedAttendancePage'));
+const EmployeeManagementPage = React.lazy(() => import('./pages/EmployeeManagementPage'));
+const FeeManagementPage = React.lazy(() => import('./pages/FeeManagementPage'));
+const AdmissionCRMPage = React.lazy(() => import('./pages/AdmissionCRMPage'));
+const ExamReportCard = React.lazy(() => import('./pages/ExamReportCard'));
+const TimetableManagement = React.lazy(() => import('./pages/TimetableManagement'));
+const DigitalLibraryPage = React.lazy(() => import('./pages/DigitalLibraryPage'));
+const HomeworkPage = React.lazy(() => import('./pages/HomeworkPage'));
+const LiveClassesPage = React.lazy(() => import('./pages/LiveClassesPage'));
+const IntegratedCommunicationPage = React.lazy(() => import('./pages/IntegratedCommunicationPage'));
+const FrontOfficePage = React.lazy(() => import('./pages/FrontOfficePage'));
+const TransportPage = React.lazy(() => import('./pages/TransportPage'));
+const SchoolCalendarPage = React.lazy(() => import('./pages/SchoolCalendarPage'));
+const SchoolAnalytics = React.lazy(() => import('./pages/SchoolAnalytics'));
+const AIToolsPage = React.lazy(() => import('./pages/AIToolsPage'));
+const CCTVPage = React.lazy(() => import('./pages/CCTVPage'));
+const InventoryPage = React.lazy(() => import('./pages/InventoryPage'));
+const MultiBranchPage = React.lazy(() => import('./pages/MultiBranchPage'));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
+const SubscriptionPage = React.lazy(() => import('./pages/SubscriptionPage'));
+const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
+const SchoolFeedPage = React.lazy(() => import('./pages/SchoolFeedPage'));
+const LeaveManagement = React.lazy(() => import('./pages/LeaveManagement'));
+const SetupWizard = React.lazy(() => import('./pages/SetupWizard'));
+const TeachTinoLogin = React.lazy(() => import('./pages/TeachTinoLogin'));
+const TeachTinoDashboard = React.lazy(() => import('./pages/TeachTinoDashboard'));
+const StudyTinoLoginPage = React.lazy(() => import('./pages/StudyTinoLoginPage'));
+const StudentDashboard = React.lazy(() => import('./pages/StudentDashboard'));
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -194,7 +201,9 @@ function App() {
         <AuthProvider>
           <LanguageProvider>
             <ThemeProvider>
-              <AppRoutes />
+              <Suspense fallback={<PageLoader />}>
+                <AppRoutes />
+              </Suspense>
               <Toaster
                 position="top-right"
                 richColors
