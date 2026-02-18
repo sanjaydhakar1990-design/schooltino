@@ -1,104 +1,157 @@
 import http.server
+import http.client
 import threading
 import socket
 import os
 import sys
 import time
+import mimetypes
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_BUILD = os.path.join(os.path.dirname(SCRIPT_DIR), "frontend", "build")
-INDEX_PATH = os.path.join(FRONTEND_BUILD, "index.html")
+PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
+FRONTEND_BUILD = os.path.join(PROJECT_DIR, "frontend", "build")
+BACKEND_PORT = 8001
 
 _index_cache = b""
 try:
-    with open(INDEX_PATH, "rb") as f:
+    with open(os.path.join(FRONTEND_BUILD, "index.html"), "rb") as f:
         _index_cache = f.read()
 except Exception:
     pass
 
+_backend_ready = False
 
-class HealthHandler(http.server.BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        if self.path == "/health":
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(b'{"status":"ok"}')
-        else:
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Cache-Control", "no-cache")
-            self.end_headers()
-            self.wfile.write(_index_cache or b'{"status":"ok","app":"Schooltino"}')
 
-    def do_POST(self):
-        cl = int(self.headers.get("Content-Length", 0))
-        if cl > 0:
-            self.rfile.read(cl)
-        self.send_response(503)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        self.wfile.write(b'{"status":"loading","message":"Starting up..."}')
-
-    do_PUT = do_POST
-    do_DELETE = do_POST
-    do_PATCH = do_POST
+class AppHandler(http.server.BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
 
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "*")
+        self.send_header("Content-Length", "0")
         self.end_headers()
+
+    def do_GET(self):
+        self._route()
+
+    def do_POST(self):
+        self._route()
+
+    def do_PUT(self):
+        self._route()
+
+    def do_DELETE(self):
+        self._route()
+
+    def do_PATCH(self):
+        self._route()
+
+    def _route(self):
+        if self.path.startswith("/api/"):
+            self._proxy()
+            return
+        if self.path == "/health":
+            self._json_response(200, b'{"status":"ok"}')
+            return
+        if self.path == "/":
+            self._serve_index()
+            return
+        self._serve_static()
+
+    def _json_response(self, code, body):
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_index(self):
+        if _index_cache:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(_index_cache)))
+            self.send_header("Cache-Control", "no-cache")
+            self.end_headers()
+            self.wfile.write(_index_cache)
+        else:
+            self._json_response(200, b'{"status":"ok","app":"Schooltino"}')
+
+    def _serve_static(self):
+        file_path = os.path.join(FRONTEND_BUILD, self.path.lstrip("/"))
+        real_path = os.path.realpath(file_path)
+        build_real = os.path.realpath(FRONTEND_BUILD)
+        if real_path.startswith(build_real) and os.path.isfile(real_path):
+            ct, _ = mimetypes.guess_type(real_path)
+            with open(real_path, "rb") as f:
+                content = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", ct or "application/octet-stream")
+            self.send_header("Content-Length", str(len(content)))
+            cache = "public, max-age=31536000" if "/static/" in self.path else "no-cache"
+            self.send_header("Cache-Control", cache)
+            self.end_headers()
+            self.wfile.write(content)
+        else:
+            self._serve_index()
+
+    def _proxy(self):
+        if not _backend_ready:
+            self._json_response(503, b'{"status":"loading","message":"Starting up..."}')
+            return
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else None
+            conn = http.client.HTTPConnection("127.0.0.1", BACKEND_PORT, timeout=120)
+            fwd_headers = {}
+            for k, v in self.headers.items():
+                if k.lower() not in ("host", "transfer-encoding"):
+                    fwd_headers[k] = v
+            conn.request(self.command, self.path, body=body, headers=fwd_headers)
+            resp = conn.getresponse()
+            resp_body = resp.read()
+            self.send_response(resp.status)
+            skip = {"transfer-encoding", "connection", "content-length"}
+            for h, v in resp.getheaders():
+                if h.lower() not in skip:
+                    self.send_header(h, v)
+            self.send_header("Content-Length", str(len(resp_body)))
+            self.end_headers()
+            self.wfile.write(resp_body)
+            conn.close()
+        except Exception as e:
+            err = f'{{"error":"Backend unavailable","detail":"{str(e)}"}}'.encode()
+            self._json_response(502, err)
 
     def log_message(self, format, *args):
         pass
 
 
-def _wait_for_port(port, timeout=10):
-    for _ in range(timeout * 10):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind(("0.0.0.0", port))
-            s.close()
-            return True
-        except OSError:
-            time.sleep(0.1)
-    return False
-
-
-def main():
-    health_server = http.server.HTTPServer(("0.0.0.0", 5000), HealthHandler)
-    health_server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    health_thread = threading.Thread(target=health_server.serve_forever, daemon=True)
-    health_thread.start()
-    print("[startup] Health check server ready on port 5000", flush=True)
-
-    import uvicorn
-    print("[startup] uvicorn pre-imported", flush=True)
-
+def _start_backend():
+    global _backend_ready
     sys.path.insert(0, SCRIPT_DIR)
     os.chdir(SCRIPT_DIR)
     print("[startup] Importing application...", flush=True)
-    start = time.time()
+    t = time.time()
     from server import app as fastapi_app
-    elapsed = time.time() - start
-    print(f"[startup] Application imported in {elapsed:.1f}s", flush=True)
+    print(f"[startup] Application imported in {time.time()-t:.1f}s", flush=True)
+    import uvicorn
+    _backend_ready = True
+    print(f"[startup] Backend ready on internal port {BACKEND_PORT}", flush=True)
+    uvicorn.run(fastapi_app, host="127.0.0.1", port=BACKEND_PORT, log_level="info")
 
-    print("[startup] Releasing port 5000...", flush=True)
-    health_server.shutdown()
-    health_server.server_close()
-    try:
-        health_server.socket.close()
-    except Exception:
-        pass
 
-    if _wait_for_port(5000, timeout=10):
-        print("[startup] Port 5000 released, starting uvicorn...", flush=True)
-    else:
-        print("[startup] Warning: port 5000 may still be in use, attempting anyway...", flush=True)
+def main():
+    server = http.server.ThreadingHTTPServer(("0.0.0.0", 5000), AppHandler)
+    server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    proxy_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    proxy_thread.start()
+    print("[startup] Server ready on port 5000", flush=True)
 
-    uvicorn.run(fastapi_app, host="0.0.0.0", port=5000, log_level="info")
+    backend_thread = threading.Thread(target=_start_backend)
+    backend_thread.start()
+    backend_thread.join()
 
 
 if __name__ == "__main__":
