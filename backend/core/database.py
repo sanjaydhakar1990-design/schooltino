@@ -15,39 +15,53 @@ MONGO_URL = os.environ.get('MONGO_URL')
 MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD')
 DB_NAME = os.environ.get('DB_NAME', 'test_database')
 
+CONNECTION_TIMEOUT_MS = 5000
+SERVER_SELECTION_TIMEOUT_MS = 5000
+
 def create_mongo_client(url, password):
     if not url:
-        raise ValueError("MONGO_URL environment variable is not set")
+        logger.warning("MONGO_URL not set - database features will be unavailable")
+        return None
 
-    if '://' in url:
-        scheme_end = url.index('://') + 3
-        rest = url[scheme_end:]
-        last_at = rest.rfind('@')
+    try:
+        timeout_kwargs = {
+            "serverSelectionTimeoutMS": SERVER_SELECTION_TIMEOUT_MS,
+            "connectTimeoutMS": CONNECTION_TIMEOUT_MS,
+            "socketTimeoutMS": 10000,
+        }
 
-        if last_at != -1:
-            hostpath = rest[last_at + 1:]
-            userinfo = rest[:last_at]
-            first_colon = userinfo.find(':')
-            if first_colon != -1:
-                username = userinfo[:first_colon]
-            else:
-                username = userinfo
+        if '://' in url:
+            scheme_end = url.index('://') + 3
+            rest = url[scheme_end:]
+            last_at = rest.rfind('@')
 
-            scheme = url[:scheme_end]
-            host_url = f"{scheme}{hostpath}"
+            if last_at != -1:
+                hostpath = rest[last_at + 1:]
+                userinfo = rest[:last_at]
+                first_colon = userinfo.find(':')
+                if first_colon != -1:
+                    username = userinfo[:first_colon]
+                else:
+                    username = userinfo
 
-            raw_password = password if password else (userinfo[first_colon + 1:] if first_colon != -1 else None)
+                scheme = url[:scheme_end]
+                host_url = f"{scheme}{hostpath}"
 
-            kwargs = {"tlsCAFile": certifi.where()}
-            if username:
-                kwargs["username"] = username
-            if raw_password:
-                kwargs["password"] = raw_password
+                raw_password = password if password else (userinfo[first_colon + 1:] if first_colon != -1 else None)
 
-            logger.info("Connecting to MongoDB with separate credentials")
-            return AsyncIOMotorClient(host_url, **kwargs)
+                kwargs = {"tlsCAFile": certifi.where(), **timeout_kwargs}
+                if username:
+                    kwargs["username"] = username
+                if raw_password:
+                    kwargs["password"] = raw_password
 
-    return AsyncIOMotorClient(url, tlsCAFile=certifi.where())
+                logger.info("Connecting to MongoDB with separate credentials")
+                return AsyncIOMotorClient(host_url, **kwargs)
+
+        return AsyncIOMotorClient(url, tlsCAFile=certifi.where(), **timeout_kwargs)
+    except Exception as e:
+        logger.error(f"Failed to create MongoDB client: {e}")
+        return None
 
 client = create_mongo_client(MONGO_URL, MONGO_PASSWORD)
-db = client[DB_NAME]
+db = client[DB_NAME] if client else None
