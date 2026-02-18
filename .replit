@@ -82,7 +82,7 @@ externalPort = 8000
 deploymentTarget = "vm"
 build = ["pip", "install", "-r", "backend/requirements.txt"]
 publicDir = "frontend/build"
-run = ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "5000", "--app-dir", "backend"]
+run = ["python", "backend/main.py"]
 
 [userenv]
 
