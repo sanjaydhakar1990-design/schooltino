@@ -16,7 +16,7 @@ import {
   BarChart3, Download, Filter
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const demoRooms = [
   { id: 1, roomNo: '101', type: 'Single', capacity: 1, occupied: 1, floor: 'Ground', block: 'A', student: 'Aarav Sharma' },

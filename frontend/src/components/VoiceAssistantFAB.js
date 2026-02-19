@@ -9,7 +9,7 @@ import axios from 'axios';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function VoiceAssistantFAB({ isOpen: externalOpen, onClose }) {
   const { user } = useAuth();

@@ -24,7 +24,7 @@ import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 // Feature modules configuration
 const MODULES = {

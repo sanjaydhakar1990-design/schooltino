@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import { Printer, Loader2, RotateCcw, Settings2, Palette, Layout, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 const ID_CARD_TEMPLATES = [
   { id: 'classic', name: 'Classic', nameHi: 'क्लासिक', desc: 'Standard horizontal ID card' },

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function ImageGallery() {
   const { user, schoolId } = useAuth();
@@ -170,7 +170,7 @@ export default function ImageGallery() {
   };
 
   const handleSharePhoto = (photo) => {
-    const shareUrl = `${process.env.REACT_APP_BACKEND_URL}${photo.photo_url}`;
+    const shareUrl = `${(process.env.REACT_APP_BACKEND_URL || '')}${photo.photo_url}`;
     const text = encodeURIComponent(`${selectedEvent?.event_name || 'School Photo'}`);
     const whatsappUrl = `https://wa.me/?text=${text}%20${encodeURIComponent(shareUrl)}`;
     window.open(whatsappUrl, '_blank');
@@ -232,7 +232,7 @@ export default function ImageGallery() {
                 onClick={() => setSelectedPhoto(photo)}
               >
                 <img 
-                  src={`${process.env.REACT_APP_BACKEND_URL}${photo.photo_url}`}
+                  src={`${(process.env.REACT_APP_BACKEND_URL || '')}${photo.photo_url}`}
                   alt={photo.caption || 'Photo'}
                   className="w-full h-48 object-cover"
                   onError={(e) => { e.target.style.display = 'none'; }}
@@ -297,7 +297,7 @@ export default function ImageGallery() {
             {selectedPhoto && (
               <div className="space-y-4">
                 <img 
-                  src={`${process.env.REACT_APP_BACKEND_URL}${selectedPhoto.photo_url}`}
+                  src={`${(process.env.REACT_APP_BACKEND_URL || '')}${selectedPhoto.photo_url}`}
                   alt={selectedPhoto.caption || 'Photo'}
                   className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
                 />
@@ -382,7 +382,7 @@ export default function ImageGallery() {
               <div className="h-40 bg-gradient-to-br from-pink-100 to-rose-200 flex items-center justify-center relative overflow-hidden">
                 {event.cover_photo ? (
                   <img 
-                    src={`${process.env.REACT_APP_BACKEND_URL}${event.cover_photo}`}
+                    src={`${(process.env.REACT_APP_BACKEND_URL || '')}${event.cover_photo}`}
                     alt={event.event_name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     onError={(e) => { e.target.style.display = 'none'; }}

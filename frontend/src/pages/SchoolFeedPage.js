@@ -8,7 +8,7 @@ import {
   ChevronDown, ChevronUp, AlertCircle
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const DEMO_POSTS = [
   {
@@ -459,7 +459,7 @@ export default function SchoolFeedPage() {
                   {post.photo_url && (
                     <div className="mb-3">
                       <img
-                        src={post.photo_url.startsWith('http') || post.photo_url.startsWith('data:') ? post.photo_url : `${process.env.REACT_APP_BACKEND_URL}${post.photo_url}`}
+                        src={post.photo_url.startsWith('http') || post.photo_url.startsWith('data:') ? post.photo_url : `${(process.env.REACT_APP_BACKEND_URL || '')}${post.photo_url}`}
                         alt="Post"
                         className="w-full max-h-96 object-cover rounded-xl border border-gray-100"
                         onError={(e) => { e.target.style.display = 'none'; }}

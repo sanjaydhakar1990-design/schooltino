@@ -132,14 +132,20 @@ def _start_backend():
     global _backend_ready
     sys.path.insert(0, SCRIPT_DIR)
     os.chdir(SCRIPT_DIR)
-    print("[startup] Importing application...", flush=True)
-    t = time.time()
-    from server import app as fastapi_app
-    print(f"[startup] Application imported in {time.time()-t:.1f}s", flush=True)
-    import uvicorn
-    _backend_ready = True
-    print(f"[startup] Backend ready on internal port {BACKEND_PORT}", flush=True)
-    uvicorn.run(fastapi_app, host="127.0.0.1", port=BACKEND_PORT, log_level="info")
+    try:
+        print("[startup] Importing application...", flush=True)
+        t = time.time()
+        from server import app as fastapi_app
+        print(f"[startup] Application imported in {time.time()-t:.1f}s", flush=True)
+        import uvicorn
+        _backend_ready = True
+        print(f"[startup] Backend ready on internal port {BACKEND_PORT}", flush=True)
+        uvicorn.run(fastapi_app, host="127.0.0.1", port=BACKEND_PORT, log_level="info")
+    except Exception as e:
+        import traceback
+        print(f"[startup] FATAL ERROR: {e}", flush=True)
+        traceback.print_exc()
+        print("[startup] Backend failed to start", flush=True)
 
 
 def main():

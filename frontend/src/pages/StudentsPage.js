@@ -42,7 +42,7 @@ import StudentIDCard from '../components/StudentIDCard';
 import BulkImport from '../components/BulkImport';
 import DocumentUpload from '../components/DocumentUpload';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function StudentsPage() {
   const { t } = useTranslation();

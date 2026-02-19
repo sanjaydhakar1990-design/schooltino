@@ -17,7 +17,7 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || '';
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 const BulkBoardAdmitCard = ({ boardExam, schoolId, onClose }) => {
   const [step, setStep] = useState(1); // 1: Upload, 2: Review, 3: Generate

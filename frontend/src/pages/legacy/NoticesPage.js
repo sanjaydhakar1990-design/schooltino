@@ -17,7 +17,7 @@ import {
 import { Plus, Bell, Trash2, Loader2, AlertTriangle, Info, AlertCircle, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function NoticesPage() {
   const { t } = useTranslation();
@@ -290,7 +290,7 @@ export default function NoticesPage() {
                           {notice.signature_url && (
                             <div className="text-center">
                               <img 
-                                src={`${process.env.REACT_APP_BACKEND_URL}${notice.signature_url}`}
+                                src={`${(process.env.REACT_APP_BACKEND_URL || '')}${notice.signature_url}`}
                                 alt="Signature"
                                 className="h-12 object-contain"
                               />
@@ -300,7 +300,7 @@ export default function NoticesPage() {
                           {notice.seal_url && (
                             <div className="text-center">
                               <img 
-                                src={`${process.env.REACT_APP_BACKEND_URL}${notice.seal_url}`}
+                                src={`${(process.env.REACT_APP_BACKEND_URL || '')}${notice.seal_url}`}
                                 alt="Seal"
                                 className="h-14 object-contain"
                               />

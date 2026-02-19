@@ -107,7 +107,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 ${isDarkMode ? 'border-slate-600' : 'border-blue-200'}`}>
             {user?.photo_url ? (
-              <img src={user.photo_url.startsWith('http') ? user.photo_url : `${process.env.REACT_APP_BACKEND_URL}${user.photo_url}`} alt="" className="w-full h-full object-cover" />
+              <img src={user.photo_url.startsWith('http') ? user.photo_url : `${(process.env.REACT_APP_BACKEND_URL || '')}${user.photo_url}`} alt="" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${getSidebarActiveColor()}, ${getSidebarActiveColor()}dd)` }}>
                 <span className="text-white font-bold text-xs">{user?.name?.charAt(0) || 'U'}</span>

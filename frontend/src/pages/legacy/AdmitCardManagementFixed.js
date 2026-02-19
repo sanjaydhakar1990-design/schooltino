@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 import AdmitCardPreviewComponent from '../components/AdmitCardPreviewComponent';
 import BulkBoardAdmitCard from '../components/BulkBoardAdmitCard';
 
-const API = process.env.REACT_APP_BACKEND_URL || '';
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 const AdmitCardManagementFixed = () => {
   const { user } = useAuth();

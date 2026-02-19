@@ -23,7 +23,7 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 // ❌ AVATARS DISABLED - Text-only mode (no images, no voice)
 const AVATARS = {}; // Empty - no avatars

@@ -26,7 +26,7 @@ import { toast } from 'sonner';
 import StaffPhotoUpload from '../components/StaffPhotoUpload';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 const ITEMS_PER_PAGE = 5;
 
 const SortIcon = () => (

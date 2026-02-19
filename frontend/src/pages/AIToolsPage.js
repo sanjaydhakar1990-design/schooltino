@@ -24,8 +24,8 @@ import {
 import { toast } from 'sonner';
 import SYLLABUS_DATA from '../data/syllabusData';
 
-const API_CONTENT = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const API_EVENT = process.env.REACT_APP_BACKEND_URL;
+const API_CONTENT = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
+const API_EVENT = (process.env.REACT_APP_BACKEND_URL || '');
 
 const EVENT_TEMPLATES = [
   { id: 'annual_function', name: 'Annual Function (वार्षिक उत्सव)', icon: PartyPopper, color: 'from-purple-500 to-pink-500' },

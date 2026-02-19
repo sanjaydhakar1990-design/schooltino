@@ -36,7 +36,7 @@ import {
 } from '../components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function UserManagementPage() {
   const { t } = useTranslation();

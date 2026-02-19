@@ -20,7 +20,7 @@ const CCTVPage = () => {
     if (!user?.school_id) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/cctv/cameras?school_id=${user.school_id}`, {
+      const res = await axios.get(`${(process.env.REACT_APP_BACKEND_URL || '') || ''}/api/cctv/cameras?school_id=${user.school_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCameras(res.data?.cameras || []);
@@ -34,7 +34,7 @@ const CCTVPage = () => {
   const addCamera = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL || ''}/api/cctv/cameras`, {
+      await axios.post(`${(process.env.REACT_APP_BACKEND_URL || '') || ''}/api/cctv/cameras`, {
         ...newCamera, school_id: user?.school_id
       }, { headers: { Authorization: `Bearer ${token}` } });
       setShowAddForm(false);
@@ -49,7 +49,7 @@ const CCTVPage = () => {
     if (!window.confirm('Delete this camera?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL || ''}/api/cctv/cameras/${id}`, {
+      await axios.delete(`${(process.env.REACT_APP_BACKEND_URL || '') || ''}/api/cctv/cameras/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchCameras();

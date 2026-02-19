@@ -19,7 +19,7 @@ import {
   ClipboardList, PenTool, Paperclip, AlertCircle, Target
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const statusColors = {
   'Pending': 'bg-yellow-100 text-yellow-700',

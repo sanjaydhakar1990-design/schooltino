@@ -24,7 +24,7 @@ import IDCardViewer from '../components/IDCardViewer';
 import BulkImport from '../components/BulkImport';
 import DocumentUpload from '../components/DocumentUpload';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 // Default permissions for quick selection
 const PERMISSION_PRESETS = {

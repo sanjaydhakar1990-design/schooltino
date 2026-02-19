@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import MultiFaceEnrollment from '../components/MultiFaceEnrollment';
 import IDCardViewer from '../components/IDCardViewer';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 export default function ProfilePage() {
   const { t } = useTranslation();

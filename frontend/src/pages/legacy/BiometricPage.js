@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = (process.env.REACT_APP_BACKEND_URL || '');
 
 const deviceTypeLabels = {
   fingerprint: 'Fingerprint Scanner',

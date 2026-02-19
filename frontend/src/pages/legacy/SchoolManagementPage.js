@@ -20,7 +20,7 @@ import {
 import { toast } from 'sonner';
 import { WatermarkSettings } from '../components/SchoolLogoWatermark';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 export default function SchoolManagementPage() {
   const { user } = useAuth();

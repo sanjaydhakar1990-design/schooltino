@@ -22,7 +22,7 @@ import {
 import { toast } from 'sonner';
 
 // SECRET API ENDPOINT - matches backend
-const API = `${process.env.REACT_APP_BACKEND_URL}/api/owner-console-x7k9m2`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api/owner-console-x7k9m2`;
 
 export default function SuperAdminPanel() {
   const navigate = useNavigate();
@@ -289,7 +289,7 @@ export default function SuperAdminPanel() {
   // Credit Functions
   const loadSchoolCredits = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/message-credits/all-schools`);
+      const res = await axios.get(`${(process.env.REACT_APP_BACKEND_URL || '')}/api/message-credits/all-schools`);
       setSchoolCredits(res.data.schools || []);
     } catch (error) {
       console.error('Failed to load credits');
@@ -298,7 +298,7 @@ export default function SuperAdminPanel() {
 
   const loadCreditStats = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/message-credits/stats`);
+      const res = await axios.get(`${(process.env.REACT_APP_BACKEND_URL || '')}/api/message-credits/stats`);
       setCreditStats(res.data);
     } catch (error) {
       console.error('Failed to load credit stats');
@@ -307,7 +307,7 @@ export default function SuperAdminPanel() {
 
   const addCreditsToSchool = async () => {
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/message-credits/add`, addCreditsForm);
+      await axios.post(`${(process.env.REACT_APP_BACKEND_URL || '')}/api/message-credits/add`, addCreditsForm);
       toast.success('Credits added successfully!');
       setShowAddCreditsModal(false);
       setAddCreditsForm({ school_id: '', credits: 1000, amount_paid: 500, payment_method: 'cash' });

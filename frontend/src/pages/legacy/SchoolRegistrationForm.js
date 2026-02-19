@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const FACILITIES_OPTIONS = [
   'Computer Lab', 'Science Lab', 'Library', 'Playground', 'Sports Complex',

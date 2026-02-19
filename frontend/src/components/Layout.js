@@ -105,7 +105,7 @@ export const Layout = () => {
       if (!user?.id || !user?.school_id) return;
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/notifications?user_id=${user.id}&school_id=${user.school_id}&user_type=${user.role || 'admin'}`, {
+        const res = await axios.get(`${(process.env.REACT_APP_BACKEND_URL || '') || ''}/api/notifications?user_id=${user.id}&school_id=${user.school_id}&user_type=${user.role || 'admin'}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const notifs = res.data?.notifications || [];
@@ -113,7 +113,7 @@ export const Layout = () => {
         let totalUnread = notifs.filter(n => !n.read && !n.is_read).length;
         if (user?.role === 'director' || user?.role === 'principal' || user?.role === 'admin') {
           try {
-            const pendingRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL || ''}/api/admin/pending-count`, { headers: { Authorization: `Bearer ${token}` } });
+            const pendingRes = await axios.get(`${(process.env.REACT_APP_BACKEND_URL || '') || ''}/api/admin/pending-count`, { headers: { Authorization: `Bearer ${token}` } });
             totalUnread += (pendingRes.data?.pending_requests || 0);
           } catch (e) {}
         }
@@ -140,7 +140,7 @@ export const Layout = () => {
   const markAsRead = async (notifId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL || ''}/api/notifications/${notifId}/mark-read`, {}, {
+      await axios.post(`${(process.env.REACT_APP_BACKEND_URL || '') || ''}/api/notifications/${notifId}/mark-read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, is_read: true, read: true } : n));
@@ -156,7 +156,7 @@ export const Layout = () => {
     setChatLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL || ''}/api/tino-ai/chat`, {
+      const res = await axios.post(`${(process.env.REACT_APP_BACKEND_URL || '') || ''}/api/tino-ai/chat`, {
         message: userMsg, school_id: user?.school_id, user_id: user?.id
       }, { headers: { Authorization: `Bearer ${token}` } });
       setChatMessages(prev => [...prev, { role: 'assistant', text: res.data?.response || 'No response' }]);

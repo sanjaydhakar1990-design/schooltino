@@ -19,7 +19,7 @@ import {
   PieChart, Activity, Loader2, Copy
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function MarketingCampaignPage() {
   const { user } = useAuth();

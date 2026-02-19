@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 export default function ForgotPassword({ isOpen, onClose, onSuccess }) {
   const [step, setStep] = useState(1); // 1: Enter email/id, 2: Enter OTP, 3: New password

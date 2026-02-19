@@ -11,7 +11,7 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 // Document types for students
 export const STUDENT_DOCUMENT_TYPES = [

@@ -12,7 +12,7 @@ import {
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 export default function FeePaymentPage() {
   const { user, token } = useAuth();

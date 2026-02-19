@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 export default function StaffPhotoUpload({ staffId, staffName, schoolId, onComplete }) {
   const [loading, setLoading] = useState(false);

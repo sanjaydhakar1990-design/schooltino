@@ -6,7 +6,7 @@ import { GraduationCap, ArrowLeft, Loader2, CheckCircle2, Copy, Eye, EyeOff, Sch
 import axios from 'axios';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 const boards = [
   'CBSE', 'ICSE', 'MP Board', 'RBSE', 'UP Board', 'Bihar Board',

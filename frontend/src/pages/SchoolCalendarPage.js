@@ -14,7 +14,7 @@ import {
 import { toast } from 'sonner';
 import PrintableCalendar from '../components/PrintableCalendar';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 // Government Holidays by State (2025-26)
 const STATE_HOLIDAYS = {

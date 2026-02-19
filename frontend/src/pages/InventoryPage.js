@@ -17,7 +17,7 @@ import {
   CheckCircle, Clock, IndianRupee, Warehouse, Box
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const demoInventory = [
   { id: 1, name: 'Student Desk (Single)', category: 'Furniture', quantity: 120, unitPrice: 3500, location: 'Classroom Block A', status: 'In Stock' },

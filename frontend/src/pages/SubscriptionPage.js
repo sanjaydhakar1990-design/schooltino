@@ -23,7 +23,7 @@ import {
 import { toast } from 'sonner';
 import { useRazorpay } from 'react-razorpay';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function SubscriptionPage() {
   const { t } = useTranslation();

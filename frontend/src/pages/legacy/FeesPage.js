@@ -25,7 +25,7 @@ import {
 import { Plus, Wallet, FileText, CreditCard, Loader2, Receipt, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function FeesPage() {
   const { t } = useTranslation();

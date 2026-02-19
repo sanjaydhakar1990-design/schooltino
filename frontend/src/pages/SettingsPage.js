@@ -19,7 +19,7 @@ import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, 
 import { toast } from 'sonner';
 import { Slider } from '../components/ui/slider';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -531,7 +531,7 @@ export default function SettingsPage() {
               {signatureUrl ? (
                 <div className="relative">
                   <img 
-                    src={`${process.env.REACT_APP_BACKEND_URL}${signatureUrl}`}
+                    src={`${(process.env.REACT_APP_BACKEND_URL || '')}${signatureUrl}`}
                     alt="Signature"
                     className="w-full h-24 object-contain bg-white rounded-lg border"
                   />
@@ -579,7 +579,7 @@ export default function SettingsPage() {
               {sealUrl ? (
                 <div className="relative">
                   <img 
-                    src={`${process.env.REACT_APP_BACKEND_URL}${sealUrl}`}
+                    src={`${(process.env.REACT_APP_BACKEND_URL || '')}${sealUrl}`}
                     alt="Seal"
                     className="w-full h-24 object-contain bg-white rounded-lg border"
                   />

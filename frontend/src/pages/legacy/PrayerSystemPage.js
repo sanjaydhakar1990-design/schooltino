@@ -8,7 +8,7 @@ import { Label } from '../components/ui/label';
 import { Play, Pause, Volume2, VolumeX, Music, Mic, Clock, Settings, Plus, Trash2, Search, Speaker, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 const DEFAULT_PRAYERS = [
   {

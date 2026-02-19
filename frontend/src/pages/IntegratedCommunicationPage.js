@@ -22,7 +22,7 @@ import {
   IndianRupee, Coins
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const SMS_CREDIT_COST = 1;
 const WHATSAPP_CREDIT_COST = 1;

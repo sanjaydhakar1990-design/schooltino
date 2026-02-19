@@ -19,7 +19,7 @@ import {
   AlertCircle, Calendar, RefreshCw, IndianRupee, Loader2
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const statusColors = {
   'New': 'bg-blue-100 text-blue-700',

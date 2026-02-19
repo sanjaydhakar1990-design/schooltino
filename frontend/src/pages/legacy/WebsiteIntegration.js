@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function WebsiteIntegration() {
   const { user } = useAuth();
@@ -80,7 +80,7 @@ export default function WebsiteIntegration() {
 
   const getPublicAPIUrl = (endpoint) => {
     // This would use actual school_id in production
-    return `${process.env.REACT_APP_BACKEND_URL}/api/public/school/{school_id}/${endpoint}`;
+    return `${(process.env.REACT_APP_BACKEND_URL || '')}/api/public/school/{school_id}/${endpoint}`;
   };
 
   if (loading) {

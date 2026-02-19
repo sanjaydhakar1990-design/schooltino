@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, Loader2, Crown, GraduationCap, Users, Wallet, Shield, Brain, MessageSquare, Smartphone, BarChart3, BookOpen, Fingerprint, CheckCircle2, ArrowRight, Globe, Layers, Lock, Zap, Cloud, Cpu, School, Apple, UserCircle } from 'lucide-react';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 const k12Tabs = [
   { id: 'enrollment', label: 'Enrollment Conversion', icon: Users },

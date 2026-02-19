@@ -13,7 +13,7 @@ import { Button } from './ui/button';
 import { Bell, X, CheckSquare, XCircle, Clock, Calendar, User } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function NotificationCenter({ userId, userType, schoolId }) {
   const [notifications, setNotifications] = useState([]);

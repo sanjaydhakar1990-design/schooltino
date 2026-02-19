@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function AdminActivityDashboard() {
   const { user, schoolId } = useAuth();

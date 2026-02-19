@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { BOARDS, BOARD_SUBJECTS, getChapters, BOARD_MARKS_PATTERN, CLASS_PAPER_DEFAULTS, DRAWING_PAPER_TYPES } from '../data/boardSyllabus';
 import { getChaptersByMedium } from '../data/syllabusLatest2025';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const SUBJECT_MAP_HI_TO_EN = {
   'हिंदी': 'Hindi', 'गणित': 'Mathematics', 'विज्ञान': 'Science',

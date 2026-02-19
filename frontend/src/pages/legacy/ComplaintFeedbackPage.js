@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 export default function ComplaintFeedbackPage() {
   const { t, i18n } = useTranslation();

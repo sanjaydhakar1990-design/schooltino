@@ -17,7 +17,7 @@ import {
   CheckCircle, Clock, AlertCircle, BarChart3, Layers, Monitor
 } from 'lucide-react';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const demoBooks = [
   { id: 1, title: 'NCERT Mathematics Class 10', author: 'NCERT', isbn: '978-81-7450-001-0', category: 'Textbooks', copies: 45, available: 38, location: 'Shelf A-1' },

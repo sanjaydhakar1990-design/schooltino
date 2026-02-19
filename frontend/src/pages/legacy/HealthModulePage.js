@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = (process.env.REACT_APP_BACKEND_URL || '');
 
 const severityColors = {
   low: 'bg-green-500/10 text-green-600',

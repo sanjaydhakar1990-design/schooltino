@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
 const PHOTO_TYPES = [
   { id: 'passport', label: 'Passport Photo', icon: User, description: 'Front facing, neutral expression', required: true },
