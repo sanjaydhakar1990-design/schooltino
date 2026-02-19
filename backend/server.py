@@ -540,6 +540,7 @@ class StudentResponse(BaseModel):
     previous_class: Optional[str] = None
     previous_percentage: Optional[str] = None
     tc_number: Optional[str] = None
+    plain_password: Optional[str] = None
 
 # Staff Models
 class StaffCreate(BaseModel):
@@ -683,6 +684,7 @@ class UnifiedEmployeeResponse(BaseModel):
     role: Optional[str] = None
     permissions: Optional[Dict[str, bool]] = None
     can_teach: bool = False
+    plain_password: Optional[str] = None
 
 # Attendance Models
 class AttendanceCreate(BaseModel):
@@ -1205,9 +1207,23 @@ async def register_school(data: SchoolRegister):
     raw_password = generate_secure_password()
     school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
 
+    name_words = [w for w in data.school_name.upper().split() if w not in ("THE", "OF", "AND", "FOR", "IN", "AT", "A", "AN", "SCHOOL", "VIDYALAYA", "CONVENT", "PUBLIC", "HIGHER", "SECONDARY")]
+    if len(name_words) >= 2:
+        school_code = ''.join(w[0] for w in name_words[:3])
+    elif name_words:
+        school_code = name_words[0][:3]
+    else:
+        school_code = data.school_name.upper().replace(" ", "")[:3]
+    if len(school_code) < 2:
+        school_code = school_id[-4:].upper()
+    existing_code = await db.schools.find_one({"school_code": school_code})
+    if existing_code:
+        school_code = school_code + school_id[-2:].upper()
+
     school_data = {
         "id": school_id,
         "name": data.school_name,
+        "school_code": school_code,
         "board": data.school_board,
         "city": data.school_city,
         "state": data.school_state,
@@ -2157,13 +2173,15 @@ async def get_schools(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/schools/{school_id}", response_model=SchoolResponse)
 async def get_school(school_id: str, current_user: dict = Depends(get_current_user)):
-    # Verify user has access to this school
     if not current_user.get("is_superadmin") and current_user.get("school_id") != school_id:
         raise HTTPException(status_code=403, detail="Not authorized to access this school")
     
     school = await db.schools.find_one({"id": school_id}, {"_id": 0})
     if not school:
         raise HTTPException(status_code=404, detail="School not found")
+    if not school.get("school_code"):
+        code = await get_school_code(school_id)
+        school["school_code"] = code
     return SchoolResponse(**school)
 
 @api_router.put("/schools/{school_id}", response_model=SchoolResponse)
@@ -2566,25 +2584,42 @@ async def delete_class(class_id: str, current_user: dict = Depends(get_current_u
 
 # ==================== STUDENT ADMISSION ROUTES ====================
 
+async def get_school_code(school_id: str) -> str:
+    school = await db.schools.find_one({"id": school_id})
+    if school and school.get("school_code"):
+        return school["school_code"]
+    if school:
+        name = school.get("name", "")
+        words = [w for w in name.upper().split() if w not in ("THE", "OF", "AND", "FOR", "IN", "AT", "A", "AN", "SCHOOL", "VIDYALAYA", "CONVENT", "PUBLIC", "HIGHER", "SECONDARY")]
+        if len(words) >= 2:
+            code = ''.join(w[0] for w in words[:3])
+        elif words:
+            code = words[0][:3]
+        else:
+            code = name.upper().replace(" ", "")[:3]
+        if len(code) < 2:
+            code = school_id[-4:].upper()
+        await db.schools.update_one({"id": school_id}, {"$set": {"school_code": code}})
+        return code
+    return school_id[-4:].upper()
+
 async def generate_smart_student_id(school_id: str, admission_year: int = None) -> str:
-    """
-    Generate school-scoped unique student ID
-    Format: STU-<YEAR>-<SEQ> (scoped per school)
-    Example: STU-2026-00001
-    """
+    code = await get_school_code(school_id)
     year = admission_year or datetime.now().year
     
     count = await db.students.count_documents({
         "school_id": school_id,
-        "student_id": {"$regex": f"^STU-{year}-"}
+        "student_id": {"$regex": f"^STU-{code}-{year}-"}
     })
-    
-    seq_no = str(count + 1).zfill(5)
-    
-    return f"STU-{year}-{seq_no}"
+    seq_no = str(count + 1).zfill(4)
+    new_id = f"STU-{code}-{year}-{seq_no}"
+    while await db.students.find_one({"student_id": new_id}):
+        count += 1
+        seq_no = str(count + 1).zfill(4)
+        new_id = f"STU-{code}-{year}-{seq_no}"
+    return new_id
 
 def generate_student_id(school_id: str) -> str:
-    """Generate unique student ID (legacy sync version) like STD-2026-000123"""
     year = datetime.now().year
     random_part = str(uuid.uuid4().int)[:6].zfill(6)
     return f"STD-{year}-{random_part}"
@@ -2990,17 +3025,18 @@ async def get_students(
     
     students = await db.students.find(query, {"_id": 0, "password": 0}).to_list(500)
     
-    # Enrich with class info
+    is_director = current_user.get("role") == "director"
     for student in students:
         class_doc = await db.classes.find_one({"id": student["class_id"]}, {"_id": 0})
         if class_doc:
             student["class_name"] = class_doc["name"]
             student["section"] = class_doc["section"]
-        # Ensure required fields exist
         if "student_id" not in student:
             student["student_id"] = student.get("admission_no", "N/A")
         if "status" not in student:
             student["status"] = "active" if student.get("is_active", True) else "inactive"
+        if not is_director:
+            student.pop("plain_password", None)
     
     return [StudentResponse(**s) for s in students]
 
@@ -3223,10 +3259,7 @@ async def create_unified_employee(
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered as user")
     
-    # Generate employee ID
-    year = datetime.now().year
-    count = await db.staff.count_documents({"school_id": employee.school_id}) + 1
-    employee_id = f"EMP-{year}-{str(count).zfill(5)}"
+    employee_id = await generate_employee_id(employee.school_id)
     
     # Determine role based on designation
     role = DESIGNATION_ROLE_MAP.get(employee.designation.lower().replace(" ", "_"), "teacher")
@@ -3361,6 +3394,16 @@ async def get_employees(
         ]
     
     employees = await db.staff.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    if current_user.get("role") == "director":
+        for emp in employees:
+            if not emp.get("plain_password") and emp.get("email"):
+                user_rec = await db.users.find_one({"email": emp["email"]}, {"plain_password": 1})
+                if user_rec and user_rec.get("plain_password"):
+                    emp["plain_password"] = user_rec["plain_password"]
+    else:
+        for emp in employees:
+            emp.pop("plain_password", None)
     
     return [UnifiedEmployeeResponse(**emp) for emp in employees]
 
@@ -12045,20 +12088,30 @@ async def generate_parent_id() -> str:
     
     return f"PAR-{year}-{seq}"
 
-async def generate_employee_id() -> str:
-    """Generate globally unique Employee ID
-    Format: EMP-<YEAR>-<UNIQUE_SEQ>
-    Example: EMP-2026-00001
-    """
+async def generate_employee_id(school_id: str = None) -> str:
+    code = ""
+    if school_id:
+        code = await get_school_code(school_id)
     year = datetime.now().year
     
-    # Get global count of all employees for this year
-    count = await db.staff.count_documents({
-        "employee_id": {"$regex": f"^EMP-{year}-"}
-    })
-    seq = str(count + 1).zfill(5)
-    
-    return f"EMP-{year}-{seq}"
+    if code:
+        count = await db.staff.count_documents({
+            "school_id": school_id,
+            "employee_id": {"$regex": f"^EMP-{code}-{year}-"}
+        })
+        seq = str(count + 1).zfill(4)
+        new_id = f"EMP-{code}-{year}-{seq}"
+        while await db.staff.find_one({"employee_id": new_id}):
+            count += 1
+            seq = str(count + 1).zfill(4)
+            new_id = f"EMP-{code}-{year}-{seq}"
+        return new_id
+    else:
+        count = await db.staff.count_documents({
+            "employee_id": {"$regex": f"^EMP-{year}-"}
+        })
+        seq = str(count + 1).zfill(5)
+        return f"EMP-{year}-{seq}"
 
 class ParentLoginRequest(BaseModel):
     mobile: Optional[str] = None
@@ -12256,11 +12309,11 @@ async def create_staff_with_auto_id(
     if existing:
         raise HTTPException(status_code=400, detail="Email already exists")
     
-    # Generate Employee ID
-    employee_id = await generate_employee_id()
+    employee_id = await generate_employee_id(school_id)
     
-    # Create user
     user_id = str(uuid.uuid4())
+    raw_pw = password or "school123"
+    hashed_pw = bcrypt.hashpw(raw_pw.encode(), bcrypt.gensalt()).decode()
     user = {
         "id": user_id,
         "employee_id": employee_id,
@@ -12269,7 +12322,8 @@ async def create_staff_with_auto_id(
         "mobile": mobile,
         "role": role,
         "school_id": school_id,
-        "password": password or "school123",  # Default password
+        "password": hashed_pw,
+        "plain_password": raw_pw,
         "permissions": {},
         "created_at": datetime.now(timezone.utc).isoformat(),
         "created_by": current_user["id"]

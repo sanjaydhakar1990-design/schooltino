@@ -385,15 +385,15 @@ export default function LoginPage() {
                     <form onSubmit={handleDirectorSetup} className="space-y-4">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
-                        <input name="name" value={formData.name} onChange={handleChange} placeholder="Director Name" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        <input name="name" value={formData.name} onChange={handleChange} placeholder="Director Name" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('email')}</label>
-                        <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="director@school.com" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="director@school.com" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('password')}</label>
-                        <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Create password" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Create password" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                       </div>
                       <button type="submit" className="w-full py-3 btn-primary" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Create Account'}

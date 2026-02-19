@@ -14,7 +14,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { 
-  Users, Plus, Search, Edit2, Trash2, UserCheck, UserX, Key,
+  Users, Plus, Search, Edit2, Trash2, UserCheck, UserX, Key, Copy,
   Shield, Loader2, Phone, Mail, Building, Award, Calendar,
   IndianRupee, CheckCircle, XCircle, Settings, Eye, EyeOff, CreditCard, Printer,
   FileUp, Heart, Briefcase, GraduationCap, MapPin, User, Wallet, Camera
@@ -570,11 +570,12 @@ export default function EmployeeManagementPage() {
     setResettingPassword(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API}/api/employees/${resetPasswordEmployee.id}/reset-password`, 
+      await axios.put(`${API}/api/employees/${resetPasswordEmployee.employee_id || resetPasswordEmployee.id}/reset-password`, 
         { new_password: newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success(`Password reset for ${resetPasswordEmployee.name}`);
+      fetchEmployees();
       setShowResetPasswordDialog(false);
       setResetPasswordEmployee(null);
       setNewPassword('');
@@ -1315,6 +1316,7 @@ export default function EmployeeManagementPage() {
                     <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('name')}</th>
                     <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('employee_id')}</th>
                     <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('email')}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('password')}</th>
                     <th className="text-left px-4 py-3 font-semibold text-slate-700">{t('role')}</th>
                     <th className="text-center px-4 py-3 font-semibold text-slate-700">{t('status')}</th>
                     <th className="text-center px-4 py-3 font-semibold text-slate-700">{t('actions')}</th>
@@ -1335,20 +1337,36 @@ export default function EmployeeManagementPage() {
                           <span className="font-medium text-slate-800">{emp.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600 font-mono text-xs">{emp.employee_id || '-'}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-slate-700 font-mono text-xs">{emp.email || '-'}</span>
-                          {emp.email && (
-                            <button
-                              onClick={() => { navigator.clipboard.writeText(emp.email); toast.success('Login ID copied!'); }}
-                              className="text-blue-500 hover:text-blue-700 p-1"
-                              title="Copy Login ID"
-                            >
-                              <Mail className="w-3.5 h-3.5" />
-                            </button>
+                      <td className="px-4 py-3 text-slate-600 font-mono text-xs">
+                        <div className="flex items-center gap-1">
+                          {emp.employee_id || '-'}
+                          {emp.employee_id && (
+                            <button onClick={() => { navigator.clipboard.writeText(emp.employee_id); toast.success('ID copied!'); }} className="text-blue-500 hover:text-blue-700 p-0.5"><Copy className="w-3 h-3" /></button>
                           )}
                         </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <span className="text-slate-700 font-mono text-xs">{emp.email || '-'}</span>
+                          {emp.email && (
+                            <button onClick={() => { navigator.clipboard.writeText(emp.email); toast.success('Email copied!'); }} className="text-blue-500 hover:text-blue-700 p-0.5"><Copy className="w-3 h-3" /></button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {emp.plain_password ? (
+                          <div className="flex items-center gap-1">
+                            <span className="font-mono text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded">
+                              {showPassword ? emp.plain_password : '********'}
+                            </span>
+                            <button onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600 p-0.5">
+                              {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                            </button>
+                            <button onClick={() => { navigator.clipboard.writeText(emp.plain_password); toast.success('Password copied!'); }} className="text-blue-500 hover:text-blue-700 p-0.5"><Copy className="w-3 h-3" /></button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 capitalize">
@@ -1402,7 +1420,7 @@ export default function EmployeeManagementPage() {
                   ))}
                   {employees.length === 0 && (
                     <tr>
-                      <td colSpan="6" className="px-4 py-10 text-center text-slate-400">
+                      <td colSpan="7" className="px-4 py-10 text-center text-slate-400">
                         <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
                         <p>{t('no_data')}</p>
                       </td>

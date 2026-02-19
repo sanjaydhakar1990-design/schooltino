@@ -504,16 +504,16 @@ export default function StudentsPage() {
     setShowDeleteDialog(true);
   };
 
-  // View/Share Student Credentials
   const viewCredentials = async (student) => {
     setCredentialsStudent({
+      id: student.id,
       name: student.name,
       student_id: student.student_id || student.id,
       class_name: student.class_name,
       father_name: student.father_name,
       mobile: student.mobile || student.parent_phone,
-      // Default password is mobile number or student_id
-      default_password: student.mobile || student.parent_phone || student.student_id || student.id
+      plain_password: student.plain_password || null,
+      default_password: student.plain_password || student.mobile || student.parent_phone || student.student_id || student.id
     });
     setShowCredentialsDialog(true);
   };
@@ -567,6 +567,7 @@ Note: First login पर password change करें।`;
       setShowResetPasswordDialog(false);
       setResetPasswordStudent(null);
       setNewStudentPassword('');
+      fetchStudents();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Password reset failed');
     } finally {
@@ -2748,8 +2749,16 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                   <span className="text-slate-400 text-sm">Password:</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-bold text-lg text-green-300">
-                      {credentialsStudent.default_password}
+                      {showStudentPasswordField ? credentialsStudent.default_password : '********'}
                     </span>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-white hover:bg-slate-700"
+                      onClick={() => setShowStudentPasswordField(!showStudentPasswordField)}
+                    >
+                      {showStudentPasswordField ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
                     <Button 
                       size="sm" 
                       variant="ghost"
@@ -2764,6 +2773,23 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                   </div>
                 </div>
               </div>
+              
+              {/* Reset Password Button */}
+              {user?.role === 'director' && (
+                <Button 
+                  variant="outline"
+                  className="w-full gap-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+                  onClick={() => {
+                    setResetPasswordStudent(credentialsStudent);
+                    setNewStudentPassword('');
+                    setShowCredentialsDialog(false);
+                    setShowResetPasswordDialog(true);
+                  }}
+                >
+                  <Key className="w-4 h-4" />
+                  {t('reset_password')}
+                </Button>
+              )}
               
               {/* App Link */}
               <div className="bg-blue-50 rounded-lg p-3 text-center">
