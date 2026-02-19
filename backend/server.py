@@ -1025,6 +1025,19 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+async def require_staff(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") == "student":
+        raise HTTPException(status_code=403, detail="Access denied. Staff only.")
+    return current_user
+
+async def require_admin(current_user: dict = Depends(get_current_user)):
+    role = current_user.get("role", "")
+    if role in ("student", "parent"):
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    if role not in ("director", "admin", "principal", "vice_principal", "accountant", "clerk", "manager"):
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    return current_user
+
 async def log_audit(user_id: str, action: str, module: str, details: dict, ip_address: str = None):
     audit_log = {
         "id": str(uuid.uuid4()),
@@ -2952,10 +2965,13 @@ async def get_students(
     class_id: Optional[str] = None,
     search: Optional[str] = None,
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_staff)
 ):
     query = {}
-    if school_id:
+    user_school = current_user.get("school_id")
+    if user_school:
+        query["school_id"] = user_school
+    elif school_id:
         query["school_id"] = school_id
     if class_id:
         query["class_id"] = class_id
@@ -3132,10 +3148,13 @@ async def get_staff(
     school_id: Optional[str] = None,
     designation: Optional[str] = None,
     search: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_staff)
 ):
     query = {"is_active": True}
-    if school_id:
+    user_school = current_user.get("school_id")
+    if user_school:
+        query["school_id"] = user_school
+    elif school_id:
         query["school_id"] = school_id
     if designation:
         query["designation"] = designation
@@ -6243,10 +6262,14 @@ async def get_my_classes(current_user: dict = Depends(get_current_user)):
     return classes
 
 @api_router.get("/teacher/class/{class_id}/students")
-async def get_class_students(class_id: str, current_user: dict = Depends(get_current_user)):
+async def get_class_students(class_id: str, current_user: dict = Depends(require_staff)):
     """Get all students in a class for teacher"""
+    user_school = current_user.get("school_id")
+    query = {"class_id": class_id, "status": "active"}
+    if user_school:
+        query["school_id"] = user_school
     students = await db.students.find(
-        {"class_id": class_id, "status": "active"},
+        query,
         {"_id": 0, "password": 0}
     ).to_list(100)
     
