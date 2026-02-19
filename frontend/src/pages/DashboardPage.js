@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -26,18 +26,43 @@ export default function DashboardPage() {
   const [pendingCount, setPendingCount] = useState(0);
   const [moduleVis, setModuleVis] = useState({});
 
-  const loadVis = useCallback(() => {
+  const visFetched = useRef(false);
+  const loadVis = useCallback(async () => {
     try {
       const saved = localStorage.getItem('module_visibility_settings');
-      if (saved) setModuleVis(JSON.parse(saved));
-    } catch (e) {
-      console.error('Error loading module visibility:', e);
+      if (saved) {
+        setModuleVis(JSON.parse(saved));
+        return;
+      }
+    } catch (e) {}
+    if (!visFetched.current) {
+      visFetched.current = true;
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const res = await fetch(`${API}/settings/module-visibility`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && Object.keys(data).length > 0) {
+              setModuleVis(data);
+              localStorage.setItem('module_visibility_settings', JSON.stringify(data));
+            }
+          }
+        }
+      } catch (e) {}
     }
   }, []);
 
   useEffect(() => {
     loadVis();
-    const h = () => loadVis();
+    const h = () => {
+      try {
+        const saved = localStorage.getItem('module_visibility_settings');
+        if (saved) setModuleVis(JSON.parse(saved));
+      } catch (e) {}
+    };
     window.addEventListener('module_visibility_changed', h);
     return () => window.removeEventListener('module_visibility_changed', h);
   }, [loadVis]);

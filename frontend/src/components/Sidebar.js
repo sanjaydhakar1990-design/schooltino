@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   LayoutDashboard, Users, GraduationCap, CalendarCheck,
   Wallet, Settings, LogOut, X, Bus,
@@ -12,6 +12,8 @@ import {
   Tv, Target, Clipboard, BarChart3
 } from 'lucide-react';
 
+const API = (process.env.REACT_APP_BACKEND_URL || '');
+
 export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
@@ -19,24 +21,55 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleVisibility, setModuleVisibility] = useState({});
+  const apiFetched = useRef(false);
 
-  const loadModuleVisibility = useCallback(() => {
+  const loadModuleVisibility = useCallback(async () => {
     try {
       const saved = localStorage.getItem('module_visibility_settings');
-      if (saved) setModuleVisibility(JSON.parse(saved));
+      if (saved) {
+        setModuleVisibility(JSON.parse(saved));
+        return;
+      }
     } catch (e) {}
+    if (!apiFetched.current) {
+      apiFetched.current = true;
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const res = await fetch(`${API}/api/settings/module-visibility`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && Object.keys(data).length > 0) {
+              setModuleVisibility(data);
+              localStorage.setItem('module_visibility_settings', JSON.stringify(data));
+            }
+          }
+        }
+      } catch (e) {}
+    }
   }, []);
 
   useEffect(() => {
     loadModuleVisibility();
     const handleStorage = (e) => {
-      if (e.key === 'module_visibility_settings') loadModuleVisibility();
+      if (e.key === 'module_visibility_settings') {
+        try {
+          const saved = localStorage.getItem('module_visibility_settings');
+          if (saved) setModuleVisibility(JSON.parse(saved));
+        } catch (e) {}
+      }
     };
-    const handleCustomEvent = () => loadModuleVisibility();
+    const handleCustomEvent = () => {
+      try {
+        const saved = localStorage.getItem('module_visibility_settings');
+        if (saved) setModuleVisibility(JSON.parse(saved));
+      } catch (e) {}
+    };
     window.addEventListener('storage', handleStorage);
     window.addEventListener('module_visibility_changed', handleCustomEvent);
-    const interval = setInterval(loadModuleVisibility, 3000);
-    return () => { window.removeEventListener('storage', handleStorage); window.removeEventListener('module_visibility_changed', handleCustomEvent); clearInterval(interval); };
+    return () => { window.removeEventListener('storage', handleStorage); window.removeEventListener('module_visibility_changed', handleCustomEvent); };
   }, [loadModuleVisibility]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
