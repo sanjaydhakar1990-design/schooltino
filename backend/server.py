@@ -559,21 +559,21 @@ class StaffCreate(BaseModel):
 class StaffResponse(BaseModel):
     id: str
     name: str
-    employee_id: str
+    employee_id: Optional[str] = None
     school_id: str
     designation: str
     department: Optional[str] = None
     qualification: Optional[str] = None
     joining_date: Optional[str] = None
-    mobile: str
-    email: str
+    mobile: Optional[str] = None
+    email: Optional[str] = None
     address: Optional[str] = None
     salary: Optional[float] = None
     photo_url: Optional[str] = None
     is_active: bool = True
-    created_at: str
-    user_id: Optional[str] = None  # Linked user account
-    has_login: bool = False  # Whether staff has login credentials
+    created_at: Optional[str] = None
+    user_id: Optional[str] = None
+    has_login: bool = False
 
 # Unified Employee Model (Staff + User combined)
 class UnifiedEmployeeCreate(BaseModel):
@@ -1352,16 +1352,11 @@ async def get_registered_schools():
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
-    logger.info(f"Login attempt for email: '{credentials.email}', password length: {len(credentials.password)}, password repr: {repr(credentials.password)}")
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user:
-        logger.info(f"User not found for email: '{credentials.email}'")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    logger.info(f"User found: {user['email']}, stored hash: {user['password'][:20]}...")
-    check_result = bcrypt.checkpw(credentials.password.encode(), user["password"].encode())
-    logger.info(f"Password check result: {check_result}")
-    if not check_result:
+    if not bcrypt.checkpw(credentials.password.encode(), user["password"].encode()):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not user.get("is_active", True):
@@ -2501,7 +2496,10 @@ async def create_class(class_data: ClassCreate, current_user: dict = Depends(get
 @api_router.get("/classes", response_model=List[ClassResponse])
 async def get_classes(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     query = {}
-    if school_id:
+    user_school = current_user.get("school_id")
+    if user_school:
+        query["school_id"] = user_school
+    elif school_id:
         query["school_id"] = school_id
     classes = await db.classes.find(query, {"_id": 0}).to_list(100)
     return [ClassResponse(**c) for c in classes]
@@ -3003,17 +3001,15 @@ async def get_students(
     return [StudentResponse(**s) for s in students]
 
 
-# Simple search endpoints for accountant dashboard (no auth required)
 @api_router.get("/students/search")
-async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
-    """
-    Simple student search for accountant forms
-    """
+async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20, current_user: dict = Depends(require_staff)):
     if not q or len(q) < 2:
         return {"students": []}
     
+    user_school = current_user.get("school_id")
     query = {
         "status": {"$in": ["active", None]},
+        "school_id": user_school,
         "$or": [
             {"name": {"$regex": q, "$options": "i"}},
             {"student_id": {"$regex": q, "$options": "i"}},
@@ -3021,15 +3017,11 @@ async def search_students_simple(q: str, school_id: Optional[str] = None, limit:
         ]
     }
     
-    if school_id:
-        query["school_id"] = school_id
-    
     students = await db.students.find(
         query,
         {"_id": 0}
     ).limit(limit).to_list(limit)
     
-    # Remove password from results
     for s in students:
         s.pop("password", None)
     
@@ -3082,43 +3074,33 @@ async def delete_student(student_id: str, current_user: dict = Depends(get_curre
 
 
 @api_router.get("/staff/search")
-async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
-    """
-    Simple staff search for accountant forms
-    """
+async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: int = 20, current_user: dict = Depends(require_staff)):
     if not q or len(q) < 2:
         return {"staff": []}
     
+    user_school = current_user.get("school_id")
     query = {
+        "school_id": user_school,
         "$or": [
             {"name": {"$regex": q, "$options": "i"}},
             {"email": {"$regex": q, "$options": "i"}}
         ]
     }
     
-    if school_id:
-        query["school_id"] = school_id
-    
-    # Search in users collection (teachers, directors, accountants)
     users = await db.users.find(
         {**query, "role": {"$in": ["teacher", "director", "principal", "accountant", "clerk"]}},
         {"_id": 0}
     ).limit(limit).to_list(limit)
     
-    # Remove passwords from results
     for u in users:
         u.pop("password", None)
     
-    # Also search in staff collection
     staff = await db.staff.find(
         query,
         {"_id": 0}
     ).limit(limit).to_list(limit)
     
-    # Combine results
-    all_staff = users + staff
-    
-    return {"staff": all_staff}
+    return {"staff": users + staff}
 
 
 # ==================== STAFF ROUTES ====================
@@ -3904,9 +3886,12 @@ async def get_attendance(
     date: Optional[str] = None,
     from_date: Optional[str] = None,
     to_date: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_staff)
 ):
     query = {}
+    user_school = current_user.get("school_id")
+    if user_school:
+        query["school_id"] = user_school
     if class_id:
         query["class_id"] = class_id
     if student_id:
@@ -3928,17 +3913,18 @@ async def get_attendance(
 
 @api_router.get("/attendance/stats")
 async def get_attendance_stats(
-    school_id: str,
+    school_id: str = None,
     date: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_staff)
 ):
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    total_students = await db.students.count_documents({"school_id": school_id, "is_active": True})
-    present = await db.attendance.count_documents({"school_id": school_id, "date": date, "status": "present"})
-    absent = await db.attendance.count_documents({"school_id": school_id, "date": date, "status": "absent"})
-    late = await db.attendance.count_documents({"school_id": school_id, "date": date, "status": "late"})
+    user_school = current_user.get("school_id") or school_id
+    total_students = await db.students.count_documents({"school_id": user_school, "is_active": True})
+    present = await db.attendance.count_documents({"school_id": user_school, "date": date, "status": "present"})
+    absent = await db.attendance.count_documents({"school_id": user_school, "date": date, "status": "absent"})
+    late = await db.attendance.count_documents({"school_id": user_school, "date": date, "status": "late"})
     
     return {
         "date": date,
@@ -4310,10 +4296,10 @@ async def create_fee_plan(plan: FeePlanCreate, current_user: dict = Depends(get_
     return FeePlanResponse(**plan_data)
 
 @api_router.get("/fees/plans", response_model=List[FeePlanResponse])
-async def get_fee_plans(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_fee_plans(school_id: Optional[str] = None, current_user: dict = Depends(require_staff)):
+    user_school = current_user.get("school_id")
     query = {"is_active": True}
-    if school_id:
-        query["school_id"] = school_id
+    query["school_id"] = user_school or school_id
     plans = await db.fee_plans.find(query, {"_id": 0}).to_list(100)
     return [FeePlanResponse(**p) for p in plans]
 
@@ -4342,11 +4328,10 @@ async def get_fee_invoices(
     school_id: Optional[str] = None,
     student_id: Optional[str] = None,
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_staff)
 ):
-    query = {}
-    if school_id:
-        query["school_id"] = school_id
+    user_school = current_user.get("school_id")
+    query = {"school_id": user_school or school_id}
     if student_id:
         query["student_id"] = student_id
     if status:
@@ -4414,12 +4399,12 @@ async def get_fee_payments(
     return [FeePaymentResponse(**p) for p in payments]
 
 @api_router.get("/fees/stats")
-async def get_fee_stats(school_id: str, month: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_fee_stats(school_id: str, month: Optional[str] = None, current_user: dict = Depends(require_staff)):
+    user_school = current_user.get("school_id")
     if not month:
         month = datetime.now(timezone.utc).strftime("%Y-%m")
     
-    # Total expected
-    invoices = await db.fee_invoices.find({"school_id": school_id, "month": month}, {"_id": 0}).to_list(1000)
+    invoices = await db.fee_invoices.find({"school_id": user_school or school_id, "month": month}, {"_id": 0}).to_list(1000)
     total_expected = sum(i.get("final_amount", 0) for i in invoices)
     total_collected = sum(i.get("paid_amount", 0) for i in invoices)
     pending = total_expected - total_collected
@@ -4461,7 +4446,10 @@ async def get_notices(
     current_user: dict = Depends(get_current_user)
 ):
     query = {"is_active": True}
-    if school_id:
+    user_school = current_user.get("school_id")
+    if user_school:
+        query["school_id"] = user_school
+    elif school_id:
         query["school_id"] = school_id
     if priority:
         query["priority"] = priority
@@ -6857,9 +6845,10 @@ async def get_student_homework(current_user: dict = Depends(get_current_user)):
     return homework
 
 @api_router.get("/homework")
-async def get_homework(school_id: str, class_id: str = None, current_user: dict = Depends(get_current_user)):
+async def get_homework(school_id: str = None, class_id: str = None, current_user: dict = Depends(get_current_user)):
     """Get homework for teacher (by school and optional class filter)"""
-    query = {"school_id": school_id}
+    user_school = current_user.get("school_id")
+    query = {"school_id": user_school or school_id}
     if class_id:
         query["class_id"] = class_id
     homework = await db.homework.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
@@ -12171,9 +12160,10 @@ async def generate_receipt_no(school_id: str) -> str:
     return f"{prefix}-{str(count + 1).zfill(4)}"
 
 @api_router.get("/fee-structures")
-async def get_fee_structures(school_id: str, academic_year: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_fee_structures(school_id: str = None, academic_year: Optional[str] = None, current_user: dict = Depends(require_staff)):
     """Get all fee structures for a school, optionally filtered by academic year"""
-    query = {"school_id": school_id}
+    user_school = current_user.get("school_id")
+    query = {"school_id": user_school or school_id}
     if academic_year:
         query["academic_year"] = academic_year
     structures = await db.fee_structures_new.find(query, {"_id": 0}).to_list(100)
@@ -13137,10 +13127,11 @@ async def get_exam_schedules(school_id: str, class_id: Optional[str] = None, cur
     return exams
 
 @api_router.get("/marks")
-async def get_marks(school_id: str, class_id: str, exam_id: str, current_user: dict = Depends(get_current_user)):
+async def get_marks(school_id: str = None, class_id: str = "", exam_id: str = "", current_user: dict = Depends(require_staff)):
     """Get marks for a class and exam"""
+    user_school = current_user.get("school_id")
     marks = await db.marks.find({
-        "school_id": school_id,
+        "school_id": user_school or school_id,
         "class_id": class_id,
         "exam_id": exam_id
     }, {"_id": 0}).to_list(1000)
