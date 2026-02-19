@@ -1469,6 +1469,7 @@ async def create_user_account(user_data: UserCreate, current_user: dict = Depend
         "id": str(uuid.uuid4()),
         "email": user_data.email,
         "password": hashed_pw,
+        "plain_password": user_data.password,
         "name": user_data.name,
         "role": user_data.role,
         "mobile": user_data.mobile,
@@ -2641,6 +2642,7 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
         "status": status,
         "is_active": True,
         "password": hashed_pw,
+        "plain_password": temp_password,
         "password_changed": False,
         "admitted_by": current_user["id"],
         "admitted_at": datetime.now(timezone.utc).isoformat(),
@@ -2799,7 +2801,7 @@ async def student_change_password(student_id: str, old_password: str, new_passwo
     
     await db.students.update_one(
         {"student_id": student_id},
-        {"$set": {"password": new_hashed, "password_changed": True}}
+        {"$set": {"password": new_hashed, "plain_password": new_password, "password_changed": True}}
     )
     
     return {"message": "Password changed successfully"}
@@ -2946,6 +2948,7 @@ async def create_student(student: StudentCreate, current_user: dict = Depends(ge
         "status": "active",
         "is_active": True,
         "password": hashed_pw,
+        "plain_password": temp_password,
         "password_changed": False,
         "admitted_by": current_user["id"],
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -3304,6 +3307,7 @@ async def create_unified_employee(
             "email": employee.email,
             "mobile": employee.mobile,
             "password": hashed_password,
+            "plain_password": password,
             "role": role,
             "school_id": employee.school_id,
             "permissions": permissions,
@@ -3481,6 +3485,7 @@ async def update_employee(
             }
             if employee.password:
                 user_update["password"] = bcrypt.hashpw(employee.password.encode(), bcrypt.gensalt()).decode()
+                user_update["plain_password"] = employee.password
             
             await db.users.update_one(
                 {"id": existing["user_id"]},
@@ -3497,6 +3502,7 @@ async def update_employee(
                 "email": employee.email,
                 "mobile": employee.mobile,
                 "password": hashed_password,
+                "plain_password": password,
                 "role": role,
                 "school_id": employee.school_id,
                 "permissions": permissions,
@@ -3583,10 +3589,87 @@ async def reset_employee_password(
     hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
     await db.users.update_one(
         {"id": employee["user_id"]},
-        {"$set": {"password": hashed}}
+        {"$set": {"password": hashed, "plain_password": new_password}}
     )
     
     return {"message": f"Password reset for {employee['name']}", "employee_id": employee_id}
+
+@api_router.get("/admin/credentials")
+async def get_all_credentials(
+    type: Optional[str] = "all",
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Director views all staff and student login credentials"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can view credentials")
+    
+    school_id = current_user.get("school_id")
+    result = {"staff": [], "students": []}
+    
+    if type in ["all", "staff"]:
+        staff_users = await db.users.find(
+            {"school_id": school_id, "role": {"$ne": "director"}},
+            {"_id": 0, "id": 1, "name": 1, "email": 1, "mobile": 1, "role": 1, 
+             "plain_password": 1, "is_active": 1, "employee_id": 1, "created_at": 1}
+        ).to_list(500)
+        
+        for u in staff_users:
+            result["staff"].append({
+                "id": u.get("id"),
+                "name": u.get("name", ""),
+                "email": u.get("email", ""),
+                "mobile": u.get("mobile", ""),
+                "role": u.get("role", ""),
+                "employee_id": u.get("employee_id", ""),
+                "login_id": u.get("email", ""),
+                "password": u.get("plain_password", ""),
+                "is_active": u.get("is_active", True),
+                "created_at": u.get("created_at", "")
+            })
+    
+    if type in ["all", "students"]:
+        query = {"school_id": school_id, "is_active": {"$ne": False}}
+        if search:
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"student_id": {"$regex": search, "$options": "i"}}
+            ]
+        
+        students = await db.students.find(
+            query,
+            {"_id": 0, "id": 1, "name": 1, "student_id": 1, "class_id": 1,
+             "plain_password": 1, "mobile": 1, "father_name": 1, "mother_name": 1,
+             "is_active": 1, "status": 1, "created_at": 1}
+        ).to_list(1000)
+        
+        class_ids = list(set(s.get("class_id", "") for s in students if s.get("class_id")))
+        classes = {}
+        if class_ids:
+            class_docs = await db.classes.find(
+                {"id": {"$in": class_ids}},
+                {"_id": 0, "id": 1, "name": 1, "section": 1}
+            ).to_list(100)
+            classes = {c["id"]: f"{c.get('name', '')} {c.get('section', '')}".strip() for c in class_docs}
+        
+        for s in students:
+            result["students"].append({
+                "id": s.get("id"),
+                "name": s.get("name", ""),
+                "student_id": s.get("student_id", ""),
+                "class_name": classes.get(s.get("class_id", ""), ""),
+                "class_id": s.get("class_id", ""),
+                "login_id": s.get("student_id", ""),
+                "password": s.get("plain_password", ""),
+                "mobile": s.get("mobile", ""),
+                "father_name": s.get("father_name", ""),
+                "is_active": s.get("is_active", True),
+                "status": s.get("status", "active"),
+                "created_at": s.get("created_at", "")
+            })
+    
+    await log_audit(current_user["id"], "view_credentials", "admin", {"type": type})
+    return result
 
 @api_router.post("/employees/{employee_id}/toggle-login")
 async def toggle_employee_login(
@@ -9399,6 +9482,7 @@ async def change_password(
         {
             "$set": {
                 "password": hashed_pw,
+                "plain_password": new_password,
                 "password_change_required": False,
                 "password_changed_at": datetime.now(timezone.utc).isoformat()
             }

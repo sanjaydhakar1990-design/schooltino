@@ -9,7 +9,7 @@ import {
   Clock, Brain, ChevronLeft, ChevronRight,
   BookOpen, Video, MessageSquare, Calendar,
   Shield, FileText, Building, Search, Package,
-  Tv, Target, Clipboard, BarChart3
+  Tv, Target, Clipboard, BarChart3, Key
 } from 'lucide-react';
 
 const API = (process.env.REACT_APP_BACKEND_URL || '');
@@ -110,6 +110,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     { path: '/app/cctv', icon: Video, labelKey: 'cctv_integration', permKey: 'cctv', moduleKey: 'cctv' },
     { path: '/app/inventory', icon: Package, labelKey: 'inventory', permKey: 'settings', moduleKey: 'inventory' },
     { path: '/app/multi-branch', icon: Building, labelKey: 'multi_branch', directorOnly: true, moduleKey: 'multi_branch' },
+    { path: '/app/login-credentials', icon: Key, labelKey: 'login_credentials', directorOnly: true },
     { path: '/app/settings', icon: Settings, labelKey: 'settings', directorOnly: true },
   ];
 

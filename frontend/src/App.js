@@ -41,6 +41,7 @@ const CCTVPage = React.lazy(() => import('./pages/CCTVPage'));
 const InventoryPage = React.lazy(() => import('./pages/InventoryPage'));
 const MultiBranchPage = React.lazy(() => import('./pages/MultiBranchPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
+const LoginCredentialsPage = React.lazy(() => import('./pages/LoginCredentialsPage'));
 const SubscriptionPage = React.lazy(() => import('./pages/SubscriptionPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const SchoolFeedPage = React.lazy(() => import('./pages/SchoolFeedPage'));
@@ -175,6 +176,7 @@ function AppRoutes() {
         <Route path="multi-branch" element={<MultiBranchPage />} />
         <Route path="school-feed" element={<SchoolFeedPage />} />
         <Route path="leave" element={<LeaveManagement />} />
+        <Route path="login-credentials" element={<LoginCredentialsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="subscription" element={<SubscriptionPage />} />
         <Route path="profile" element={<ProfilePage />} />

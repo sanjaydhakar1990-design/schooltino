@@ -225,7 +225,7 @@ export default function TeachTinoLogin() {
                       value={loginForm.email}
                       onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                       placeholder="teacher@school.com"
-                      className="h-11 mt-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      className="h-11 mt-1 border-gray-200 bg-white text-gray-900 focus:border-blue-500 focus:ring-blue-500"
                       required
                     />
                   </div>
@@ -237,7 +237,7 @@ export default function TeachTinoLogin() {
                       value={loginForm.password}
                       onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                       placeholder={t('enter_password')}
-                      className="h-11 mt-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      className="h-11 mt-1 border-gray-200 bg-white text-gray-900 focus:border-blue-500 focus:ring-blue-500"
                       required
                     />
                   </div>

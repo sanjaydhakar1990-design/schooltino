@@ -427,12 +427,12 @@ export default function LoginPage() {
                       <form onSubmit={handleAdminLogin} className="space-y-4">
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('email')}</label>
-                          <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder={activeTab === 'teacher' ? 'teacher@school.com' : 'admin@school.com'} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                          <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder={activeTab === 'teacher' ? 'teacher@school.com' : 'admin@school.com'} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('password')}</label>
                           <div className="relative">
-                            <input name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange} placeholder={t('enter_password')} required className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                            <input name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange} placeholder={t('enter_password')} required className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
@@ -453,22 +453,22 @@ export default function LoginPage() {
                             <>
                               <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('student_id')}</label>
-                                <input name="student_id" value={studentForm.student_id} onChange={handleStudentChange} placeholder="STD-2025-XXXXXX" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                                <input name="student_id" value={studentForm.student_id} onChange={handleStudentChange} placeholder="STD-2025-XXXXXX" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                               </div>
                               <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('password')}</label>
-                                <input name="password" type="password" value={studentForm.password} onChange={handleStudentChange} placeholder={t('enter_password')} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                                <input name="password" type="password" value={studentForm.password} onChange={handleStudentChange} placeholder={t('enter_password')} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                               </div>
                             </>
                           ) : (
                             <>
                               <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mobile Number</label>
-                                <input name="mobile" value={studentForm.mobile} onChange={handleStudentChange} placeholder="Parent mobile number" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                                <input name="mobile" value={studentForm.mobile} onChange={handleStudentChange} placeholder="Parent mobile number" required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                               </div>
                               <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date of Birth</label>
-                                <input name="dob" type="date" value={studentForm.dob} onChange={handleStudentChange} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                                <input name="dob" type="date" value={studentForm.dob} onChange={handleStudentChange} required className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                               </div>
                             </>
                           )}

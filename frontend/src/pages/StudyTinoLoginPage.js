@@ -277,7 +277,7 @@ export default function StudyTinoLoginPage() {
                         value={form.student_id}
                         onChange={(e) => setForm({ ...form, student_id: e.target.value })}
                         placeholder="STU-2026-00001"
-                        className="pl-10 h-11 border-gray-200 focus:border-blue-500"
+                        className="pl-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export default function StudyTinoLoginPage() {
                         value={form.parent_id}
                         onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
                         placeholder="PAR-2026-00001"
-                        className="pl-10 h-11 border-gray-200 focus:border-blue-500"
+                        className="pl-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -308,7 +308,7 @@ export default function StudyTinoLoginPage() {
                         value={form.mobile}
                         onChange={(e) => setForm({ ...form, mobile: e.target.value })}
                         placeholder="9876543210"
-                        className="pl-10 h-11 border-gray-200 focus:border-blue-500"
+                        className="pl-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
                         maxLength={10}
                       />
                     </div>
@@ -324,7 +324,7 @@ export default function StudyTinoLoginPage() {
                       value={form.password}
                       onChange={(e) => setForm({ ...form, password: e.target.value })}
                       placeholder="••••••••"
-                      className="pl-10 pr-10 h-11 border-gray-200 focus:border-blue-500"
+                      className="pl-10 pr-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
                     />
                     <button
                       type="button"
