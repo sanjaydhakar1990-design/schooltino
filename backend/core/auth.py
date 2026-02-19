@@ -59,3 +59,16 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="Token has expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+async def require_staff(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") == "student":
+        raise HTTPException(status_code=403, detail="Access denied. Staff only.")
+    return current_user
+
+async def require_admin(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") in ("student", "parent"):
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    role = current_user.get("role", "")
+    if role not in ("director", "admin", "principal", "vice_principal", "accountant", "clerk", "manager"):
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    return current_user
