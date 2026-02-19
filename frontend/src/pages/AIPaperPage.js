@@ -256,9 +256,25 @@ export default function AIPaperPage() {
   const fetchChaptersFromAPI = useCallback(async (board, className, subject) => {
     const token = localStorage.getItem('token');
     const classNum = className.replace('Class ', '');
+    const apiBoard = (board === 'CBSE') ? 'NCERT' : board;
+    
+    try {
+      const response = await axios.get(`${API}/syllabus-chapters`, {
+        params: { class_num: classNum, subject, board: apiBoard },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        timeout: 8000
+      });
+      if (response.data?.chapters?.length > 0) {
+        return response.data.chapters.map((ch, idx) => ({
+          id: ch.id || `ch${idx + 1}`,
+          name: ch.name || ch.title || `Chapter ${idx + 1}`,
+          topics: ch.topics || [],
+          number: ch.number || idx + 1
+        }));
+      }
+    } catch (e) {}
     
     const endpoints = [];
-    
     if (board === 'MPBSE' || board === 'RBSE') {
       endpoints.push(`${API}/syllabus/${board.toLowerCase()}/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
       endpoints.push(`${API}/syllabus/ncert/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
@@ -267,44 +283,34 @@ export default function AIPaperPage() {
       endpoints.push(`${API}/syllabus/ncert/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
     }
     
-    if (board === 'MPBSE') {
-      endpoints.push(`${API}/mpbse/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
-    }
-    
     for (const endpoint of endpoints) {
       try {
         const response = await axios.get(endpoint, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           timeout: 8000
         });
-        
         if (response.data) {
           let chapters = [];
-          
           if (response.data.subjects) {
             const subjectData = response.data.subjects[subject] || Object.values(response.data.subjects)[0];
             if (subjectData?.chapters) {
               chapters = subjectData.chapters.map((ch, idx) => ({
                 id: ch.id || `ch${idx + 1}`,
                 name: ch.name || ch.title || `Chapter ${idx + 1}`,
+                topics: ch.topics || []
               }));
             }
           }
-          
           if (chapters.length === 0 && response.data.chapters) {
             chapters = response.data.chapters.map((ch, idx) => ({
               id: ch.id || `ch${idx + 1}`,
               name: ch.name || ch.title || `Chapter ${idx + 1}`,
+              topics: ch.topics || []
             }));
           }
-          
-          if (chapters.length > 0) {
-            return chapters;
-          }
+          if (chapters.length > 0) return chapters;
         }
-      } catch (e) {
-        // silently continue to next endpoint
-      }
+      } catch (e) {}
     }
     
     return [];

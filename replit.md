@@ -36,6 +36,7 @@ The design is heavily inspired by NextOS K-12, emphasizing simplicity and clarit
 - **Login Credentials Viewer**: Director-only access to view and reset employee and student login credentials.
 - **Security**: Settings page access restricted to director-level users.
 - **Module Management**: Enhanced with toggleable modules for Admissions CRM, Multi-Branch, and Front Office, controlling sidebar visibility and dashboard presence.
+- **Centralized Syllabus System**: MongoDB `syllabus_master` collection with 85 entries (67 NCERT: Nursery-Class 12, 18 MPBSE: Class 9-12). Per-school customization via `school_syllabus` collection. API endpoints: `/api/syllabus-chapters` and `/api/syllabus-subjects` with auth + school isolation. Linked to Homework (chapter/topic selection) and AI Paper Generator (chapters from DB, topics in prompt). All schools default to NCERT board.
 
 ### Feature Specifications
 - **Core Modules**: Approximately 25 modules across three portals.

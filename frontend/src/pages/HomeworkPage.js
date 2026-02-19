@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -29,24 +29,106 @@ const statusColors = {
 };
 
 export default function HomeworkPage() {
-  const { user } = useAuth();
+  const { user, schoolId } = useAuth();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('assign');
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedHomework, setSelectedHomework] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [syllabusChapters, setSyllabusChapters] = useState([]);
+  const [syllabusSubjects, setSyllabusSubjects] = useState([]);
+  const [chaptersLoading, setChaptersLoading] = useState(false);
+  const [homeworkLoading, setHomeworkLoading] = useState(false);
+  const [classes, setClasses] = useState([]);
 
-  const [homeworks, setHomeworks] = useState([
-    { id: 1, title: 'Chapter 5 - Linear Equations', subject: 'Mathematics', class: 'Class 10', description: 'Solve exercises 5.1 to 5.3 from textbook', dueDate: '2026-02-12', maxMarks: 20, attachments: true, createdAt: '2026-02-08', createdBy: 'Mr. Sharma' },
-    { id: 2, title: 'Essay - My Country', subject: 'English', class: 'Class 8', description: 'Write a 500 word essay on My Country', dueDate: '2026-02-14', maxMarks: 25, attachments: false, createdAt: '2026-02-07', createdBy: 'Mrs. Patel' },
-    { id: 3, title: 'Science Lab Report', subject: 'Science', class: 'Class 9', description: 'Write lab report for experiment on photosynthesis', dueDate: '2026-02-11', maxMarks: 15, attachments: true, createdAt: '2026-02-06', createdBy: 'Mr. Kumar' },
-    { id: 4, title: 'Hindi Grammar Exercises', subject: 'Hindi', class: 'Class 7', description: 'Complete Samas and Sandhi exercises from workbook', dueDate: '2026-02-10', maxMarks: 10, attachments: false, createdAt: '2026-02-05', createdBy: 'Mrs. Verma' },
-    { id: 5, title: 'History Map Work', subject: 'Social Science', class: 'Class 10', description: 'Mark important places of Indian independence movement', dueDate: '2026-02-15', maxMarks: 20, attachments: true, createdAt: '2026-02-09', createdBy: 'Mr. Singh' },
-  ]);
+  const [homeworks, setHomeworks] = useState([]);
 
   const [assignForm, setAssignForm] = useState({
-    title: '', subject: '', class: '', description: '', dueDate: '', maxMarks: '', attachments: false
+    title: '', subject: '', class: '', classNum: '', description: '', dueDate: '', maxMarks: '',
+    attachments: false, chapter: '', topic: '', board: 'NCERT', selectedTopics: []
   });
+
+  const fetchHomeworks = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/homework`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (Array.isArray(res.data)) {
+        setHomeworks(res.data.map(h => ({
+          ...h,
+          title: h.chapter || h.description?.substring(0, 40) || 'Homework',
+          class: h.class_id || '',
+          dueDate: h.due_date || '',
+          maxMarks: h.max_marks || 0,
+          createdAt: h.created_at?.split('T')[0] || '',
+          createdBy: h.assigned_by || ''
+        })));
+      }
+    } catch (e) {
+      console.log('Using local homework data');
+    }
+  }, [schoolId]);
+
+  const fetchClasses = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/classes?school_id=${schoolId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (Array.isArray(res.data)) setClasses(res.data);
+    } catch (e) {}
+  }, [schoolId]);
+
+  useEffect(() => {
+    fetchHomeworks();
+    fetchClasses();
+  }, [fetchHomeworks, fetchClasses]);
+
+  useEffect(() => {
+    if (!assignForm.classNum) return;
+    const loadSubjects = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API}/syllabus-subjects`, {
+          params: { class_num: assignForm.classNum, board: assignForm.board },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data?.subjects) {
+          setSyllabusSubjects(res.data.subjects);
+        }
+      } catch (e) {
+        setSyllabusSubjects([]);
+      }
+    };
+    loadSubjects();
+  }, [assignForm.classNum, assignForm.board]);
+
+  useEffect(() => {
+    if (!assignForm.classNum || !assignForm.subject) {
+      setSyllabusChapters([]);
+      return;
+    }
+    const loadChapters = async () => {
+      setChaptersLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API}/syllabus-chapters`, {
+          params: { class_num: assignForm.classNum, subject: assignForm.subject, board: assignForm.board },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data?.chapters) {
+          setSyllabusChapters(res.data.chapters);
+        } else {
+          setSyllabusChapters([]);
+        }
+      } catch (e) {
+        setSyllabusChapters([]);
+      }
+      setChaptersLoading(false);
+    };
+    loadChapters();
+  }, [assignForm.classNum, assignForm.subject, assignForm.board]);
 
   const [submissions, setSubmissions] = useState([
     { id: 1, homeworkId: 1, studentName: 'Aarav Gupta', rollNo: '01', status: 'Graded', submittedAt: '2026-02-10', marks: 18, feedback: 'Excellent work!' },
@@ -84,21 +166,36 @@ export default function HomeworkPage() {
     };
   };
 
-  const handleCreateHomework = () => {
-    if (!assignForm.title || !assignForm.subject || !assignForm.class) {
-      toast.error('Title, Subject and Class are required');
+  const handleCreateHomework = async () => {
+    if (!assignForm.subject || !assignForm.class) {
+      toast.error(t('subject') + ' & ' + t('class_section') + ' required');
       return;
     }
-    setHomeworks(prev => [...prev, {
-      id: Date.now(),
-      ...assignForm,
-      maxMarks: parseInt(assignForm.maxMarks) || 0,
-      createdAt: new Date().toISOString().split('T')[0],
-      createdBy: user?.name || 'Teacher'
-    }]);
-    toast.success('Homework assigned successfully!');
-    setShowAssignDialog(false);
-    setAssignForm({ title: '', subject: '', class: '', description: '', dueDate: '', maxMarks: '', attachments: false });
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        school_id: schoolId,
+        class_id: assignForm.class,
+        subject: assignForm.subject,
+        description: assignForm.description || assignForm.title,
+        due_date: assignForm.dueDate || null,
+        assigned_by: user?.name || user?.id || 'Teacher',
+        chapter: assignForm.chapter || assignForm.title,
+        topic: assignForm.topic || null,
+        board: assignForm.board,
+        chapter_number: syllabusChapters.find(c => c.name === assignForm.chapter)?.number || null,
+        syllabus_topics: assignForm.selectedTopics.length > 0 ? assignForm.selectedTopics : null
+      };
+      await axios.post(`${API}/homework`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(t('homework') + ' assigned!');
+      setShowAssignDialog(false);
+      setAssignForm({ title: '', subject: '', class: '', classNum: '', description: '', dueDate: '', maxMarks: '', attachments: false, chapter: '', topic: '', board: 'NCERT', selectedTopics: [] });
+      fetchHomeworks();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to assign homework');
+    }
   };
 
   const handleDeleteHomework = (id) => {
@@ -193,7 +290,7 @@ export default function HomeworkPage() {
                 className="pl-10"
               />
             </div>
-            <Button onClick={() => { setAssignForm({ title: '', subject: '', class: '', description: '', dueDate: '', maxMarks: '', attachments: false }); setShowAssignDialog(true); }} className="bg-teal-600 hover:bg-teal-700">
+            <Button onClick={() => { setAssignForm({ title: '', subject: '', class: '', classNum: '', description: '', dueDate: '', maxMarks: '', attachments: false, chapter: '', topic: '', board: 'NCERT', selectedTopics: [] }); setSyllabusChapters([]); setShowAssignDialog(true); }} className="bg-teal-600 hover:bg-teal-700">
               <Plus className="w-4 h-4 mr-2" /> {t('assign_homework')}
             </Button>
           </div>
@@ -540,41 +637,110 @@ export default function HomeworkPage() {
       </Tabs>
 
       <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t('assign_homework')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-teal-600" />
+              {t('assign_homework')}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>{t('title')} *</Label>
-              <Input value={assignForm.title} onChange={e => setAssignForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g., Chapter 5 Exercises" />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>{t('subject')} *</Label>
-                <select className="w-full border rounded-md p-2 text-sm" value={assignForm.subject} onChange={e => setAssignForm(f => ({ ...f, subject: e.target.value }))}>
-                  <option value="">{t('select')} {t('subject')}</option>
-                  <option value="Mathematics">Mathematics</option>
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                  <option value="Science">Science</option>
-                  <option value="Social Science">Social Science</option>
-                  <option value="Computer">Computer</option>
+                <Label>{t('class_section')} *</Label>
+                <select className="w-full border rounded-md p-2 text-sm" value={assignForm.class} onChange={e => {
+                  const val = e.target.value;
+                  const classNum = val.replace('Class ', '').replace(/\s.*/, '');
+                  setAssignForm(f => ({ ...f, class: val, classNum, subject: '', chapter: '', selectedTopics: [] }));
+                }}>
+                  <option value="">{t('select_class')}</option>
+                  {classes.length > 0 ? classes.map(c => (
+                    <option key={c.id} value={c.id}>{c.name} {c.section || ''}</option>
+                  )) : ['Nursery','LKG','UKG',...Array.from({length:12},(_,i)=>`Class ${i+1}`)].map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
                 </select>
               </div>
               <div>
-                <Label>{t('class_section')} *</Label>
-                <select className="w-full border rounded-md p-2 text-sm" value={assignForm.class} onChange={e => setAssignForm(f => ({ ...f, class: e.target.value }))}>
-                  <option value="">{t('select_class')}</option>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={`Class ${i + 1}`}>Class {i + 1}</option>
+                <Label>{t('subject')} *</Label>
+                <select className="w-full border rounded-md p-2 text-sm" value={assignForm.subject} onChange={e => {
+                  setAssignForm(f => ({ ...f, subject: e.target.value, chapter: '', selectedTopics: [] }));
+                }}>
+                  <option value="">{t('select')} {t('subject')}</option>
+                  {syllabusSubjects.length > 0 ? syllabusSubjects.map(s => (
+                    <option key={s.name} value={s.name}>{s.name} ({s.total_chapters} ch)</option>
+                  )) : ['Mathematics','English','Hindi','Science','Social Science','EVS'].map(s => (
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
             </div>
+
+            {assignForm.subject && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <Label className="text-blue-800 font-semibold flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4" /> {t('chapter') || 'Chapter'} ({assignForm.board})
+                </Label>
+                {chaptersLoading ? (
+                  <div className="flex items-center gap-2 text-blue-600 text-sm">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Loading syllabus...
+                  </div>
+                ) : syllabusChapters.length > 0 ? (
+                  <div className="space-y-2">
+                    <select className="w-full border border-blue-300 rounded-md p-2 text-sm bg-white" value={assignForm.chapter} onChange={e => {
+                      const ch = syllabusChapters.find(c => c.name === e.target.value);
+                      setAssignForm(f => ({ ...f, chapter: e.target.value, selectedTopics: [], topic: '' }));
+                    }}>
+                      <option value="">{t('select')} {t('chapter') || 'Chapter'}</option>
+                      {syllabusChapters.map((ch, i) => (
+                        <option key={i} value={ch.name}>{ch.number || i+1}. {ch.name}</option>
+                      ))}
+                    </select>
+
+                    {assignForm.chapter && (() => {
+                      const selectedCh = syllabusChapters.find(c => c.name === assignForm.chapter);
+                      const topics = selectedCh?.topics || [];
+                      if (topics.length === 0) return null;
+                      return (
+                        <div className="mt-2">
+                          <Label className="text-xs text-blue-700 mb-1 block">Topics:</Label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {topics.map((topic, ti) => (
+                              <button
+                                key={ti}
+                                type="button"
+                                onClick={() => {
+                                  setAssignForm(f => {
+                                    const sel = f.selectedTopics || [];
+                                    if (sel.includes(topic)) {
+                                      return { ...f, selectedTopics: sel.filter(t2 => t2 !== topic) };
+                                    }
+                                    return { ...f, selectedTopics: [...sel, topic] };
+                                  });
+                                }}
+                                className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                                  (assignForm.selectedTopics || []).includes(topic)
+                                    ? 'bg-teal-600 text-white border-teal-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'
+                                }`}
+                              >
+                                {topic}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <p className="text-xs text-blue-500">No chapters found for this combination</p>
+                )}
+              </div>
+            )}
+
             <div>
               <Label>{t('description')}</Label>
-              <Textarea value={assignForm.description} onChange={e => setAssignForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe the homework..." rows={3} />
+              <Textarea value={assignForm.description} onChange={e => setAssignForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe the homework..." rows={2} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -585,10 +751,6 @@ export default function HomeworkPage() {
                 <Label>{t('max_marks')}</Label>
                 <Input type="number" value={assignForm.maxMarks} onChange={e => setAssignForm(f => ({ ...f, maxMarks: e.target.value }))} placeholder="e.g., 20" />
               </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>{t('attachments')}</Label>
-              <Switch checked={assignForm.attachments} onCheckedChange={v => setAssignForm(f => ({ ...f, attachments: v }))} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => setShowAssignDialog(false)}>{t('cancel')}</Button>

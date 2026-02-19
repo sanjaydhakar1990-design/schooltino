@@ -823,6 +823,7 @@ class PaperGenerateRequest(BaseModel):
     class_name: str
     chapter: str
     chapters: Optional[List[str]] = None
+    syllabus_topics: Optional[List[str]] = None
     exam_name: Optional[str] = None
     difficulty: str
     question_types: List[str]
@@ -5109,11 +5110,20 @@ GENERATE THE PAPER NOW! Return ONLY the JSON object above.
 
         import httpx
         
+        topics_hint = ""
+        if request.syllabus_topics:
+            topics_hint = f"\nSpecific Topics to Cover: {', '.join(request.syllabus_topics)}"
+        
+        chapters_hint = ""
+        if request.chapters and len(request.chapters) > 0:
+            chapters_hint = f"\nChapters Included: {', '.join(request.chapters)}"
+        
         user_msg_text = f"""Generate a complete question paper with these EXACT requirements:
 
 Subject: {request.subject}
 Class: {request.class_name}  
-Chapter/Topic: {request.chapter}
+Chapter/Topic: {request.chapter}{chapters_hint}{topics_hint}
+Board: {request.board}
 Total Marks: {request.total_marks} (MUST BE EXACT - verify sum at end!)
 Language: {request.language}
 Difficulty: {request.difficulty}
@@ -6531,7 +6541,6 @@ async def get_teacher_syllabus(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/teacher/syllabus/{syllabus_id}")
 async def update_syllabus(syllabus_id: str, data: dict, current_user: dict = Depends(get_current_user)):
-    """Update syllabus progress"""
     result = await db.syllabus.update_one(
         {"id": syllabus_id},
         {"$set": {
@@ -6542,6 +6551,92 @@ async def update_syllabus(syllabus_id: str, data: dict, current_user: dict = Dep
         upsert=True
     )
     return {"message": "Syllabus updated", "id": syllabus_id}
+
+@api_router.get("/syllabus-chapters")
+async def get_syllabus_chapters_for_class(
+    class_num: str,
+    subject: str,
+    board: str = "NCERT",
+    school_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    user_school = current_user.get("school_id") or school_id
+    if user_school:
+        custom = await db.school_syllabus.find_one({
+            "school_id": user_school,
+            "board": board.upper(),
+            "class_num": class_num,
+            "subject": subject
+        }, {"_id": 0})
+        if custom and custom.get("chapters"):
+            return {
+                "board": board.upper(),
+                "class_num": class_num,
+                "subject": subject,
+                "chapters": custom["chapters"],
+                "source": "school_custom",
+                "book": custom.get("book", "")
+            }
+    
+    master = await db.syllabus_master.find_one({
+        "board": board.upper(),
+        "class_num": class_num,
+        "subject": subject
+    }, {"_id": 0})
+    
+    if master:
+        return {
+            "board": board.upper(),
+            "class_num": class_num,
+            "subject": subject,
+            "chapters": master.get("chapters", []),
+            "source": "default",
+            "book": master.get("book", ""),
+            "total_chapters": master.get("total_chapters", 0)
+        }
+    
+    return {
+        "board": board.upper(),
+        "class_num": class_num,
+        "subject": subject,
+        "chapters": [],
+        "source": "not_found"
+    }
+
+@api_router.get("/syllabus-subjects")
+async def get_syllabus_subjects_for_class(
+    class_num: str,
+    board: str = "NCERT",
+    current_user: dict = Depends(get_current_user)
+):
+    user_school = current_user.get("school_id")
+    result_map = {}
+    
+    master_subjects = await db.syllabus_master.find(
+        {"board": board.upper(), "class_num": class_num},
+        {"_id": 0, "subject": 1, "book": 1, "total_chapters": 1}
+    ).to_list(20)
+    for s in master_subjects:
+        result_map[s["subject"]] = {"name": s["subject"], "book": s.get("book", ""), "total_chapters": s.get("total_chapters", 0)}
+    
+    if user_school:
+        custom_subjects = await db.school_syllabus.find(
+            {"school_id": user_school, "board": board.upper(), "class_num": class_num},
+            {"_id": 0, "subject": 1, "book": 1, "chapters": 1}
+        ).to_list(20)
+        for s in custom_subjects:
+            result_map[s["subject"]] = {
+                "name": s["subject"],
+                "book": s.get("book", ""),
+                "total_chapters": len(s.get("chapters", [])),
+                "source": "school_custom"
+            }
+    
+    return {
+        "board": board.upper(),
+        "class_num": class_num,
+        "subjects": list(result_map.values())
+    }
 
 @api_router.get("/teacher/ai-daily-plan")
 async def get_ai_daily_plan(current_user: dict = Depends(get_current_user)):
@@ -6812,6 +6907,9 @@ class HomeworkCreate(BaseModel):
     assigned_date: Optional[str] = None
     chapter: Optional[str] = None
     topic: Optional[str] = None
+    board: Optional[str] = None
+    chapter_number: Optional[int] = None
+    syllabus_topics: Optional[List[str]] = None
 
 @api_router.post("/homework")
 async def create_homework(homework: HomeworkCreate, current_user: dict = Depends(get_current_user)):
