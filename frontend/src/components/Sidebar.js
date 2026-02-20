@@ -74,9 +74,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 
   const handleLogout = () => { logout(); navigate('/login'); };
   const isDirector = user?.role === 'director';
-  const permissions = user?.permissions || {};
-  const modulePermissions = user?.module_permissions || {};
-  const hasPermission = (k) => isDirector || permissions[k] === true;
+  const modulePermissions = user?.module_permissions || user?.permissions || {};
   const hasModulePermission = (moduleKey) => {
     if (isDirector) return true;
     if (!moduleKey) return true;
@@ -99,25 +97,25 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 
   const navItems = [
     { path: '/app/dashboard', icon: LayoutDashboard, labelKey: 'dashboard', moduleKey: 'dashboard' },
-    { path: '/app/students', icon: Users, labelKey: 'students', permKey: 'students', moduleKey: 'students' },
-    { path: '/app/staff', icon: Users, labelKey: 'staff_management', permKey: 'staff', moduleKey: 'staff' },
-    { path: '/app/classes', icon: GraduationCap, labelKey: 'classes', permKey: 'classes', moduleKey: 'classes' },
-    { path: '/app/attendance', icon: CalendarCheck, labelKey: 'attendance', permKey: 'attendance', moduleKey: 'attendance' },
-    { path: '/app/fees', icon: Wallet, labelKey: 'fee_management', permKey: 'fees', moduleKey: 'fee_management' },
-    { path: '/app/admissions', icon: Target, labelKey: 'admissions', permKey: 'students', moduleKey: 'admissions' },
-    { path: '/app/exams', icon: FileText, labelKey: 'exams_reports', permKey: 'attendance', moduleKey: 'exams_reports' },
-    { path: '/app/timetable', icon: Clock, labelKey: 'timetable', permKey: 'attendance', moduleKey: 'timetable' },
+    { path: '/app/students', icon: Users, labelKey: 'students', moduleKey: 'students' },
+    { path: '/app/staff', icon: Users, labelKey: 'staff_management', moduleKey: 'staff' },
+    { path: '/app/classes', icon: GraduationCap, labelKey: 'classes', moduleKey: 'classes' },
+    { path: '/app/attendance', icon: CalendarCheck, labelKey: 'attendance', moduleKey: 'attendance' },
+    { path: '/app/fees', icon: Wallet, labelKey: 'fee_management', moduleKey: 'fee_management' },
+    { path: '/app/admissions', icon: Target, labelKey: 'admissions', moduleKey: 'admissions' },
+    { path: '/app/exams', icon: FileText, labelKey: 'exams_reports', moduleKey: 'exams_reports' },
+    { path: '/app/timetable', icon: Clock, labelKey: 'timetable', moduleKey: 'timetable' },
     { path: '/app/library', icon: BookOpen, labelKey: 'digital_library', moduleKey: 'digital_library' },
     { path: '/app/homework', icon: Clipboard, labelKey: 'homework', moduleKey: 'homework' },
     { path: '/app/live-classes', icon: Tv, labelKey: 'live_classes', moduleKey: 'live_classes' },
-    { path: '/app/communication', icon: MessageSquare, labelKey: 'communication_hub', permKey: 'sms_center', moduleKey: 'communication_hub' },
-    { path: '/app/front-office', icon: Shield, labelKey: 'front_office', permKey: 'attendance', moduleKey: 'front_office' },
-    { path: '/app/transport', icon: Bus, labelKey: 'transport', permKey: 'attendance', moduleKey: 'transport' },
+    { path: '/app/communication', icon: MessageSquare, labelKey: 'communication_hub', moduleKey: 'communication_hub' },
+    { path: '/app/front-office', icon: Shield, labelKey: 'front_office', moduleKey: 'front_office' },
+    { path: '/app/transport', icon: Bus, labelKey: 'transport', moduleKey: 'transport' },
     { path: '/app/calendar', icon: Calendar, labelKey: 'calendar', moduleKey: 'calendar' },
-    { path: '/app/analytics', icon: BarChart3, labelKey: 'analytics', permKey: 'school_analytics', moduleKey: 'analytics' },
-    { path: '/app/ai-tools', icon: Brain, labelKey: 'ai_tools', permKey: 'ai_content', moduleKey: 'ai_tools' },
-    { path: '/app/cctv', icon: Video, labelKey: 'cctv_integration', permKey: 'cctv', moduleKey: 'cctv' },
-    { path: '/app/inventory', icon: Package, labelKey: 'inventory', permKey: 'settings', moduleKey: 'inventory' },
+    { path: '/app/analytics', icon: BarChart3, labelKey: 'analytics', moduleKey: 'analytics' },
+    { path: '/app/ai-tools', icon: Brain, labelKey: 'ai_tools', moduleKey: 'ai_tools' },
+    { path: '/app/cctv', icon: Video, labelKey: 'cctv_integration', moduleKey: 'cctv' },
+    { path: '/app/inventory', icon: Package, labelKey: 'inventory', moduleKey: 'inventory' },
     { path: '/app/multi-branch', icon: Building, labelKey: 'multi_branch', directorOnly: true, moduleKey: 'multi_branch' },
     { path: '/app/login-credentials', icon: Key, labelKey: 'login_credentials', directorOnly: true },
     { path: '/app/settings', icon: Settings, labelKey: 'settings', directorOnly: true },
@@ -125,7 +123,6 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 
   const filteredItems = navItems.filter(item => {
     if (item.directorOnly && !isDirector) return false;
-    if (item.permKey && !hasPermission(item.permKey)) return false;
     if (!isModuleEnabled(item.moduleKey)) return false;
     if (!hasModulePermission(item.moduleKey)) return false;
     if (searchQuery) return t(item.labelKey).toLowerCase().includes(searchQuery.toLowerCase());

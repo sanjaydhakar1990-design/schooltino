@@ -26,88 +26,124 @@ import DocumentUpload from '../components/DocumentUpload';
 
 const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
-// Default permissions for quick selection
 const PERMISSION_PRESETS = {
   full_access: {
-    label: "🔓 Full Access (Director)",
+    label: "🔓 Full Access",
     description: "Sabhi modules ka access",
-    permissions: { 
-      dashboard: true, students: true, attendance: true, fees: true, 
-      staff: true, reports: true, settings: true, user_management: true,
-      ai_tools: true, notices: true, transport: true,
-      calendar: true
+    permissions: {
+      dashboard: true, students: true, staff: true, classes: true,
+      attendance: true, timetable: true, exams_reports: true, homework: true,
+      syllabus_tracking: true, digital_library: true, live_classes: true,
+      fee_management: true, admissions: true, communication_hub: true,
+      front_office: true, transport: true, inventory: true, cctv: true,
+      calendar: true, ai_tools: true, analytics: true, student_leave: true,
+      multi_branch: true
     }
   },
   principal: {
     label: "👨‍💼 Principal",
-    description: "User management chhodke sab",
-    permissions: { 
-      dashboard: true, students: true, attendance: true, fees: true, 
-      staff: true, reports: true, settings: false, user_management: false,
-      ai_tools: true, notices: true, transport: true,
-      calendar: true
+    description: "Settings & multi-branch chhodke sab",
+    permissions: {
+      dashboard: true, students: true, staff: true, classes: true,
+      attendance: true, timetable: true, exams_reports: true, homework: true,
+      syllabus_tracking: true, digital_library: true, live_classes: true,
+      fee_management: true, admissions: true, communication_hub: true,
+      front_office: true, transport: true, inventory: true, cctv: true,
+      calendar: true, ai_tools: true, analytics: true, student_leave: true,
+      multi_branch: false
     }
   },
   teacher: {
     label: "👨‍🏫 Teacher",
-    description: "Students aur attendance manage",
-    permissions: { 
-      dashboard: true, students: true, attendance: true, reports: false, 
-      settings: false, fees: false, staff: false, user_management: false,
-      ai_tools: true, notices: true, transport: false,
-      calendar: true
+    description: "Teaching related modules",
+    permissions: {
+      dashboard: true, students: true, staff: false, classes: true,
+      attendance: true, timetable: true, exams_reports: true, homework: true,
+      syllabus_tracking: true, digital_library: true, live_classes: true,
+      fee_management: false, admissions: false, communication_hub: true,
+      front_office: false, transport: false, inventory: false, cctv: false,
+      calendar: true, ai_tools: true, analytics: false, student_leave: true,
+      multi_branch: false
     }
   },
   accountant: {
     label: "💰 Accountant",
-    description: "Fees aur cash collection",
-    permissions: { 
-      dashboard: true, fees: true, reports: true, students: true, 
-      attendance: false, settings: false, staff: false, user_management: false,
-      ai_tools: false, notices: true, transport: false,
-      calendar: false
+    description: "Fees, finance & reports",
+    permissions: {
+      dashboard: true, students: true, staff: false, classes: false,
+      attendance: false, timetable: false, exams_reports: false, homework: false,
+      syllabus_tracking: false, digital_library: false, live_classes: false,
+      fee_management: true, admissions: false, communication_hub: false,
+      front_office: false, transport: true, inventory: true, cctv: false,
+      calendar: false, ai_tools: false, analytics: true, student_leave: false,
+      multi_branch: false
     }
   },
   front_office: {
     label: "🏢 Front Office",
-    description: "Basic student info aur notices",
-    permissions: { 
-      dashboard: true, students: true, attendance: false, fees: false, 
-      reports: false, settings: false, staff: false, user_management: false,
-      ai_tools: false, notices: true, transport: false,
-      calendar: true
+    description: "Admissions, visitors & student info",
+    permissions: {
+      dashboard: true, students: true, staff: false, classes: true,
+      attendance: true, timetable: false, exams_reports: false, homework: false,
+      syllabus_tracking: false, digital_library: false, live_classes: false,
+      fee_management: false, admissions: true, communication_hub: true,
+      front_office: true, transport: false, inventory: false, cctv: false,
+      calendar: false, ai_tools: false, analytics: false, student_leave: false,
+      multi_branch: false
     }
   },
   transport_incharge: {
-    label: "🚌 Transport Incharge",
+    label: "🚌 Transport",
     description: "Transport management",
-    permissions: { 
-      dashboard: true, transport: true, students: true, attendance: false,
-      fees: false, reports: false, settings: false, staff: false,
-      ai_tools: false, notices: true
+    permissions: {
+      dashboard: true, students: true, staff: false, classes: false,
+      attendance: false, timetable: false, exams_reports: false, homework: false,
+      syllabus_tracking: false, digital_library: false, live_classes: false,
+      fee_management: false, admissions: false, communication_hub: false,
+      front_office: false, transport: true, inventory: false, cctv: false,
+      calendar: false, ai_tools: false, analytics: false, student_leave: false,
+      multi_branch: false
     }
   },
   view_only: {
     label: "👁️ View Only",
     description: "Sirf dekhne ka access",
-    permissions: { dashboard: true }
+    permissions: {
+      dashboard: true, students: false, staff: false, classes: false,
+      attendance: false, timetable: false, exams_reports: false, homework: false,
+      syllabus_tracking: false, digital_library: false, live_classes: false,
+      fee_management: false, admissions: false, communication_hub: false,
+      front_office: false, transport: false, inventory: false, cctv: false,
+      calendar: false, ai_tools: false, analytics: false, student_leave: false,
+      multi_branch: false
+    }
   }
 };
 
-// All available permissions with descriptions
 const ALL_PERMISSIONS = {
   dashboard: { label: "Dashboard", icon: "📊" },
   students: { label: "Students", icon: "👨‍🎓" },
+  staff: { label: "Staff", icon: "👥" },
+  classes: { label: "Classes", icon: "🏫" },
   attendance: { label: "Attendance", icon: "✅" },
-  fees: { label: "Fees Management", icon: "💰" },
-  staff: { label: "Staff Management", icon: "👥" },
-  reports: { label: "Reports", icon: "📈" },
-  settings: { label: "School Settings", icon: "⚙️" },
-  user_management: { label: "User Management", icon: "🔐" },
-  ai_tools: { label: "AI Tools", icon: "🤖" },
-  notices: { label: "Notices", icon: "📢" },
+  timetable: { label: "Timetable", icon: "🕐" },
+  exams_reports: { label: "Exams & Reports", icon: "📝" },
+  homework: { label: "Homework", icon: "📋" },
+  syllabus_tracking: { label: "Syllabus", icon: "📖" },
+  student_leave: { label: "Student Leave", icon: "🏖️" },
+  digital_library: { label: "Library", icon: "📚" },
+  live_classes: { label: "Live Classes", icon: "📺" },
+  fee_management: { label: "Fees", icon: "💰" },
+  admissions: { label: "Admissions", icon: "🎯" },
+  communication_hub: { label: "Communication", icon: "💬" },
+  front_office: { label: "Front Office", icon: "🏢" },
   transport: { label: "Transport", icon: "🚌" },
-  calendar: { label: "Calendar", icon: "📅" }
+  inventory: { label: "Inventory", icon: "📦" },
+  cctv: { label: "CCTV", icon: "📹" },
+  calendar: { label: "Calendar", icon: "📅" },
+  ai_tools: { label: "AI Tools", icon: "🤖" },
+  analytics: { label: "Analytics", icon: "📈" },
+  multi_branch: { label: "Multi-Branch", icon: "🏗️" },
 };
 
 export default function EmployeeManagementPage() {
@@ -215,89 +251,12 @@ export default function EmployeeManagementPage() {
   const [resetPasswordEmployee, setResetPasswordEmployee] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [resettingPassword, setResettingPassword] = useState(false);
-  const [modulePermsData, setModulePermsData] = useState({});
-  const [modulePermsDefaults, setModulePermsDefaults] = useState({});
-  const [savingModulePerms, setSavingModulePerms] = useState(null);
-
-  const MODULE_LABELS = {
-    dashboard: 'Dashboard', students: 'Students', staff: 'Staff', classes: 'Classes',
-    attendance: 'Attendance', timetable: 'Timetable', exams_reports: 'Exams & Reports',
-    homework: 'Homework', syllabus_tracking: 'Syllabus', digital_library: 'Library',
-    live_classes: 'Live Classes', fee_management: 'Fees', admissions: 'Admissions',
-    communication_hub: 'Communication', front_office: 'Front Office', transport: 'Transport',
-    inventory: 'Inventory', cctv: 'CCTV', calendar: 'Calendar', ai_tools: 'AI Tools',
-    analytics: 'Analytics', multi_branch: 'Multi-Branch', student_leave: 'Student Leave'
-  };
-
-  const MODULE_GROUPS = [
-    { label: 'Teaching', keys: ['attendance', 'homework', 'timetable', 'exams_reports', 'classes', 'live_classes', 'syllabus_tracking', 'student_leave'] },
-    { label: 'Admin', keys: ['students', 'staff', 'fee_management', 'admissions', 'communication_hub', 'front_office', 'transport', 'inventory'] },
-    { label: 'Others', keys: ['dashboard', 'digital_library', 'calendar', 'ai_tools', 'analytics', 'cctv', 'multi_branch'] }
-  ];
-
-  const fetchModulePermsDefaults = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/api/module-permissions/defaults`, { headers: { Authorization: `Bearer ${token}` } });
-      setModulePermsDefaults(res.data || {});
-    } catch (e) {}
-  };
-
-  const fetchStaffModulePerms = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/api/staff/module-permissions`, { headers: { Authorization: `Bearer ${token}` } });
-      const map = {};
-      (res.data || []).forEach(s => { map[s.id] = { perms: s.module_permissions, is_custom: s.is_custom }; });
-      setModulePermsData(map);
-    } catch (e) {}
-  };
-
-  const toggleModulePerm = (empId, moduleKey) => {
-    setModulePermsData(prev => {
-      const current = prev[empId]?.perms || {};
-      const emp = employees.find(e => e.id === empId);
-      const role = emp?.role || 'teacher';
-      const defaults = modulePermsDefaults[role] || modulePermsDefaults['teacher'] || {};
-      const merged = { ...defaults, ...current };
-      const updated = { ...merged, [moduleKey]: !merged[moduleKey] };
-      return { ...prev, [empId]: { perms: updated, is_custom: true } };
-    });
-  };
-
-  const saveModulePerms = async (empId) => {
-    setSavingModulePerms(empId);
-    try {
-      const token = localStorage.getItem('token');
-      const perms = modulePermsData[empId]?.perms || {};
-      await axios.put(`${API}/api/staff/${empId}/module-permissions`, { module_permissions: perms }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success(t('saved'));
-    } catch (e) {
-      toast.error('Failed to save');
-    }
-    setSavingModulePerms(null);
-  };
-
-  const resetModulePerms = async (empId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.post(`${API}/api/staff/${empId}/reset-module-permissions`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setModulePermsData(prev => ({ ...prev, [empId]: { perms: res.data.module_permissions, is_custom: false } }));
-      toast.success('Reset to defaults');
-    } catch (e) {
-      toast.error('Failed to reset');
-    }
-  };
 
   useEffect(() => {
     if (schoolId) {
       fetchEmployees();
       fetchDesignations();
       fetchSchool();
-      if (user?.role === 'director') {
-        fetchModulePermsDefaults();
-        fetchStaffModulePerms();
-      }
     }
   }, [schoolId]);
 
@@ -759,10 +718,14 @@ export default function EmployeeManagementPage() {
   const saveQuickPermissions = async (empId, permissions) => {
     try {
       const token = localStorage.getItem('token');
+      await axios.put(`${API}/api/staff/${empId}/module-permissions`, 
+        { module_permissions: permissions },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       await axios.put(`${API}/api/employees/${empId}/permissions`, 
         permissions,
         { headers: { Authorization: `Bearer ${token}` } }
-      );
+      ).catch(() => {});
       toast.success('Permissions updated!');
       fetchEmployees();
     } catch (error) {
@@ -779,7 +742,8 @@ export default function EmployeeManagementPage() {
   };
 
   const toggleSinglePermission = (empId, permKey, currentVal) => {
-    const current = permissionsData[empId] || employees.find(e => e.id === empId)?.permissions || {};
+    const emp = employees.find(e => e.id === empId);
+    const current = permissionsData[empId] || emp?.module_permissions || emp?.permissions || {};
     const updated = { ...current, [permKey]: !currentVal };
     setPermissionsData(prev => ({ ...prev, [empId]: updated }));
     saveQuickPermissions(empId, updated);
@@ -1178,7 +1142,7 @@ export default function EmployeeManagementPage() {
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {Object.entries(ALL_PERMISSIONS).map(([key, perm]) => {
-                      const profilePerms = permissionsData[selectedProfile.id] || selectedProfile.permissions || {};
+                      const profilePerms = permissionsData[selectedProfile.id] || selectedProfile.module_permissions || selectedProfile.permissions || {};
                       const isOn = profilePerms[key] || false;
                       return (
                         <button
@@ -1198,47 +1162,6 @@ export default function EmployeeManagementPage() {
                   </div>
                 </div>
 
-                {user?.role === 'director' && (
-                <div className="bg-white rounded-xl p-4 border border-blue-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-blue-800 flex items-center gap-2 text-sm">
-                      <Shield className="w-4 h-4" /> Module Access
-                    </h4>
-                    <div className="flex gap-1.5">
-                      {modulePermsData[selectedProfile.id]?.is_custom && (
-                        <button onClick={() => resetModulePerms(selectedProfile.id)} className="px-2 py-1 text-[10px] rounded border border-orange-200 text-orange-600 hover:bg-orange-50">Reset Defaults</button>
-                      )}
-                      <button onClick={() => saveModulePerms(selectedProfile.id)} disabled={savingModulePerms === selectedProfile.id} className="px-2 py-1 text-[10px] rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1">
-                        {savingModulePerms === selectedProfile.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />} Save
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-gray-400 mb-2">
-                    {modulePermsData[selectedProfile.id]?.is_custom ? '⚡ Custom permissions set' : `📋 Using ${selectedProfile.role || 'teacher'} defaults`}
-                  </p>
-                  {MODULE_GROUPS.map(group => {
-                    const role = selectedProfile.role || 'teacher';
-                    const defaults = modulePermsDefaults[role] || modulePermsDefaults['teacher'] || {};
-                    const empModPerms = modulePermsData[selectedProfile.id]?.perms || defaults;
-                    return (
-                      <div key={group.label} className="mb-2">
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">{group.label}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {group.keys.map(key => {
-                            const isOn = empModPerms[key] !== false && (empModPerms[key] === true || defaults[key] === true);
-                            return (
-                              <button key={key} onClick={() => toggleModulePerm(selectedProfile.id, key)} className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] border transition-all ${isOn ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100'}`}>
-                                {isOn ? <CheckCircle className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
-                                {MODULE_LABELS[key] || key}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                )}
               </div>
             </div>
           )}
@@ -1261,7 +1184,7 @@ export default function EmployeeManagementPage() {
             <div className="bg-white rounded-xl border p-8 text-center text-gray-500">{t('no_data')}</div>
           ) : (
             employees.map(emp => {
-              const empPerms = permissionsData[emp.id] || emp.permissions || {};
+              const empPerms = permissionsData[emp.id] || emp.module_permissions || emp.permissions || {};
               return (
                 <div key={emp.id} className="bg-white rounded-xl border shadow-sm p-4">
                   <div className="flex items-center justify-between flex-wrap gap-3 mb-3">

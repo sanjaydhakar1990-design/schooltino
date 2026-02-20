@@ -767,6 +767,7 @@ class UnifiedEmployeeResponse(BaseModel):
     user_id: Optional[str] = None
     role: Optional[str] = None
     permissions: Optional[Dict[str, bool]] = None
+    module_permissions: Optional[Dict[str, bool]] = None
     can_teach: bool = False
     plain_password: Optional[str] = None
 
@@ -1938,43 +1939,61 @@ async def get_all_staff_module_permissions(current_user: dict = Depends(get_curr
         })
     return result
 
-@api_router.put("/staff/{user_id}/module-permissions")
-async def update_staff_module_permissions(user_id: str, perm_data: dict, current_user: dict = Depends(get_current_user)):
+@api_router.put("/staff/{staff_id}/module-permissions")
+async def update_staff_module_permissions(staff_id: str, perm_data: dict, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "director":
         raise HTTPException(status_code=403, detail="Only Director can update permissions")
-    user = await db.users.find_one({"id": user_id, "school_id": current_user.get("school_id")}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="Staff not found")
-    if user["role"] == "director":
-        raise HTTPException(status_code=400, detail="Cannot modify Director permissions")
+    school_id = current_user.get("school_id")
     module_perms = perm_data.get("module_permissions", {})
-    await db.users.update_one(
-        {"id": user_id},
-        {"$set": {
-            "module_permissions": module_perms,
-            "module_permissions_updated_at": datetime.now(timezone.utc).isoformat(),
-            "module_permissions_updated_by": current_user["id"]
-        }}
-    )
-    await log_audit(current_user["id"], "update_module_permissions", "users", {
-        "user_id": user_id, "user_name": user["name"], "module_permissions": module_perms
-    })
-    return {"message": "Module permissions updated", "user_id": user_id}
+    staff = await db.staff.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
+    if staff:
+        if staff.get("role") == "director":
+            raise HTTPException(status_code=400, detail="Cannot modify Director permissions")
+        await db.staff.update_one({"id": staff_id}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
+        if staff.get("user_id"):
+            await db.users.update_one({"id": staff["user_id"]}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
+        elif staff.get("email"):
+            await db.users.update_one({"email": staff["email"], "school_id": school_id}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
+        await log_audit(current_user["id"], "update_module_permissions", "staff", {
+            "staff_id": staff_id, "staff_name": staff.get("name"), "module_permissions": module_perms
+        })
+        return {"message": "Module permissions updated", "staff_id": staff_id}
+    user = await db.users.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
+    if user:
+        if user.get("role") == "director":
+            raise HTTPException(status_code=400, detail="Cannot modify Director permissions")
+        await db.users.update_one({"id": staff_id}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
+        if user.get("staff_id"):
+            await db.staff.update_one({"id": user["staff_id"]}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
+        await log_audit(current_user["id"], "update_module_permissions", "users", {
+            "user_id": staff_id, "user_name": user.get("name"), "module_permissions": module_perms
+        })
+        return {"message": "Module permissions updated", "user_id": staff_id}
+    raise HTTPException(status_code=404, detail="Staff not found")
 
-@api_router.post("/staff/{user_id}/reset-module-permissions")
-async def reset_staff_module_permissions(user_id: str, current_user: dict = Depends(get_current_user)):
+@api_router.post("/staff/{staff_id}/reset-module-permissions")
+async def reset_staff_module_permissions(staff_id: str, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "director":
         raise HTTPException(status_code=403, detail="Only Director can reset permissions")
-    user = await db.users.find_one({"id": user_id, "school_id": current_user.get("school_id")}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="Staff not found")
-    await db.users.update_one(
-        {"id": user_id},
-        {"$unset": {"module_permissions": "", "module_permissions_updated_at": "", "module_permissions_updated_by": ""}}
-    )
-    role = user.get("role", "teacher")
-    default_perms = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
-    return {"message": "Permissions reset to defaults", "module_permissions": default_perms}
+    school_id = current_user.get("school_id")
+    staff = await db.staff.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
+    role = "teacher"
+    if staff:
+        role = staff.get("role", "teacher")
+        default_perms = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
+        await db.staff.update_one({"id": staff_id}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
+        if staff.get("user_id"):
+            await db.users.update_one({"id": staff["user_id"]}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
+        elif staff.get("email"):
+            await db.users.update_one({"email": staff["email"], "school_id": school_id}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
+        return {"message": "Permissions reset to defaults", "module_permissions": default_perms}
+    user = await db.users.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
+    if user:
+        role = user.get("role", "teacher")
+        default_perms = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
+        await db.users.update_one({"id": staff_id}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
+        return {"message": "Permissions reset to defaults", "module_permissions": default_perms}
+    raise HTTPException(status_code=404, detail="Staff not found")
 
 @api_router.get("/module-permissions/defaults")
 async def get_module_permission_defaults(current_user: dict = Depends(get_current_user)):
@@ -3470,6 +3489,11 @@ async def create_unified_employee(
     if employee.custom_permissions:
         permissions.update(employee.custom_permissions)
     
+    # Set module permissions from defaults or custom
+    module_permissions = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {})).copy()
+    if employee.custom_permissions:
+        module_permissions.update(employee.custom_permissions)
+    
     staff_data = {
         "id": str(uuid.uuid4()),
         "employee_id": employee_id,
@@ -3521,6 +3545,7 @@ async def create_unified_employee(
         "user_id": None,
         "role": role,
         "permissions": permissions,
+        "module_permissions": module_permissions,
         "can_teach": employee.can_teach
     }
     
@@ -3541,6 +3566,7 @@ async def create_unified_employee(
             "role": role,
             "school_id": employee.school_id,
             "permissions": permissions,
+            "module_permissions": module_permissions,
             "is_active": True,
             "employee_id": employee_id,
             "staff_id": staff_data["id"],
@@ -3594,10 +3620,16 @@ async def get_employees(
     
     if current_user.get("role") == "director":
         for emp in employees:
-            if not emp.get("plain_password") and emp.get("email"):
-                user_rec = await db.users.find_one({"email": emp["email"]}, {"plain_password": 1})
-                if user_rec and user_rec.get("plain_password"):
-                    emp["plain_password"] = user_rec["plain_password"]
+            if emp.get("email"):
+                user_rec = await db.users.find_one({"email": emp["email"]}, {"plain_password": 1, "module_permissions": 1})
+                if user_rec:
+                    if not emp.get("plain_password") and user_rec.get("plain_password"):
+                        emp["plain_password"] = user_rec["plain_password"]
+                    if user_rec.get("module_permissions") and not emp.get("module_permissions"):
+                        emp["module_permissions"] = user_rec["module_permissions"]
+            if not emp.get("module_permissions"):
+                role = emp.get("role", "teacher")
+                emp["module_permissions"] = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
     else:
         for emp in employees:
             emp.pop("plain_password", None)
