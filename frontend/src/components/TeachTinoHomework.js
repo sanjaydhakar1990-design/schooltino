@@ -263,9 +263,10 @@ export default function TeachTinoHomework({ onBack }) {
                 <div key={hw.id} className="px-4 py-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="text-xs font-semibold px-2 py-0.5 bg-blue-50 text-blue-600 rounded">{hw.subject}</span>
                         {hw.chapter && <span className="text-[10px] text-gray-400">{hw.chapter}</span>}
+                        {hw.auto_generated && <span className="text-[9px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded font-medium">Auto</span>}
                       </div>
                       <p className="text-sm text-gray-800">{hw.description}</p>
                       {hw.topic && <p className="text-[10px] text-gray-500 mt-0.5">Topic: {hw.topic}</p>}

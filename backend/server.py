@@ -6669,24 +6669,81 @@ async def get_teacher_dashboard(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/teacher/my-classes")
 async def get_my_classes(current_user: dict = Depends(get_current_user)):
-    """Get classes assigned to teacher"""
+    """Get classes assigned to teacher - includes own classes + substitute classes"""
     if current_user["role"] not in ["teacher", "principal", "vice_principal", "director"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     teacher_ids = await get_teacher_all_ids(current_user)
+    school_id = current_user.get("school_id")
     
-    classes = await db.classes.find(
+    own_classes = await db.classes.find(
         {"class_teacher_id": {"$in": teacher_ids}},
         {"_id": 0}
     ).to_list(20)
     
-    for cls in classes:
+    own_class_ids = set(c["id"] for c in own_classes)
+    
+    for cls in own_classes:
+        cls["is_class_teacher"] = True
+        cls["is_substitute"] = False
+        cls["can_edit_attendance"] = True
         cls["student_count"] = await db.students.count_documents({
             "class_id": cls["id"],
             "status": "active"
         })
     
-    return classes
+    sub_assignments = await db.substitute_assignments.find({
+        "substitute_teacher_id": {"$in": teacher_ids},
+        "school_id": school_id
+    }, {"_id": 0}).to_list(50)
+    
+    sub_class_ids = set()
+    for sa in sub_assignments:
+        cid = sa.get("class_id")
+        if cid and cid not in own_class_ids:
+            sub_class_ids.add(cid)
+    
+    if sub_class_ids:
+        sub_classes = await db.classes.find(
+            {"id": {"$in": list(sub_class_ids)}},
+            {"_id": 0}
+        ).to_list(20)
+        for cls in sub_classes:
+            cls["is_class_teacher"] = False
+            cls["is_substitute"] = True
+            cls["can_edit_attendance"] = True
+            cls["student_count"] = await db.students.count_documents({
+                "class_id": cls["id"],
+                "status": "active"
+            })
+            own_classes.append(cls)
+    
+    timetable_class_ids = set()
+    tt_slots = await db.timetables.find({
+        "school_id": school_id,
+        "teacher_id": {"$in": teacher_ids}
+    }, {"_id": 0, "class_id": 1}).to_list(200)
+    for s in tt_slots:
+        cid = s.get("class_id")
+        if cid and cid not in own_class_ids and cid not in sub_class_ids:
+            timetable_class_ids.add(cid)
+    
+    if timetable_class_ids:
+        tt_classes = await db.classes.find(
+            {"id": {"$in": list(timetable_class_ids)}},
+            {"_id": 0}
+        ).to_list(20)
+        for cls in tt_classes:
+            cls["is_class_teacher"] = False
+            cls["is_substitute"] = False
+            cls["can_edit_attendance"] = False
+            cls["student_count"] = await db.students.count_documents({
+                "class_id": cls["id"],
+                "status": "active"
+            })
+            own_classes.append(cls)
+    
+    return own_classes
 
 @api_router.get("/teacher/class/{class_id}/students")
 async def get_class_students(class_id: str, current_user: dict = Depends(require_staff)):
@@ -6961,7 +7018,7 @@ async def get_teacher_subjects(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/teacher/my-timetable")
 async def get_teacher_timetable(current_user: dict = Depends(get_current_user)):
-    """Get timetable for this teacher - all their periods across all classes"""
+    """Get timetable for this teacher - all their periods across all classes with time/duration"""
     teacher_ids = await get_teacher_all_ids(current_user)
     school_id = current_user.get("school_id")
     
@@ -6970,30 +7027,55 @@ async def get_teacher_timetable(current_user: dict = Depends(get_current_user)):
         "teacher_id": {"$in": teacher_ids}
     }, {"_id": 0}).to_list(200)
     
-    my_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
-        {"_id": 0, "id": 1, "name": 1, "section": 1}
-    ).to_list(20)
-    class_map = {c["id"]: f"{c.get('name', '')}{' - ' + c['section'] if c.get('section') else ''}" for c in my_classes}
-    
-    all_classes = set()
+    all_class_ids = set()
     for s in slots:
         cid = s.get("class_id")
-        if cid and cid not in class_map:
-            all_classes.add(cid)
-    if all_classes:
-        extra = await db.classes.find({"id": {"$in": list(all_classes)}}, {"_id": 0, "id": 1, "name": 1, "section": 1}).to_list(50)
-        for c in extra:
+        if cid:
+            all_class_ids.add(cid)
+    
+    class_map = {}
+    if all_class_ids:
+        all_cls = await db.classes.find({"id": {"$in": list(all_class_ids)}}, {"_id": 0, "id": 1, "name": 1, "section": 1}).to_list(50)
+        for c in all_cls:
             class_map[c["id"]] = f"{c.get('name', '')}{' - ' + c['section'] if c.get('section') else ''}"
+    
+    time_slots = await db.timetable_time_slots.find({"school_id": school_id}, {"_id": 0}).to_list(20)
+    time_map = {ts.get("period_id"): ts for ts in time_slots}
+    
+    from datetime import datetime as dt_cls
+    now = datetime.now(timezone.utc)
+    days_map = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    today_day = days_map[now.weekday()]
+    current_time_str = now.strftime("%H:%M")
     
     for s in slots:
         s["class_name"] = class_map.get(s.get("class_id"), s.get("class_id", ""))
-    
-    time_slots = await db.timetable_time_slots.find({"school_id": school_id}, {"_id": 0}).to_list(20)
+        ts = time_map.get(s.get("period_id"))
+        if ts:
+            s["start_time"] = ts.get("start_time", "")
+            s["end_time"] = ts.get("end_time", "")
+            try:
+                st = dt_cls.strptime(ts.get("start_time", "00:00"), "%H:%M")
+                et = dt_cls.strptime(ts.get("end_time", "00:00"), "%H:%M")
+                duration_mins = int((et - st).total_seconds() / 60)
+                s["duration_minutes"] = max(duration_mins, 0)
+            except:
+                s["duration_minutes"] = 0
+            s["is_current"] = (s.get("day") == today_day and 
+                             ts.get("start_time", "") <= current_time_str <= ts.get("end_time", ""))
+            s["is_upcoming"] = (s.get("day") == today_day and 
+                              ts.get("start_time", "") > current_time_str)
+        else:
+            s["start_time"] = ""
+            s["end_time"] = ""
+            s["duration_minutes"] = 0
+            s["is_current"] = False
+            s["is_upcoming"] = False
     
     return {
         "slots": slots,
-        "time_slots": sorted(time_slots, key=lambda x: x.get("period_id", 0)) if time_slots else []
+        "time_slots": sorted(time_slots, key=lambda x: x.get("period_id", 0)) if time_slots else [],
+        "today": today_day
     }
 
 @api_router.get("/teacher/my-students")

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -42,18 +42,26 @@ export default function TeachTinoSyllabus({ onBack }) {
 
   useEffect(() => { fetchData(); }, []);
 
+  const [timetableSlots, setTimetableSlots] = useState([]);
+
+  const ttSlotsRef = useRef([]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [classRes, subjectRes] = await Promise.allSettled([
+      const [classRes, subjectRes, ttRes] = await Promise.allSettled([
         axios.get(`${API}/teacher/my-classes`, { headers: getHeaders() }),
-        axios.get(`${API}/teacher/my-subjects`, { headers: getHeaders() })
+        axios.get(`${API}/teacher/my-subjects`, { headers: getHeaders() }),
+        axios.get(`${API}/teacher/my-timetable`, { headers: getHeaders() })
       ]);
       const cls = classRes.status === 'fulfilled' ? (Array.isArray(classRes.value.data) ? classRes.value.data : []) : [];
       setClasses(cls);
       if (subjectRes.status === 'fulfilled') {
         setAssignedSubjects(subjectRes.value.data?.assigned_subjects || []);
       }
+      const ttSlots = ttRes.status === 'fulfilled' ? (ttRes.value.data?.slots || []) : [];
+      setTimetableSlots(ttSlots);
+      ttSlotsRef.current = ttSlots;
       if (cls.length === 1) selectClass(cls[0]);
     } catch (e) {
       toast.error('Failed to load data');
@@ -68,6 +76,15 @@ export default function TeachTinoSyllabus({ onBack }) {
     return match ? match[1] : '1';
   };
 
+  const getClassSubjectsFromTimetable = (classId) => {
+    const slotsToUse = ttSlotsRef.current.length > 0 ? ttSlotsRef.current : timetableSlots;
+    return [...new Set(
+      slotsToUse
+        .filter(s => s.class_id === classId && s.subject)
+        .map(s => s.subject)
+    )];
+  };
+
   const selectClass = async (cls) => {
     setSelectedClass(cls);
     setSelectedSubject(null);
@@ -78,7 +95,14 @@ export default function TeachTinoSyllabus({ onBack }) {
       const classNum = getClassNum(cls.name || cls.class_name);
       const res = await axios.get(`${API}/syllabus-subjects?class_num=${classNum}&board=NCERT`, { headers: getHeaders() });
       let subjs = res.data?.subjects || [];
-      if (assignedSubjects.length > 0) {
+      
+      const ttSubjectsForClass = getClassSubjectsFromTimetable(cls.id);
+      if (ttSubjectsForClass.length > 0) {
+        const filtered = subjs.filter(s => ttSubjectsForClass.some(ts => 
+          s.name?.toLowerCase() === ts?.toLowerCase()
+        ));
+        if (filtered.length > 0) subjs = filtered;
+      } else if (assignedSubjects.length > 0) {
         const filtered = subjs.filter(s => assignedSubjects.some(as => 
           s.name?.toLowerCase() === as?.toLowerCase()
         ));
@@ -209,8 +233,9 @@ export default function TeachTinoSyllabus({ onBack }) {
           };
         });
 
+      const results = [];
       for (const ch of chaptersToSave) {
-        await axios.post(`${API}/syllabus-progress/update`, {
+        const res = await axios.post(`${API}/syllabus-progress/update`, {
           school_id: user?.school_id,
           class_id: selectedClass.id,
           class_name: `${selectedClass.name}${selectedClass.section ? ` - ${selectedClass.section}` : ''}`,
@@ -222,9 +247,20 @@ export default function TeachTinoSyllabus({ onBack }) {
           topics_covered: ch.topics_covered,
           notes: ch.notes
         }, { headers: getHeaders() });
+        results.push(res);
       }
 
-      toast.success('Syllabus progress saved!');
+      let totalAutoHw = 0;
+      for (const result of results) {
+        if (result?.data?.auto_homework_count) {
+          totalAutoHw += result.data.auto_homework_count;
+        }
+      }
+      if (totalAutoHw > 0) {
+        toast.success(`Progress saved! ${totalAutoHw} homework auto-assigned for taught topics.`);
+      } else {
+        toast.success('Syllabus progress saved!');
+      }
     } catch (error) {
       toast.error('Failed to save progress');
     } finally {

@@ -8,7 +8,7 @@ Syllabus Progress Tracking & AI Chapter Summary
 
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any, Union
 from datetime import datetime, timezone
 import uuid
 import os
@@ -36,7 +36,7 @@ class ChapterProgressUpdate(BaseModel):
     chapter_number: int
     chapter_name: str
     status: str  # not_started, in_progress, completed, skipped
-    topics_covered: Optional[List[str]] = []
+    topics_covered: Optional[List[Any]] = []
     notes: Optional[str] = None
 
 class ChapterSummaryRequest(BaseModel):
@@ -153,6 +153,42 @@ async def update_chapter_progress(
             teacher_name
         )
     
+    # Auto-assign homework for newly taught topics
+    auto_hw_count = 0
+    if progress.topics_covered:
+        for topic_item in progress.topics_covered:
+            topic_name = topic_item if isinstance(topic_item, str) else topic_item.get("name", "")
+            topic_status = "taught" if isinstance(topic_item, str) else topic_item.get("status", "taught")
+            
+            if topic_status == "taught" and topic_name:
+                existing_hw = await db.homework.find_one({
+                    "school_id": progress.school_id,
+                    "class_id": progress.class_id,
+                    "subject": progress.subject,
+                    "topic": topic_name,
+                    "auto_generated": True
+                })
+                if not existing_hw:
+                    hw_record = {
+                        "id": str(uuid.uuid4()),
+                        "school_id": progress.school_id,
+                        "class_id": progress.class_id,
+                        "subject": progress.subject,
+                        "chapter": progress.chapter_name,
+                        "topic": topic_name,
+                        "description": f"Revise and practice: {topic_name} (Chapter: {progress.chapter_name})",
+                        "assigned_by": teacher_name,
+                        "assigned_by_id": teacher_id,
+                        "assigned_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                        "due_date": "",
+                        "status": "pending",
+                        "auto_generated": True,
+                        "board": progress.board,
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.homework.insert_one(hw_record)
+                    auto_hw_count += 1
+    
     # AI Confirmation Message
     ai_message = ""
     if progress.status == "completed":
@@ -174,7 +210,8 @@ async def update_chapter_progress(
             "chapter": progress.chapter_name,
             "status": progress.status
         },
-        "notification_sent": progress.status == "completed"
+        "notification_sent": progress.status == "completed",
+        "auto_homework_count": auto_hw_count
     }
 
 
