@@ -3,10 +3,10 @@ set -e
 
 echo "=== Installing frontend dependencies ==="
 cd frontend
-NODE_ENV=development npm install --legacy-peer-deps
+npm install --legacy-peer-deps
 
 echo "=== Building frontend ==="
-npm run build
+CI=false npm run build
 
 echo "=== Installing backend dependencies ==="
 cd ../backend
