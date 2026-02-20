@@ -22,7 +22,7 @@ import {
   Send, CreditCard, Wallet, Phone, Lock, Home,
   Eye, EyeOff, Paperclip, Star, ClipboardList, MessageCircle, Users,
   Trophy, Activity, AlertOctagon, Award, Zap, Key, Edit, Mail, Shield,
-  ChevronLeft, ChevronFirst, ChevronLast,
+  ChevronLeft,
   ShoppingBag, Video, Rss, Heart, Share2, Play, Plus, ArrowUpRight, ArrowDownLeft, IndianRupee, Store
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,7 +30,6 @@ import AdmitCardSection from '../components/AdmitCardSection';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
-const ITEMS_PER_PAGE = 5;
 
 const SortIcon = () => (
   <span className="inline-flex flex-col ml-1 -space-y-1 opacity-40">
@@ -55,8 +54,6 @@ export default function StudyTinoDashboard() {
   const { user, logout, schoolData } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   
   const [profile, setProfile] = useState(null);
   const [notices, setNotices] = useState([]);
@@ -361,44 +358,17 @@ export default function StudyTinoDashboard() {
   ];
 
   const studentModuleCards = [
-    { id: 'studyai', name: 'StudyAI', desc: 'AI-powered study assistant for homework help & learning.', icon: Brain, image: '/images/studyai.png', gradient: 'from-violet-500 to-violet-600', lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => setShowAIHelper(true) },
-    { id: 'feetino', name: 'FeeTino', desc: 'Pay school fees online securely via Razorpay.', icon: Wallet, image: '/images/feetino.png', gradient: 'from-green-500 to-green-600', lightBg: 'bg-green-50', iconColor: 'text-green-600', action: () => setShowPaymentDialog(true) },
-    { id: 'classchat', name: 'ClassChat', desc: 'Real-time chat with classmates & group discussions.', icon: MessageCircle, image: '/images/classchat.png', gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => openClassChat() },
-    { id: 'admitcard', name: 'AdmitCard', desc: 'View & download exam admit cards instantly.', icon: Award, image: '/images/admitcard.png', gradient: 'from-amber-500 to-amber-600', lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => setShowAdmitCardDialog(true) },
-    { id: 'activities', name: 'Activities', desc: 'Track your extra-curricular activities & achievements.', icon: Trophy, image: '/images/activities.png', gradient: 'from-red-500 to-red-600', lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => openActivities() },
-    { id: 'wallet', name: 'My Wallet', desc: 'View balance, add money & track spending.', icon: IndianRupee, image: '/images/feetino.png', gradient: 'from-emerald-500 to-emerald-600', lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => openWallet() },
-    { id: 'liveclass', name: 'Live Class', desc: 'Join live classes, view schedule & recordings.', icon: Video, image: '/images/classtino.png', gradient: 'from-pink-500 to-pink-600', lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => openLiveClasses() },
+    { id: 'studyai', name: 'StudyAI', desc: 'AI-powered study assistant for homework help & learning.', icon: Brain, lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => setShowAIHelper(true) },
+    { id: 'feetino', name: 'FeeTino', desc: 'Pay school fees online securely via Razorpay.', icon: Wallet, lightBg: 'bg-green-50', iconColor: 'text-green-600', action: () => setShowPaymentDialog(true) },
+    { id: 'classchat', name: 'ClassChat', desc: 'Real-time chat with classmates & group discussions.', icon: MessageCircle, lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => openClassChat() },
+    { id: 'admitcard', name: 'AdmitCard', desc: 'View & download exam admit cards instantly.', icon: Award, lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => setShowAdmitCardDialog(true) },
+    { id: 'activities', name: 'Activities', desc: 'Track your extra-curricular activities & achievements.', icon: Trophy, lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => openActivities() },
+    { id: 'wallet', name: 'My Wallet', desc: 'View balance, add money & track spending.', icon: IndianRupee, lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => openWallet() },
+    { id: 'liveclass', name: 'Live Class', desc: 'Join live classes, view schedule & recordings.', icon: Video, lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => openLiveClasses() },
+    { id: 'complaint', name: 'Complaint', desc: 'Submit a complaint to school administration.', icon: AlertOctagon, lightBg: 'bg-orange-50', iconColor: 'text-orange-600', action: () => setShowComplaintDialog(true) },
+    { id: 'applyleave', name: 'Apply Leave', desc: 'Submit leave application for approval.', icon: CalendarDays, lightBg: 'bg-teal-50', iconColor: 'text-teal-600', action: () => setShowLeaveDialog(true) },
+    { id: 'myprofile', name: 'My Profile', desc: 'View & manage your profile details.', icon: User, lightBg: 'bg-slate-50', iconColor: 'text-slate-600', action: () => setShowProfileDialog(true) },
   ];
-
-  const quickModules = [
-    { icon: Award, label: 'Admit Card', desc: 'View/Download admit card', action: () => setShowAdmitCardDialog(true) },
-    { icon: Wallet, label: 'Pay Fees', desc: 'Online fee payment', action: () => setShowPaymentDialog(true) },
-    { icon: MessageCircle, label: 'Class Chat', desc: 'Chat with classmates', action: () => openClassChat() },
-    { icon: AlertOctagon, label: 'Complaint', desc: 'Submit a complaint', action: () => setShowComplaintDialog(true) },
-    { icon: Trophy, label: 'Activities', desc: 'My activities & awards', action: () => openActivities() },
-    { icon: CalendarDays, label: 'Apply Leave', desc: 'Submit leave application', action: () => setShowLeaveDialog(true) },
-    { icon: User, label: 'My Profile', desc: 'View profile details', action: () => setShowProfileDialog(true) },
-  ];
-
-  const filteredModules = quickModules.filter(m => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return m.label.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q);
-  });
-
-  const totalPages = Math.ceil(filteredModules.length / ITEMS_PER_PAGE);
-  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedModules = filteredModules.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisible = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
-    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 relative" data-testid="studytino-dashboard">
@@ -476,7 +446,7 @@ export default function StudyTinoDashboard() {
             <h2 className="text-xl font-bold text-gray-900">Key Features</h2>
             <p className="text-sm text-gray-500 mt-1">Powerful tools crafted to enhance your learning experience.</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {studentModuleCards.map((card) => (
               <div
                 key={card.id}
@@ -493,59 +463,6 @@ export default function StudyTinoDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="px-5 pt-5 pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Quick Actions</h2>
-                <p className="text-sm text-gray-500 mt-1">All available actions. Use the "Open" button to navigate.</p>
-              </div>
-              <div className="relative flex-shrink-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input type="text" placeholder="Search keyword" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 w-full sm:w-56 text-gray-700 bg-white" />
-              </div>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Module Name <SortIcon /></th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Description <SortIcon /></th>
-                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedModules.map((module, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <module.icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-800">{module.label}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 hidden sm:table-cell"><span className="text-sm text-gray-500">{module.desc}</span></td>
-                    <td className="px-5 py-3.5 text-right">
-                      <button onClick={module.action} className="px-5 py-1.5 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 transition-colors">Open</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="px-5 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-sm text-gray-500">Showing {startIdx + 1} to {Math.min(startIdx + ITEMS_PER_PAGE, filteredModules.length)} of {filteredModules.length}</p>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronFirst className="w-4 h-4" /></button>
-              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="w-4 h-4" /></button>
-              {getPageNumbers().map(page => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${currentPage === page ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>{page}</button>
-              ))}
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="w-4 h-4" /></button>
-              <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLast className="w-4 h-4" /></button>
-            </div>
-          </div>
-        </div>
 
         {homework.length > 0 && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
