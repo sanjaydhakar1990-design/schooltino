@@ -11223,6 +11223,7 @@ class OnlinePaymentCreate(BaseModel):
     payer_upi_id: Optional[str] = None
     payer_name: Optional[str] = None
     remarks: Optional[str] = None
+    screenshot_url: Optional[str] = None
 
 @api_router.get("/school/settings")
 async def get_school_settings(school_id: str, current_user: dict = Depends(get_current_user)):
@@ -11565,6 +11566,7 @@ async def record_parent_payment(payment: OnlinePaymentCreate, current_user: dict
         "payer_upi_id": payment.payer_upi_id,
         "payer_name": payment.payer_name or current_user.get("name"),
         "remarks": payment.remarks,
+        "screenshot_url": payment.screenshot_url,
         "status": "pending_verification",  # Admin needs to verify
         "paid_by": current_user["id"],
         "paid_by_name": current_user.get("name"),
