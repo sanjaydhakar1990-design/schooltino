@@ -27,6 +27,9 @@ import StaffPhotoUpload from '../components/StaffPhotoUpload';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 import TeachTinoAttendance from '../components/TeachTinoAttendance';
 import TeachTinoSyllabus from '../components/TeachTinoSyllabus';
+import TeachTinoHomework from '../components/TeachTinoHomework';
+import TeachTinoTimetable from '../components/TeachTinoTimetable';
+import TeachTinoStudents from '../components/TeachTinoStudents';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
@@ -214,16 +217,15 @@ export default function TeachTinoDashboard() {
 
   const teacherModules = [
     hasModule('attendance') && { id: 'attendance', name: 'SmartRoll', desc: 'Mark & track attendance', icon: ClipboardCheck, color: 'bg-orange-50 text-orange-600', action: () => setActiveTab('attendance') },
-    hasModule('syllabus_tracking') && { id: 'syllabus', name: 'Syllabus', desc: 'Track chapters', icon: BookOpen, color: 'bg-emerald-50 text-emerald-600', action: () => setActiveTab('syllabus') },
-    hasModule('homework') && { id: 'homework', name: 'Homework', desc: 'Assign & manage', icon: Clipboard, color: 'bg-teal-50 text-teal-600', action: () => navigate('/app/homework') },
-    hasModule('timetable') && { id: 'timetable', name: 'Timetable', desc: 'View schedule', icon: Clock, color: 'bg-cyan-50 text-cyan-600', action: () => navigate('/app/timetable') },
+    hasModule('syllabus_tracking') && { id: 'syllabus', name: 'Syllabus', desc: 'Track chapters & topics', icon: BookOpen, color: 'bg-emerald-50 text-emerald-600', action: () => setActiveTab('syllabus') },
+    hasModule('homework') && { id: 'homework', name: 'Homework', desc: 'Assign & manage', icon: Clipboard, color: 'bg-teal-50 text-teal-600', action: () => setActiveTab('homework') },
+    hasModule('timetable') && { id: 'timetable', name: 'Timetable', desc: 'My schedule', icon: Clock, color: 'bg-cyan-50 text-cyan-600', action: () => setActiveTab('timetable') },
+    hasModule('students') && { id: 'students', name: 'My Students', desc: 'Student profiles', icon: Users, color: 'bg-indigo-50 text-indigo-600', action: () => setActiveTab('students') },
     hasModule('exams_reports') && { id: 'exams', name: 'ExamTino', desc: 'Exams & results', icon: FileText, color: 'bg-purple-50 text-purple-600', action: () => navigate('/app/exams') },
     hasModule('live_classes') && { id: 'live', name: 'Live Class', desc: 'Online teaching', icon: Camera, color: 'bg-red-50 text-red-600', action: () => navigate('/app/live-classes') },
     hasModule('ai_tools') && { id: 'ai', name: 'PaperGenie', desc: 'AI question papers', icon: Sparkles, color: 'bg-pink-50 text-pink-600', action: () => navigate('/app/ai-tools') },
     hasModule('communication_hub') && { id: 'notice', name: 'NoticeBoard', desc: 'Send notices', icon: Bell, color: 'bg-blue-50 text-blue-600', action: () => setShowNoticeDialog(true) },
-    hasModule('students') && { id: 'students', name: 'My Students', desc: 'Student profiles', icon: Users, color: 'bg-indigo-50 text-indigo-600', action: () => navigate('/app/students') },
     { id: 'leave', name: 'Apply Leave', desc: 'Leave application', icon: CalendarDays, color: 'bg-rose-50 text-rose-600', action: () => setShowLeaveDialog(true) },
-    { id: 'tinoai', name: 'Tino AI', desc: 'AI assistant', icon: Brain, color: 'bg-violet-50 text-violet-600', action: () => navigate('/app/ai-tools') },
     { id: 'profile', name: 'My Profile', desc: 'Settings', icon: User, color: 'bg-gray-100 text-gray-600', action: () => setShowProfileDialog(true) },
   ].filter(Boolean);
 
@@ -271,6 +273,15 @@ export default function TeachTinoDashboard() {
         )}
         {activeTab === 'syllabus' && (
           <TeachTinoSyllabus onBack={() => setActiveTab('home')} />
+        )}
+        {activeTab === 'homework' && (
+          <TeachTinoHomework onBack={() => setActiveTab('home')} />
+        )}
+        {activeTab === 'timetable' && (
+          <TeachTinoTimetable onBack={() => setActiveTab('home')} />
+        )}
+        {activeTab === 'students' && (
+          <TeachTinoStudents onBack={() => setActiveTab('home')} />
         )}
         {activeTab === 'home' && <>
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-5 text-white">
@@ -328,13 +339,13 @@ export default function TeachTinoDashboard() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-semibold text-gray-800 text-sm">My Classes</h3>
-              <button onClick={() => navigate('/app/classes')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
+              <button onClick={() => setActiveTab('students')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
                 View All <ChevronRight className="w-3 h-3" />
               </button>
             </div>
             <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
               {myClasses.slice(0, 6).map((cls) => (
-                <div key={cls.id} onClick={() => navigate('/app/classes')} className="p-3 bg-green-50 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition-colors">
+                <div key={cls.id} onClick={() => setActiveTab('students')} className="p-3 bg-green-50 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition-colors">
                   <p className="font-semibold text-gray-800 text-sm">{cls.name || cls.class_name}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{cls.section ? `Section ${cls.section}` : ''}</p>
                   <div className="flex items-center gap-1 mt-1.5">
@@ -351,7 +362,7 @@ export default function TeachTinoDashboard() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-semibold text-gray-800 text-sm">Today's Schedule</h3>
-              <button onClick={() => navigate('/app/timetable')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
+              <button onClick={() => setActiveTab('timetable')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
                 Full Timetable <ChevronRight className="w-3 h-3" />
               </button>
             </div>

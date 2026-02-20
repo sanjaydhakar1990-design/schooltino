@@ -6924,6 +6924,112 @@ async def get_pending_count(current_user: dict = Depends(get_current_user)):
 
 # ==================== TEACHER SYLLABUS & AI DAILY PLAN ====================
 
+@api_router.get("/teacher/my-subjects")
+async def get_teacher_subjects(current_user: dict = Depends(get_current_user)):
+    """Get subjects assigned to this teacher across all their classes"""
+    teacher = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    assigned_subjects = teacher.get("assigned_subjects", []) if teacher else []
+    
+    teacher_ids = await get_teacher_all_ids(current_user)
+    school_id = current_user.get("school_id")
+    
+    my_classes = await db.classes.find(
+        {"class_teacher_id": {"$in": teacher_ids}},
+        {"_id": 0}
+    ).to_list(20)
+    
+    if not my_classes and current_user["role"] in ["principal", "vice_principal", "director"]:
+        my_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
+    
+    timetable_subjects = set()
+    if school_id:
+        class_ids = [c["id"] for c in my_classes]
+        slots = await db.timetables.find({
+            "school_id": school_id,
+            "teacher_id": {"$in": teacher_ids}
+        }, {"_id": 0, "subject": 1, "class_id": 1}).to_list(200)
+        for s in slots:
+            if s.get("subject"):
+                timetable_subjects.add(s["subject"])
+    
+    all_subjects = list(set(assigned_subjects) | timetable_subjects)
+    
+    return {
+        "assigned_subjects": all_subjects if all_subjects else [],
+        "classes": [{"id": c["id"], "name": c.get("name", ""), "section": c.get("section", "")} for c in my_classes]
+    }
+
+@api_router.get("/teacher/my-timetable")
+async def get_teacher_timetable(current_user: dict = Depends(get_current_user)):
+    """Get timetable for this teacher - all their periods across all classes"""
+    teacher_ids = await get_teacher_all_ids(current_user)
+    school_id = current_user.get("school_id")
+    
+    slots = await db.timetables.find({
+        "school_id": school_id,
+        "teacher_id": {"$in": teacher_ids}
+    }, {"_id": 0}).to_list(200)
+    
+    my_classes = await db.classes.find(
+        {"class_teacher_id": {"$in": teacher_ids}},
+        {"_id": 0, "id": 1, "name": 1, "section": 1}
+    ).to_list(20)
+    class_map = {c["id"]: f"{c.get('name', '')}{' - ' + c['section'] if c.get('section') else ''}" for c in my_classes}
+    
+    all_classes = set()
+    for s in slots:
+        cid = s.get("class_id")
+        if cid and cid not in class_map:
+            all_classes.add(cid)
+    if all_classes:
+        extra = await db.classes.find({"id": {"$in": list(all_classes)}}, {"_id": 0, "id": 1, "name": 1, "section": 1}).to_list(50)
+        for c in extra:
+            class_map[c["id"]] = f"{c.get('name', '')}{' - ' + c['section'] if c.get('section') else ''}"
+    
+    for s in slots:
+        s["class_name"] = class_map.get(s.get("class_id"), s.get("class_id", ""))
+    
+    time_slots = await db.timetable_time_slots.find({"school_id": school_id}, {"_id": 0}).to_list(20)
+    
+    return {
+        "slots": slots,
+        "time_slots": sorted(time_slots, key=lambda x: x.get("period_id", 0)) if time_slots else []
+    }
+
+@api_router.get("/teacher/my-students")
+async def get_teacher_my_students(class_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all students for teacher's classes"""
+    teacher_ids = await get_teacher_all_ids(current_user)
+    school_id = current_user.get("school_id")
+    
+    my_classes = await db.classes.find(
+        {"class_teacher_id": {"$in": teacher_ids}},
+        {"_id": 0}
+    ).to_list(20)
+    
+    if not my_classes and current_user["role"] in ["principal", "vice_principal", "director"]:
+        my_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
+    
+    class_ids = [c["id"] for c in my_classes]
+    if class_id and class_id in class_ids:
+        class_ids = [class_id]
+    
+    students = await db.students.find(
+        {"class_id": {"$in": class_ids}, "status": "active"},
+        {"_id": 0, "password": 0}
+    ).sort("name", 1).to_list(500)
+    
+    class_map = {c["id"]: {"name": c.get("name", ""), "section": c.get("section", "")} for c in my_classes}
+    for s in students:
+        cls_info = class_map.get(s.get("class_id"), {})
+        s["class_name"] = cls_info.get("name", "")
+        s["class_section"] = cls_info.get("section", "")
+    
+    return {
+        "students": students,
+        "classes": [{"id": c["id"], "name": c.get("name", ""), "section": c.get("section", ""), "student_count": len([s for s in students if s.get("class_id") == c["id"]])} for c in my_classes]
+    }
+
 @api_router.get("/teacher/syllabus")
 async def get_teacher_syllabus(current_user: dict = Depends(get_current_user)):
     """Get syllabus progress for teacher's classes"""

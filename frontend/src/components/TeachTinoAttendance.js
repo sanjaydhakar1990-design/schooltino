@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 import {
   Users, CheckCircle, XCircle, Clock, Loader2, AlertTriangle,
   ChevronLeft, ChevronDown, Save, CalendarDays
@@ -33,9 +32,8 @@ export default function TeachTinoAttendance({ onBack }) {
       const res = await axios.get(`${API}/teacher/my-classes`, { headers: getHeaders() });
       const cls = Array.isArray(res.data) ? res.data : [];
       setClasses(cls);
-      if (cls.length === 1) {
-        selectClass(cls[0]);
-      }
+      if (cls.length === 1) loadStudentsForDate(cls[0], date);
+      if (cls.length === 1) setSelectedClass(cls[0]);
     } catch (e) {
       toast.error('Failed to load classes');
     } finally {
@@ -43,38 +41,15 @@ export default function TeachTinoAttendance({ onBack }) {
     }
   };
 
-  const selectClass = async (cls) => {
+  const selectClass = (cls) => {
     setSelectedClass(cls);
     setShowClassPicker(false);
-    setLoading(true);
-    try {
-      const [studentsRes, attendanceRes] = await Promise.allSettled([
-        axios.get(`${API}/teacher/class/${cls.id}/students`, { headers: getHeaders() }),
-        axios.get(`${API}/attendance?class_id=${cls.id}&date=${date}`, { headers: getHeaders() })
-      ]);
-
-      const studentList = studentsRes.status === 'fulfilled' ? (Array.isArray(studentsRes.value.data) ? studentsRes.value.data : []) : [];
-      const existingAtt = attendanceRes.status === 'fulfilled' ? (Array.isArray(attendanceRes.value.data) ? attendanceRes.value.data : []) : [];
-
-      setStudents(studentList.sort((a, b) => (a.name || '').localeCompare(b.name || '')));
-      setExistingAttendance(existingAtt);
-
-      const map = {};
-      studentList.forEach(s => { map[s.id] = 'present'; });
-      existingAtt.forEach(a => { map[a.student_id] = a.status; });
-      setAttendanceMap(map);
-    } catch (e) {
-      toast.error('Failed to load students');
-    } finally {
-      setLoading(false);
-    }
+    loadStudentsForDate(cls, date);
   };
 
   const handleDateChange = (newDate) => {
     setDate(newDate);
-    if (selectedClass) {
-      loadStudentsForDate(selectedClass, newDate);
-    }
+    if (selectedClass) loadStudentsForDate(selectedClass, newDate);
   };
 
   const loadStudentsForDate = async (cls, dateStr) => {
@@ -102,12 +77,8 @@ export default function TeachTinoAttendance({ onBack }) {
     }
   };
 
-  const toggleStatus = (studentId) => {
-    setAttendanceMap(prev => {
-      const current = prev[studentId] || 'present';
-      const next = current === 'present' ? 'absent' : current === 'absent' ? 'late' : 'present';
-      return { ...prev, [studentId]: next };
-    });
+  const setStatus = (studentId, status) => {
+    setAttendanceMap(prev => ({ ...prev, [studentId]: status }));
   };
 
   const markAll = (status) => {
@@ -207,50 +178,71 @@ export default function TeachTinoAttendance({ onBack }) {
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1 px-2.5 py-1 bg-green-50 rounded-lg">
               <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-              <span className="text-xs font-medium text-green-700">{presentCount} Present</span>
+              <span className="text-xs font-medium text-green-700">{presentCount}P</span>
             </div>
             <div className="flex items-center gap-1 px-2.5 py-1 bg-red-50 rounded-lg">
               <XCircle className="w-3.5 h-3.5 text-red-500" />
-              <span className="text-xs font-medium text-red-700">{absentCount} Absent</span>
+              <span className="text-xs font-medium text-red-700">{absentCount}A</span>
             </div>
             <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 rounded-lg">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs font-medium text-amber-700">{lateCount} Late</span>
+              <span className="text-xs font-medium text-amber-700">{lateCount}L</span>
             </div>
             <div className="ml-auto flex gap-1">
-              <button onClick={() => markAll('present')} className="text-[10px] px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">All Present</button>
-              <button onClick={() => markAll('absent')} className="text-[10px] px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">All Absent</button>
+              <button onClick={() => markAll('present')} className="text-[10px] px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium">All P</button>
+              <button onClick={() => markAll('absent')} className="text-[10px] px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium">All A</button>
             </div>
           </div>
 
           {existingAttendance.length > 0 && (
             <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
               <CalendarDays className="w-4 h-4 text-blue-500" />
-              <span className="text-xs text-blue-600">Attendance already marked for this date - editing mode</span>
+              <span className="text-xs text-blue-600">Attendance already marked - editing mode</span>
             </div>
           )}
 
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-50">
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-0 px-3 py-2 bg-gray-50 border-b border-gray-100 text-[10px] font-semibold text-gray-500 uppercase">
+              <span className="w-8 text-center">#</span>
+              <span>Student Name</span>
+              <span className="text-center w-[120px]">Status</span>
+            </div>
+            <div className="divide-y divide-gray-50 max-h-[60vh] overflow-y-auto">
               {students.map((student, idx) => {
                 const status = attendanceMap[student.id] || 'present';
                 return (
-                  <div key={student.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50">
-                    <span className="text-xs text-gray-400 w-6 text-right">{idx + 1}</span>
-                    <div className="flex-1 min-w-0">
+                  <div key={student.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-0 px-3 py-2 hover:bg-gray-50">
+                    <span className="text-xs text-gray-400 w-8 text-center">{idx + 1}</span>
+                    <div className="min-w-0 px-2">
                       <p className="text-sm font-medium text-gray-800 truncate">{student.name}</p>
                       <p className="text-[10px] text-gray-400">{student.student_id || student.roll_number || ''}</p>
                     </div>
-                    <button
-                      onClick={() => toggleStatus(student.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                        status === 'present' ? 'bg-green-100 text-green-700 border border-green-200' :
-                        status === 'absent' ? 'bg-red-100 text-red-700 border border-red-200' :
-                        'bg-amber-100 text-amber-700 border border-amber-200'
-                      }`}
-                    >
-                      {status === 'present' ? 'P' : status === 'absent' ? 'A' : 'L'}
-                    </button>
+                    <div className="flex items-center gap-1 w-[120px] justify-center">
+                      <button
+                        onClick={() => setStatus(student.id, 'present')}
+                        className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
+                          status === 'present'
+                            ? 'bg-green-500 text-white shadow-sm scale-105'
+                            : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
+                        }`}
+                      >P</button>
+                      <button
+                        onClick={() => setStatus(student.id, 'absent')}
+                        className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
+                          status === 'absent'
+                            ? 'bg-red-500 text-white shadow-sm scale-105'
+                            : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                        }`}
+                      >A</button>
+                      <button
+                        onClick={() => setStatus(student.id, 'late')}
+                        className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
+                          status === 'late'
+                            ? 'bg-amber-500 text-white shadow-sm scale-105'
+                            : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200'
+                        }`}
+                      >L</button>
+                    </div>
                   </div>
                 );
               })}

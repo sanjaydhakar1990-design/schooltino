@@ -2,21 +2,26 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 import {
-  BookOpen, ChevronLeft, ChevronDown, ChevronRight, Loader2,
+  BookOpen, ChevronLeft, ChevronDown, Loader2,
   CheckCircle, Clock, XCircle, SkipForward, AlertTriangle,
-  Save, BookMarked, ListChecks
+  Save, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
 const STATUS_CONFIG = {
-  completed: { label: 'Taught', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-  in_progress: { label: 'Partially Taught', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock },
-  skipped: { label: 'Skipped', color: 'bg-red-100 text-red-700 border-red-200', icon: SkipForward },
-  not_started: { label: 'Not Started', color: 'bg-gray-100 text-gray-500 border-gray-200', icon: BookOpen },
+  completed: { label: 'Taught', color: 'bg-green-100 text-green-700 border-green-200', activeColor: 'bg-green-500 text-white', icon: CheckCircle },
+  in_progress: { label: 'Partial', color: 'bg-amber-100 text-amber-700 border-amber-200', activeColor: 'bg-amber-500 text-white', icon: Clock },
+  skipped: { label: 'Skipped', color: 'bg-red-100 text-red-700 border-red-200', activeColor: 'bg-red-500 text-white', icon: SkipForward },
+  not_started: { label: 'Pending', color: 'bg-gray-100 text-gray-500 border-gray-200', activeColor: 'bg-gray-400 text-white', icon: BookOpen },
+};
+
+const TOPIC_STATUS = {
+  taught: { label: 'Taught', color: 'bg-green-500 text-white' },
+  not_taught: { label: 'Pending', color: 'bg-gray-100 text-gray-500 border border-gray-200' },
+  skipped: { label: 'Skip', color: 'bg-red-500 text-white' },
 };
 
 export default function TeachTinoSyllabus({ onBack }) {
@@ -24,26 +29,34 @@ export default function TeachTinoSyllabus({ onBack }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [subjects, setSubjects] = useState([]);
+  const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [progressMap, setProgressMap] = useState({});
+  const [expandedChapter, setExpandedChapter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showClassPicker, setShowClassPicker] = useState(false);
 
   const getHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 
-  useEffect(() => { fetchClasses(); }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const fetchClasses = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/teacher/my-classes`, { headers: getHeaders() });
-      const cls = Array.isArray(res.data) ? res.data : [];
+      const [classRes, subjectRes] = await Promise.allSettled([
+        axios.get(`${API}/teacher/my-classes`, { headers: getHeaders() }),
+        axios.get(`${API}/teacher/my-subjects`, { headers: getHeaders() })
+      ]);
+      const cls = classRes.status === 'fulfilled' ? (Array.isArray(classRes.value.data) ? classRes.value.data : []) : [];
       setClasses(cls);
+      if (subjectRes.status === 'fulfilled') {
+        setAssignedSubjects(subjectRes.value.data?.assigned_subjects || []);
+      }
       if (cls.length === 1) selectClass(cls[0]);
     } catch (e) {
-      toast.error('Failed to load classes');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -64,7 +77,13 @@ export default function TeachTinoSyllabus({ onBack }) {
     try {
       const classNum = getClassNum(cls.name || cls.class_name);
       const res = await axios.get(`${API}/syllabus-subjects?class_num=${classNum}&board=NCERT`, { headers: getHeaders() });
-      const subjs = res.data?.subjects || [];
+      let subjs = res.data?.subjects || [];
+      if (assignedSubjects.length > 0) {
+        const filtered = subjs.filter(s => assignedSubjects.some(as => 
+          s.name?.toLowerCase() === as?.toLowerCase()
+        ));
+        if (filtered.length > 0) subjs = filtered;
+      }
       setSubjects(subjs);
     } catch (e) {
       setSubjects([]);
@@ -75,6 +94,7 @@ export default function TeachTinoSyllabus({ onBack }) {
 
   const selectSubject = async (subj) => {
     setSelectedSubject(subj);
+    setExpandedChapter(null);
     setLoading(true);
     try {
       const classNum = getClassNum(selectedClass?.name || selectedClass?.class_name);
@@ -111,30 +131,73 @@ export default function TeachTinoSyllabus({ onBack }) {
     }
   };
 
-  const cycleStatus = (chapterNum) => {
+  const setChapterStatus = (chapterNum, status) => {
+    setProgressMap(prev => ({
+      ...prev,
+      [chapterNum]: {
+        ...(prev[chapterNum] || {}),
+        status,
+        topics_covered: prev[chapterNum]?.topics_covered || [],
+        notes: prev[chapterNum]?.notes || ''
+      }
+    }));
+  };
+
+  const toggleTopicStatus = (chapterNum, topicName) => {
     setProgressMap(prev => {
-      const current = prev[chapterNum]?.status || 'not_started';
-      const order = ['not_started', 'in_progress', 'completed', 'skipped'];
-      const nextIdx = (order.indexOf(current) + 1) % order.length;
+      const current = prev[chapterNum] || { status: 'not_started', topics_covered: [], notes: '' };
+      const topics = [...(current.topics_covered || [])];
+      const existingIdx = topics.findIndex(t => 
+        (typeof t === 'string' ? t : t.name) === topicName
+      );
+      
+      if (existingIdx === -1) {
+        topics.push({ name: topicName, status: 'taught' });
+      } else {
+        const existing = topics[existingIdx];
+        const currentStatus = typeof existing === 'string' ? 'taught' : (existing.status || 'taught');
+        if (currentStatus === 'taught') {
+          topics[existingIdx] = { name: topicName, status: 'skipped' };
+        } else if (currentStatus === 'skipped') {
+          topics.splice(existingIdx, 1);
+        } else {
+          topics[existingIdx] = { name: topicName, status: 'taught' };
+        }
+      }
+
+      const chapter = chapters.find(c => (c.chapter_number || c.number) === chapterNum);
+      const totalTopics = chapter?.topics?.length || 0;
+      const taughtCount = topics.filter(t => (typeof t === 'string') || t.status === 'taught').length;
+      let autoStatus = current.status;
+      if (totalTopics > 0) {
+        if (taughtCount === totalTopics) autoStatus = 'completed';
+        else if (taughtCount > 0) autoStatus = 'in_progress';
+        else autoStatus = 'not_started';
+      }
+
       return {
         ...prev,
-        [chapterNum]: {
-          ...(prev[chapterNum] || {}),
-          status: order[nextIdx],
-          topics_covered: prev[chapterNum]?.topics_covered || [],
-          notes: prev[chapterNum]?.notes || ''
-        }
+        [chapterNum]: { ...current, topics_covered: topics, status: autoStatus }
       };
     });
+  };
+
+  const getTopicStatus = (chapterNum, topicName) => {
+    const progress = progressMap[chapterNum];
+    if (!progress) return 'not_taught';
+    const topic = (progress.topics_covered || []).find(t => 
+      (typeof t === 'string' ? t : t.name) === topicName
+    );
+    if (!topic) return 'not_taught';
+    return typeof topic === 'string' ? 'taught' : (topic.status || 'taught');
   };
 
   const saveProgress = async () => {
     if (!selectedClass || !selectedSubject) return;
     setSaving(true);
     try {
-      const classNum = getClassNum(selectedClass?.name || selectedClass?.class_name);
       const chaptersToSave = Object.entries(progressMap)
-        .filter(([_, data]) => data.status !== 'not_started')
+        .filter(([_, data]) => data.status !== 'not_started' || (data.topics_covered && data.topics_covered.length > 0))
         .map(([chNum, data]) => {
           const chapter = chapters.find(c => (c.chapter_number || c.number) === parseInt(chNum));
           return {
@@ -224,7 +287,9 @@ export default function TeachTinoSyllabus({ onBack }) {
       {selectedClass && subjects.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="px-4 py-3 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-800">Subjects</h3>
+            <h3 className="text-sm font-semibold text-gray-800">
+              {assignedSubjects.length > 0 ? 'My Subjects' : 'Subjects'}
+            </h3>
           </div>
           <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
             {subjects.map((subj, idx) => (
@@ -249,7 +314,6 @@ export default function TeachTinoSyllabus({ onBack }) {
         <div className="text-center py-8 bg-white rounded-xl border border-gray-100">
           <BookOpen className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm text-gray-500">No subjects found for this class</p>
-          <p className="text-xs text-gray-400 mt-1">Syllabus data may not be available yet</p>
         </div>
       )}
 
@@ -273,35 +337,85 @@ export default function TeachTinoSyllabus({ onBack }) {
 
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-800">Chapters</h3>
-              <p className="text-[10px] text-gray-400">Tap status to change</p>
+              <h3 className="text-sm font-semibold text-gray-800">Chapters & Topics</h3>
+              <p className="text-[10px] text-gray-400">Tap to expand topics</p>
             </div>
             <div className="divide-y divide-gray-50">
               {chapters.map((chapter, idx) => {
                 const chNum = chapter.chapter_number || chapter.number || idx + 1;
                 const progress = progressMap[chNum] || { status: 'not_started' };
                 const statusCfg = STATUS_CONFIG[progress.status] || STATUS_CONFIG.not_started;
-                const StatusIcon = statusCfg.icon;
+                const isExpanded = expandedChapter === chNum;
+                const topics = Array.isArray(chapter.topics) ? chapter.topics : [];
+                const taughtTopics = (progress.topics_covered || []).filter(t => 
+                  (typeof t === 'string') || t.status === 'taught'
+                ).length;
+
                 return (
-                  <div key={chNum} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-gray-500">{chNum}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        {chapter.name || chapter.chapter_name || `Chapter ${chNum}`}
-                      </p>
-                      {chapter.topics && (
-                        <p className="text-[10px] text-gray-400 truncate">{Array.isArray(chapter.topics) ? chapter.topics.length : 0} topics</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => cycleStatus(chNum)}
-                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold border transition-all flex items-center gap-1 ${statusCfg.color}`}
+                  <div key={chNum}>
+                    <div 
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => setExpandedChapter(isExpanded ? null : chNum)}
                     >
-                      <StatusIcon className="w-3 h-3" />
-                      {statusCfg.label}
-                    </button>
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-gray-500">{chNum}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                          {chapter.name || chapter.chapter_name || `Chapter ${chNum}`}
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {topics.length > 0 ? `${taughtTopics}/${topics.length} topics` : 'No topics'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {['completed', 'in_progress', 'skipped', 'not_started'].map(st => {
+                          const cfg = STATUS_CONFIG[st];
+                          return (
+                            <button
+                              key={st}
+                              onClick={(e) => { e.stopPropagation(); setChapterStatus(chNum, st); }}
+                              className={`w-7 h-7 rounded-md text-[9px] font-bold transition-all flex items-center justify-center ${
+                                progress.status === st ? cfg.activeColor + ' shadow-sm' : cfg.color + ' border'
+                              }`}
+                              title={cfg.label}
+                            >
+                              {st === 'completed' ? '✓' : st === 'in_progress' ? '◐' : st === 'skipped' ? '✕' : '○'}
+                            </button>
+                          );
+                        })}
+                        <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ml-1 ${isExpanded ? 'rotate-90' : ''}`} />
+                      </div>
+                    </div>
+
+                    {isExpanded && topics.length > 0 && (
+                      <div className="px-4 pb-3 pl-16">
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                          <p className="text-[10px] font-semibold text-gray-500 uppercase">Topics - tap to mark</p>
+                          {topics.map((topic, tIdx) => {
+                            const topicName = typeof topic === 'string' ? topic : topic.name || topic;
+                            const tStatus = getTopicStatus(chNum, topicName);
+                            const tCfg = TOPIC_STATUS[tStatus] || TOPIC_STATUS.not_taught;
+                            return (
+                              <button
+                                key={tIdx}
+                                onClick={() => toggleTopicStatus(chNum, topicName)}
+                                className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all flex items-center justify-between ${tCfg.color}`}
+                              >
+                                <span className="truncate flex-1">{topicName}</span>
+                                <span className="text-[10px] font-medium ml-2 flex-shrink-0">{tCfg.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {isExpanded && topics.length === 0 && (
+                      <div className="px-4 pb-3 pl-16">
+                        <p className="text-xs text-gray-400 italic">No topics listed for this chapter</p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
