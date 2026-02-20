@@ -2990,6 +2990,14 @@ async def student_login(request: StudentLoginRequest):
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Student ID")
         
+        if not student.get("password"):
+            mobile = (student.get("mobile") or student.get("father_mobile") or student.get("mother_mobile") or "").replace(" ", "").replace("-", "").strip()
+            if not mobile:
+                raise HTTPException(status_code=401, detail="Password not set. Contact school.")
+            hashed_pw = bcrypt.hashpw(mobile.encode(), bcrypt.gensalt()).decode()
+            await db.students.update_one({"id": student["id"]}, {"$set": {"password": hashed_pw, "plain_password": mobile}})
+            student["password"] = hashed_pw
+        
         if not bcrypt.checkpw(request.password.encode(), student["password"].encode()):
             raise HTTPException(status_code=401, detail="Invalid password")
     
@@ -3909,34 +3917,14 @@ async def bulk_reset_passwords_to_mobile(
             results["students_skipped"] += 1
             continue
         hashed = bcrypt.hashpw(mobile.encode(), bcrypt.gensalt()).decode()
+        await db.students.update_one(
+            {"id": stu["id"]},
+            {"$set": {"password": hashed, "plain_password": mobile, "password_changed": False}}
+        )
         if stu.get("user_id"):
             await db.users.update_one(
                 {"id": stu["user_id"]},
                 {"$set": {"password": hashed, "plain_password": mobile}}
-            )
-            await db.students.update_one(
-                {"id": stu["id"]},
-                {"$set": {"plain_password": mobile}}
-            )
-        else:
-            user_id = str(uuid.uuid4())
-            student_user = {
-                "id": user_id,
-                "email": stu.get("student_id", ""),
-                "password": hashed,
-                "plain_password": mobile,
-                "name": stu.get("name", ""),
-                "role": "student",
-                "mobile": mobile,
-                "school_id": school_id,
-                "student_id": stu.get("student_id", ""),
-                "is_active": True,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
-            await db.users.insert_one(student_user)
-            await db.students.update_one(
-                {"id": stu["id"]},
-                {"$set": {"user_id": user_id, "plain_password": mobile}}
             )
         results["students_updated"] += 1
     
