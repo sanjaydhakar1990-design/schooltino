@@ -1,0 +1,120 @@
+=====================================================
+PRODUCTION MONGODB CONNECTION INFORMATION
+=====================================================
+
+Connection String:
+mongodb://localhost:27017
+
+Database Name:
+schooltino
+
+School ID:
+7fc6bb2f-fa0d-43b6-9abd-4483d150eb0c
+
+=====================================================
+HOW TO CONNECT
+=====================================================
+
+Option 1: MongoDB Compass (GUI Tool)
+-------------------------------------
+1. Download MongoDB Compass: https://www.mongodb.com/try/download/compass
+2. Open Compass
+3. Connection String: mongodb://localhost:27017
+4. Click "Connect"
+5. Select Database: schooltino
+6. Browse Collections
+
+Option 2: Mongo Shell
+---------------------
+mongo mongodb://localhost:27017/schooltino
+
+Option 3: Python (PyMongo)
+--------------------------
+from pymongo import MongoClient
+
+client = MongoClient("mongodb://localhost:27017")
+db = client["schooltino"]
+
+# Get all classes for your school
+classes = db.classes.find({"school_id": "7fc6bb2f-fa0d-43b6-9abd-4483d150eb0c"})
+for cls in classes:
+    print(cls["name"])
+
+=====================================================
+IMPORTANT COLLECTIONS
+=====================================================
+
+- schools              → School information
+- users                → Login accounts (teachers, admin, etc.)
+- classes              → Classes (Nursery to Class 8)
+- students             → Student records
+- subject_allocations  → Teacher-Class-Subject mapping
+- timetable            → Class timetables
+- attendance           → Daily attendance records
+- homework             → Homework assignments
+- notices              → School notices
+- staff                → Staff HR records
+- employees            → Employee records
+
+=====================================================
+CURRENT DATA SUMMARY
+=====================================================
+
+Users: 4
+  - Test Teacher
+  - Test Director
+  - Test Admin
+  - DEEPIKA SHARMA
+
+Classes: 11
+  - Nursery (1 student)
+  - LKG (0 students)
+  - UKG (0 students)
+  - Class 1 to 8 (0 students each)
+
+Subject Allocations: 11
+  - All Mathematics assigned to DEEPIKA SHARMA
+
+Students: 2
+Timetables: 2
+
+=====================================================
+TO IMPORT DATA FROM BACKUP
+=====================================================
+
+Step 1: Download the JSON backup file from:
+https://teachfixed.preview.emergentagent.com/school_data_export.json
+
+Step 2: Use MongoDB import tools or scripts to restore
+
+Python Script Example:
+----------------------
+import json
+from pymongo import MongoClient
+
+# Connect
+client = MongoClient("mongodb://localhost:27017")
+db = client["schooltino"]
+
+# Load backup
+with open('school_data_export.json', 'r') as f:
+    data = json.load(f)
+
+# Import classes (example)
+for cls in data['classes']:
+    db.classes.update_one(
+        {"id": cls["id"]},
+        {"$set": cls},
+        upsert=True
+    )
+
+print("Import complete!")
+
+=====================================================
+NEED HELP?
+=====================================================
+
+Contact: support@onetino.com
+Website: www.onetino.in
+
+=====================================================

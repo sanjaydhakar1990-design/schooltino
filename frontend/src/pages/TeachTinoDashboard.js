@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react';
+/**
+ * TeachTino Dashboard - Enhanced Version
+ * Features: Attendance, Syllabus Tracking, Homework, Leave, Notices, Student Queries
+ */
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import {
   Dialog,
@@ -14,623 +18,2046 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { 
-  Users, BookOpen, Calendar, Bell, ClipboardCheck, Clipboard,
+  Users, BookOpen, Calendar, Bell, ClipboardCheck, 
   GraduationCap, Clock, FileText, Sparkles,
-  LogOut, CheckCircle, XCircle,
+  Settings, LogOut, CheckCircle, XCircle,
   Send, User, CalendarDays, Loader2, Brain,
-  BarChart3, Camera, Home,
-  ChevronRight,
-  Key, Eye, EyeOff, Phone, Mail, Shield, Edit
+  BarChart3, Zap, Home, PlusCircle, Edit,
+  ChevronRight, AlertTriangle, BookMarked, 
+  FileEdit, UserCheck, UserX, Check, X, RefreshCw,
+  Play, Pause, ChevronDown, MessageCircle, Award,
+  TrendingUp, Target, Book, Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
-import StaffPhotoUpload from '../components/StaffPhotoUpload';
-import { GlobalWatermark } from '../components/SchoolLogoWatermark';
-import TeachTinoAttendance from '../components/TeachTinoAttendance';
-import TeachTinoSyllabus from '../components/TeachTinoSyllabus';
-import TeachTinoHomework from '../components/TeachTinoHomework';
-import TeachTinoTimetable from '../components/TeachTinoTimetable';
-import TeachTinoStudents from '../components/TeachTinoStudents';
 
-const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Attendance Status Options
+const ATTENDANCE_OPTIONS = [
+  { value: 'present', label: 'Present (उपस्थित)', color: 'bg-green-500', icon: '✓' },
+  { value: 'absent', label: 'Absent (अनुपस्थित)', color: 'bg-red-500', icon: '✗' },
+  { value: 'late', label: 'Late (देर से)', color: 'bg-yellow-500', icon: '⏰' },
+  { value: 'half_day', label: 'Half Day (आधा दिन)', color: 'bg-orange-500', icon: '½' },
+  { value: 'leave', label: 'On Leave (छुट्टी)', color: 'bg-blue-500', icon: '📝' },
+];
 
 export default function TeachTinoDashboard() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, logout, schoolData } = useAuth();
+  const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   
-  const [myClasses, setMyClasses] = useState([]);
-  const [totalStudents, setTotalStudents] = useState(0);
-  const [todayAttendance, setTodayAttendance] = useState({ present: 0, absent: 0 });
-  const [recentNotices, setRecentNotices] = useState([]);
-  const [pendingLeaves, setPendingLeaves] = useState([]);
-  const [myRequests, setMyRequests] = useState([]);
-  const [leaveBalance, setLeaveBalance] = useState(null);
-  const [timetableToday, setTimetableToday] = useState([]);
-  const [staffProfile, setStaffProfile] = useState(null);
+  // [NEW] School branding
+  const [schoolInfo, setSchoolInfo] = useState(null);
   
+  // Data states
+  const [myClasses, setMyClasses] = useState([]);
+  const [assignedClass, setAssignedClass] = useState(null);
+  const [tempAssignedClasses, setTempAssignedClasses] = useState([]);
+  const [mySubjects, setMySubjects] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [recentNotices, setRecentNotices] = useState([]);
+  const [myLeaves, setMyLeaves] = useState([]);
+  const [pendingLeaves, setPendingLeaves] = useState([]);
+  const [attendanceData, setAttendanceData] = useState({});
+  const [todayStats, setTodayStats] = useState({ present: 0, absent: 0, late: 0, leave: 0, total: 0 });
+  const [studentQueries, setStudentQueries] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [syllabusChapters, setSyllabusChapters] = useState([]);
+  const [syllabusProgressMap, setSyllabusProgressMap] = useState({});
+  const [syllabusAnalytics, setSyllabusAnalytics] = useState(null);
+  const [syllabusRange, setSyllabusRange] = useState('month');
+  const [showSyllabusUpdate, setShowSyllabusUpdate] = useState(false);
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [syllabusUpdateForm, setSyllabusUpdateForm] = useState({
+    status: 'in_progress',
+    topics: '',
+    notes: ''
+  });
+  const [lessonSummary, setLessonSummary] = useState('');
+  const [showLessonDialog, setShowLessonDialog] = useState(false);
+  const [lessonLoading, setLessonLoading] = useState(false);
+  const [queryAnswerDrafts, setQueryAnswerDrafts] = useState({});
+  
+  // Dialogs
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNoticeDialog, setShowNoticeDialog] = useState(false);
-  const [showProfileDialog, setShowProfileDialog] = useState(false);
-  const [showPasswordSection, setShowPasswordSection] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [showOldPw, setShowOldPw] = useState(false);
-  const [showNewPw, setShowNewPw] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [showHomeworkDialog, setShowHomeworkDialog] = useState(false);
+  const [showStudentLeaveDialog, setShowStudentLeaveDialog] = useState(false);
+  const [showTinoAI, setShowTinoAI] = useState(false);
+  const [showAttendanceSheet, setShowAttendanceSheet] = useState(false);
+  const [showClassSelector, setShowClassSelector] = useState(false);
+  const [selectedClassForAttendance, setSelectedClassForAttendance] = useState(null);
+  const [showHomeworkList, setShowHomeworkList] = useState(false);
+  const [homeworkSubmissions, setHomeworkSubmissions] = useState([]);
+  const [showSyllabusTracker, setShowSyllabusTracker] = useState(false);
+  const [showQueriesDialog, setShowQueriesDialog] = useState(false);
+  const [selectedSubjectForSyllabus, setSelectedSubjectForSyllabus] = useState(null);
   
+  // Forms
   const [leaveForm, setLeaveForm] = useState({
-    leave_type: 'casual', from_date: '', to_date: '', reason: ''
+    leave_type: 'casual',
+    from_date: new Date().toISOString().split('T')[0],
+    to_date: new Date().toISOString().split('T')[0],
+    reason: ''
   });
-  const [noticeForm, setNoticeForm] = useState({ title: '', content: '' });
-  
+  const [noticeForm, setNoticeForm] = useState({
+    title: '',
+    content: '',
+    target_class: ''
+  });
+  const [homeworkForm, setHomeworkForm] = useState({
+    subject: '',
+    class_id: '',
+    chapter: '',
+    topic: '',
+    description: '',
+    due_date: ''
+  });
+  const [studentLeaveForm, setStudentLeaveForm] = useState({
+    student_id: '',
+    leave_type: 'sick',
+    from_date: new Date().toISOString().split('T')[0],
+    to_date: new Date().toISOString().split('T')[0],
+    reason: ''
+  });
+
+  // Tino AI Chat
+  const [aiMessages, setAiMessages] = useState([]);
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
   const isPrincipal = user?.role === 'principal' || user?.role === 'vice_principal';
   const canApproveLeave = isPrincipal || user?.role === 'director';
+  const today = new Date().toISOString().split('T')[0];
 
-  useEffect(() => { fetchDashboard(); }, []);
+  const extractClassNumber = (className) => {
+    if (!className) return null;
+    const match = className.match(/\d+/);
+    return match ? match[0] : null;
+  };
 
-  const fetchDashboard = async () => {
+  useEffect(() => {
+    if (user?.school_id) {
+      fetchData();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [aiMessages]);
+
+  useEffect(() => {
+    if (showSyllabusTracker && mySubjects.length > 0 && !selectedSubjectForSyllabus) {
+      handleSelectSyllabusSubject(mySubjects[0]);
+    }
+  }, [showSyllabusTracker, mySubjects]);
+
+  const fetchData = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [dashRes, reqRes, leaveBalRes, timetableRes] = await Promise.allSettled([
-        axios.get(`${API}/teacher/dashboard`, { headers }),
-        axios.get(`${API}/teacher/requests`, { headers }),
-        axios.get(`${API}/leave/balance`, { headers }),
-        axios.get(`${API}/timetable?school_id=${user?.school_id}`, { headers })
+      // [NEW] Fetch school info for branding
+      const schoolInfoPromise = axios.get(`${API}/schools/${user?.school_id}`, { headers }).catch(() => null);
+      
+      const [classesRes, noticesRes, subjectsRes, notificationsRes, myClassesRes, schoolRes] = await Promise.allSettled([
+        axios.get(`${API}/classes?school_id=${user?.school_id}`, { headers }),
+        axios.get(`${API}/notices?school_id=${user?.school_id}&limit=5`, { headers }),
+        axios.get(`${API}/teacher/subjects?teacher_id=${user?.id}`, { headers }).catch(() => ({ data: { subjects: [] } })),
+        axios.get(`${API}/notifications?school_id=${user?.school_id}&user_id=${user?.id}&role=${user?.role}`, { headers }),
+        axios.get(`${API}/teacher/my-classes`, { headers }).catch(() => ({ data: { classes: [] } })),
+        schoolInfoPromise
       ]);
-      
-      let dashClasses = [];
-      if (dashRes.status === 'fulfilled') {
-        const d = dashRes.value.data;
-        dashClasses = Array.isArray(d.my_classes) ? d.my_classes : [];
-        setMyClasses(dashClasses);
-        setTotalStudents(d.total_students || 0);
-        setTodayAttendance(d.attendance_today || { present: 0, absent: 0 });
-        setRecentNotices(Array.isArray(d.recent_notices) ? d.recent_notices : []);
+
+      // [NEW] Set school info for branding
+      if (schoolRes.status === 'fulfilled' && schoolRes.value) {
+        setSchoolInfo(schoolRes.value.data);
       }
-      
-      if (reqRes.status === 'fulfilled') setMyRequests(Array.isArray(reqRes.value.data) ? reqRes.value.data : []);
-      if (leaveBalRes.status === 'fulfilled') setLeaveBalance(leaveBalRes.value.data);
-      
-      if (timetableRes.status === 'fulfilled') {
-        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const today = days[new Date().getDay()];
-        const allTimetables = Array.isArray(timetableRes.value.data) ? timetableRes.value.data : [];
-        const todayPeriods = [];
-        allTimetables.forEach(tt => {
-          if (tt.schedule && tt.schedule[today]) {
-            tt.schedule[today].forEach(period => {
-              if (period.teacher_id === user?.id || period.teacher_name === user?.name) {
-                todayPeriods.push({ ...period, class_name: tt.class_name || tt.class_id });
-              }
-            });
+
+      // Use the dedicated my-classes endpoint first
+      if (myClassesRes.status === 'fulfilled' && myClassesRes.value.data?.classes?.length > 0) {
+        const teacherClasses = myClassesRes.value.data.classes;
+        setMyClasses(teacherClasses);
+        setAssignedClass(teacherClasses[0]);
+        fetchClassStudents(teacherClasses[0].id);
+      } else if (classesRes.status === 'fulfilled') {
+        // Fallback to manual filtering if needed
+        const allClasses = classesRes.value.data || [];
+        let teacherClasses = [];
+        
+        // Find class where this teacher is class teacher
+        const myClass = allClasses.find(c => c.class_teacher_id === user?.id);
+        if (myClass) {
+          setAssignedClass(myClass);
+          teacherClasses.push(myClass);
+          fetchClassStudents(myClass.id);
+        }
+        
+        // Check if teacher name matches (fallback for legacy data)
+        const teacherNameMatch = allClasses.filter(c => 
+          c.class_teacher_name && 
+          user?.name && 
+          c.class_teacher_name.toLowerCase().includes(user.name.toLowerCase())
+        );
+        teacherNameMatch.forEach(cls => {
+          if (!teacherClasses.find(tc => tc.id === cls.id)) {
+            teacherClasses.push(cls);
+            if (!myClass) {
+              setAssignedClass(cls);
+              fetchClassStudents(cls.id);
+            }
           }
         });
-        setTimetableToday(todayPeriods.sort((a, b) => (a.period || 0) - (b.period || 0)));
+        
+        setMyClasses(teacherClasses);
+        
+        // Find temporarily assigned classes
+        const tempClasses = allClasses.filter(c => 
+          c.temp_teacher_id === user?.id || 
+          c.substitute_teacher_id === user?.id
+        );
+        setTempAssignedClasses(tempClasses);
+      }
+      
+      if (noticesRes.status === 'fulfilled') {
+        setRecentNotices(noticesRes.value.data?.slice(0, 5) || []);
       }
 
+      if (subjectsRes.status === 'fulfilled') {
+        setMySubjects(subjectsRes.value.data?.subjects || []);
+      }
+
+      if (notificationsRes.status === 'fulfilled') {
+        const notes = notificationsRes.value.data?.notifications || [];
+        setNotifications(notes);
+        setUnreadNotifications(notes.filter(n => !n.is_read).length);
+      }
+
+      // Fetch my leaves
       try {
-        const leavesRes = await axios.get(`${API}/leave/pending`, { headers });
-        setPendingLeaves(Array.isArray(leavesRes.data) ? leavesRes.data : []);
-      } catch (e) {}
+        const leavesRes = await axios.get(`${API}/staff/leaves?staff_id=${user?.id}`, { headers });
+        setMyLeaves(leavesRes.data || []);
+      } catch (e) {
+        console.log('No leaves found');
+      }
+
+      // Fetch pending leaves if can approve
+      if (canApproveLeave) {
+        try {
+          const pendingRes = await axios.get(`${API}/staff/leaves/pending?school_id=${user?.school_id}`, { headers });
+          setPendingLeaves(pendingRes.data || []);
+        } catch (e) {
+          console.log('No pending leaves');
+        }
+      }
+
+      // Fetch student queries
+      try {
+        const queriesRes = await axios.get(`${API}/teacher/queries?teacher_id=${user?.id}&school_id=${user?.school_id}`, { headers });
+        setStudentQueries(queriesRes.data || []);
+      } catch (e) {
+        console.log('No queries');
+      }
 
     } catch (error) {
-      console.error('Dashboard fetch error:', error);
+      console.error('Fetch error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => { logout(); navigate('/teachtino'); };
-
-  const handleChangePassword = async () => {
-    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      toast.error('Please fill all fields'); return;
-    }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('New passwords do not match'); return;
-    }
-    if (passwordForm.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters'); return;
-    }
-    setChangingPassword(true);
-    try {
-      const formData = new FormData();
-      formData.append('old_password', passwordForm.oldPassword);
-      formData.append('new_password', passwordForm.newPassword);
-      const res = await fetch(`${API}/auth/change-password`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: formData
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success('Password changed successfully!');
-        setShowPasswordSection(false);
-        setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
-      } else {
-        toast.error(data.detail || 'Failed to change password');
-      }
-    } catch (error) { toast.error('Error changing password'); }
-    finally { setChangingPassword(false); }
-  };
-
-  const getHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
-
-  const handleApplyLeave = async () => {
-    if (!leaveForm.from_date || !leaveForm.to_date || !leaveForm.reason) { toast.error('Please fill all fields'); return; }
-    try {
-      await axios.post(`${API}/leave/apply`, { ...leaveForm, school_id: user?.school_id }, { headers: getHeaders() });
-      toast.success('Leave applied successfully!');
-      setShowLeaveDialog(false);
-      setLeaveForm({ leave_type: 'casual', from_date: '', to_date: '', reason: '' });
-      fetchDashboard();
-    } catch (error) { toast.error('Failed to apply leave'); }
-  };
-
-  const handleSendNotice = async () => {
-    if (!noticeForm.title || !noticeForm.content) { toast.error('Please fill all fields'); return; }
+  const handleMarkNotificationRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/teacher/requests`, {
-        request_type: 'notice',
-        title: `Notice: ${noticeForm.title}`,
-        description: noticeForm.content,
-        data: { ...noticeForm, target_audience: ['students', 'parents'], priority: 'normal' }
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Notice submitted for admin approval!');
+      await axios.post(
+        `${API}/notifications/${notificationId}/read`,
+        { user_id: user?.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) => prev.map((note) => note.id === notificationId ? { ...note, is_read: true } : note));
+      setUnreadNotifications((prev) => Math.max(prev - 1, 0));
+    } catch (error) {
+      toast.error('Notification read mark करने में error');
+    }
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API}/notifications/mark-all-read`,
+        { user_id: user?.id, school_id: user?.school_id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) => prev.map((note) => ({ ...note, is_read: true })));
+      setUnreadNotifications(0);
+    } catch (error) {
+      toast.error('Notifications update नहीं हो पाए');
+    }
+  };
+
+  const fetchClassStudents = async (classId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/students?class_id=${classId}&school_id=${user?.school_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStudents(res.data || []);
+      
+      // Initialize attendance data with 'present' as default
+      const initialAttendance = {};
+      (res.data || []).forEach(s => {
+        initialAttendance[s.id] = 'present';
+      });
+      setAttendanceData(initialAttendance);
+      
+      // Calculate stats
+      setTodayStats({
+        present: res.data?.length || 0,
+        absent: 0,
+        late: 0,
+        leave: 0,
+        total: res.data?.length || 0
+      });
+    } catch (e) {
+      console.error('Failed to fetch students:', e);
+    }
+  };
+
+  // Get available classes for attendance (assigned + temp assigned)
+  const getAvailableClasses = () => {
+    const classes = [];
+    if (assignedClass) {
+      classes.push({ ...assignedClass, type: 'Class Teacher' });
+    }
+    tempAssignedClasses.forEach(c => {
+      classes.push({ ...c, type: 'Temporary' });
+    });
+    return classes;
+  };
+
+  const openAttendanceForClass = async (cls) => {
+    setSelectedClassForAttendance(cls);
+    await fetchClassStudents(cls.id);
+    setShowClassSelector(false);
+    setShowAttendanceSheet(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/teachtino');
+  };
+
+  // ============= ATTENDANCE =============
+  const markAttendance = (studentId, status) => {
+    setAttendanceData(prev => ({
+      ...prev,
+      [studentId]: status
+    }));
+    
+    // Update stats
+    const newData = { ...attendanceData, [studentId]: status };
+    const present = Object.values(newData).filter(s => s === 'present').length;
+    const absent = Object.values(newData).filter(s => s === 'absent').length;
+    const late = Object.values(newData).filter(s => s === 'late').length;
+    const leave = Object.values(newData).filter(s => s === 'leave' || s === 'half_day').length;
+    setTodayStats({ present, absent, late, leave, total: students.length });
+  };
+
+  const submitAttendance = async () => {
+    const targetClass = selectedClassForAttendance || assignedClass;
+    if (!targetClass) {
+      toast.error('No class selected');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const attendanceRecords = Object.entries(attendanceData).map(([studentId, status]) => ({
+        student_id: studentId,
+        status
+      }));
+      
+      await axios.post(`${API}/attendance/bulk`, {
+        school_id: user?.school_id,
+        class_id: targetClass.id,
+        date: today,
+        attendance: attendanceRecords  // [FIX] Changed from 'records' to 'attendance'
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success(`✅ Attendance submitted! P:${todayStats.present} A:${todayStats.absent} L:${todayStats.late}`);
+      setShowAttendanceSheet(false);
+    } catch (error) {
+      console.error('Attendance error:', error);
+      toast.error('Attendance submit करने में error');
+    }
+  };
+
+  // ============= LEAVE MANAGEMENT =============
+  const handleApplyLeave = async () => {
+    if (!leaveForm.from_date || !leaveForm.to_date || !leaveForm.reason) {
+      toast.error('सभी fields भरें');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/staff/leaves/apply`, {
+        staff_id: user?.id,
+        school_id: user?.school_id,
+        ...leaveForm
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success('Leave application submitted! ✅');
+      setShowLeaveDialog(false);
+      setLeaveForm({ leave_type: 'casual', from_date: today, to_date: today, reason: '' });
+      fetchData();
+    } catch (error) {
+      toast.error('Leave apply करने में error');
+    }
+  };
+
+  const handleApproveLeave = async (leaveId, action) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/staff/leaves/${leaveId}/${action}`, {
+        approved_by: user?.id
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success(`Leave ${action === 'approve' ? 'approved' : 'rejected'}!`);
+      fetchData();
+    } catch (error) {
+      toast.error('Action failed');
+    }
+  };
+
+  // ============= NOTICES =============
+  const handleSendNotice = async () => {
+    if (!noticeForm.title || !noticeForm.content) {
+      toast.error('Title और Content भरें');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/notices`, {
+        ...noticeForm,
+        school_id: user?.school_id,
+        created_by: user?.id,
+        target_audience: ['students', 'parents'],
+        priority: 'normal'
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success('Notice sent! ✅');
       setShowNoticeDialog(false);
-      setNoticeForm({ title: '', content: '' });
-      fetchDashboard();
-    } catch (error) { toast.error('Failed to submit notice request'); }
+      setNoticeForm({ title: '', content: '', target_class: '' });
+      fetchData();
+    } catch (error) {
+      toast.error('Notice भेजने में error');
+    }
   };
 
-  const handleApproveLeave = async (leaveId) => {
-    try { await axios.post(`${API}/leave/${leaveId}/approve`, {}, { headers: getHeaders() }); toast.success('Leave approved!'); fetchDashboard(); } catch (error) { toast.error('Failed to approve'); }
+  // ============= HOMEWORK =============
+  const handleAssignHomework = async () => {
+    if (!homeworkForm.subject || !homeworkForm.description || !homeworkForm.class_id) {
+      toast.error('सभी fields भरें');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/homework`, {
+        ...homeworkForm,
+        school_id: user?.school_id,
+        assigned_by: user?.id,
+        assigned_date: today
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success('Homework assigned! ✅');
+      setShowHomeworkDialog(false);
+      setHomeworkForm({ subject: '', class_id: '', chapter: '', topic: '', description: '', due_date: '' });
+    } catch (error) {
+      toast.error('Homework assign करने में error');
+    }
   };
 
-  const handleRejectLeave = async (leaveId) => {
-    try { await axios.post(`${API}/leave/${leaveId}/reject`, {}, { headers: getHeaders() }); toast.success('Leave rejected'); fetchDashboard(); } catch (error) { toast.error('Failed to reject'); }
+  // Fetch homework submissions for teacher
+  const fetchHomeworkSubmissions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API}/homework/submissions?school_id=${user?.school_id}&teacher_id=${user?.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setHomeworkSubmissions(res.data || []);
+    } catch (e) {
+      setHomeworkSubmissions([]);
+    }
+  };
+
+  // Approve/Reject homework
+  const handleHomeworkReview = async (submissionId, status, feedback = '') => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/homework/submissions/${submissionId}/review`, {
+        status,
+        feedback,
+        reviewed_by: user?.id
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success(`Homework ${status === 'approved' ? 'approved ✅' : 'needs revision 📝'}`);
+      fetchHomeworkSubmissions();
+    } catch (error) {
+      toast.error('Review submit करने में error');
+    }
+  };
+
+  // ============= SYLLABUS TRACKING =============
+  const loadSyllabusForSubject = async (subjectItem, rangeOverride = syllabusRange) => {
+    if (!subjectItem?.class_id || !subjectItem?.subject) return;
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      const classNum = subjectItem.class_number || extractClassNumber(subjectItem.class_name);
+      const board = (subjectItem.board || 'NCERT').toUpperCase();
+
+      if (!classNum) {
+        toast.error('Class number missing in subject assignment');
+        return;
+      }
+
+      const syllabusRes = await axios.get(
+        `${API}/syllabus/${board}/syllabus/${classNum}?subject=${encodeURIComponent(subjectItem.subject)}`,
+        { headers }
+      );
+      const chapters = syllabusRes.data?.data?.chapters || [];
+      setSyllabusChapters(chapters);
+
+      const progressRes = await axios.get(
+        `${API}/syllabus-progress/class/${user?.school_id}/${subjectItem.class_id}?subject=${encodeURIComponent(subjectItem.subject)}`,
+        { headers }
+      );
+      const progressRecords = progressRes.data?.subjects?.[0]?.chapters || [];
+      const progressMap = {};
+      progressRecords.forEach((record) => {
+        progressMap[record.chapter_number] = record;
+      });
+      setSyllabusProgressMap(progressMap);
+
+      const analyticsRes = await axios.get(
+        `${API}/syllabus-progress/analytics/${user?.school_id}/${subjectItem.class_id}?subject=${encodeURIComponent(subjectItem.subject)}&range=${rangeOverride}`,
+        { headers }
+      );
+      setSyllabusAnalytics(analyticsRes.data);
+    } catch (error) {
+      setSyllabusChapters([]);
+      setSyllabusProgressMap({});
+      setSyllabusAnalytics(null);
+    }
+  };
+
+  const handleSelectSyllabusSubject = (subjectItem) => {
+    setSelectedSubjectForSyllabus(subjectItem);
+    loadSyllabusForSubject(subjectItem, syllabusRange);
+  };
+
+  const handleSyllabusRangeChange = (rangeValue) => {
+    setSyllabusRange(rangeValue);
+    if (selectedSubjectForSyllabus) {
+      loadSyllabusForSubject(selectedSubjectForSyllabus, rangeValue);
+    }
+  };
+
+  const openSyllabusUpdateDialog = (chapter) => {
+    const existing = syllabusProgressMap[chapter.number];
+    setSelectedChapter(chapter);
+    setSyllabusUpdateForm({
+      status: existing?.status || 'in_progress',
+      topics: existing?.topics_covered?.join(', ') || '',
+      notes: existing?.notes || ''
+    });
+    setShowSyllabusUpdate(true);
+  };
+
+  const handleSyllabusUpdate = async () => {
+    if (!selectedSubjectForSyllabus || !selectedChapter) return;
+    try {
+      const token = localStorage.getItem('token');
+      const classNum = selectedSubjectForSyllabus.class_number || extractClassNumber(selectedSubjectForSyllabus.class_name);
+      const board = (selectedSubjectForSyllabus.board || 'NCERT').toUpperCase();
+      const topicsArray = syllabusUpdateForm.topics
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      await axios.post(
+        `${API}/syllabus-progress/update`,
+        {
+          school_id: user?.school_id,
+          class_id: selectedSubjectForSyllabus.class_id,
+          class_name: selectedSubjectForSyllabus.class_name,
+          subject: selectedSubjectForSyllabus.subject,
+          board,
+          chapter_number: selectedChapter.number,
+          chapter_name: selectedChapter.name,
+          status: syllabusUpdateForm.status,
+          topics_covered: topicsArray,
+          notes: syllabusUpdateForm.notes
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success('Syllabus progress updated ✅');
+      setShowSyllabusUpdate(false);
+      loadSyllabusForSubject(selectedSubjectForSyllabus, syllabusRange);
+    } catch (error) {
+      toast.error('Syllabus update में error');
+    }
+  };
+
+  const openLessonSummary = async (chapter) => {
+    if (!selectedSubjectForSyllabus) return;
+    setSelectedChapter(chapter);
+    setShowLessonDialog(true);
+    setLessonLoading(true);
+    setLessonSummary('');
+    try {
+      const token = localStorage.getItem('token');
+      const classNum = selectedSubjectForSyllabus.class_number || extractClassNumber(selectedSubjectForSyllabus.class_name);
+      const board = (selectedSubjectForSyllabus.board || 'NCERT').toUpperCase();
+      const subjectEncoded = encodeURIComponent(selectedSubjectForSyllabus.subject);
+
+      const cached = await axios.get(
+        `${API}/syllabus-progress/ai/summary/${board}/${classNum}/${subjectEncoded}/${chapter.number}?language=hinglish`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (cached.data?.success) {
+        setLessonSummary(cached.data.summary);
+      } else {
+        const generated = await axios.post(
+          `${API}/syllabus-progress/ai/summarize-chapter`,
+          {
+            board,
+            class_num: classNum,
+            subject: selectedSubjectForSyllabus.subject,
+            chapter_number: chapter.number,
+            chapter_name: chapter.name,
+            language: 'hinglish',
+            include_formulas: true,
+            include_key_points: true
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setLessonSummary(generated.data?.summary || 'Summary not available');
+      }
+    } catch (error) {
+      toast.error('Lesson summary load nahi ho paaya');
+      setLessonSummary('Summary not available');
+    } finally {
+      setLessonLoading(false);
+    }
+  };
+
+  // ============= STUDENT QUERIES =============
+  const handleAnswerQuery = async (queryId, answer) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/teacher/queries/${queryId}/answer`, {
+        answer,
+        answered_by: user?.id
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success('Answer sent! ✅');
+      setQueryAnswerDrafts((prev) => ({ ...prev, [queryId]: '' }));
+      fetchData();
+    } catch (error) {
+      toast.error('Error sending answer');
+    }
+  };
+
+  // ============= STUDENT LEAVE =============
+  const handleStudentLeave = async () => {
+    if (!studentLeaveForm.student_id || !studentLeaveForm.reason) {
+      toast.error('Student select करें और reason दें');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/attendance/mark-leave`, {
+        school_id: user?.school_id,
+        ...studentLeaveForm
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      toast.success('Student leave marked! ✅');
+      setShowStudentLeaveDialog(false);
+      setStudentLeaveForm({ student_id: '', leave_type: 'sick', from_date: today, to_date: today, reason: '' });
+    } catch (error) {
+      toast.error('Leave mark करने में error');
+    }
+  };
+
+  // ============= TINO AI =============
+  const handleAIChat = async () => {
+    if (!aiInput.trim()) return;
+    
+    const userMessage = aiInput.trim();
+    setAiMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setAiInput('');
+    setAiLoading(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/tino/chat`, {
+        message: userMessage,
+        school_id: user?.school_id,
+        user_id: user?.id,
+        user_role: user?.role,
+        context: 'teacher_portal'
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      setAiMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: res.data?.response || res.data?.message || 'मैं आपकी मदद के लिए हूं!'
+      }]);
+    } catch (error) {
+      setAiMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, कुछ error हुआ। Please try again.'
+      }]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <GraduationCap className="w-7 h-7 text-white" />
-          </div>
-          <Loader2 className="w-6 h-6 animate-spin text-green-500 mx-auto" />
-          <p className="text-sm text-gray-400 mt-2">Loading TeachTino...</p>
-        </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
       </div>
     );
   }
 
-  const attendancePercent = totalStudents > 0 ? Math.round((todayAttendance.present / totalStudents) * 100) : 0;
-
-  const mp = user?.module_permissions || {};
-  const hasModule = (key) => mp[key] !== false;
-
-  const teacherModules = [
-    hasModule('attendance') && { id: 'attendance', name: 'SmartRoll', desc: 'Mark & track attendance', icon: ClipboardCheck, color: 'bg-orange-50 text-orange-600', action: () => setActiveTab('attendance') },
-    hasModule('syllabus_tracking') && { id: 'syllabus', name: 'Syllabus', desc: 'Track chapters & topics', icon: BookOpen, color: 'bg-emerald-50 text-emerald-600', action: () => setActiveTab('syllabus') },
-    hasModule('homework') && { id: 'homework', name: 'Homework', desc: 'Assign & manage', icon: Clipboard, color: 'bg-teal-50 text-teal-600', action: () => setActiveTab('homework') },
-    hasModule('timetable') && { id: 'timetable', name: 'Timetable', desc: 'My schedule', icon: Clock, color: 'bg-cyan-50 text-cyan-600', action: () => setActiveTab('timetable') },
-    hasModule('students') && { id: 'students', name: 'My Students', desc: 'Student profiles', icon: Users, color: 'bg-indigo-50 text-indigo-600', action: () => setActiveTab('students') },
-    hasModule('exams_reports') && { id: 'exams', name: 'ExamTino', desc: 'Exams & results', icon: FileText, color: 'bg-purple-50 text-purple-600', action: () => navigate('/app/exams') },
-    hasModule('live_classes') && { id: 'live', name: 'Live Class', desc: 'Online teaching', icon: Camera, color: 'bg-red-50 text-red-600', action: () => navigate('/app/live-classes') },
-    hasModule('ai_tools') && { id: 'ai', name: 'PaperGenie', desc: 'AI question papers', icon: Sparkles, color: 'bg-pink-50 text-pink-600', action: () => navigate('/app/ai-tools') },
-    hasModule('communication_hub') && { id: 'notice', name: 'NoticeBoard', desc: 'Send notices', icon: Bell, color: 'bg-blue-50 text-blue-600', action: () => setShowNoticeDialog(true) },
-    { id: 'leave', name: 'Apply Leave', desc: 'Leave application', icon: CalendarDays, color: 'bg-rose-50 text-rose-600', action: () => setShowLeaveDialog(true) },
-    { id: 'profile', name: 'My Profile', desc: 'Settings', icon: User, color: 'bg-gray-100 text-gray-600', action: () => setShowProfileDialog(true) },
-  ].filter(Boolean);
-
-  const userPhoto = user?.photo_url || user?.profile_photo;
+  const availableClasses = getAvailableClasses();
 
   return (
-    <div className="min-h-screen bg-gray-50 relative" data-testid="teachtino-dashboard">
-      <GlobalWatermark />
-      
-      <header className="bg-white sticky top-0 z-40 shadow-sm">
-        <div className="h-1 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500"></div>
+    <div className="min-h-screen bg-gray-50" data-testid="teachtino-dashboard">
+      {/* Header with School Branding */}
+      <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
+              {/* School Logo or Default Icon */}
+              {schoolInfo?.logo ? (
+                <img 
+                  src={schoolInfo.logo} 
+                  alt={schoolInfo.name} 
+                  className="w-10 h-10 rounded-xl object-cover border"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-white" />
+                </div>
+              )}
               <div>
-                <h1 className="font-bold text-gray-800 text-sm">TeachTino</h1>
-                <p className="text-xs text-gray-400">{schoolData?.name || 'School'}</p>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-bold text-gray-900">TeachTino</h1>
+                  {schoolInfo?.name && (
+                    <>
+                      <span className="text-gray-300">•</span>
+                      <span className="text-sm font-medium text-emerald-600">{schoolInfo.name}</span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">{user?.name} • {user?.role}</p>
               </div>
             </div>
+            
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowProfileDialog(true)} className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors">
-                {userPhoto ? (
-                  <img src={userPhoto} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-green-200" />
-                ) : (
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-green-600" />
-                  </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowNotifications(true)}
+                className="text-slate-600 relative"
+                data-testid="notifications-button"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadNotifications > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] rounded-full px-1"
+                    data-testid="notifications-unread-count"
+                  >
+                    {unreadNotifications}
+                  </span>
                 )}
-                <span className="text-sm font-medium text-gray-700 hidden sm:block">{user?.name?.split(' ')[0]}</span>
-              </button>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-500 hover:bg-red-50">
-                <LogOut className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTinoAI(true)}
+                className="text-emerald-600"
+                data-testid="tino-ai-open-button"
+              >
+                <Brain className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-rose-600"
+                data-testid="logout-button"
+              >
+                <LogOut className="w-5 h-5" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-4 pb-24 space-y-5">
-        {activeTab === 'attendance' && (
-          <TeachTinoAttendance onBack={() => setActiveTab('home')} />
-        )}
-        {activeTab === 'syllabus' && (
-          <TeachTinoSyllabus onBack={() => setActiveTab('home')} />
-        )}
-        {activeTab === 'homework' && (
-          <TeachTinoHomework onBack={() => setActiveTab('home')} />
-        )}
-        {activeTab === 'timetable' && (
-          <TeachTinoTimetable onBack={() => setActiveTab('home')} />
-        )}
-        {activeTab === 'students' && (
-          <TeachTinoStudents onBack={() => setActiveTab('home')} />
-        )}
-        {activeTab === 'home' && <>
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm">Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'},</p>
-              <h2 className="text-xl font-bold mt-0.5">{user?.name || 'Teacher'}</h2>
-              <p className="text-green-100 text-xs mt-1 capitalize">{user?.role?.replace('_', ' ')} {user?.designation ? `- ${user.designation}` : ''}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-green-100 text-xs">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}</p>
-              {myClasses.length > 0 && (
-                <p className="text-sm font-medium mt-1">{myClasses.length} {myClasses.length === 1 ? 'Class' : 'Classes'} Assigned</p>
-              )}
-            </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
+        {/* Welcome */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {getGreeting()}, {user?.name?.split(' ')[0]}! 👋
+          </h2>
+          <p className="text-gray-500">
+            {new Date().toLocaleDateString('hi-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
+          <div className="flex gap-2 mt-2">
+            {assignedClass && (
+              <Badge className="bg-emerald-100 text-emerald-700">
+                Class Teacher: {assignedClass.name}
+              </Badge>
+            )}
+            {tempAssignedClasses.length > 0 && (
+              <Badge className="bg-amber-100 text-amber-700">
+                +{tempAssignedClasses.length} Temp Classes
+              </Badge>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <Users className="w-5 h-5 text-blue-500" />
-              <span className="text-xs text-gray-400">Students</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{totalStudents}</p>
-            <p className="text-xs text-gray-400 mt-0.5">In your classes</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="text-xs text-gray-400">Present</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{todayAttendance.present}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Today</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <XCircle className="w-5 h-5 text-red-500" />
-              <span className="text-xs text-gray-400">Absent</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{todayAttendance.absent}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Today</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <BarChart3 className="w-5 h-5 text-emerald-500" />
-              <span className="text-xs text-gray-400">Rate</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{attendancePercent}%</p>
-            <p className="text-xs text-gray-400 mt-0.5">Attendance</p>
-          </div>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-white border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">My Classes</p>
+                  <p className="text-2xl font-bold text-gray-900">{availableClasses.length}</p>
+                </div>
+                <BookOpen className="w-8 h-8 text-indigo-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">My Subjects</p>
+                  <p className="text-2xl font-bold text-gray-900">{mySubjects.length}</p>
+                </div>
+                <FileText className="w-8 h-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">Present Today</p>
+                  <p className="text-2xl font-bold text-emerald-600">{todayStats.present}</p>
+                </div>
+                <UserCheck className="w-8 h-8 text-emerald-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">Absent Today</p>
+                  <p className="text-2xl font-bold text-rose-600">{todayStats.absent}</p>
+                </div>
+                <UserX className="w-8 h-8 text-rose-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">Student Queries</p>
+                  <p className="text-2xl font-bold text-purple-600">{studentQueries.filter(q => q.status !== 'answered' && !q.answer).length}</p>
+                </div>
+                <MessageCircle className="w-8 h-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {myClasses.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800 text-sm">My Classes</h3>
-              <button onClick={() => setActiveTab('students')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
-                View All <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-            <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {myClasses.slice(0, 6).map((cls) => (
-                <div key={cls.id} onClick={() => setActiveTab('students')} className="p-3 bg-green-50 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition-colors">
-                  <p className="font-semibold text-gray-800 text-sm">{cls.name || cls.class_name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{cls.section ? `Section ${cls.section}` : ''}</p>
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <Users className="w-3 h-3 text-green-600" />
-                    <span className="text-xs text-green-700 font-medium">{cls.student_count || 0} Students</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {timetableToday.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800 text-sm">Today's Schedule</h3>
-              <button onClick={() => setActiveTab('timetable')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
-                Full Timetable <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-            <div className="p-3 space-y-2">
-              {timetableToday.map((period, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-bold text-green-700">P{period.period}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{period.subject || 'Period'}</p>
-                    <p className="text-xs text-gray-400">{period.class_name} {period.start_time ? `| ${period.start_time} - ${period.end_time}` : ''}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div>
-          <h3 className="font-semibold text-gray-800 text-sm mb-3">Modules</h3>
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            {teacherModules.map((mod) => (
-              <button
-                key={mod.id}
-                onClick={mod.action}
-                className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 text-center"
+        {/* Quick Actions */}
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-800 mb-3">Quick Actions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {availableClasses.length > 0 && (
+              <Button 
+                onClick={() => setShowClassSelector(true)}
+                className="h-auto py-4 flex flex-col items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
+                data-testid="quick-action-mark-attendance"
               >
-                <div className={`w-10 h-10 ${mod.color.split(' ')[0]} rounded-xl flex items-center justify-center mx-auto mb-2`}>
-                  <mod.icon className={`w-5 h-5 ${mod.color.split(' ')[1]}`} />
-                </div>
-                <p className="text-xs font-semibold text-gray-800 truncate">{mod.name}</p>
-                <p className="text-[10px] text-gray-400 truncate mt-0.5">{mod.desc}</p>
-              </button>
-            ))}
+                <ClipboardCheck className="w-6 h-6" />
+                <span>Mark Attendance</span>
+              </Button>
+            )}
+            
+            <Button 
+              onClick={() => setShowLeaveDialog(true)}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+              data-testid="quick-action-apply-leave"
+            >
+              <CalendarDays className="w-6 h-6" />
+              <span>Apply Leave</span>
+            </Button>
+            
+            <Button 
+              onClick={() => setShowNoticeDialog(true)}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+              data-testid="quick-action-send-notice"
+            >
+              <Bell className="w-6 h-6" />
+              <span>Send Notice</span>
+            </Button>
+            
+            <Button 
+              onClick={() => setShowHomeworkDialog(true)}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+              data-testid="quick-action-assign-homework"
+            >
+              <FileEdit className="w-6 h-6" />
+              <span>Assign Homework</span>
+            </Button>
+            
+            <Button 
+              onClick={() => { fetchHomeworkSubmissions(); setShowHomeworkList(true); }}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
+              data-testid="quick-action-check-homework"
+            >
+              <CheckCircle className="w-6 h-6" />
+              <span>Check Homework</span>
+            </Button>
+            
+            <Button 
+              onClick={() => setShowSyllabusTracker(true)}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+              data-testid="quick-action-syllabus-tracker"
+            >
+              <BookMarked className="w-6 h-6" />
+              <span>Syllabus Tracker</span>
+            </Button>
+            
+            <Button 
+              onClick={() => setShowQueriesDialog(true)}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2 border-pink-300 text-pink-700 hover:bg-pink-50"
+              data-testid="quick-action-student-queries"
+            >
+              <MessageCircle className="w-6 h-6" />
+              <span>Student Queries</span>
+              {studentQueries.filter(q => !q.answered).length > 0 && (
+                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs">
+                  {studentQueries.filter(q => q.status !== 'answered' && !q.answer).length}
+                </Badge>
+              )}
+            </Button>
+            
+            {assignedClass && (
+              <Button 
+                onClick={() => setShowStudentLeaveDialog(true)}
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2 border-rose-300 text-rose-700 hover:bg-rose-50"
+                data-testid="quick-action-student-leave"
+              >
+                <UserX className="w-6 h-6" />
+                <span>Student Leave</span>
+              </Button>
+            )}
           </div>
         </div>
 
-        {canApproveLeave && pendingLeaves.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-800 text-sm flex items-center gap-2">
-                Pending Leave Approvals
-                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs">{pendingLeaves.length}</span>
-              </h3>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {pendingLeaves.slice(0, 5).map((leave) => (
-                <div key={leave.id} className="px-4 py-3 flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{leave.user_name || 'Staff'}</p>
-                    <p className="text-xs text-gray-400 capitalize">{leave.leave_type} | {leave.from_date} to {leave.to_date}</p>
-                    {leave.reason && <p className="text-xs text-gray-400 truncate mt-0.5">{leave.reason}</p>}
-                  </div>
-                  <div className="flex items-center gap-2 ml-3">
-                    <button onClick={() => handleApproveLeave(leave.id)} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors">
-                      <CheckCircle className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleRejectLeave(leave.id)} className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors">
-                      <XCircle className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {recentNotices.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-800 text-sm">Recent Notices</h3>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {recentNotices.map((notice) => (
-                <div key={notice.id} className="px-4 py-3">
-                  <div className="flex items-start gap-2">
-                    <Bell className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{notice.title}</p>
-                      {notice.created_at && <p className="text-xs text-gray-400 mt-0.5">{new Date(notice.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>}
+        {/* No Classes Warning */}
+        {/* My Subjects & Timetable Section */}
+        {mySubjects.length > 0 && (
+          <Card className="mb-6 bg-gradient-to-br from-purple-50 to-white border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-900">
+                <BookOpen className="w-5 h-5" />
+                My Subjects & Timetable
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mySubjects.map((subject, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-lg border border-purple-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{subject.subject_name || subject.name}</h4>
+                        <p className="text-sm text-gray-600">Class: {subject.class_name || subject.class}</p>
+                      </div>
+                      <Badge className="bg-purple-100 text-purple-700 text-xs">
+                        {subject.periods_per_week || 0} periods/week
+                      </Badge>
                     </div>
-                    {notice.priority === 'urgent' && <Badge className="ml-auto bg-red-100 text-red-600 text-[10px]">Urgent</Badge>}
+                    {subject.topics_covered !== undefined && (
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Progress</span>
+                          <span>{subject.topics_covered}/{subject.total_topics || 0}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-purple-600 h-2 rounded-full" 
+                            style={{width: `${subject.total_topics ? (subject.topics_covered / subject.total_topics * 100) : 0}%`}}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={() => {
+                          setSelectedSubjectForSyllabus(subject);
+                          setShowSyllabusTracker(true);
+                        }}
+                      >
+                        <BookOpen className="w-3 h-3 mr-1" />
+                        Syllabus
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={() => {
+                          setSelectedClass(availableClasses.find(c => c.name === subject.class_name || c.class_name === subject.class_name));
+                          setShowHomework(true);
+                        }}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Homework
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {myRequests.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-800 text-sm">My Requests</h3>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {myRequests.slice(0, 5).map((req) => (
-                <div key={req.id} className="px-4 py-3 flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 truncate">{req.title}</p>
-                    <p className="text-xs text-gray-400 capitalize">{req.request_type}</p>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    req.status === 'approved' ? 'bg-green-100 text-green-700' :
-                    req.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                    'bg-amber-100 text-amber-700'
-                  }`}>
-                    {req.status === 'pending' ? 'Pending' : req.status === 'approved' ? 'Approved' : 'Rejected'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {availableClasses.length === 0 && (
+          <Card className="mb-6 border-amber-200 bg-amber-50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <AlertTriangle className="w-6 h-6 text-amber-600" />
+              <div>
+                <p className="font-medium text-amber-800">No Class Assigned</p>
+                <p className="text-sm text-amber-600">आपको कोई class assign नहीं है। Principal से संपर्क करें।</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
-        </>}
+
+        {/* Recent Notices */}
+        <Card className="mb-6 border shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Bell className="w-5 h-5 text-blue-600" />
+              Recent Notices
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentNotices.length > 0 ? (
+              <div className="space-y-3">
+                {recentNotices.map((notice, idx) => (
+                  <div key={idx} className="p-3 bg-gray-50 rounded-lg border">
+                    <h4 className="font-medium text-gray-800">{notice.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{notice.content}</p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {new Date(notice.created_at).toLocaleDateString('hi-IN')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No recent notices</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* My Leaves */}
+        <Card className="mb-6 border shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-amber-600" />
+              My Leave Applications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {myLeaves.length > 0 ? (
+              <div className="space-y-2">
+                {myLeaves.slice(0, 5).map((leave, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                    <div>
+                      <p className="font-medium text-gray-800 capitalize">{leave.leave_type} Leave</p>
+                      <p className="text-sm text-gray-500">{leave.from_date} to {leave.to_date}</p>
+                    </div>
+                    <Badge className={
+                      leave.status === 'approved' ? 'bg-green-100 text-green-700' :
+                      leave.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }>
+                      {leave.status || 'Pending'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No leave applications</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pending Leaves for Approval (Principal/VP only) */}
+        {canApproveLeave && pendingLeaves.length > 0 && (
+          <Card className="mb-6 border shadow-sm border-orange-200">
+            <CardHeader className="pb-2 bg-orange-50">
+              <CardTitle className="text-lg flex items-center gap-2 text-orange-700">
+                <AlertTriangle className="w-5 h-5" />
+                Pending Leave Approvals
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="space-y-3">
+                {pendingLeaves.map((leave, idx) => (
+                  <div key={idx} className="p-3 bg-white rounded-lg border flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{leave.staff_name}</p>
+                      <p className="text-sm text-gray-500 capitalize">{leave.leave_type} • {leave.from_date} to {leave.to_date}</p>
+                      <p className="text-sm text-gray-600 mt-1">{leave.reason}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveLeave(leave.id, 'approve')}>
+                        <Check className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleApproveLeave(leave.id, 'reject')}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 border-t border-gray-200">
-        <div className="grid grid-cols-5 gap-1 p-1.5 max-w-lg mx-auto">
-          {[
-            { icon: Home, label: 'Home', id: 'home', action: () => setActiveTab('home') },
-            { icon: ClipboardCheck, label: 'Attendance', id: 'attendance', action: () => setActiveTab('attendance') },
-            { icon: BookOpen, label: 'Syllabus', id: 'syllabus', action: () => setActiveTab('syllabus') },
-            { icon: Calendar, label: 'Leave', id: 'leave', action: () => setShowLeaveDialog(true) },
-            { icon: User, label: 'Profile', id: 'profile', action: () => setShowProfileDialog(true) },
-          ].map((item) => (
-            <button key={item.id} onClick={item.action} className={`flex flex-col items-center gap-0.5 py-2 rounded-lg transition-colors ${activeTab === item.id ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:text-gray-600'}`}>
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </button>
-          ))}
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t z-50 shadow-lg">
+        <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
+          <button 
+            onClick={() => setActiveTab('home')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg ${activeTab === 'home' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500'}`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-xs">Home</span>
+          </button>
+          <button 
+            onClick={() => availableClasses.length > 0 && setShowClassSelector(true)}
+            className={`flex flex-col items-center gap-1 p-2 ${availableClasses.length > 0 ? 'text-gray-500' : 'text-gray-300'}`}
+          >
+            <ClipboardCheck className="w-5 h-5" />
+            <span className="text-xs">Attendance</span>
+          </button>
+          <button 
+            onClick={() => setShowSyllabusTracker(true)}
+            className="flex flex-col items-center gap-1 p-2 text-gray-500"
+          >
+            <BookMarked className="w-5 h-5" />
+            <span className="text-xs">Syllabus</span>
+          </button>
+          <button 
+            onClick={() => { fetchHomeworkSubmissions(); setShowHomeworkList(true); }}
+            className="flex flex-col items-center gap-1 p-2 text-gray-500"
+          >
+            <FileEdit className="w-5 h-5" />
+            <span className="text-xs">Homework</span>
+          </button>
+          <button 
+            onClick={() => setShowTinoAI(true)}
+            className="flex flex-col items-center gap-1 p-2 text-gray-500"
+          >
+            <Brain className="w-5 h-5" />
+            <span className="text-xs">Tino AI</span>
+          </button>
         </div>
       </nav>
 
-      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
-        <DialogContent className="bg-white rounded-xl">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="text-base font-semibold text-gray-800">Apply for Leave</DialogTitle>
+      {/* ============= DIALOGS ============= */}
+
+      {/* Class Selector for Attendance */}
+      <Dialog open={showClassSelector} onOpenChange={setShowClassSelector}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-emerald-600" />
+              Select Class for Attendance
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            {leaveBalance && (
-              <div className="grid grid-cols-3 gap-2 p-3 bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <p className="text-lg font-bold text-blue-600">{leaveBalance.casual?.remaining ?? '-'}</p>
-                  <p className="text-[10px] text-gray-500">Casual</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold text-red-600">{leaveBalance.sick?.remaining ?? '-'}</p>
-                  <p className="text-[10px] text-gray-500">Sick</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold text-green-600">{leaveBalance.earned?.remaining ?? '-'}</p>
-                  <p className="text-[10px] text-gray-500">Earned</p>
-                </div>
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {availableClasses.length > 0 ? (
+              availableClasses.map((cls) => (
+                <button
+                  key={cls.id}
+                  onClick={() => openAttendanceForClass(cls)}
+                  className="w-full p-4 text-left bg-gray-50 hover:bg-emerald-50 rounded-lg border hover:border-emerald-300 transition-all flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-medium text-gray-800">{cls.name}</p>
+                    <p className="text-sm text-gray-500">{cls.type}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <AlertTriangle className="w-12 h-12 mx-auto text-amber-400 mb-3" />
+                <p className="text-gray-500">No classes assigned</p>
+                <p className="text-sm text-gray-400">आपको कोई class assign नहीं है</p>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Syllabus Update Dialog */}
+      <Dialog open={showSyllabusUpdate} onOpenChange={setShowSyllabusUpdate}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5 text-indigo-600" />
+              Update Chapter Progress
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Leave Type</label>
-              <select value={leaveForm.leave_type} onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })} className="w-full mt-2 p-2.5 border border-gray-200 rounded-lg text-gray-700 text-sm focus:outline-none focus:border-green-500">
-                <option value="casual">Casual Leave</option>
-                <option value="sick">Sick Leave</option>
-                <option value="earned">Earned Leave</option>
+              <label className="text-sm font-medium text-gray-700">Status</label>
+              <select
+                value={syllabusUpdateForm.status}
+                onChange={(e) => setSyllabusUpdateForm((prev) => ({ ...prev, status: e.target.value }))}
+                className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1"
+                data-testid="syllabus-update-status"
+              >
+                <option value="not_started">Not Started</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium text-gray-700">From</label>
-                <Input type="date" value={leaveForm.from_date} onChange={(e) => setLeaveForm({ ...leaveForm, from_date: e.target.value })} className="mt-1.5 border-gray-200" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">To</label>
-                <Input type="date" value={leaveForm.to_date} onChange={(e) => setLeaveForm({ ...leaveForm, to_date: e.target.value })} className="mt-1.5 border-gray-200" />
-              </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Topics Covered</label>
+              <Input
+                placeholder="Comma separated topics"
+                value={syllabusUpdateForm.topics}
+                onChange={(e) => setSyllabusUpdateForm((prev) => ({ ...prev, topics: e.target.value }))}
+                data-testid="syllabus-update-topics"
+              />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Reason</label>
-              <Textarea value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} placeholder="Enter reason..." rows={3} className="mt-1.5 border-gray-200" />
+              <label className="text-sm font-medium text-gray-700">Teaching Notes</label>
+              <Textarea
+                placeholder="Class notes या teaching points लिखें"
+                value={syllabusUpdateForm.notes}
+                onChange={(e) => setSyllabusUpdateForm((prev) => ({ ...prev, notes: e.target.value }))}
+                data-testid="syllabus-update-notes"
+              />
             </div>
-            <Button className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={handleApplyLeave}>
-              <Send className="w-4 h-4 mr-2" /> Submit Leave
+            <Button onClick={handleSyllabusUpdate} className="w-full bg-indigo-600 hover:bg-indigo-700" data-testid="syllabus-update-submit">
+              Save Progress
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Lesson Summary Dialog */}
+      <Dialog open={showLessonDialog} onOpenChange={setShowLessonDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+              Lesson Summary
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {lessonLoading ? (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" /> Generating summary...
+              </div>
+            ) : (
+              <p className="text-sm text-gray-700 whitespace-pre-line">{lessonSummary || 'Summary will appear here.'}</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attendance Sheet Dialog - Enhanced with more options */}
+      <Dialog open={showAttendanceSheet} onOpenChange={setShowAttendanceSheet}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-emerald-600" />
+              Mark Attendance - {selectedClassForAttendance?.name || assignedClass?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <span className="font-medium">Date: {today}</span>
+              <div className="flex gap-3 text-sm">
+                <span className="text-emerald-600">P: {todayStats.present}</span>
+                <span className="text-rose-600">A: {todayStats.absent}</span>
+                <span className="text-yellow-600">L: {todayStats.late}</span>
+                <span className="text-blue-600">Leave: {todayStats.leave}</span>
+              </div>
+            </div>
+            
+            {/* Legend */}
+            <div className="flex flex-wrap gap-2 p-2 bg-gray-100 rounded-lg">
+              {ATTENDANCE_OPTIONS.map(opt => (
+                <div key={opt.value} className="flex items-center gap-1 text-xs">
+                  <span className={`w-3 h-3 rounded ${opt.color}`}></span>
+                  <span>{opt.label}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {students.map((student, idx) => (
+                <div key={student.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-400 text-sm w-6">{idx + 1}</span>
+                    <div>
+                      <p className="font-medium text-gray-800">{student.name}</p>
+                      <p className="text-xs text-gray-500">Roll: {student.roll_no || idx + 1}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    {ATTENDANCE_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => markAttendance(student.id, opt.value)}
+                        className={`w-8 h-8 rounded flex items-center justify-center text-white text-sm transition-all ${
+                          attendanceData[student.id] === opt.value 
+                            ? opt.color + ' ring-2 ring-offset-1 ring-gray-400' 
+                            : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+                        }`}
+                        title={opt.label}
+                      >
+                        {opt.icon}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={submitAttendance}>
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Submit Attendance
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Leave Application Dialog */}
+      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Apply for Leave</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Leave Type</label>
+              <select
+                value={leaveForm.leave_type}
+                onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })}
+                className="w-full mt-1 p-2 border rounded-lg"
+              >
+                <option value="casual">Casual Leave (आकस्मिक)</option>
+                <option value="sick">Sick Leave (बीमारी)</option>
+                <option value="earned">Earned Leave (अर्जित)</option>
+                <option value="half_day">Half Day (आधा दिन)</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">From Date</label>
+                <Input
+                  type="date"
+                  value={leaveForm.from_date}
+                  onChange={(e) => setLeaveForm({ ...leaveForm, from_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">To Date</label>
+                <Input
+                  type="date"
+                  value={leaveForm.to_date}
+                  onChange={(e) => setLeaveForm({ ...leaveForm, to_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Reason (कारण)</label>
+              <Textarea
+                value={leaveForm.reason}
+                onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                placeholder="Leave का कारण लिखें..."
+                rows={3}
+              />
+            </div>
+            <Button className="w-full" onClick={handleApplyLeave}>
+              <Send className="w-4 h-4 mr-2" />
+              Submit Application
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notice Dialog */}
       <Dialog open={showNoticeDialog} onOpenChange={setShowNoticeDialog}>
-        <DialogContent className="bg-white rounded-xl">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="text-base font-semibold text-gray-800">Send Notice (Admin Approval Required)</DialogTitle>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Notice</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Title</label>
-              <Input value={noticeForm.title} onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })} placeholder="Notice title..." className="mt-1.5 border-gray-200" />
+              <label className="text-sm font-medium">Target Class (Optional)</label>
+              <select
+                value={noticeForm.target_class}
+                onChange={(e) => setNoticeForm({ ...noticeForm, target_class: e.target.value })}
+                className="w-full mt-1 p-2 border rounded-lg"
+              >
+                <option value="">All Classes</option>
+                {availableClasses.map(cls => (
+                  <option key={cls.id} value={cls.id}>{cls.name}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Content</label>
-              <Textarea value={noticeForm.content} onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })} placeholder="Notice content..." rows={4} className="mt-1.5 border-gray-200" />
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                value={noticeForm.title}
+                onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
+                placeholder="Notice title..."
+              />
             </div>
-            <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">Notice will be sent to admin for approval before publishing.</p>
-            <Button className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={handleSendNotice}>
-              <Send className="w-4 h-4 mr-2" /> Submit for Approval
+            <div>
+              <label className="text-sm font-medium">Content</label>
+              <Textarea
+                value={noticeForm.content}
+                onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
+                placeholder="Notice content..."
+                rows={4}
+              />
+            </div>
+            <Button className="w-full" onClick={handleSendNotice}>
+              <Send className="w-4 h-4 mr-2" />
+              Send Notice
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showProfileDialog} onOpenChange={(v) => { setShowProfileDialog(v); if (!v) { setShowPasswordSection(false); setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); } }}>
-        <DialogContent className="max-w-md bg-white rounded-xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="text-base font-semibold text-gray-800">My Profile</DialogTitle>
+      {/* Homework Dialog - Enhanced with Chapter/Topic */}
+      <Dialog open={showHomeworkDialog} onOpenChange={setShowHomeworkDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Assign Homework</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="flex items-center gap-4">
-              {userPhoto ? (
-                <img src={userPhoto} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-green-200" />
-              ) : (
-                <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-green-500" />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Class</label>
+                <select
+                  value={homeworkForm.class_id}
+                  onChange={(e) => setHomeworkForm({ ...homeworkForm, class_id: e.target.value })}
+                  className="w-full mt-1 p-2 border rounded-lg"
+                >
+                  <option value="">Select Class</option>
+                  {availableClasses.map(cls => (
+                    <option key={cls.id} value={cls.id}>{cls.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Subject</label>
+                <select
+                  value={homeworkForm.subject}
+                  onChange={(e) => {
+                    const selectedSubject = e.target.value;
+                    const subjectData = mySubjects.find(s => s.subject === selectedSubject || s.subject_name === selectedSubject);
+                    setHomeworkForm({ 
+                      ...homeworkForm, 
+                      subject: selectedSubject,
+                      // Auto-fill class if only one class for this subject
+                      class_id: subjectData && mySubjects.filter(s => s.subject === selectedSubject || s.subject_name === selectedSubject).length === 1 ? subjectData.class_id : homeworkForm.class_id
+                    });
+                  }}
+                  className="w-full mt-1 p-2 border rounded-lg"
+                >
+                  <option value="">Select Subject</option>
+                  {Array.from(new Set(mySubjects.map(s => s.subject || s.subject_name))).map((subject, idx) => (
+                    <option key={idx} value={subject}>{subject}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Chapter</label>
+                <Input
+                  value={homeworkForm.chapter}
+                  onChange={(e) => setHomeworkForm({ ...homeworkForm, chapter: e.target.value })}
+                  placeholder="e.g., Chapter 5"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Topic</label>
+                <Input
+                  value={homeworkForm.topic}
+                  onChange={(e) => setHomeworkForm({ ...homeworkForm, topic: e.target.value })}
+                  placeholder="e.g., Quadratic Equations"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Due Date</label>
+              <Input
+                type="date"
+                value={homeworkForm.due_date}
+                onChange={(e) => setHomeworkForm({ ...homeworkForm, due_date: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={homeworkForm.description}
+                onChange={(e) => setHomeworkForm({ ...homeworkForm, description: e.target.value })}
+                placeholder="Homework details..."
+                rows={4}
+              />
+            </div>
+            <Button className="w-full" onClick={handleAssignHomework}>
+              <FileEdit className="w-4 h-4 mr-2" />
+              Assign Homework
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Leave Dialog */}
+      <Dialog open={showStudentLeaveDialog} onOpenChange={setShowStudentLeaveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark Student Leave</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Student</label>
+              <select
+                value={studentLeaveForm.student_id}
+                onChange={(e) => setStudentLeaveForm({ ...studentLeaveForm, student_id: e.target.value })}
+                className="w-full mt-1 p-2 border rounded-lg"
+              >
+                <option value="">Select Student</option>
+                {students.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Leave Type</label>
+              <select
+                value={studentLeaveForm.leave_type}
+                onChange={(e) => setStudentLeaveForm({ ...studentLeaveForm, leave_type: e.target.value })}
+                className="w-full mt-1 p-2 border rounded-lg"
+              >
+                <option value="sick">Sick (बीमारी)</option>
+                <option value="personal">Personal (व्यक्तिगत)</option>
+                <option value="family">Family Emergency</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">From Date</label>
+                <Input
+                  type="date"
+                  value={studentLeaveForm.from_date}
+                  onChange={(e) => setStudentLeaveForm({ ...studentLeaveForm, from_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">To Date</label>
+                <Input
+                  type="date"
+                  value={studentLeaveForm.to_date}
+                  onChange={(e) => setStudentLeaveForm({ ...studentLeaveForm, to_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Reason</label>
+              <Textarea
+                value={studentLeaveForm.reason}
+                onChange={(e) => setStudentLeaveForm({ ...studentLeaveForm, reason: e.target.value })}
+                placeholder="Leave का कारण..."
+                rows={2}
+              />
+            </div>
+            <Button className="w-full" onClick={handleStudentLeave}>
+              <UserX className="w-4 h-4 mr-2" />
+              Mark Leave
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tino AI Dialog - Text Only */}
+      <Dialog open={showTinoAI} onOpenChange={setShowTinoAI}>
+        <DialogContent className="max-w-lg max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-emerald-600" />
+              Tino AI Assistant
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col h-96">
+            <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-2">
+              {aiMessages.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  <Brain className="w-12 h-12 mx-auto mb-3 text-emerald-300" />
+                  <p>नमस्ते! मैं Tino AI हूं।</p>
+                  <p className="text-sm">कुछ भी पूछें - attendance, syllabus, homework...</p>
                 </div>
               )}
-              <div>
-                <h3 className="font-semibold text-gray-800">{user?.name}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{user?.email}</p>
-                <Badge className="mt-1.5 capitalize bg-green-50 text-green-600 border border-green-100">{user?.role?.replace('_', ' ')}</Badge>
-              </div>
-            </div>
-            <div className="space-y-2 p-3 bg-gray-50 rounded-xl text-sm border border-gray-100">
-              {user?.employee_id && <div className="flex justify-between"><span className="text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Employee ID</span><span className="font-medium text-gray-700">{user.employee_id}</span></div>}
-              {user?.mobile && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Phone className="w-3 h-3" /> Mobile</span><span className="font-medium text-gray-700">{user.mobile}</span></div>}
-              {user?.email && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Mail className="w-3 h-3" /> Email</span><span className="font-medium text-gray-700">{user.email}</span></div>}
-              {user?.designation && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Designation</span><span className="font-medium text-gray-700">{user.designation}</span></div>}
-              {user?.department && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Department</span><span className="font-medium text-gray-700">{user.department}</span></div>}
-              {user?.joining_date && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Joining Date</span><span className="font-medium text-gray-700">{new Date(user.joining_date).toLocaleDateString('en-IN')}</span></div>}
-            </div>
-
-            <button onClick={() => setShowPasswordSection(!showPasswordSection)} className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors">
-              <div className="flex items-center gap-2">
-                <Key className="w-4 h-4 text-amber-600" />
-                <span className="text-sm font-medium text-amber-700">Change Password</span>
-              </div>
-              <Edit className="w-4 h-4 text-amber-400" />
-            </button>
-
-            {showPasswordSection && (
-              <div className="space-y-3 p-3 bg-white rounded-xl border border-gray-200">
-                <div className="relative">
-                  <Input type={showOldPw ? 'text' : 'password'} placeholder="Current Password" value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="pr-10" />
-                  <button type="button" onClick={() => setShowOldPw(!showOldPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showOldPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+              {aiMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-lg ${
+                    msg.role === 'user' 
+                      ? 'bg-emerald-600 text-white' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {msg.content}
+                  </div>
                 </div>
-                <div className="relative">
-                  <Input type={showNewPw ? 'text' : 'password'} placeholder="New Password (min 6 chars)" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="pr-10" />
-                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+              ))}
+              {aiLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 p-3 rounded-lg">
+                    <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+                  </div>
                 </div>
-                <Input type="password" placeholder="Confirm New Password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} />
-                <Button onClick={handleChangePassword} disabled={changingPassword} className="w-full bg-amber-500 hover:bg-amber-600 text-white">
-                  {changingPassword ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Changing...</> : 'Update Password'}
-                </Button>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            
+            <div className="flex gap-2">
+              <Input
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                placeholder="Type your question..."
+                onKeyPress={(e) => e.key === 'Enter' && handleAIChat()}
+                data-testid="tino-ai-input"
+              />
+              <Button onClick={handleAIChat} disabled={aiLoading || !aiInput.trim()} data-testid="tino-ai-send-button">
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Homework Submissions/Check Dialog */}
+      <Dialog open={showHomeworkList} onOpenChange={setShowHomeworkList}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              Homework Submissions
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {homeworkSubmissions.length > 0 ? (
+              homeworkSubmissions.map((submission, idx) => (
+                <div key={idx} className="p-4 bg-gray-50 rounded-lg border">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{submission.student_name}</p>
+                      <p className="text-sm text-gray-500">{submission.subject} • {submission.class_name}</p>
+                      <p className="text-xs text-gray-400 mt-1">Submitted: {new Date(submission.submitted_at).toLocaleString('hi-IN')}</p>
+                    </div>
+                    <Badge className={
+                      submission.status === 'approved' ? 'bg-green-100 text-green-700' :
+                      submission.status === 'revision' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-blue-100 text-blue-700'
+                    }>
+                      {submission.status || 'Pending Review'}
+                    </Badge>
+                  </div>
+                  
+                  {submission.image_url && (
+                    <div className="mt-3">
+                      <img 
+                        src={submission.image_url} 
+                        alt="Homework" 
+                        className="max-h-40 rounded border cursor-pointer hover:opacity-90"
+                        onClick={() => window.open(submission.image_url, '_blank')}
+                      />
+                    </div>
+                  )}
+                  
+                  {submission.status === 'pending' && (
+                    <div className="flex gap-2 mt-3">
+                      <Button 
+                        size="sm" 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => handleHomeworkReview(submission.id, 'approved', 'अच्छा काम!')}
+                      >
+                        <Check className="w-4 h-4 mr-1" /> Approve
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="text-yellow-700 border-yellow-300"
+                        onClick={() => handleHomeworkReview(submission.id, 'revision', 'Please improve')}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" /> Needs Revision
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <FileEdit className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500">No homework submissions yet</p>
+                <p className="text-sm text-gray-400">Students will appear here when they submit homework</p>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-            <div className="border-t border-gray-100 pt-3">
-              <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
-                <div className="bg-green-50 p-1 rounded"><Camera className="w-4 h-4 text-green-500" /></div>
-                Profile Photo
-              </h4>
-              <StaffPhotoUpload userId={user?.id} schoolId={user?.school_id} />
+      {/* Notifications Dialog */}
+      <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-slate-600" />
+              Notifications
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">Total: {notifications.length}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleMarkAllNotificationsRead}
+                data-testid="notifications-mark-all"
+              >
+                Mark all read
+              </Button>
             </div>
+            {notifications.length > 0 ? (
+              notifications.map((note) => (
+                <button
+                  key={note.id}
+                  onClick={() => handleMarkNotificationRead(note.id)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${note.is_read ? 'bg-white' : 'bg-amber-50 border-amber-200'}`}
+                  data-testid={`notification-item-${note.id}`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{note.title}</p>
+                      <p className="text-xs text-gray-500 mt-1">{note.message}</p>
+                    </div>
+                    {!note.is_read && (
+                      <span className="w-2 h-2 rounded-full bg-amber-500 mt-2" />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-2">
+                    {note.created_at ? new Date(note.created_at).toLocaleString('hi-IN') : ''}
+                  </p>
+                </button>
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-8">No notifications yet</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Syllabus Tracker Dialog */}
+      <Dialog open={showSyllabusTracker} onOpenChange={setShowSyllabusTracker}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookMarked className="w-5 h-5 text-indigo-600" />
+              Syllabus Tracker
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Subject-wise syllabus tracking, chapter progress, aur week/month/year analytics yahan milेंगे।
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">Assigned Subjects</h4>
+                {mySubjects.length > 0 ? (
+                  mySubjects.map((sub, idx) => (
+                    <button
+                      key={`${sub.class_id}-${sub.subject}-${idx}`}
+                      onClick={() => handleSelectSyllabusSubject(sub)}
+                      className={`w-full text-left p-3 rounded-lg border transition-all ${
+                        selectedSubjectForSyllabus?.subject === sub.subject && selectedSubjectForSyllabus?.class_id === sub.class_id
+                          ? 'border-indigo-400 bg-indigo-50'
+                          : 'bg-white hover:bg-slate-50'
+                      }`}
+                      data-testid={`syllabus-subject-${idx}`}
+                    >
+                      <p className="font-medium text-gray-800">{sub.subject}</p>
+                      <p className="text-xs text-gray-500">{sub.class_name || 'Class'}</p>
+                      <p className="text-[11px] text-gray-400 mt-1">Board: {sub.board || 'NCERT'}</p>
+                    </button>
+                  ))
+                ) : (
+                  <div className="text-center py-6 border rounded-lg bg-slate-50">
+                    <BookMarked className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+                    <p className="text-gray-500">No subjects assigned yet</p>
+                    <p className="text-sm text-gray-400">Admin से subject assign करवाएं</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 space-y-4">
+                {selectedSubjectForSyllabus ? (
+                  <>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <div>
+                        <p className="text-sm text-gray-500">{selectedSubjectForSyllabus.class_name}</p>
+                        <h3 className="text-lg font-semibold text-gray-900">{selectedSubjectForSyllabus.subject}</h3>
+                      </div>
+                      <div className="flex gap-2">
+                        {['week', 'month', 'year'].map((rangeValue) => (
+                          <Button
+                            key={rangeValue}
+                            size="sm"
+                            variant={syllabusRange === rangeValue ? 'default' : 'outline'}
+                            onClick={() => handleSyllabusRangeChange(rangeValue)}
+                            data-testid={`syllabus-range-${rangeValue}`}
+                          >
+                            {rangeValue === 'week' ? 'Week' : rangeValue === 'month' ? 'Month' : 'Year'}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {(() => {
+                        const totalChapters = syllabusChapters.length || syllabusAnalytics?.summary?.total_chapters || 0;
+                        const completed = syllabusAnalytics?.summary?.completed || 0;
+                        const inProgress = syllabusAnalytics?.summary?.in_progress || 0;
+                        const remaining = Math.max(totalChapters - completed - inProgress, 0);
+                        return (
+                          <>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">Total Chapters</p>
+                                <p className="text-lg font-bold text-gray-900">{totalChapters}</p>
+                              </CardContent>
+                            </Card>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">Completed</p>
+                                <p className="text-lg font-bold text-emerald-600">{completed}</p>
+                              </CardContent>
+                            </Card>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">In Progress</p>
+                                <p className="text-lg font-bold text-amber-600">{inProgress}</p>
+                              </CardContent>
+                            </Card>
+                            <Card className="border bg-white">
+                              <CardContent className="p-3">
+                                <p className="text-xs text-gray-500">Remaining</p>
+                                <p className="text-lg font-bold text-slate-600">{remaining}</p>
+                              </CardContent>
+                            </Card>
+                          </>
+                        );
+                      })()}
+                    </div>
+
+                    {syllabusAnalytics && (
+                      <div className="text-xs text-gray-500">
+                        इस {syllabusRange} में {syllabusAnalytics.range_stats?.completed_in_range || 0} chapters complete हुए • {syllabusAnalytics.range_stats?.updated_in_range || 0} updates
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {syllabusChapters.length > 0 ? (
+                        syllabusChapters.map((chapter) => {
+                          const progress = syllabusProgressMap[chapter.number] || {};
+                          const status = progress.status || 'not_started';
+                          const statusStyles = status === 'completed'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : status === 'in_progress'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-slate-100 text-slate-600';
+                          return (
+                            <div key={chapter.number} className="p-4 rounded-lg border bg-white">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-semibold text-gray-900">Chapter {chapter.number}: {chapter.name}</p>
+                                  {chapter.topics?.length > 0 && (
+                                    <p className="text-xs text-gray-500 mt-1">Topics: {chapter.topics.slice(0, 5).join(', ')}</p>
+                                  )}
+                                </div>
+                                <Badge className={statusStyles} data-testid={`syllabus-status-${chapter.number}`}>
+                                  {status === 'completed' ? 'Completed' : status === 'in_progress' ? 'In Progress' : 'Not Started'}
+                                </Badge>
+                              </div>
+                              {progress.topics_covered?.length > 0 && (
+                                <p className="text-xs text-slate-500 mt-2">Covered: {progress.topics_covered.join(', ')}</p>
+                              )}
+                              {progress.notes && (
+                                <p className="text-xs text-slate-500 mt-1">Notes: {progress.notes}</p>
+                              )}
+                              <div className="flex flex-wrap gap-2 mt-3">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openSyllabusUpdateDialog(chapter)}
+                                  data-testid={`syllabus-update-${chapter.number}`}
+                                >
+                                  Update Status
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => openLessonSummary(chapter)}
+                                  data-testid={`syllabus-lesson-${chapter.number}`}
+                                >
+                                  Open Lesson
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-10 text-gray-500">
+                          No chapters found for this subject.
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-full flex items-center justify-center border rounded-lg bg-slate-50 text-gray-500">
+                    Subject select karke syllabus tracking start karein.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Queries Dialog */}
+      <Dialog open={showQueriesDialog} onOpenChange={setShowQueriesDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-pink-600" />
+              Student Queries
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {studentQueries.length > 0 ? (
+              studentQueries.map((query, idx) => (
+                <div key={idx} className={`p-4 rounded-lg border ${(query.status === 'answered' || query.answer) ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{query.student_name}</p>
+                      <p className="text-sm text-gray-500">{query.subject} • {query.class_name}</p>
+                    </div>
+                    <Badge className={(query.status === 'answered' || query.answer) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}>
+                      {(query.status === 'answered' || query.answer) ? 'Answered' : 'Pending'}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-gray-700 p-2 bg-white rounded">{query.question}</p>
+                  
+                  {(query.status === 'answered' || query.answer) ? (
+                    <div className="mt-2 p-2 bg-green-100 rounded">
+                      <p className="text-sm text-green-800">{query.answer}</p>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <Textarea 
+                        placeholder="Answer this query..."
+                        className="mb-2"
+                        value={queryAnswerDrafts[query.id] || ''}
+                        onChange={(e) => setQueryAnswerDrafts((prev) => ({ ...prev, [query.id]: e.target.value }))}
+                        data-testid={`query-answer-input-${query.id}`}
+                      />
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          const answer = queryAnswerDrafts[query.id];
+                          if (answer) handleAnswerQuery(query.id, answer);
+                        }}
+                        data-testid={`query-answer-submit-${query.id}`}
+                      >
+                        <Send className="w-4 h-4 mr-1" /> Send Answer
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <MessageCircle className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500">No student queries</p>
+                <p className="text-sm text-gray-400">Students can ask questions via StudyTino</p>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

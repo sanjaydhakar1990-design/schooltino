@@ -1,6 +1,10 @@
+/**
+ * StudyTino Dashboard - Student Portal
+ * Simple, Clean, Light Theme - Mobile First
+ * Inspired by: MyLeadingCampus, BloomByte
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -19,28 +23,23 @@ import {
   User, Calendar, Bell, BookOpen, Clock, CheckCircle, XCircle,
   Download, LogOut, School, ChevronRight, Search, Settings, 
   FileText, CalendarDays, AlertTriangle, Loader2, Brain, 
-  Send, CreditCard, Wallet, Phone, Lock, Home,
-  Eye, EyeOff, Paperclip, Star, ClipboardList, MessageCircle, Users,
-  Trophy, Activity, AlertOctagon, Award, Zap, Key, Edit, Mail, Shield,
-  ChevronLeft,
-  ShoppingBag, Video, Rss, Heart, Share2, Play, Plus, ArrowUpRight, ArrowDownLeft, IndianRupee, Store
+  Send, CreditCard, Wallet, Mic, Phone, Lock, Home,
+  Eye, Paperclip, Star, ClipboardList, MessageCircle, Users,
+  Trophy, Activity, AlertOctagon, Award
 } from 'lucide-react';
 import { toast } from 'sonner';
+import VoiceAssistantFAB from '../components/VoiceAssistantFAB';
 import AdmitCardSection from '../components/AdmitCardSection';
-import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
-const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const SortIcon = () => (
-  <span className="inline-flex flex-col ml-1 -space-y-1 opacity-40">
-    <span className="text-[8px] leading-none">&#9650;</span>
-    <span className="text-[8px] leading-none">&#9660;</span>
-  </span>
-);
-
+// Load Razorpay script
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
-    if (window.Razorpay) { resolve(true); return; }
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.onload = () => resolve(true);
@@ -50,110 +49,134 @@ const loadRazorpayScript = () => {
 };
 
 export default function StudyTinoDashboard() {
-  const { t } = useTranslation();
-  const { user, logout, schoolData } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
+  // Dashboard Data
   const [profile, setProfile] = useState(null);
   const [notices, setNotices] = useState([]);
   const [homework, setHomework] = useState([]);
   const [syllabus, setSyllabus] = useState([]);
   const [attendance, setAttendance] = useState({ present: 0, total: 0 });
+  const [studentQueries, setStudentQueries] = useState([]);
   
+  // Dialogs
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNoticeDialog, setShowNoticeDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showAIHelper, setShowAIHelper] = useState(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [showComplaintDialog, setShowComplaintDialog] = useState(false);
   const [showActivitiesDialog, setShowActivitiesDialog] = useState(false);
   const [showAdmitCardDialog, setShowAdmitCardDialog] = useState(false);
-  const [selectedNotice, setSelectedNotice] = useState(null);
-  const [showPasswordSection, setShowPasswordSection] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [showOldPw, setShowOldPw] = useState(false);
-  const [showNewPw, setShowNewPw] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [showHomeworkDialog, setShowHomeworkDialog] = useState(false);
+  const [showQueryDialog, setShowQueryDialog] = useState(false);
+  const [selectedHomework, setSelectedHomework] = useState(null);
+  const [homeworkImage, setHomeworkImage] = useState(null);
+  const [uploadingHomework, setUploadingHomework] = useState(false);
+  const [querySubmitting, setQuerySubmitting] = useState(false);
   
+  const [selectedNotice, setSelectedNotice] = useState(null);
+  const [queryForm, setQueryForm] = useState({
+    subject: '',
+    question: ''
+  });
+  
+  // Chat State
   const [chatMessages, setChatMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [chatGroup, setChatGroup] = useState(null);
   
+  // Complaint State
   const [complaintForm, setComplaintForm] = useState({
-    complaint_to: 'teacher', category: 'academic', subject: '', description: '', is_anonymous: false
+    complaint_to: 'teacher',
+    category: 'academic',
+    subject: '',
+    description: '',
+    is_anonymous: false
   });
+  
+  // Activities State
   const [myActivities, setMyActivities] = useState([]);
   
+  // Payment State
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [paymentMode, setPaymentMode] = useState('free');
-  const [paymentSettings, setPaymentSettings] = useState(null);
-  const [screenshotFile, setScreenshotFile] = useState(null);
-  const [screenshotPreview, setScreenshotPreview] = useState('');
-  const [transactionId, setTransactionId] = useState('');
-  const [upiPaymentMode, setUpiPaymentMode] = useState('upi');
-  const [paymentRemarks, setPaymentRemarks] = useState('');
-  const [myPayments, setMyPayments] = useState([]);
-  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
+  const [pendingFees, setPendingFees] = useState(null);
   
-  const [leaveForm, setLeaveForm] = useState({ leave_type: 'sick', from_date: '', to_date: '', reason: '' });
+  // Leave Form
+  const [leaveForm, setLeaveForm] = useState({
+    leave_type: 'sick',
+    from_date: '',
+    to_date: '',
+    reason: ''
+  });
+  
   const [isBlocked, setIsBlocked] = useState(false);
+  
+  // Welcome Dialog for first-time users
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
-  const [showWalletDialog, setShowWalletDialog] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [walletTransactions, setWalletTransactions] = useState([]);
-  const [walletAddAmount, setWalletAddAmount] = useState('');
-  const [pendingFees, setPendingFees] = useState(0);
-
-  const [showLiveClassDialog, setShowLiveClassDialog] = useState(false);
-  const [liveClasses, setLiveClasses] = useState([]);
-
-  const [showFeedDialog, setShowFeedDialog] = useState(false);
-  const [feedPosts, setFeedPosts] = useState([]);
-  const [feedComment, setFeedComment] = useState('');
-
-  const [showEStoreDialog, setShowEStoreDialog] = useState(false);
-  const [storeItems, setStoreItems] = useState([]);
-
-  const [aiMessages, setAiMessages] = useState([]);
-  const [aiInput, setAiInput] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-
-  const handleStudentChangePassword = async () => {
-    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      toast.error('Please fill all fields'); return;
-    }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('New passwords do not match'); return;
-    }
-    if (passwordForm.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters'); return;
-    }
-    setChangingPassword(true);
-    try {
-      const formData = new FormData();
-      formData.append('old_password', passwordForm.oldPassword);
-      formData.append('new_password', passwordForm.newPassword);
-      const res = await fetch(`${API}/student/change-password`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: formData
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success('Password changed successfully!');
-        setShowPasswordSection(false);
-        setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
-      } else {
-        toast.error(data.detail || 'Failed to change password');
-      }
-    } catch (error) { toast.error('Error changing password'); }
-    finally { setChangingPassword(false); }
+  // Greeting based on time
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   };
 
-  useEffect(() => { fetchDashboardData(); }, []);
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('hi-IN', { 
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+
+  useEffect(() => {
+    fetchDashboardData();
+    // Check if first-time login for welcome message
+    const hasSeenWelcome = localStorage.getItem('studytino_welcome_seen');
+    if (!hasSeenWelcome) {
+      setShowWelcomeDialog(true);
+      localStorage.setItem('studytino_welcome_seen', 'true');
+    }
+  }, []);
+
+  const fetchStudentExtras = async (profileData) => {
+    if (!profileData?.class_id || !profileData?.school_id) return;
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const [progressRes, queriesRes] = await Promise.allSettled([
+        axios.get(`${API}/syllabus-progress/student/${profileData.school_id}/${profileData.class_id}`, { headers }),
+        axios.get(`${API}/student/queries?student_id=${profileData.id || profileData.student_id}&school_id=${profileData.school_id}`, { headers })
+      ]);
+
+      if (progressRes.status === 'fulfilled') {
+        const progressData = progressRes.value.data;
+        const subjects = progressData?.subjects || [];
+        const mapped = subjects.map((sub) => {
+          const inProgress = sub.chapters?.find((ch) => ch.status === 'in_progress');
+          const lastCompleted = sub.chapters?.filter((ch) => ch.status === 'completed').slice(-1)[0];
+          return {
+            subject: sub.subject,
+            completed: sub.completion_percentage || 0,
+            current: inProgress?.chapter_name || lastCompleted?.chapter_name || 'Not started'
+          };
+        });
+        if (mapped.length > 0) {
+          setSyllabus(mapped);
+        }
+      }
+
+      if (queriesRes.status === 'fulfilled') {
+        setStudentQueries(queriesRes.value.data || []);
+      }
+    } catch (error) {
+      console.error('Student extras error:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -163,1051 +186,1211 @@ export default function StudyTinoDashboard() {
         axios.get(`${API}/student/notices`),
         axios.get(`${API}/student/homework`)
       ]);
+
       if (dashboardRes.status === 'fulfilled') {
         const data = dashboardRes.value.data;
         setProfile(data.profile);
         if (data.profile?.status === 'blocked') setIsBlocked(true);
-        if (data.attendance_summary) {
-          setAttendance({ present: data.attendance_summary.percentage || 0, total: data.attendance_summary.total || 0 });
-        }
-        if (data.fee_status) {
-          setPendingFees(data.fee_status.pending || 0);
-        }
-        if (data.recent_notices) {
-          setNotices(data.recent_notices);
-        }
+        await fetchStudentExtras(data.profile);
       }
-      setNotices(prev => prev.length > 0 ? prev : (noticesRes.status === 'fulfilled' ? (noticesRes.value.data || []) : []));
-      setHomework(homeworkRes.status === 'fulfilled' ? (homeworkRes.value.data || []) : []);
+      
+      // Use API data or fallback to mock
+      setNotices(noticesRes.status === 'fulfilled' ? noticesRes.value.data : [
+        { id: '1', title: 'Winter Break Notice', content: 'School closed 25 Dec - 1 Jan', priority: 'high', created_at: new Date().toISOString() },
+        { id: '2', title: 'Annual Sports Day', content: '15th January - All must participate', priority: 'normal', created_at: new Date().toISOString() }
+      ]);
 
-      if (dashboardRes.status === 'fulfilled') {
-        const prof = dashboardRes.value.data?.profile;
-        if (prof?.school_id && prof?.class_id) {
-          try {
-            const syllabusRes = await axios.get(`${API}/syllabus-progress/student/${prof.school_id}/${prof.class_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-            const subjects = syllabusRes.data?.subjects || [];
-            setSyllabus(subjects.map(s => ({
-              subject: s.subject,
-              completed: s.completion_percentage || 0,
-              current: s.chapters?.find(c => c.status === 'in_progress')?.chapter_name || (s.completed_count > 0 ? 'Completed' : 'Not Started'),
-              chapters: s.chapters || [],
-              total: s.total_count || 0,
-              completedCount: s.completed_count || 0,
-              inProgressCount: s.in_progress_count || 0
-            })));
-          } catch (e) { setSyllabus([]); }
-        } else {
-          setSyllabus([]);
-        }
-      } else {
-        setSyllabus([]);
+      setHomework(homeworkRes.status === 'fulfilled' ? homeworkRes.value.data : [
+        { id: '1', subject: 'Mathematics', topic: 'Exercise 5.3', due_date: '2026-01-04', status: 'pending' },
+        { id: '2', subject: 'English', topic: 'Essay Writing', due_date: '2026-01-05', status: 'pending' }
+      ]);
+
+      if (syllabus.length === 0) {
+        setSyllabus([
+          { subject: 'Mathematics', completed: 0, current: 'Not started' },
+          { subject: 'Science', completed: 0, current: 'Not started' }
+        ]);
       }
-    } catch (error) { console.error('Dashboard fetch error:', error); } finally { setLoading(false); }
+      setAttendance({ present: 85, total: 100 });
+
+    } catch (error) {
+      console.error('Dashboard fetch error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApplyLeave = async () => {
-    if (!leaveForm.from_date || !leaveForm.reason) { toast.error('Please fill required fields'); return; }
-    try { await axios.post(`${API}/student/leaves`, leaveForm); toast.success('Leave application submitted!'); setShowLeaveDialog(false); } catch (error) { toast.error('Failed to apply leave'); }
+    if (!leaveForm.from_date || !leaveForm.reason) {
+      toast.error('Please fill required fields');
+      return;
+    }
+    try {
+      await axios.post(`${API}/student/leaves`, leaveForm);
+      toast.success('Leave application submitted!');
+      setShowLeaveDialog(false);
+    } catch (error) {
+      toast.error('Failed to apply leave');
+    }
   };
 
+  const handleSubmitQuery = async () => {
+    if (!queryForm.subject || !queryForm.question.trim()) {
+      toast.error('Subject aur question dono भरें');
+      return;
+    }
+    if (!profile?.id || !profile?.class_id) {
+      toast.error('Profile data missing');
+      return;
+    }
+    setQuerySubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/student/queries`, {
+        student_id: profile.id || profile.student_id,
+        student_name: profile.name,
+        class_id: profile.class_id,
+        class_name: profile.class_name || profile.class || 'Class',
+        school_id: profile.school_id,
+        subject: queryForm.subject,
+        question: queryForm.question
+      }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+
+      toast.success('Query भेज दिया गया ✅');
+      setQueryForm({ subject: '', question: '' });
+      await fetchStudentExtras(profile);
+    } catch (error) {
+      toast.error('Query भेजने में error');
+    } finally {
+      setQuerySubmitting(false);
+    }
+  };
+
+  // Open Class Chat
   const openClassChat = async () => {
     try {
+      // Get or create class group
       const res = await axios.get(`${API}/chat/groups/class/${profile?.class_id}?school_id=${profile?.school_id}`);
       setChatGroup(res.data);
+      
+      // Load messages
       const msgRes = await axios.get(`${API}/chat/messages/${res.data.id}?limit=50`);
       setChatMessages(msgRes.data.messages || []);
+      
       setShowChatDialog(true);
-    } catch (error) { toast.error('Failed to load chat'); }
+    } catch (error) {
+      toast.error('Failed to load chat');
+    }
   };
 
+  // Send Chat Message
   const sendChatMessage = async () => {
     if (!newMessage.trim() || !chatGroup) return;
+    
     try {
-      const res = await axios.post(`${API}/chat/messages/send`, { group_id: chatGroup.id, content: newMessage, sender_id: user?.id, sender_name: profile?.name || user?.name, sender_role: 'student' });
+      const res = await axios.post(`${API}/chat/messages/send`, {
+        group_id: chatGroup.id,
+        content: newMessage,
+        sender_id: user?.id,
+        sender_name: profile?.name || user?.name,
+        sender_role: 'student'
+      });
+      
       setChatMessages(prev => [...prev, res.data.data]);
       setNewMessage('');
-    } catch (error) { toast.error('Failed to send message'); }
+    } catch (error) {
+      toast.error('Failed to send message');
+    }
   };
 
+  // Submit Complaint
   const submitComplaint = async (e) => {
     e.preventDefault();
-    if (!complaintForm.subject || !complaintForm.description) { toast.error('Please fill all fields'); return; }
+    if (!complaintForm.subject || !complaintForm.description) {
+      toast.error('Please fill all fields');
+      return;
+    }
+    
     try {
-      await axios.post(`${API}/complaints/create`, { student_id: user?.id, student_name: profile?.name || user?.name, class_id: profile?.class_id, class_name: profile?.class_name, school_id: profile?.school_id, ...complaintForm });
+      await axios.post(`${API}/complaints/create`, {
+        student_id: user?.id,
+        student_name: profile?.name || user?.name,
+        class_id: profile?.class_id,
+        class_name: profile?.class_name,
+        school_id: profile?.school_id,
+        ...complaintForm
+      });
+      
       toast.success('Complaint submitted successfully');
       setShowComplaintDialog(false);
-      setComplaintForm({ complaint_to: 'teacher', category: 'academic', subject: '', description: '', is_anonymous: false });
-    } catch (error) { toast.error('Failed to submit complaint'); }
+      setComplaintForm({
+        complaint_to: 'teacher',
+        category: 'academic',
+        subject: '',
+        description: '',
+        is_anonymous: false
+      });
+    } catch (error) {
+      toast.error('Failed to submit complaint');
+    }
   };
 
+  // Open Activities
   const openActivities = async () => {
-    try { const res = await axios.get(`${API}/activities/student/${user?.id}`); setMyActivities(res.data.activities || []); setShowActivitiesDialog(true); } catch (error) { setMyActivities([]); setShowActivitiesDialog(true); }
+    try {
+      const res = await axios.get(`${API}/activities/student/${user?.id}`);
+      setMyActivities(res.data.activities || []);
+      setShowActivitiesDialog(true);
+    } catch (error) {
+      setMyActivities([]);
+      setShowActivitiesDialog(true);
+    }
   };
 
+  // Razorpay Payment Handler
   const handlePayFees = useCallback(async () => {
-    if (!paymentAmount || isNaN(paymentAmount) || Number(paymentAmount) <= 0) { toast.error('Please enter a valid amount'); return; }
+    if (!paymentAmount || isNaN(paymentAmount) || Number(paymentAmount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
     setPaymentProcessing(true);
+
     try {
+      // Load Razorpay script
       const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) { toast.error('Payment gateway loading failed'); setPaymentProcessing(false); return; }
-      const orderRes = await axios.post(`${API}/razorpay/create-order`, { amount: Math.round(Number(paymentAmount) * 100), student_id: user?.id, student_name: profile?.name || user?.name, school_id: profile?.school_id || 'default', fee_type: 'tuition', description: `Fee Payment - ${profile?.name}` });
+      if (!scriptLoaded) {
+        toast.error('Payment gateway loading failed');
+        setPaymentProcessing(false);
+        return;
+      }
+
+      // Create order
+      const orderRes = await axios.post(`${API}/razorpay/create-order`, {
+        amount: Math.round(Number(paymentAmount) * 100), // Convert to paise
+        student_id: user?.id,
+        student_name: profile?.name || user?.name,
+        school_id: profile?.school_id || 'default',
+        fee_type: 'tuition',
+        description: `Fee Payment - ${profile?.name}`
+      });
+
       const { order_id, key_id, amount } = orderRes.data;
+
+      // Razorpay options
       const options = {
-        key: key_id, amount, currency: 'INR', name: 'Schooltino', description: `Fee Payment - ${profile?.class_name}`, order_id,
+        key: key_id,
+        amount: amount,
+        currency: 'INR',
+        name: 'Schooltino',
+        description: `Fee Payment - ${profile?.class_name}`,
+        order_id: order_id,
         handler: async (response) => {
-          try { await axios.post(`${API}/razorpay/verify-payment`, { razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature, student_id: user?.id, school_id: profile?.school_id || 'default' }); toast.success('Payment successful!'); setShowPaymentDialog(false); setPaymentAmount(''); } catch (verifyError) { toast.error('Payment verification failed. Please contact school.'); }
+          try {
+            // Verify payment
+            await axios.post(`${API}/razorpay/verify-payment`, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              student_id: user?.id,
+              school_id: profile?.school_id || 'default'
+            });
+            
+            toast.success('🎉 Payment successful!');
+            setShowPaymentDialog(false);
+            setPaymentAmount('');
+          } catch (verifyError) {
+            toast.error('Payment verification failed. Please contact school.');
+          }
         },
-        prefill: { name: profile?.name || user?.name, email: user?.email || '', contact: profile?.mobile || '' },
-        theme: { color: '#3B82F6' },
-        modal: { ondismiss: () => { setPaymentProcessing(false); } }
+        prefill: {
+          name: profile?.name || user?.name,
+          email: user?.email || '',
+          contact: profile?.mobile || ''
+        },
+        theme: {
+          color: '#4F46E5'
+        },
+        modal: {
+          ondismiss: () => {
+            setPaymentProcessing(false);
+          }
+        }
       };
+
       const razorpayInstance = new window.Razorpay(options);
       razorpayInstance.open();
-    } catch (error) { toast.error('Failed to initiate payment'); } finally { setPaymentProcessing(false); }
+      
+    } catch (error) {
+      toast.error('Failed to initiate payment');
+    } finally {
+      setPaymentProcessing(false);
+    }
   }, [paymentAmount, user, profile]);
 
-  const fetchPaymentSettings = useCallback(async () => {
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // Homework submission handler
+  const handleHomeworkSubmit = async () => {
+    if (!selectedHomework || !homeworkImage) {
+      toast.error('Please select homework and upload photo');
+      return;
+    }
+
+    setUploadingHomework(true);
     try {
       const token = localStorage.getItem('token');
-      const [settingsRes, paymentsRes] = await Promise.allSettled([
-        axios.get(`${API}/school/payment-settings?school_id=${profile?.school_id || user?.school_id}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/parent/fee-details/${user?.id}`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
-      if (settingsRes.status === 'fulfilled') setPaymentSettings(settingsRes.value.data);
-      if (paymentsRes.status === 'fulfilled') setMyPayments(paymentsRes.value.data?.payment_history || []);
-    } catch (e) {}
-  }, [profile, user]);
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', homeworkImage);
+      formData.append('homework_id', selectedHomework.id);
+      formData.append('student_id', user?.id);
+      formData.append('school_id', profile?.school_id);
+      formData.append('class_id', profile?.class_id);
+      formData.append('subject', selectedHomework.subject);
+      
+      const res = await axios.post(`${API}/homework/submit`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-  const openPaymentDialog = useCallback(() => {
-    fetchPaymentSettings();
-    setShowPaymentDialog(true);
-    setPaymentMode('free');
-    setScreenshotFile(null);
-    setScreenshotPreview('');
-    setTransactionId('');
-    setPaymentAmount('');
-  }, [fetchPaymentSettings]);
-
-  const handleScreenshotChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error('File size must be less than 5MB'); return; }
-    setScreenshotFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setScreenshotPreview(reader.result);
-    reader.readAsDataURL(file);
-  };
-
-  const handleFreePayment = async () => {
-    if (!paymentAmount || isNaN(paymentAmount) || Number(paymentAmount) <= 0) { toast.error('Please enter amount'); return; }
-    if (!transactionId.trim()) { toast.error('Please enter UPI Transaction ID / Reference Number'); return; }
-    setPaymentProcessing(true);
-    try {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: `Bearer ${token}` };
-      let screenshotUrl = null;
-      if (screenshotFile) {
-        const formData = new FormData();
-        formData.append('file', screenshotFile);
-        formData.append('school_id', profile?.school_id || '');
-        const uploadRes = await axios.post(`${API}/upload/photo`, formData, { headers: { ...headers, 'Content-Type': 'multipart/form-data' } });
-        screenshotUrl = uploadRes.data.url || uploadRes.data.photo_url;
-      }
-      await axios.post(`${API}/parent/record-payment`, {
-        student_id: user?.id,
-        amount: Number(paymentAmount),
-        payment_mode: upiPaymentMode,
-        transaction_id: transactionId.trim(),
-        payer_name: profile?.father_name || profile?.name || user?.name,
-        remarks: paymentRemarks.trim() || `Fee payment via ${upiPaymentMode.toUpperCase()}`,
-        screenshot_url: screenshotUrl
-      }, { headers });
-      toast.success('Payment submitted! Admin will verify and update your fees.');
-      setShowPaymentDialog(false);
-      setPaymentAmount(''); setTransactionId(''); setScreenshotFile(null); setScreenshotPreview(''); setPaymentRemarks('');
-    } catch (error) { toast.error(error.response?.data?.detail || 'Failed to submit payment'); }
-    finally { setPaymentProcessing(false); }
-  };
-
-  const openWallet = async () => {
-    try {
-      const res = await axios.get(`${API}/student/wallet?student_id=${user?.id}`);
-      setWalletBalance(res.data.balance || 0);
-      setWalletTransactions(res.data.transactions || []);
+      toast.success('✅ Homework submitted successfully!');
+      setShowHomeworkDialog(false);
+      setSelectedHomework(null);
+      setHomeworkImage(null);
+      
+      // Refresh homework list
+      fetchDashboardData();
     } catch (error) {
-      setWalletBalance(0);
-      setWalletTransactions([]);
-    }
-    setShowWalletDialog(true);
-  };
-
-  const addWalletMoney = async () => {
-    if (!walletAddAmount || isNaN(walletAddAmount) || Number(walletAddAmount) <= 0) { toast.error('Enter a valid amount'); return; }
-    try {
-      await axios.post(`${API}/student/wallet/add`, { student_id: user?.id, amount: Number(walletAddAmount) });
-      toast.success(`₹${walletAddAmount} added to wallet!`);
-      openWallet();
-      setWalletAddAmount('');
-    } catch (error) {
-      toast.error('Wallet feature coming soon');
+      toast.error('Homework submit करने में error');
+      console.error(error);
+    } finally {
+      setUploadingHomework(false);
     }
   };
 
-  const openLiveClasses = async () => {
-    try {
-      const res = await axios.get(`${API}/student/live-classes`);
-      const classes = res.data.classes || res.data || [];
-      setLiveClasses(Array.isArray(classes) ? classes : []);
-    } catch (error) {
-      setLiveClasses([]);
-    }
-    setShowLiveClassDialog(true);
+  const openHomeworkSubmission = (hw) => {
+    setSelectedHomework(hw);
+    setShowHomeworkDialog(true);
   };
-
-  const openSchoolFeed = async () => {
-    try {
-      const res = await axios.get(`${API}/school-feed`);
-      setFeedPosts(res.data.posts || res.data || []);
-    } catch (error) {
-      setFeedPosts([]);
-    }
-    setShowFeedDialog(true);
-  };
-
-  const handleLikeFeedPost = (postId) => {
-    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p));
-    axios.post(`${API}/school-feed/${postId}/like`).catch(() => {});
-  };
-
-  const handleCommentOnPost = (postId) => {
-    if (!feedComment.trim()) return;
-    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), { id: Date.now().toString(), author: profile?.name || 'Student', text: feedComment }] } : p));
-    axios.post(`${API}/school-feed/${postId}/comment`, { text: feedComment }).catch(() => {});
-    setFeedComment('');
-  };
-
-  const handleSharePost = (post) => {
-    if (navigator.share) {
-      navigator.share({ title: `${post.author} - School Feed`, text: post.content }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(post.content);
-      toast.success('Post copied to clipboard!');
-    }
-  };
-
-  const openEStore = async () => {
-    try {
-      const res = await axios.get(`${API}/e-store/items`);
-      setStoreItems(res.data.items || res.data || []);
-    } catch (error) {
-      setStoreItems([]);
-    }
-    setShowEStoreDialog(true);
-  };
-
-  const sendAiMessage = async () => {
-    if (!aiInput.trim()) return;
-    const userMsg = { role: 'user', content: aiInput };
-    setAiMessages(prev => [...prev, userMsg]);
-    setAiInput('');
-    setAiLoading(true);
-    try {
-      const res = await axios.post(`${API}/tino-ai/chat`, { message: aiInput, user_id: user?.id, school_id: profile?.school_id || user?.school_id, language: 'hi' });
-      setAiMessages(prev => [...prev, { role: 'assistant', content: res.data.response || res.data.message || 'I can help you with your studies! Try asking me about any subject.' }]);
-    } catch (error) {
-      setAiMessages(prev => [...prev, { role: 'assistant', content: 'Could not connect. Please try again.' }]);
-    } finally { setAiLoading(false); }
-  };
-
-  const handleLogout = () => { logout(); navigate('/login'); };
 
   const pendingHomework = homework.filter(h => h.status === 'pending').length;
+  const unreadNotices = notices.filter(n => !n.is_read).length;
 
   if (loading) {
-    return (<div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-blue-500" /></div>);
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-amber-600" />
+      </div>
+    );
   }
 
   if (isBlocked) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center p-8 bg-white rounded-xl border border-gray-200">
+      <div className="min-h-screen bg-gradient-to-b from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center p-8">
           <Lock className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-800 mb-2">Account Blocked</h1>
-          <p className="text-gray-600 mb-6">Please contact school office.</p>
-          <Button onClick={handleLogout} variant="outline" className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg"><LogOut className="w-4 h-4 mr-2" /> {t('logout')}</Button>
+          <h1 className="text-xl font-bold text-slate-900 mb-2">Account Blocked</h1>
+          <p className="text-slate-600 mb-6">Please contact school office.</p>
+          <Button onClick={handleLogout} variant="outline">
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
         </Card>
       </div>
     );
   }
 
-  const statCards = [
-    { label: t('attendance'), value: `${attendance.present}%`, icon: CheckCircle, subtext: 'Your attendance percentage', bgColor: 'bg-green-50', textColor: 'text-green-500' },
-    { label: t('homework'), value: pendingHomework, icon: BookOpen, subtext: 'Assignments due', bgColor: 'bg-amber-50', textColor: 'text-amber-500' },
-    { label: t('notices'), value: notices.length, icon: Bell, subtext: 'School announcements', bgColor: 'bg-blue-50', textColor: 'text-blue-500' },
-    { label: t('subjects'), value: syllabus.length, icon: ClipboardList, subtext: 'Enrolled subjects', bgColor: 'bg-indigo-50', textColor: 'text-indigo-500' },
-    { label: 'Syllabus Completed', value: `${Math.round(syllabus.reduce((a, b) => a + b.completed, 0) / (syllabus.length || 1))}%`, icon: Award, subtext: 'Overall syllabus progress', bgColor: 'bg-purple-50', textColor: 'text-purple-500' },
-    { label: t('fees'), value: pendingFees > 0 ? '₹' + pendingFees.toLocaleString('en-IN') : '₹0', icon: Wallet, subtext: 'Pending fee balance', bgColor: 'bg-red-50', textColor: 'text-red-500' },
-    { label: 'Activities', value: 0, icon: Trophy, subtext: 'Extra-curricular activities', bgColor: 'bg-orange-50', textColor: 'text-orange-500' },
-    { label: t('exams'), value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-cyan-50', textColor: 'text-cyan-500' },
-  ];
-
-  const studentModuleCards = [
-    { id: 'studyai', name: 'StudyAI', desc: 'AI-powered study assistant for homework help & learning.', icon: Brain, lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => setShowAIHelper(true) },
-    { id: 'feetino', name: 'FeeTino', desc: 'Pay school fees online via UPI or Razorpay.', icon: Wallet, lightBg: 'bg-green-50', iconColor: 'text-green-600', action: () => openPaymentDialog() },
-    { id: 'classchat', name: 'ClassChat', desc: 'Real-time chat with classmates & group discussions.', icon: MessageCircle, lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => openClassChat() },
-    { id: 'admitcard', name: 'AdmitCard', desc: 'View & download exam admit cards instantly.', icon: Award, lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => setShowAdmitCardDialog(true) },
-    { id: 'activities', name: 'Activities', desc: 'Track your extra-curricular activities & achievements.', icon: Trophy, lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => openActivities() },
-    { id: 'wallet', name: 'My Wallet', desc: 'View balance, add money & track spending.', icon: IndianRupee, lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => openWallet() },
-    { id: 'liveclass', name: 'Live Class', desc: 'Join live classes, view schedule & recordings.', icon: Video, lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => openLiveClasses() },
-    { id: 'complaint', name: 'Complaint', desc: 'Submit a complaint to school administration.', icon: AlertOctagon, lightBg: 'bg-orange-50', iconColor: 'text-orange-600', action: () => setShowComplaintDialog(true) },
-    { id: 'applyleave', name: 'Apply Leave', desc: 'Submit leave application for approval.', icon: CalendarDays, lightBg: 'bg-teal-50', iconColor: 'text-teal-600', action: () => setShowLeaveDialog(true) },
-    { id: 'myprofile', name: 'My Profile', desc: 'View & manage your profile details.', icon: User, lightBg: 'bg-slate-50', iconColor: 'text-slate-600', action: () => setShowProfileDialog(true) },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 relative" data-testid="studytino-dashboard">
-      <GlobalWatermark />
-      <header className="sticky top-0 z-50 relative" style={{zIndex: 50}}>
-        {schoolData && (
-          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white px-4 py-1.5">
-            <div className="max-w-5xl mx-auto flex items-center justify-between text-[10px]">
-              <span className="font-medium truncate">{schoolData.name}</span>
-              <div className="hidden sm:flex items-center gap-3 text-blue-200">
-                {schoolData.phone && <span>{schoolData.phone}</span>}
-                {schoolData.email && <span>{schoolData.email}</span>}
-                {schoolData.board_type && <span className="bg-white/10 px-1.5 py-0.5 rounded text-white font-semibold">{schoolData.board_type}</span>}
-              </div>
-            </div>
-          </div>
-        )}
-        <div className="bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 py-3">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50" data-testid="studytino-dashboard">
+      {/* Header - Responsive */}
+      <header className="sticky top-0 z-50 bg-white border-b border-amber-100 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {profile?.photo_url ? (
-                <img src={profile.photo_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-blue-100" />
-              ) : (
-                <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 font-bold text-sm">
-                  {(profile?.name || 'S').charAt(0)}
-                </div>
-              )}
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                <School className="w-6 h-6 md:w-7 md:h-7 text-white" />
+              </div>
               <div>
-                <h1 className="font-semibold text-gray-800 text-sm">{profile?.name || user?.name || 'Student'}</h1>
-                <p className="text-xs text-gray-400">{profile?.class_name || 'Class'}{profile?.section ? ' - ' + profile.section : ''} | {profile?.student_id || ''}</p>
+                <h1 className="font-bold text-slate-900 text-base md:text-lg">{profile?.name || 'Student'}</h1>
+                <p className="text-xs md:text-sm text-slate-500">{profile?.class_name || 'Class'} • {profile?.school_name || 'School'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={() => openEStore()} className="hover:bg-gray-50 rounded-xl" title="E-Store"><ShoppingBag className="w-5 h-5 text-gray-400" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => setShowProfileDialog(true)} className="hover:bg-gray-50 rounded-xl"><Settings className="w-5 h-5 text-gray-400" /></Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-400 hover:bg-gray-50 rounded-xl"><LogOut className="w-5 h-5" /></Button>
+            <div className="flex items-center gap-1 md:gap-2">
+              <Button variant="ghost" size="icon" onClick={() => setVoiceModalOpen(true)} className="text-purple-600">
+                <Mic className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setShowProfileDialog(true)}>
+                <Settings className="w-5 h-5 text-slate-500" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleLogout} className="text-slate-400">
+                <LogOut className="w-5 h-5" />
+              </Button>
             </div>
           </div>
-        </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-5 space-y-6 pb-24">
-        <div className="flex items-center gap-2 text-sm">
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors">
-            <Home className="w-3.5 h-3.5" /> {t('home')}
-          </button>
-          <span className="text-gray-300">›</span>
-          <span className="text-gray-500 text-xs">{t('dashboard')}</span>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-xl font-bold text-gray-900">Welcome, {profile?.name || 'Student'}!</h2>
-          <p className="text-sm text-gray-500 mt-1">{profile?.class_name || 'Class'} • {profile?.school_name || 'School'}</p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {statCards.map((card, idx) => (
-            <div key={idx} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-all">
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-xs text-gray-500 font-medium">{card.label}</span>
-                <div className={`w-9 h-9 ${card.bgColor} rounded-xl flex items-center justify-center`}>
-                  <card.icon className={`w-4 h-4 ${card.textColor}`} />
+      <main className="max-w-4xl mx-auto px-4 py-4 md:py-6 space-y-4 md:space-y-6 pb-20">
+        {/* Welcome Card - Responsive */}
+        <Card className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-amber-100 text-sm">{getGreeting()}</p>
+                <h2 className="text-xl md:text-2xl font-bold mt-1">{profile?.name?.split(' ')[0] || 'Student'}!</h2>
+                <p className="text-amber-100 text-sm mt-1">{dateStr}</p>
+              </div>
+              
+              {/* Quick Stats - Responsive Grid */}
+              <div className="grid grid-cols-3 gap-2 md:gap-4 mt-4 md:mt-0">
+                <div className="bg-white/20 rounded-lg p-2 md:p-4 text-center">
+                  <p className="text-xl md:text-2xl font-bold">{attendance.present}%</p>
+                  <p className="text-xs text-amber-100">Attendance</p>
+                </div>
+                <div className="bg-white/20 rounded-lg p-2 md:p-4 text-center">
+                  <p className="text-xl md:text-2xl font-bold">{pendingHomework}</p>
+                  <p className="text-xs text-amber-100">Homework</p>
+                </div>
+                <div className="bg-white/20 rounded-lg p-2 md:p-4 text-center">
+                  <p className="text-xl md:text-2xl font-bold">{notices.length}</p>
+                  <p className="text-xs text-amber-100">Notices</p>
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-800 mb-0.5">{card.value}</div>
-              <div className="text-xs text-gray-400">{card.subtext}</div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions - Responsive Grid */}
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-2 md:gap-3">
+          {[
+            { icon: Award, label: 'Admit Card', color: 'bg-indigo-600', action: () => setShowAdmitCardDialog(true) },
+            { icon: Wallet, label: 'Pay Fees', color: 'bg-green-500', action: () => setShowPaymentDialog(true) },
+            { icon: MessageCircle, label: 'Class Chat', color: 'bg-blue-500', action: () => openClassChat() },
+          { icon: Send, label: 'Ask Teacher', color: 'bg-emerald-500', action: () => setShowQueryDialog(true) },
+            { icon: AlertOctagon, label: 'Complaint', color: 'bg-rose-500', action: () => setShowComplaintDialog(true) },
+            { icon: Trophy, label: 'Activities', color: 'bg-amber-500', action: () => openActivities() },
+            { icon: CalendarDays, label: 'Leave', color: 'bg-purple-500', action: () => setShowLeaveDialog(true) },
+            { icon: Brain, label: 'AI Help', color: 'bg-violet-500', action: () => setShowAIHelper(true) },
+            { icon: User, label: 'Profile', color: 'bg-teal-500', action: () => setShowProfileDialog(true) },
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              onClick={item.action || (() => navigate(item.path))}
+              className="flex flex-col items-center p-2 md:p-3 bg-white rounded-xl border border-slate-100 hover:shadow-md transition-all"
+              data-testid={`quick-action-${item.label.toLowerCase().replace(' ', '-')}`}
+            >
+              <div className={`w-8 h-8 md:w-10 md:h-10 ${item.color} rounded-xl flex items-center justify-center mb-1 md:mb-2`}>
+                <item.icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
+              </div>
+              <span className="text-[10px] md:text-xs font-medium text-slate-700 text-center leading-tight">{item.label}</span>
+            </button>
           ))}
         </div>
 
-        <div>
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Key Features</h2>
-            <p className="text-sm text-gray-500 mt-1">Powerful tools crafted to enhance your learning experience.</p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {studentModuleCards.map((card) => (
-              <div
-                key={card.id}
-                onClick={card.action}
-                className="group cursor-pointer bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
-              >
-                <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3`}>
-                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
-                </div>
-                <h3 className="font-semibold text-gray-900 text-sm mb-1">{card.name}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{card.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-
-        {homework.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="px-5 pt-5 pb-4">
-              <h2 className="text-xl font-bold text-gray-900">{t('homework')}</h2>
-              <p className="text-sm text-gray-500 mt-1">Pending and completed homework assignments.</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Subject <SortIcon /></th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Topic <SortIcon /></th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Due Date <SortIcon /></th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {homework.map((hw) => (
-                    <tr key={hw.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                      <td className="px-5 py-3.5 text-sm text-gray-800">{hw.subject}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell">{hw.topic}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500">{new Date(hw.due_date).toLocaleDateString('hi-IN')}</td>
-                      <td className="px-5 py-3.5 text-right">
-                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${hw.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
-                          {hw.status === 'pending' ? t('pending') : t('completed')}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {syllabus.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="px-5 pt-5 pb-4">
-            <h2 className="text-xl font-bold text-gray-900">Syllabus Progress</h2>
-            <p className="text-sm text-gray-500 mt-1">Subject-wise syllabus completion status.</p>
-          </div>
-          <div className="space-y-3 px-5 pb-5">
-            {syllabus.map((subject, idx) => {
-              const colors = ['blue', 'green', 'purple', 'amber', 'teal', 'rose'];
-              const c = colors[idx % colors.length];
-              return (
-                <div key={idx} className="border border-gray-100 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-gray-800">{subject.subject}</h3>
-                    <span className={`text-sm font-bold text-${c}-600`}>{subject.completed}%</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-                    <div className={`h-2 rounded-full bg-${c}-500 transition-all`} style={{ width: `${subject.completed}%` }} />
-                  </div>
-                  <div className="flex items-center gap-3 text-[10px] text-gray-500 mb-2">
-                    <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-500" /> {subject.completedCount || 0} Done</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500" /> {subject.inProgressCount || 0} In Progress</span>
-                    <span className="text-gray-400">Total: {subject.total || 0}</span>
-                  </div>
-                  {subject.current && subject.current !== 'Not Started' && (
-                    <p className="text-xs text-gray-500">Currently: <span className="font-medium text-gray-700">{subject.current}</span></p>
+        {/* Two Column Layout for PC */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          {/* Notices Section */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-purple-500" />
+                  Notices
+                  {unreadNotices > 0 && (
+                    <Badge className="bg-red-500 text-white text-xs">{unreadNotices}</Badge>
                   )}
-                  {subject.chapters && subject.chapters.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {subject.chapters.slice(0, 5).map((ch, ci) => (
-                        <div key={ci} className="flex items-center gap-2 text-xs">
-                          {ch.status === 'completed' ? <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" /> :
-                           ch.status === 'in_progress' ? <Clock className="w-3 h-3 text-amber-500 flex-shrink-0" /> :
-                           ch.status === 'skipped' ? <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" /> :
-                           <BookOpen className="w-3 h-3 text-gray-300 flex-shrink-0" />}
-                          <span className="text-gray-600 truncate">{ch.chapter_name || `Chapter ${ch.chapter_number}`}</span>
-                          <span className={`ml-auto text-[10px] px-1.5 py-0.5 rounded ${
-                            ch.status === 'completed' ? 'bg-green-50 text-green-600' :
-                            ch.status === 'in_progress' ? 'bg-amber-50 text-amber-600' :
-                            ch.status === 'skipped' ? 'bg-red-50 text-red-600' :
-                            'bg-gray-50 text-gray-400'
-                          }`}>{ch.status === 'completed' ? 'Done' : ch.status === 'in_progress' ? 'Partial' : ch.status === 'skipped' ? 'Skipped' : 'Pending'}</span>
-                        </div>
-                      ))}
-                      {subject.chapters.length > 5 && (
-                        <p className="text-[10px] text-gray-400 pl-5">+{subject.chapters.length - 5} more chapters</p>
+                </h3>
+                <Button variant="ghost" size="sm" className="text-amber-600 text-xs">
+                  View All <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {notices.slice(0, 3).map((notice) => (
+                  <div
+                    key={notice.id}
+                    onClick={() => { setSelectedNotice(notice); setShowNoticeDialog(true); }}
+                    className={`p-3 rounded-lg cursor-pointer transition-all ${
+                      notice.priority === 'high' ? 'bg-red-50 border border-red-100' : 'bg-slate-50 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{notice.title}</p>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-1">{notice.content}</p>
+                      </div>
+                      {notice.priority === 'high' && (
+                        <Badge className="bg-red-500 text-white text-[10px]">Important</Badge>
                       )}
                     </div>
+                  </div>
+                ))}
+                {notices.length === 0 && (
+                  <p className="text-center text-slate-400 py-4 text-sm">No notices yet</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Homework Section */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-blue-500" />
+                  Homework
+                  {pendingHomework > 0 && (
+                    <Badge className="bg-amber-500 text-white text-xs">{pendingHomework}</Badge>
+                  )}
+                </h3>
+              </div>
+              <div className="space-y-2">
+                {homework.slice(0, 5).map((hw) => (
+                  <div key={hw.id} className="p-3 bg-slate-50 rounded-lg border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{hw.subject}</p>
+                        <p className="text-xs text-slate-500">{hw.topic || hw.description}</p>
+                      </div>
+                      <Badge className={
+                        hw.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                        hw.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        hw.status === 'revision' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-amber-100 text-amber-700'
+                      }>
+                        {hw.status === 'submitted' ? 'Submitted' :
+                         hw.status === 'approved' ? 'Approved ✓' :
+                         hw.status === 'revision' ? 'Needs Revision' : 'Pending'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-[10px] text-slate-400">
+                        Due: {new Date(hw.due_date).toLocaleDateString('hi-IN')}
+                      </p>
+                      {(hw.status === 'pending' || hw.status === 'active' || hw.status === 'revision') && (
+                        <Button 
+                          size="sm" 
+                          className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
+                          onClick={() => openHomeworkSubmission(hw)}
+                        >
+                          📷 Submit
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {homework.length === 0 && (
+                  <p className="text-center text-slate-400 py-4 text-sm">No homework assigned</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Syllabus Progress */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-indigo-500" />
+              Syllabus Progress
+            </h3>
+            <div className="space-y-3">
+              {syllabus.map((subject, idx) => (
+                <div key={idx} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-slate-700">{subject.subject}</span>
+                    <span className="text-slate-500">{subject.completed}%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        idx === 0 ? 'bg-blue-500' : idx === 1 ? 'bg-green-500' : idx === 2 ? 'bg-purple-500' : 'bg-amber-500'
+                      }`}
+                      style={{ width: `${subject.completed}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">Current: {subject.current}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* My Queries */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-emerald-500" />
+                My Queries
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowQueryDialog(true)}
+                className="text-emerald-600 text-xs"
+                data-testid="open-student-query-dialog"
+              >
+                Ask New <ChevronRight className="w-3 h-3 ml-1" />
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {studentQueries.slice(0, 3).map((query) => (
+                <div key={query.id} className="p-3 rounded-lg border bg-slate-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{query.subject}</p>
+                      <p className="text-xs text-slate-500 line-clamp-1">{query.question}</p>
+                    </div>
+                    <Badge className={(query.status === 'answered' || query.answer) ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                      {(query.status === 'answered' || query.answer) ? 'Answered' : 'Pending'}
+                    </Badge>
+                  </div>
+                  {query.answer && (
+                    <p className="text-xs text-emerald-700 mt-2">उत्तर: {query.answer}</p>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-        )}
+              ))}
+              {studentQueries.length === 0 && (
+                <p className="text-center text-slate-400 py-4 text-sm">No queries yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-        {notices.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="px-5 pt-5 pb-4">
-              <h2 className="text-xl font-bold text-gray-900">{t('notices')}</h2>
-              <p className="text-sm text-gray-500 mt-1">Latest school announcements.</p>
+        {/* Online Exam CTA */}
+        <Card 
+          className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 cursor-pointer hover:shadow-lg transition-all"
+          onClick={() => navigate('/app/exams')}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="font-semibold">Take Online Exam</p>
+                  <p className="text-sm text-indigo-100">Practice tests available</p>
+                </div>
+              </div>
+              <ChevronRight className="w-6 h-6" />
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Title <SortIcon /></th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Content <SortIcon /></th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Priority</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {notices.map((notice) => (
-                    <tr key={notice.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors cursor-pointer" onClick={() => { setSelectedNotice(notice); setShowNoticeDialog(true); }}>
-                      <td className="px-5 py-3.5 text-sm text-gray-800">{notice.title}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell line-clamp-1">{notice.content}</td>
-                      <td className="px-5 py-3.5 text-right">
-                        {notice.priority === 'high' ? (
-                          <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-red-50 text-red-600 border border-red-200">Important</span>
-                        ) : (
-                          <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-50 text-gray-600 border border-gray-200">Normal</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          </CardContent>
+        </Card>
+
+        {/* Tino AI CTA */}
+        <Card className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Brain className="w-8 h-8" />
+              <div>
+                <p className="font-bold">StudyTino AI</p>
+                <p className="text-xs text-amber-100">Your personal study assistant</p>
+              </div>
             </div>
-          </div>
-        )}
+            <Button 
+              onClick={() => setVoiceModalOpen(true)}
+              className="w-full bg-white text-amber-700 hover:bg-amber-50"
+            >
+              <Mic className="w-4 h-4 mr-2" />
+              Ask Tino AI
+            </Button>
+          </CardContent>
+        </Card>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50" style={{boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'}}>
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-50">
         <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
           {[
-            { icon: Home, label: t('home'), active: true },
-            { icon: BookOpen, label: 'Study', action: () => navigate('/app/exams') },
-            { icon: Bell, label: t('notices') },
-            { icon: Wallet, label: t('fees'), action: () => openPaymentDialog() },
-            { icon: Brain, label: 'AI', action: () => setShowAIHelper(true) },
+            { icon: Home, label: 'Home', active: true },
+            { icon: BookOpen, label: 'Study', path: '/app/exams' },
+            { icon: Bell, label: 'Notices' },
+            { icon: Wallet, label: 'Fees', path: '/studytino/fees' },
+            { icon: Brain, label: 'AI', action: () => setVoiceModalOpen(true) },
           ].map((item, idx) => (
-            <button key={idx} onClick={item.action || undefined} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${item.active ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-gray-600'}`}>
+            <button 
+              key={idx}
+              onClick={item.action || (item.path ? () => navigate(item.path) : undefined)}
+              className={`flex flex-col items-center gap-1 p-2 rounded-lg ${
+                item.active ? 'text-amber-600 bg-amber-50' : 'text-slate-500'
+              }`}
+            >
               <item.icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-xs">{item.label}</span>
             </button>
           ))}
         </div>
       </nav>
 
+      {/* Apply Leave Dialog */}
       <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle className="text-base font-semibold text-gray-800">Apply for Leave</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Apply for Leave</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-gray-600 font-medium">Leave Type</label>
-              <select value={leaveForm.leave_type} onChange={(e) => setLeaveForm(f => ({ ...f, leave_type: e.target.value }))} className="w-full h-10 rounded-lg border border-gray-200 px-3 mt-1 text-gray-700">
-                <option value="sick">Sick Leave</option><option value="personal">Personal</option><option value="other">Other</option>
+              <label className="text-sm font-medium">Leave Type</label>
+              <select
+                value={leaveForm.leave_type}
+                onChange={(e) => setLeaveForm(f => ({ ...f, leave_type: e.target.value }))}
+                className="w-full h-10 rounded-lg border border-slate-200 px-3 mt-1"
+              >
+                <option value="sick">Sick Leave</option>
+                <option value="personal">Personal</option>
+                <option value="other">Other</option>
               </select>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><label className="text-sm text-gray-600 font-medium">From</label><Input type="date" value={leaveForm.from_date} onChange={(e) => setLeaveForm(f => ({ ...f, from_date: e.target.value }))} className="border-gray-200" /></div>
-              <div><label className="text-sm text-gray-600 font-medium">To</label><Input type="date" value={leaveForm.to_date} onChange={(e) => setLeaveForm(f => ({ ...f, to_date: e.target.value }))} className="border-gray-200" /></div>
+              <div>
+                <label className="text-sm font-medium">From</label>
+                <Input type="date" value={leaveForm.from_date} onChange={(e) => setLeaveForm(f => ({ ...f, from_date: e.target.value }))} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">To</label>
+                <Input type="date" value={leaveForm.to_date} onChange={(e) => setLeaveForm(f => ({ ...f, to_date: e.target.value }))} />
+              </div>
             </div>
-            <div><label className="text-sm text-gray-600 font-medium">Reason</label><Textarea value={leaveForm.reason} onChange={(e) => setLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Enter reason..." className="border-gray-200" /></div>
-            <Button onClick={handleApplyLeave} className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg"><Send className="w-4 h-4 mr-2" /> Submit</Button>
+            <div>
+              <label className="text-sm font-medium">Reason</label>
+              <Textarea value={leaveForm.reason} onChange={(e) => setLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Enter reason..." />
+            </div>
+            <Button onClick={handleApplyLeave} className="w-full bg-amber-600 hover:bg-amber-700">
+              <Send className="w-4 h-4 mr-2" />
+              Submit
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Notice Detail Dialog */}
       <Dialog open={showNoticeDialog} onOpenChange={setShowNoticeDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Notice Details</DialogTitle></DialogHeader>
-          {selectedNotice && (<div className="space-y-4"><h3 className="font-bold text-lg">{selectedNotice.title}</h3><p className="text-gray-600">{selectedNotice.content}</p><p className="text-sm text-gray-400">Posted: {new Date(selectedNotice.created_at).toLocaleDateString('hi-IN')}</p></div>)}
+          <DialogHeader>
+            <DialogTitle>Notice Details</DialogTitle>
+          </DialogHeader>
+          {selectedNotice && (
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg">{selectedNotice.title}</h3>
+              <p className="text-slate-600">{selectedNotice.content}</p>
+              <p className="text-sm text-slate-400">
+                Posted: {new Date(selectedNotice.created_at).toLocaleDateString('hi-IN')}
+              </p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showProfileDialog} onOpenChange={(v) => { setShowProfileDialog(v); if (!v) { setShowPasswordSection(false); setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); } }}>
-        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="text-base font-semibold text-gray-800">{t('profile')}</DialogTitle></DialogHeader>
+      {/* Student Query Dialog */}
+      <Dialog open={showQueryDialog} onOpenChange={setShowQueryDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Ask Teacher</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="student-query-subject">Subject</Label>
+              <Input
+                id="student-query-subject"
+                value={queryForm.subject}
+                onChange={(e) => setQueryForm((prev) => ({ ...prev, subject: e.target.value }))}
+                placeholder="जैसे: Mathematics"
+                data-testid="student-query-subject-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="student-query-question">Question</Label>
+              <Textarea
+                id="student-query-question"
+                value={queryForm.question}
+                onChange={(e) => setQueryForm((prev) => ({ ...prev, question: e.target.value }))}
+                placeholder="अपना सवाल लिखें..."
+                data-testid="student-query-question-input"
+              />
+            </div>
+            <Button
+              onClick={handleSubmitQuery}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+              disabled={querySubmitting}
+              data-testid="student-query-submit-button"
+            >
+              {querySubmitting ? 'Sending...' : 'Send Query'}
+            </Button>
+
+            <div className="pt-2">
+              <h4 className="text-sm font-semibold text-slate-700 mb-2">My Recent Queries</h4>
+              <div className="space-y-2 max-h-56 overflow-y-auto">
+                {studentQueries.length > 0 ? (
+                  studentQueries.map((query) => (
+                    <div key={query.id} className="p-3 rounded-lg border bg-slate-50">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-slate-800">{query.subject}</p>
+                        <Badge className={(query.status === 'answered' || query.answer) ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                          {(query.status === 'answered' || query.answer) ? 'Answered' : 'Pending'}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">{query.question}</p>
+                      {query.answer && <p className="text-xs text-emerald-700 mt-2">उत्तर: {query.answer}</p>}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400">No queries yet</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Profile Dialog */}
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>My Profile</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center"><User className="w-8 h-8 text-purple-500" /></div>
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-amber-600" />
+              </div>
               <div>
-                <p className="font-bold text-lg text-gray-800">{profile?.name}</p>
-                <p className="text-sm text-gray-400">{profile?.class_name}{profile?.section ? ` - ${profile.section}` : ''}</p>
+                <p className="font-bold text-lg">{profile?.name}</p>
+                <p className="text-sm text-slate-500">{profile?.class_name}</p>
               </div>
             </div>
-            <div className="space-y-2 p-3 bg-gray-50 rounded-xl text-sm border border-gray-100">
-              <div className="flex justify-between"><span className="text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Student ID</span><span className="font-medium text-gray-700">{profile?.student_id}</span></div>
-              <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Admission No</span><span className="font-medium text-gray-700">{profile?.admission_no}</span></div>
-              {profile?.mobile && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Phone className="w-3 h-3" /> Contact</span><span className="font-medium text-gray-700">{profile.mobile}</span></div>}
-              {profile?.email && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Mail className="w-3 h-3" /> Email</span><span className="font-medium text-gray-700">{profile.email}</span></div>}
-              {profile?.father_name && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Father</span><span className="font-medium text-gray-700">{profile.father_name}</span></div>}
-              {profile?.mother_name && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Mother</span><span className="font-medium text-gray-700">{profile.mother_name}</span></div>}
-              {profile?.dob && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Calendar className="w-3 h-3" /> Date of Birth</span><span className="font-medium text-gray-700">{new Date(profile.dob).toLocaleDateString('en-IN')}</span></div>}
-              {profile?.gender && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Gender</span><span className="font-medium text-gray-700 capitalize">{profile.gender}</span></div>}
-              {profile?.blood_group && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Blood Group</span><span className="font-medium text-gray-700">{profile.blood_group}</span></div>}
-              {profile?.address && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Address</span><span className="font-medium text-gray-700 text-right max-w-[60%]">{profile.address}</span></div>}
-              {profile?.admission_date && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Admission Date</span><span className="font-medium text-gray-700">{new Date(profile.admission_date).toLocaleDateString('en-IN')}</span></div>}
-              {profile?.aadhar_number && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Aadhar</span><span className="font-medium text-gray-700">{profile.aadhar_number}</span></div>}
-              {profile?.category && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Category</span><span className="font-medium text-gray-700">{profile.category}</span></div>}
-              {profile?.religion && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Religion</span><span className="font-medium text-gray-700">{profile.religion}</span></div>}
+            <div className="space-y-2 p-4 bg-slate-50 rounded-xl text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Student ID</span>
+                <span className="font-medium">{profile?.student_id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Admission No</span>
+                <span className="font-medium">{profile?.admission_no}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Contact</span>
+                <span className="font-medium">{profile?.mobile}</span>
+              </div>
             </div>
-
-            <button onClick={() => setShowPasswordSection(!showPasswordSection)} className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors">
-              <div className="flex items-center gap-2">
-                <Key className="w-4 h-4 text-amber-600" />
-                <span className="text-sm font-medium text-amber-700">Change Password</span>
-              </div>
-              <Edit className="w-4 h-4 text-amber-400" />
-            </button>
-
-            {showPasswordSection && (
-              <div className="space-y-3 p-3 bg-white rounded-xl border border-gray-200">
-                <div className="relative">
-                  <Input type={showOldPw ? 'text' : 'password'} placeholder="Current Password" value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="pr-10" />
-                  <button type="button" onClick={() => setShowOldPw(!showOldPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showOldPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
-                </div>
-                <div className="relative">
-                  <Input type={showNewPw ? 'text' : 'password'} placeholder="New Password (min 6 chars)" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="pr-10" />
-                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
-                </div>
-                <Input type="password" placeholder="Confirm New Password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} />
-                <Button onClick={handleStudentChangePassword} disabled={changingPassword} className="w-full bg-amber-500 hover:bg-amber-600 text-white">
-                  {changingPassword ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Changing...</> : 'Update Password'}
-                </Button>
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* AI Helper Dialog */}
       <Dialog open={showAIHelper} onOpenChange={setShowAIHelper}>
-        <DialogContent className="max-w-md h-[80vh] flex flex-col bg-white rounded-xl border border-gray-200">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
-              <div className="w-6 h-6 bg-violet-50 rounded flex items-center justify-center"><Brain className="w-4 h-4 text-violet-500" /></div>
-              Tino AI Study Helper
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-amber-500" />
+              StudyTino AI Helper
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-gray-50 rounded-lg">
-            {aiMessages.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <Brain className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Ask me anything about your studies!</p>
-                <p className="text-xs mt-1 text-gray-300">Math, Science, English, Hindi & more</p>
+          <div className="text-center py-4">
+            <p className="text-slate-500 mb-4">Ask any study-related question!</p>
+            <Button onClick={() => { setShowAIHelper(false); setVoiceModalOpen(true); }} className="bg-amber-600 hover:bg-amber-700">
+              <Mic className="w-4 h-4 mr-2" />
+              Talk to Tino AI
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Class Chat Dialog */}
+      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+        <DialogContent className="max-w-md h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-blue-500" />
+              {chatGroup?.name || 'Class Chat'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-2 p-2 bg-slate-50 rounded-lg">
+            {chatMessages.length === 0 ? (
+              <div className="text-center py-8 text-slate-400">
+                <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p>No messages yet. Start the conversation!</p>
               </div>
             ) : (
-              aiMessages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-xl px-3 py-2 ${msg.role === 'user' ? 'bg-blue-500 text-white rounded-br-sm' : 'bg-white border border-gray-200 text-gray-700 rounded-bl-sm'}`}>
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                </div>
-              ))
-            )}
-            {aiLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 rounded-xl px-3 py-2 rounded-bl-sm">
-                  <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-2 pt-2 border-t border-gray-100">
-            <Input value={aiInput} onChange={(e) => setAiInput(e.target.value)} placeholder="Ask a study question..." onKeyPress={(e) => e.key === 'Enter' && sendAiMessage()} className="border-gray-200" />
-            <Button onClick={sendAiMessage} disabled={aiLoading} className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg"><Send className="w-4 h-4" /></Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
-        <DialogContent className="max-w-md h-[80vh] flex flex-col bg-white rounded-xl border border-gray-200">
-          <DialogHeader className="border-b border-gray-100"><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-blue-50 rounded flex items-center justify-center"><MessageCircle className="w-4 h-4 text-blue-500" /></div>{chatGroup?.name || 'Class Chat'}</DialogTitle></DialogHeader>
-          <div className="flex-1 overflow-y-auto space-y-2 p-3 bg-gray-50 rounded-lg">
-            {chatMessages.length === 0 ? (<div className="text-center py-8 text-gray-400"><Users className="w-10 h-10 mx-auto mb-2 opacity-50" /><p>No messages yet. Start the conversation!</p></div>) : (
               chatMessages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] rounded-xl px-3 py-2 ${msg.sender_id === user?.id ? 'bg-blue-500 text-white rounded-br-sm' : 'bg-white border border-gray-200 rounded-bl-sm'}`}>
-                    {msg.sender_id !== user?.id && <p className="text-xs font-medium text-blue-600 mb-1">{msg.sender_name}</p>}
+                  <div className={`max-w-[75%] rounded-xl px-3 py-2 ${
+                    msg.sender_id === user?.id 
+                      ? 'bg-blue-500 text-white rounded-br-sm' 
+                      : 'bg-white border rounded-bl-sm'
+                  }`}>
+                    {msg.sender_id !== user?.id && (
+                      <p className="text-xs font-medium text-blue-600 mb-1">{msg.sender_name}</p>
+                    )}
                     <p className="text-sm">{msg.content}</p>
-                    <p className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-blue-100' : 'text-gray-400'}`}>{new Date(msg.created_at).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                      {new Date(msg.created_at).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
                   </div>
                 </div>
               ))
             )}
           </div>
-          <div className="flex gap-2 pt-2 border-t border-gray-100">
-            <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()} className="border-gray-200" />
-            <Button onClick={sendChatMessage} className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg"><Send className="w-4 h-4" /></Button>
+          <div className="flex gap-2 pt-2 border-t">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+            />
+            <Button onClick={sendChatMessage} className="bg-blue-500 hover:bg-blue-600">
+              <Send className="w-4 h-4" />
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Complaint Dialog */}
       <Dialog open={showComplaintDialog} onOpenChange={setShowComplaintDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-red-50 rounded flex items-center justify-center"><AlertOctagon className="w-4 h-4 text-red-500" /></div>Submit Complaint</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertOctagon className="w-5 h-5 text-rose-500" />
+              Submit Complaint
+            </DialogTitle>
+          </DialogHeader>
           <form onSubmit={submitComplaint} className="space-y-4">
-            <div className="space-y-2"><Label className="text-sm text-gray-600">Complaint To</Label><select value={complaintForm.complaint_to} onChange={(e) => setComplaintForm(prev => ({ ...prev, complaint_to: e.target.value }))} className="w-full h-10 rounded-lg border border-gray-200 px-3 text-gray-700"><option value="teacher">Class Teacher</option><option value="admin">Admin/Principal</option><option value="both">Both</option></select></div>
-            <div className="space-y-2"><Label className="text-sm text-gray-600">Category</Label><select value={complaintForm.category} onChange={(e) => setComplaintForm(prev => ({ ...prev, category: e.target.value }))} className="w-full h-10 rounded-lg border border-gray-200 px-3 text-gray-700"><option value="academic">Academic Issues</option><option value="bullying">Bullying/Harassment</option><option value="facilities">Facilities</option><option value="teacher">Teacher Related</option><option value="fees">Fees Related</option><option value="transport">Transport</option><option value="food">Food/Canteen</option><option value="other">Other</option></select></div>
-            <div className="space-y-2"><Label className="text-sm text-gray-600">Subject</Label><Input value={complaintForm.subject} onChange={(e) => setComplaintForm(prev => ({ ...prev, subject: e.target.value }))} placeholder="Brief subject..." className="border-gray-200" /></div>
-            <div className="space-y-2"><Label className="text-sm text-gray-600">Description</Label><Textarea value={complaintForm.description} onChange={(e) => setComplaintForm(prev => ({ ...prev, description: e.target.value }))} placeholder="Describe in detail..." rows={3} className="border-gray-200" /></div>
-            <div className="flex items-center gap-2"><input type="checkbox" id="anonymous" checked={complaintForm.is_anonymous} onChange={(e) => setComplaintForm(prev => ({ ...prev, is_anonymous: e.target.checked }))} className="rounded border-gray-200" /><label htmlFor="anonymous" className="text-sm text-gray-600">Submit Anonymously</label></div>
-            <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg">Submit Complaint</Button>
+            <div className="space-y-2">
+              <Label>Complaint To</Label>
+              <select
+                value={complaintForm.complaint_to}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, complaint_to: e.target.value }))}
+                className="w-full h-10 rounded-lg border px-3"
+              >
+                <option value="teacher">Class Teacher</option>
+                <option value="admin">Admin/Principal</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <select
+                value={complaintForm.category}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, category: e.target.value }))}
+                className="w-full h-10 rounded-lg border px-3"
+              >
+                <option value="academic">Academic Issues</option>
+                <option value="bullying">Bullying/Harassment</option>
+                <option value="facilities">Facilities</option>
+                <option value="teacher">Teacher Related</option>
+                <option value="fees">Fees Related</option>
+                <option value="transport">Transport</option>
+                <option value="food">Food/Canteen</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Subject *</Label>
+              <Input
+                value={complaintForm.subject}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, subject: e.target.value }))}
+                placeholder="Brief title of your complaint"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description *</Label>
+              <Textarea
+                value={complaintForm.description}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe your complaint in detail..."
+                rows={4}
+                required
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="anonymous"
+                checked={complaintForm.is_anonymous}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, is_anonymous: e.target.checked }))}
+                className="rounded"
+              />
+              <label htmlFor="anonymous" className="text-sm text-slate-600">Submit anonymously</label>
+            </div>
+            <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600">
+              Submit Complaint
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
 
+      {/* Activities Dialog */}
       <Dialog open={showActivitiesDialog} onOpenChange={setShowActivitiesDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-amber-50 rounded flex items-center justify-center"><Trophy className="w-4 h-4 text-amber-500" /></div>My Activities</DialogTitle></DialogHeader>
-          <div className="space-y-3">{myActivities.length === 0 ? (<p className="text-center text-gray-400 py-6 text-sm">No activities found</p>) : (myActivities.map((act, idx) => (<div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-200"><p className="font-medium text-gray-800">{act.title || act.name}</p><p className="text-sm text-gray-500 mt-1">{act.description || act.type}</p></div>)))}</div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="max-w-md bg-white rounded-xl">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
-              <div className="w-7 h-7 bg-green-50 rounded-lg flex items-center justify-center"><Wallet className="w-4 h-4 text-green-500" /></div>
-              FeeTino - Pay Fees
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              My Activities & Sports
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            {pendingFees > 0 && (
-              <div className="p-3 bg-red-50 rounded-xl border border-red-100 flex items-center justify-between">
-                <div><p className="text-xs text-red-500">Pending Fee</p><p className="text-xl font-bold text-red-600">₹{pendingFees.toLocaleString('en-IN')}</p></div>
-                <button onClick={() => setShowPaymentHistory(!showPaymentHistory)} className="text-xs text-blue-500 hover:text-blue-700 underline">
-                  {showPaymentHistory ? 'Hide' : 'View'} History
-                </button>
+          <div className="space-y-4">
+            {myActivities.length === 0 ? (
+              <div className="text-center py-8 text-slate-400">
+                <Activity className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p>You are not enrolled in any activities yet.</p>
+                <p className="text-sm mt-2">Ask your teacher to enroll you!</p>
               </div>
-            )}
-
-            {showPaymentHistory && myPayments.length > 0 && (
-              <div className="max-h-32 overflow-y-auto space-y-2">
-                {myPayments.slice(0, 5).map((p, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-xs">
-                    <div>
-                      <p className="font-medium text-gray-700">₹{p.amount?.toLocaleString('en-IN')}</p>
-                      <p className="text-gray-400">{p.payment_mode?.toUpperCase()} • {new Date(p.created_at).toLocaleDateString('en-IN')}</p>
+            ) : (
+              <div className="space-y-2">
+                {myActivities.map((activity, idx) => (
+                  <div key={idx} className="p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{activity.name}</p>
+                        <p className="text-xs text-slate-500">{activity.category} • {activity.schedule}</p>
+                      </div>
                     </div>
-                    <Badge className={`text-[10px] ${p.status === 'verified' || p.status === 'paid' ? 'bg-green-100 text-green-700' : p.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                      {p.status === 'verified' || p.status === 'paid' ? 'Paid' : p.status === 'rejected' ? 'Rejected' : 'Pending'}
-                    </Badge>
                   </div>
                 ))}
               </div>
             )}
-
-            <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-              <button onClick={() => setPaymentMode('free')} className={`flex-1 py-2.5 text-sm font-medium transition-colors ${paymentMode === 'free' ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
-                UPI / QR (Free)
-              </button>
-              <button onClick={() => setPaymentMode('razorpay')} className={`flex-1 py-2.5 text-sm font-medium transition-colors border-l border-gray-200 ${paymentMode === 'razorpay' ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
-                Razorpay (Online)
-              </button>
-            </div>
-
-            {paymentMode === 'free' ? (
-              <div className="space-y-3">
-                {(paymentSettings?.upi_id || paymentSettings?.gpay_number || paymentSettings?.phonepe_number || paymentSettings?.paytm_number || paymentSettings?.qr_code_url) ? (
-                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-                    {paymentSettings?.qr_code_url && (
-                      <div className="flex justify-center mb-3">
-                        <div className="bg-white p-2 rounded-xl border-2 border-blue-200 shadow-sm">
-                          <img src={paymentSettings.qr_code_url} alt="School QR Code" className="w-44 h-44 rounded-lg object-contain" />
-                        </div>
-                      </div>
-                    )}
-                    {paymentSettings?.qr_code_url && <p className="text-[10px] text-center text-blue-500 mb-2">Scan QR code to pay, then fill details below</p>}
-                    <p className="text-xs font-semibold text-blue-700 mb-2">School Payment Details:</p>
-                    <div className="space-y-1.5 text-xs text-blue-800">
-                      {paymentSettings?.upi_id && <p><span className="font-medium">UPI ID:</span> {paymentSettings.upi_id}</p>}
-                      {paymentSettings?.gpay_number && <p><span className="font-medium">GPay:</span> {paymentSettings.gpay_number}</p>}
-                      {paymentSettings?.phonepe_number && <p><span className="font-medium">PhonePe:</span> {paymentSettings.phonepe_number}</p>}
-                      {paymentSettings?.paytm_number && <p><span className="font-medium">Paytm:</span> {paymentSettings.paytm_number}</p>}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-yellow-50 rounded-xl border border-yellow-100">
-                    <p className="text-xs text-yellow-700">School payment details not configured yet. Please pay directly to school and enter details below.</p>
-                  </div>
-                )}
-
-                <div>
-                  <Label className="text-xs font-medium text-gray-600">Payment Mode</Label>
-                  <select value={upiPaymentMode} onChange={(e) => setUpiPaymentMode(e.target.value)} className="w-full mt-1 p-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:border-green-500">
-                    <option value="upi">UPI</option>
-                    <option value="gpay">Google Pay</option>
-                    <option value="phonepe">PhonePe</option>
-                    <option value="paytm">Paytm</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="cash">Cash</option>
-                  </select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-medium text-gray-600">Amount (₹)</Label>
-                  <Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Enter amount..." className="mt-1 border-gray-200" min="1" />
-                </div>
-
-                <div>
-                  <Label className="text-xs font-medium text-gray-600">Transaction ID / Reference No.</Label>
-                  <Input value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="Enter UPI ref number..." className="mt-1 border-gray-200" />
-                </div>
-
-                <div>
-                  <Label className="text-xs font-medium text-gray-600">Remarks / Note (Optional)</Label>
-                  <textarea 
-                    value={paymentRemarks} 
-                    onChange={(e) => setPaymentRemarks(e.target.value)} 
-                    placeholder="E.g., Paid for April month fees, Tuition fee for Term 2..." 
-                    className="w-full mt-1 p-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:border-green-500 resize-none" 
-                    rows={2} 
-                    maxLength={200}
-                  />
-                  <p className="text-[10px] text-gray-400 mt-0.5 text-right">{paymentRemarks.length}/200</p>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-medium text-gray-600">Payment Screenshot (Optional)</Label>
-                  <div className="mt-1 border-2 border-dashed border-gray-200 rounded-lg p-3 text-center hover:border-green-400 transition-colors cursor-pointer" onClick={() => document.getElementById('screenshot-input').click()}>
-                    {screenshotPreview ? (
-                      <div className="relative">
-                        <img src={screenshotPreview} alt="Screenshot" className="max-h-40 mx-auto rounded-lg" />
-                        <button onClick={(e) => { e.stopPropagation(); setScreenshotFile(null); setScreenshotPreview(''); }} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs">✕</button>
-                      </div>
-                    ) : (
-                      <div className="py-4">
-                        <Paperclip className="w-6 h-6 mx-auto text-gray-300 mb-2" />
-                        <p className="text-xs text-gray-400">Tap to upload payment screenshot</p>
-                        <p className="text-[10px] text-gray-300 mt-1">JPG, PNG up to 5MB</p>
-                      </div>
-                    )}
-                  </div>
-                  <input id="screenshot-input" type="file" accept="image/*" className="hidden" onChange={handleScreenshotChange} />
-                </div>
-
-                <Button onClick={handleFreePayment} disabled={paymentProcessing} className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg">
-                  {paymentProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                  {paymentProcessing ? 'Submitting...' : 'Submit Payment'}
-                </Button>
-                <p className="text-[10px] text-center text-gray-400">Admin will verify your payment and update your fees</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-                  <p className="text-xs text-blue-600">Pay securely via Razorpay gateway. Supports Credit/Debit Card, Net Banking, UPI & Wallets.</p>
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-gray-600">Amount (₹)</Label>
-                  <Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Enter amount..." className="mt-1 border-gray-200" min="1" />
-                </div>
-                <Button onClick={handlePayFees} disabled={paymentProcessing} className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg">
-                  {paymentProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CreditCard className="w-4 h-4 mr-2" />}
-                  {paymentProcessing ? 'Processing...' : 'Pay via Razorpay'}
-                </Button>
-                <p className="text-[10px] text-center text-gray-400">Secured by Razorpay • 2% transaction fee applies</p>
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showAdmitCardDialog} onOpenChange={setShowAdmitCardDialog}>
-        <DialogContent className="max-w-2xl bg-white rounded-xl border border-gray-200">
-          <DialogHeader className="border-b border-gray-100 pb-3"><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-blue-50 rounded flex items-center justify-center"><Award className="w-4 h-4 text-blue-500" /></div>Admit Card</DialogTitle></DialogHeader>
-          <AdmitCardSection studentId={user?.id} profile={profile} />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showWalletDialog} onOpenChange={setShowWalletDialog}>
-        <DialogContent className="max-w-md bg-white rounded-xl border border-gray-200">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
-              <div className="w-6 h-6 bg-emerald-50 rounded flex items-center justify-center"><IndianRupee className="w-4 h-4 text-emerald-500" /></div>
-              My Wallet
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-green-500" />
+              Pay School Fees
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-5 text-white">
-              <p className="text-sm opacity-80">Available Balance</p>
-              <p className="text-3xl font-bold mt-1">₹{walletBalance.toLocaleString('en-IN')}</p>
+            <div className="p-4 bg-green-50 rounded-xl">
+              <p className="text-sm text-green-800 font-medium">Secure Payment via Razorpay</p>
+              <p className="text-xs text-green-600 mt-1">UPI, Cards, Net Banking accepted</p>
             </div>
-            <div className="flex gap-2">
-              <Input type="number" value={walletAddAmount} onChange={(e) => setWalletAddAmount(e.target.value)} placeholder="Enter amount..." className="border-gray-200" min="1" />
-              <Button onClick={addWalletMoney} className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg whitespace-nowrap"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Amount (₹)</label>
+              <Input
+                type="number"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder="Enter amount to pay"
+                className="text-lg font-semibold"
+              />
             </div>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Transaction History</h4>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {walletTransactions.length === 0 ? (
-                  <p className="text-center text-gray-400 py-4 text-sm">No transactions yet</p>
+            
+            {/* Quick Amount Buttons */}
+            <div className="flex gap-2 flex-wrap">
+              {[500, 1000, 2000, 5000].map(amt => (
+                <button
+                  key={amt}
+                  onClick={() => setPaymentAmount(String(amt))}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:border-green-500 hover:bg-green-50 transition-colors"
+                >
+                  ₹{amt.toLocaleString()}
+                </button>
+              ))}
+            </div>
+            
+            <Button 
+              onClick={handlePayFees}
+              disabled={paymentProcessing || !paymentAmount}
+              className="w-full bg-green-600 hover:bg-green-700 text-white h-12"
+            >
+              {paymentProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Pay ₹{paymentAmount ? Number(paymentAmount).toLocaleString() : '0'}
+                </>
+              )}
+            </Button>
+            
+            <p className="text-xs text-center text-slate-400">
+              Powered by Razorpay • 100% Secure
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admit Card Dialog */}
+      <Dialog open={showAdmitCardDialog} onOpenChange={setShowAdmitCardDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-indigo-600" />
+              Admit Cards / प्रवेश पत्र
+            </DialogTitle>
+          </DialogHeader>
+          <AdmitCardSection 
+            studentId={user?.id || profile?.id}
+            schoolId={user?.school_id || profile?.school_id}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Welcome Dialog for First-Time Users */}
+      <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <span className="text-2xl">🎉</span>
+              StudyTino में आपका स्वागत है!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-slate-600">
+              नमस्ते {profile?.name || user?.name || 'Student'}! अब आप StudyTino App से अपनी पढ़ाई को और आसान बना सकते हैं।
+            </p>
+            
+            <div className="space-y-3 bg-indigo-50 rounded-xl p-4">
+              <h4 className="font-semibold text-indigo-800">यहाँ आप क्या-क्या कर सकते हैं:</h4>
+              <div className="grid gap-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>अपनी Attendance देखें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Homework और Assignments पाएं</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>School Notices पढ़ें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Exam Results और Report Card देखें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Online Fees भुगतान करें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Leave Application भेजें</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>AI से पढ़ाई में Help लें (Voice में भी!)</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+              <p className="text-amber-800">
+                <strong>💡 Tip:</strong> नीचे दाईं ओर Mic button से Voice में भी पूछ सकते हैं!
+              </p>
+            </div>
+            
+            <Button 
+              onClick={() => setShowWelcomeDialog(false)}
+              className="w-full bg-indigo-600 hover:bg-indigo-700"
+            >
+              शुरू करें →
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Homework Submit Dialog */}
+      <Dialog open={showHomeworkDialog} onOpenChange={setShowHomeworkDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              Submit Homework
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedHomework && (
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="font-medium text-blue-800">{selectedHomework.subject}</p>
+                <p className="text-sm text-blue-600 mt-1">{selectedHomework.topic || selectedHomework.description}</p>
+                <p className="text-xs text-blue-500 mt-2">Due: {new Date(selectedHomework.due_date).toLocaleDateString('hi-IN')}</p>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">📷 Upload Homework Photo</Label>
+              <p className="text-xs text-gray-500">अपनी copy में लिखे homework की photo upload करें</p>
+              
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                {homeworkImage ? (
+                  <div className="space-y-2">
+                    <img 
+                      src={URL.createObjectURL(homeworkImage)} 
+                      alt="Homework" 
+                      className="max-h-40 mx-auto rounded"
+                    />
+                    <p className="text-sm text-green-600">✓ Photo selected</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setHomeworkImage(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 ) : (
-                  walletTransactions.map((txn) => (
-                    <div key={txn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${txn.type === 'credit' ? 'bg-green-50' : 'bg-red-50'}`}>
-                          {txn.type === 'credit' ? <ArrowDownLeft className="w-4 h-4 text-green-500" /> : <ArrowUpRight className="w-4 h-4 text-red-500" />}
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-800">{txn.description}</p>
-                          <p className="text-xs text-gray-400">{new Date(txn.date).toLocaleDateString('hi-IN')}</p>
-                        </div>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => setHomeworkImage(e.target.files[0])}
+                      className="hidden"
+                    />
+                    <div className="space-y-2">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                        📷
                       </div>
-                      <span className={`text-sm font-semibold ${txn.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
-                        {txn.type === 'credit' ? '+' : '-'}₹{txn.amount}
-                      </span>
+                      <p className="text-sm text-gray-600">Click to take photo or upload</p>
+                      <p className="text-xs text-gray-400">Camera या Gallery से select करें</p>
                     </div>
-                  ))
+                  </label>
                 )}
               </div>
             </div>
+            
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              onClick={handleHomeworkSubmit}
+              disabled={!homeworkImage || uploadingHomework}
+            >
+              {uploadingHomework ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Submit Homework
+                </>
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showLiveClassDialog} onOpenChange={setShowLiveClassDialog}>
-        <DialogContent className="max-w-lg bg-white rounded-xl border border-gray-200">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
-              <div className="w-6 h-6 bg-pink-50 rounded flex items-center justify-center"><Video className="w-4 h-4 text-pink-500" /></div>
-              Live Classes
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-            {liveClasses.length === 0 ? (
-              <p className="text-center text-gray-400 py-8 text-sm">No live classes scheduled</p>
-            ) : (
-              liveClasses.map((cls) => (
-                <div key={cls.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h4 className="font-semibold text-gray-800 text-sm">{cls.subject}</h4>
-                      <p className="text-xs text-gray-500">{cls.topic}</p>
-                    </div>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${cls.status === 'live' ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse' : cls.status === 'upcoming' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
-                      {cls.status === 'live' ? '● LIVE' : cls.status === 'upcoming' ? 'Upcoming' : 'Completed'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">Teacher: {cls.teacher} • {new Date(cls.scheduled_at).toLocaleString('hi-IN')}</p>
-                  <div className="flex gap-2">
-                    {cls.status === 'live' && cls.join_url && (
-                      <Button size="sm" onClick={() => window.open(cls.join_url, '_blank')} className="bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg"><Play className="w-3 h-3 mr-1" /> Join Now</Button>
-                    )}
-                    {cls.status === 'completed' && cls.recording_url && (
-                      <Button size="sm" variant="outline" onClick={() => window.open(cls.recording_url, '_blank')} className="text-xs border-gray-200 text-gray-600 rounded-lg"><Eye className="w-3 h-3 mr-1" /> View Recording</Button>
-                    )}
-                    {cls.status === 'upcoming' && (
-                      <span className="text-xs text-gray-400 flex items-center"><Clock className="w-3 h-3 mr-1" /> Starts soon</span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showFeedDialog} onOpenChange={setShowFeedDialog}>
-        <DialogContent className="max-w-lg h-[85vh] flex flex-col bg-white rounded-xl border border-gray-200">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
-              <div className="w-6 h-6 bg-cyan-50 rounded flex items-center justify-center"><Rss className="w-4 h-4 text-cyan-500" /></div>
-              School Feed
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto space-y-4 py-2">
-            {feedPosts.length === 0 ? (
-              <p className="text-center text-gray-400 py-8 text-sm">No posts yet</p>
-            ) : (
-              feedPosts.map((post) => (
-                <div key={post.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-                  <div className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800">{post.author}</p>
-                        <p className="text-xs text-gray-400">{new Date(post.created_at).toLocaleString('hi-IN')}</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-700 leading-relaxed mb-3">{post.content}</p>
-                    {post.image && <img src={post.image} alt="" className="w-full rounded-lg mb-3 max-h-48 object-cover" />}
-                    <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
-                      <button onClick={() => handleLikeFeedPost(post.id)} className={`flex items-center gap-1.5 text-xs ${post.liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'} transition-colors`}>
-                        <Heart className={`w-4 h-4 ${post.liked ? 'fill-current' : ''}`} /> {post.likes}
-                      </button>
-                      <button onClick={() => handleSharePost(post)} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-400 transition-colors">
-                        <Share2 className="w-4 h-4" /> Share
-                      </button>
-                      <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                        <MessageCircle className="w-4 h-4" /> {(post.comments || []).length}
-                      </span>
-                    </div>
-                  </div>
-                  {(post.comments || []).length > 0 && (
-                    <div className="px-4 pb-3 space-y-2">
-                      {post.comments.slice(-2).map((c) => (
-                        <div key={c.id} className="flex items-start gap-2">
-                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><User className="w-3 h-3 text-gray-500" /></div>
-                          <div className="bg-white rounded-lg px-2.5 py-1.5 border border-gray-100 flex-1">
-                            <span className="text-xs font-medium text-gray-700">{c.author}</span>
-                            <p className="text-xs text-gray-500">{c.text}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="px-4 pb-3 flex gap-2">
-                    <Input value={feedComment} onChange={(e) => setFeedComment(e.target.value)} placeholder="Write a comment..." className="text-xs h-8 border-gray-200" onKeyPress={(e) => e.key === 'Enter' && handleCommentOnPost(post.id)} />
-                    <Button size="sm" onClick={() => handleCommentOnPost(post.id)} className="bg-blue-500 hover:bg-blue-600 text-white h-8 text-xs rounded-lg"><Send className="w-3 h-3" /></Button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showEStoreDialog} onOpenChange={setShowEStoreDialog}>
-        <DialogContent className="max-w-lg bg-white rounded-xl border border-gray-200">
-          <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
-              <div className="w-6 h-6 bg-orange-50 rounded flex items-center justify-center"><Store className="w-4 h-4 text-orange-500" /></div>
-              School E-Store
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto py-2">
-            {storeItems.length === 0 ? (
-              <p className="text-center text-gray-400 py-8 text-sm col-span-2">No items available</p>
-            ) : (
-              storeItems.map((item) => (
-                <div key={item.id} className="bg-gray-50 rounded-xl border border-gray-100 p-3 hover:shadow-sm transition-all">
-                  <div className="w-full h-24 bg-gray-100 rounded-lg flex items-center justify-center mb-2">
-                    {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" /> : <ShoppingBag className="w-8 h-8 text-gray-300" />}
-                  </div>
-                  <h4 className="text-xs font-semibold text-gray-800 line-clamp-2 mb-1">{item.name}</h4>
-                  <p className="text-xs text-gray-400 mb-2">{item.category}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-800">₹{item.price}</span>
-                    {item.in_stock ? (
-                      <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white text-[10px] h-7 px-2 rounded-lg" onClick={() => toast.success(`${item.name} added to cart!`)}>Buy</Button>
-                    ) : (
-                      <span className="text-[10px] text-red-500 font-medium">Out of Stock</span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
+      {/* Voice Assistant */}
+      <VoiceAssistantFAB isOpen={voiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
   );
 }

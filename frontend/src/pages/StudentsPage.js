@@ -23,7 +23,7 @@ import {
 } from '../components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
-  Plus, Search, Edit, Trash2, Eye, EyeOff, Loader2, User, UserPlus, 
+  Plus, Search, Edit, Trash2, Eye, Loader2, User, UserPlus, 
   Copy, Check, Ban, RefreshCw, LogOut, MoreVertical, AlertTriangle, Camera, CreditCard,
   Upload, X, Fingerprint, Image, Printer, ArrowUpCircle, FileUp, GraduationCap, Key, MessageCircle, Share2,
   Phone, Wallet, Bus, Heart, Users
@@ -42,7 +42,7 @@ import StudentIDCard from '../components/StudentIDCard';
 import BulkImport from '../components/BulkImport';
 import DocumentUpload from '../components/DocumentUpload';
 
-const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function StudentsPage() {
   const { t } = useTranslation();
@@ -94,25 +94,10 @@ export default function StudentsPage() {
   const [credentialsStudent, setCredentialsStudent] = useState(null);
   const [showBulkCredentialsDialog, setShowBulkCredentialsDialog] = useState(false);
   
-  // Profile view states
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [profileStudent, setProfileStudent] = useState(null);
-  const [uploadingProfilePhoto, setUploadingProfilePhoto] = useState(false);
-  const profilePhotoInputRef = useRef(null);
-  const splitPhotoInputRef = useRef(null);
-  
-  // Split view state
-  const [splitViewStudent, setSplitViewStudent] = useState(null);
-  
   // Photo capture states
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
-  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
-  const [resetPasswordStudent, setResetPasswordStudent] = useState(null);
-  const [newStudentPassword, setNewStudentPassword] = useState('');
-  const [resettingStudentPassword, setResettingStudentPassword] = useState(false);
-  const [showStudentPasswordField, setShowStudentPasswordField] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -321,35 +306,6 @@ export default function StudentsPage() {
     setCapturedPhoto(null);
   };
 
-  const handleProfilePhotoUpload = async (e, studentId) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Photo size 5MB se kam honi chahiye');
-      return;
-    }
-    setUploadingProfilePhoto(true);
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${API}/students/${studentId}/update-photo`, {
-          photo_data: event.target.result
-        }, { headers: { Authorization: `Bearer ${token}` } });
-        const newPhotoUrl = response.data.photo_url;
-        setProfileStudent(prev => prev ? { ...prev, photo_url: newPhotoUrl } : prev);
-        setSplitViewStudent(prev => prev && prev.id === studentId ? { ...prev, photo_url: newPhotoUrl } : prev);
-        fetchStudents();
-        toast.success('Photo upload ho gayi!');
-      } catch (error) {
-        toast.error('Photo upload fail hua. Please try again.');
-      } finally {
-        setUploadingProfilePhoto(false);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -504,16 +460,16 @@ export default function StudentsPage() {
     setShowDeleteDialog(true);
   };
 
+  // View/Share Student Credentials
   const viewCredentials = async (student) => {
     setCredentialsStudent({
-      id: student.id,
       name: student.name,
       student_id: student.student_id || student.id,
       class_name: student.class_name,
       father_name: student.father_name,
       mobile: student.mobile || student.parent_phone,
-      plain_password: student.plain_password || null,
-      default_password: student.plain_password || student.mobile || student.parent_phone || student.student_id || student.id
+      // Default password is mobile number or student_id
+      default_password: student.mobile || student.parent_phone || student.student_id || student.id
     });
     setShowCredentialsDialog(true);
   };
@@ -549,133 +505,6 @@ Note: First login पर password change करें।`;
     const text = generateCredentialsText(student);
     await navigator.clipboard.writeText(text);
     toast.success('Credentials copied!');
-  };
-
-  const resetStudentPassword = async () => {
-    if (!newStudentPassword || newStudentPassword.length < 4) {
-      toast.error('Password must be at least 4 characters');
-      return;
-    }
-    setResettingStudentPassword(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API}/students/${resetPasswordStudent.id}/reset-password`, 
-        { new_password: newStudentPassword },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success(`Password reset for ${resetPasswordStudent.name}`);
-      setShowResetPasswordDialog(false);
-      setResetPasswordStudent(null);
-      setNewStudentPassword('');
-      fetchStudents();
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Password reset failed');
-    } finally {
-      setResettingStudentPassword(false);
-    }
-  };
-
-  const openStudentProfile = (student) => {
-    setProfileStudent(student);
-    setShowProfileModal(true);
-  };
-
-  const printStudentProfile = (student) => {
-    const s = student;
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error('Popup blocked - please allow popups');
-      return;
-    }
-    const photoHtml = s.photo_url 
-      ? `<img src="${s.photo_url}" style="width:120px;height:140px;object-fit:cover;border-radius:8px;border:2px solid #1e40af;" />`
-      : `<div style="width:120px;height:140px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;color:#94a3b8;border:2px solid #1e40af;">👤</div>`;
-    
-    const row = (label, value) => value ? `<tr><td style="padding:6px 12px;font-weight:600;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;width:200px;">${label}</td><td style="padding:6px 12px;border:1px solid #e2e8f0;">${value}</td></tr>` : '';
-    const sectionHeader = (title, emoji) => `<tr><td colspan="2" style="padding:10px 12px;font-weight:700;font-size:14px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:white;border:1px solid #1e40af;">${emoji} ${title}</td></tr>`;
-    
-    const html = `<!DOCTYPE html><html><head><title>Student Profile - ${s.name}</title>
-<style>@page{size:A4;margin:15mm}body{font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;margin:0;padding:20px}
-.header{text-align:center;margin-bottom:20px;border-bottom:3px solid #1e40af;padding-bottom:15px}
-table{width:100%;border-collapse:collapse;margin-bottom:15px;font-size:13px}
-.print-btn{position:fixed;top:10px;right:10px;padding:10px 20px;background:#1e40af;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px}
-@media print{.print-btn{display:none}}</style></head>
-<body>
-<button class="print-btn" onclick="window.print()">🖨️ Print</button>
-<div class="header">
-${photoHtml}
-<h1 style="margin:10px 0 5px;color:#1e40af;font-size:24px;">${s.name}</h1>
-<p style="color:#64748b;margin:0;">Student ID: ${s.student_id || s.admission_no || 'N/A'} | Class: ${s.class_name || 'N/A'}${s.section ? ' - ' + s.section : ''}</p>
-</div>
-<table>
-${sectionHeader('Basic Information (मूल जानकारी)', '📋')}
-${row('Name (नाम)', s.name)}
-${row('Student ID', s.student_id || s.admission_no)}
-${row('Class (कक्षा)', s.class_name)}
-${row('Section', s.section)}
-${row('Gender (लिंग)', s.gender)}
-${row('Date of Birth (जन्म तिथि)', s.dob)}
-${row('Blood Group (रक्त समूह)', s.blood_group)}
-${row('Admission Date (प्रवेश तिथि)', s.admission_date)}
-${row('Category (श्रेणी)', s.category)}
-${row('Caste (जाति)', s.caste)}
-${row('Religion (धर्म)', s.religion)}
-${row('Nationality', s.nationality)}
-${row('Mother Tongue', s.mother_tongue)}
-${row('Birth Place', s.birth_place)}
-${row('Identification Mark', s.identification_mark)}
-${row('RTE Status', s.rte_status ? 'Yes' : 'No')}
-${sectionHeader('Identity Documents (पहचान दस्तावेज़)', '🆔')}
-${row('Aadhar No (आधार नं.)', s.aadhar_no)}
-${row('Scholar No (विद्यार्थी क्रमांक)', s.scholar_no)}
-${row('PEN Number', s.pen_number)}
-${row('SSSMID', s.sssmid)}
-${row('Samagra Family ID', s.samagra_family_id)}
-${row('Jan Aadhar No', s.jan_aadhar_no)}
-${sectionHeader('Family Information (पारिवारिक जानकारी)', '👨‍👩‍👦')}
-${row('Father Name (पिता का नाम)', s.father_name)}
-${row('Father Occupation', s.father_occupation)}
-${row('Father Qualification', s.father_qualification)}
-${row('Mother Name (माता का नाम)', s.mother_name)}
-${row('Mother Occupation', s.mother_occupation)}
-${row('Mother Qualification', s.mother_qualification)}
-${row('Guardian Name', s.guardian_name)}
-${row('Guardian Relation', s.guardian_relation)}
-${row('Guardian Mobile', s.guardian_mobile)}
-${row('Guardian Occupation', s.guardian_occupation)}
-${row('Annual Income', s.annual_income)}
-${sectionHeader('Contact Information (संपर्क जानकारी)', '📞')}
-${row('Mobile (मोबाइल)', s.mobile)}
-${row('Parent Phone', s.parent_phone)}
-${row('Email', s.email)}
-${row('Address (पता)', s.address)}
-${row('Emergency Contact', s.emergency_contact)}
-${row('Emergency Contact Name', s.emergency_contact_name)}
-${sectionHeader('Bank Details - Scholarship (बैंक विवरण)', '🏦')}
-${row('Bank Name', s.bank_name)}
-${row('Account No', s.bank_account_no)}
-${row('IFSC Code', s.ifsc_code)}
-${row('Branch', s.bank_branch)}
-${sectionHeader('Transport (परिवहन)', '🚌')}
-${row('Transport Mode', s.transport_mode)}
-${row('Bus Route', s.bus_route)}
-${row('Bus Stop', s.bus_stop)}
-${row('Pickup Point', s.pickup_point)}
-${sectionHeader('Medical (चिकित्सा)', '🏥')}
-${row('Medical Conditions', s.medical_conditions)}
-${row('Allergies', s.allergies)}
-${sectionHeader('Previous Education (पूर्व शिक्षा)', '🎓')}
-${row('Previous School', s.previous_school)}
-${row('Previous Class', s.previous_class)}
-${row('Previous Percentage', s.previous_percentage)}
-${row('TC Number', s.tc_number)}
-</table>
-<div style="text-align:center;margin-top:30px;color:#94a3b8;font-size:11px;">
-Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
-</div>
-</body></html>`;
-    printWindow.document.write(html);
-    printWindow.document.close();
   };
 
   const handleEdit = (student) => {
@@ -835,6 +664,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
       const activeStudents = students.filter(s => s.status === 'active');
       const cardDataList = [];
       
+      // Fetch all card data first
       for (const student of activeStudents) {
         try {
           const res = await axios.get(API + '/id-card/generate/student/' + student.id, {
@@ -843,8 +673,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
           if (res.data?.id_card) {
             cardDataList.push({
               card: res.data.id_card,
-              school: res.data.school,
-              photo: res.data.photo || null
+              school: res.data.school
             });
           }
         } catch (e) {
@@ -864,17 +693,15 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
       let cardsHtml = cardDataList.map(item => {
         const card = item.card;
         const sch = item.school;
-        const photo = item.photo;
         const logoImg = sch?.logo_url ? '<div class="watermark"><img src="' + sch.logo_url + '" alt=""/></div>' : '';
         const headerLogo = sch?.logo_url ? '<div class="header-logo"><img src="' + sch.logo_url + '" alt=""/></div>' : '';
         const parentPhone = card.parent_phone || card.phone || '';
-        const photoHtml = photo ? '<div class="photo"><img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:2mm;" /></div>' : '<div class="photo"><span>Photo</span></div>';
         
         return '<div class="id-card">' + logoImg + 
           '<div class="content"><div class="header">' + headerLogo +
           '<div class="header-text"><div class="school-name">' + (sch?.name || 'School') + '</div>' +
           '<div class="card-type">STUDENT ID CARD</div></div></div>' +
-          '<div class="body">' + photoHtml +
+          '<div class="body"><div class="photo"><span>Photo</span></div>' +
           '<div class="details"><div class="name">' + card.name + '</div>' +
           '<div class="detail-row"><span class="label">Class:</span><span class="value">' + (card.class || '') + '</span></div>' +
           '<div class="detail-row"><span class="label">Father:</span><span class="value">' + (card.father_name || '') + '</span></div>' +
@@ -893,7 +720,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
         '.header-logo{width:7mm;height:7mm;background:white;border-radius:50%;padding:0.5mm}.header-logo img{width:100%;height:100%;object-fit:contain;border-radius:50%}' +
         '.header-text{flex:1;text-align:center}.school-name{font-size:8pt;font-weight:bold;text-transform:uppercase}' +
         '.card-type{font-size:5pt;background:rgba(255,255,255,0.25);padding:0.5mm 2mm;border-radius:2mm;display:inline-block;margin-top:1mm}' +
-        '.body{display:flex;gap:2mm;flex:1}.photo{width:16mm;height:20mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;color:#999;font-size:6pt;overflow:hidden;flex-shrink:0}' +
+        '.body{display:flex;gap:2mm;flex:1}.photo{width:16mm;height:20mm;background:white;border-radius:2mm;display:flex;align-items:center;justify-content:center;color:#999;font-size:6pt}' +
         '.details{flex:1;font-size:6pt}.name{font-size:9pt;font-weight:bold;color:#fef08a;margin-bottom:1mm}' +
         '.detail-row{margin-bottom:0.5mm}.label{opacity:0.8;width:12mm;display:inline-block}.value{font-weight:600}' +
         '.contact{background:rgba(255,255,255,0.2);padding:1mm;border-radius:1mm;margin-top:1mm;font-size:5.5pt}' +
@@ -1030,7 +857,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
   if (!schoolId) {
     return (
       <div className="text-center py-20">
-        <p className="text-slate-500">{t('select_school_first')}</p>
+        <p className="text-slate-500">Please select a school first</p>
       </div>
     );
   }
@@ -1041,7 +868,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold font-heading text-slate-900">{t('students')}</h1>
-          <p className="text-slate-500 mt-1">{t('student_admission')}</p>
+          <p className="text-slate-500 mt-1">Student Admission & Management</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {/* Bulk Import Button */}
@@ -1058,7 +885,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             data-testid="promote-students-btn"
           >
             <GraduationCap className="w-4 h-4" />
-            {t('promote_students')}
+            Promote Students
           </Button>
           {/* Bulk Print Button */}
           <Button 
@@ -1069,18 +896,18 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             data-testid="bulk-print-btn"
           >
             {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
-            {t('bulk_print_id_cards')}
+            Bulk Print ID Cards
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="btn-primary" data-testid="add-student-btn">
               <UserPlus className="w-5 h-5 mr-2" />
-              {t('new_admissions')}
+              New Admission
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-xl">{editingStudent ? `${t('edit')} ${t('students')}` : `📝 ${t('new_admissions')}`}</DialogTitle>
+              <DialogTitle className="text-xl">{editingStudent ? 'Edit Student' : '📝 New Student Admission Form'}</DialogTitle>
               <DialogDescription>
                 {!editingStudent && 'Student ID और Password automatically generate होंगे। सभी * fields भरना जरूरी है।'}
               </DialogDescription>
@@ -1115,14 +942,17 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
               {/* Tab 1: Basic Info */}
               {activeFormTab === 'basic' && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h3 className="font-semibold text-slate-800 border-b pb-2">📋 Basic Information (मूल जानकारी)</h3>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h3 className="font-semibold text-slate-800">📋 Basic Information (मूल जानकारी)</h3>
+                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">* = Required</span>
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label>{t('student_name')} *</Label>
+                      <Label>{t('student_name')} <span className="text-red-500">*</span></Label>
                       <Input name="name" value={formData.name} onChange={handleChange} required placeholder="Student Full Name" data-testid="student-name-input" />
                     </div>
                     <div className="space-y-2">
-                      <Label>{t('class_section')} *</Label>
+                      <Label>{t('class_section')} <span className="text-red-500">*</span></Label>
                       <select name="class_id" value={formData.class_id} onChange={handleChange} required className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="class-select">
                         <option value="">{t('select_class')}</option>
                         {classes.map(cls => (
@@ -1131,20 +961,20 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <Label>{t('gender')} *</Label>
-                      <select name="gender" value={formData.gender} onChange={handleChange} required className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="gender-select">
+                      <Label>{t('gender')}</Label>
+                      <select name="gender" value={formData.gender} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 px-3" data-testid="gender-select">
                         <option value="male">{t('male')}</option>
                         <option value="female">{t('female')}</option>
                         <option value="other">{t('other')}</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <Label>{t('dob')} *</Label>
-                      <Input name="dob" type="date" value={formData.dob} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="dob-input" />
+                      <Label>{t('dob')}</Label>
+                      <Input name="dob" type="date" value={formData.dob} onChange={handleChange} max={new Date().toISOString().split('T')[0]} data-testid="dob-input" />
                     </div>
                     <div className="space-y-2">
-                      <Label>{t('admission_date')} *</Label>
-                      <Input name="admission_date" type="date" value={formData.admission_date} onChange={handleChange} required max={new Date().toISOString().split('T')[0]} data-testid="admission-date-input" />
+                      <Label>Admission Date</Label>
+                      <Input name="admission_date" type="date" value={formData.admission_date} onChange={handleChange} max={new Date().toISOString().split('T')[0]} data-testid="admission-date-input" />
                     </div>
                     <div className="space-y-2">
                       <Label>{t('blood_group')}</Label>
@@ -1160,6 +990,20 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                     <div className="space-y-2 col-span-2">
                       <Label>Identification Mark (पहचान चिन्ह)</Label>
                       <Input name="identification_mark" value={formData.identification_mark} onChange={handleChange} placeholder="Mole on right cheek, etc." />
+                    </div>
+                  </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <p className="text-xs text-gray-500">💡 सिर्फ Name और Class भरना जरूरी है, बाकी बाद में भर सकते हैं</p>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={() => setActiveFormTab('identity')} className="text-sm">
+                        Skip → Next Tab
+                      </Button>
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        {editingStudent ? 'Update' : 'Quick Submit ✓'}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1259,6 +1103,22 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <Button type="button" variant="ghost" onClick={() => setActiveFormTab('basic')} className="text-sm text-gray-500">
+                      ← Back
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={() => setActiveFormTab('family')} className="text-sm">
+                        Skip → Next
+                      </Button>
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        Save & Submit ✓
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1272,8 +1132,8 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                     <h4 className="font-medium text-blue-800 mb-3">👨 Father Details (पिता की जानकारी)</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>{t('father_name')} *</Label>
-                        <Input name="father_name" value={formData.father_name} onChange={handleChange} required placeholder="Father Full Name" data-testid="father-name-input" />
+                        <Label>{t('father_name')}</Label>
+                        <Input name="father_name" value={formData.father_name} onChange={handleChange} placeholder="Father Full Name" data-testid="father-name-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Occupation (व्यवसाय)</Label>
@@ -1309,8 +1169,8 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                     <h4 className="font-medium text-pink-800 mb-3">👩 Mother Details (माता की जानकारी)</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>{t('mother_name')} *</Label>
-                        <Input name="mother_name" value={formData.mother_name} onChange={handleChange} required placeholder="Mother Full Name" data-testid="mother-name-input" />
+                        <Label>{t('mother_name')}</Label>
+                        <Input name="mother_name" value={formData.mother_name} onChange={handleChange} placeholder="Mother Full Name" data-testid="mother-name-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Occupation (व्यवसाय)</Label>
@@ -1391,8 +1251,8 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                     <h4 className="font-medium text-green-800 mb-3">📞 Contact Information (संपर्क जानकारी)</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>Primary Mobile * (for login)</Label>
-                        <Input name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="Parent's mobile for OTP" data-testid="mobile-input" />
+                        <Label>Primary Mobile (for login)</Label>
+                        <Input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Parent's mobile for OTP" data-testid="mobile-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Secondary Phone (ID Card)</Label>
@@ -1403,8 +1263,8 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                         <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Optional" />
                       </div>
                       <div className="space-y-2 col-span-2 md:col-span-3">
-                        <Label>{t('address')} *</Label>
-                        <Input name="address" value={formData.address} onChange={handleChange} required placeholder="Full Address" data-testid="address-input" />
+                        <Label>{t('address')}</Label>
+                        <Input name="address" value={formData.address} onChange={handleChange} placeholder="Full Address" data-testid="address-input" />
                       </div>
                       <div className="space-y-2">
                         <Label>Emergency Contact Name</Label>
@@ -1414,6 +1274,22 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                         <Label>Emergency Contact Number</Label>
                         <Input name="emergency_contact" value={formData.emergency_contact} onChange={handleChange} placeholder="Emergency mobile" />
                       </div>
+                    </div>
+                  </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <Button type="button" variant="ghost" onClick={() => setActiveFormTab('identity')} className="text-sm text-gray-500">
+                      ← Back
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={() => setActiveFormTab('bank')} className="text-sm">
+                        Skip → Next
+                      </Button>
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        Save & Submit ✓
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1440,6 +1316,22 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                     <div className="space-y-2">
                       <Label>Branch Name</Label>
                       <Input name="bank_branch" value={formData.bank_branch} onChange={handleChange} placeholder="Branch Name" />
+                    </div>
+                  </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <Button type="button" variant="ghost" onClick={() => setActiveFormTab('family')} className="text-sm text-gray-500">
+                      ← Back
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={() => setActiveFormTab('other')} className="text-sm">
+                        Skip → Next
+                      </Button>
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        Save & Submit ✓
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1511,6 +1403,22 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <Button type="button" variant="ghost" onClick={() => setActiveFormTab('bank')} className="text-sm text-gray-500">
+                      ← Back
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={() => setActiveFormTab('documents')} className="text-sm">
+                        Skip → Documents
+                      </Button>
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        Save & Submit ✓
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1564,15 +1472,28 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                       ))}
                     </div>
                   </div>
+                  
+                  {/* Skip & Submit Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <Button type="button" variant="ghost" onClick={() => setActiveFormTab('other')} className="text-sm text-gray-500">
+                      ← Back
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700 text-sm" disabled={submitting || !formData.name || !formData.class_id}>
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                        {editingStudent ? 'Update Student' : 'Submit Admission ✓'}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Photo Capture Section - Available for both add and edit */}
-              {(true) && (
+              {/* Photo Capture Section - Only for new admission */}
+              {!editingStudent && (
                 <div className="border-t border-slate-200 pt-4 mt-4">
                   <Label className="text-base font-semibold flex items-center gap-2 mb-3">
                     <Camera className="w-5 h-5 text-blue-600" />
-                    Student Photo (छात्र फोटो) {editingStudent ? '- Update Photo' : '- Optional'}
+                    Student Photo (AI Attendance के लिए) - Optional
                   </Label>
                   
                   {!capturedPhoto && !showCamera && (
@@ -1624,7 +1545,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           data-testid="capture-btn"
                         >
                           <Camera className="w-5 h-5 mr-2" />
-                          {t('capture')}
+                          Capture
                         </Button>
                         <Button
                           type="button"
@@ -1633,7 +1554,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           className="bg-white/80 text-red-600 border-red-300"
                         >
                           <X className="w-5 h-5 mr-2" />
-                          {t('cancel')}
+                          Cancel
                         </Button>
                       </div>
                     </div>
@@ -1656,7 +1577,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                           onClick={removePhoto}
                         >
                           <X className="w-4 h-4 mr-1" />
-                          {t('remove')}
+                          Remove
                         </Button>
                       </div>
                       <div className="absolute bottom-2 left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
@@ -1720,7 +1641,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                 </Button>
                 <Button type="submit" className="btn-primary" disabled={submitting} data-testid="save-student-btn">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  {editingStudent ? t('save') : t('admit_student')}
+                  {editingStudent ? t('save') : 'Admit Student'}
                 </Button>
               </div>
             </form>
@@ -1900,137 +1821,158 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsSuspendDialogOpen(false)}>
-                {t('cancel')}
+                Cancel
               </Button>
               <Button type="submit" className="bg-amber-600 hover:bg-amber-700" disabled={submitting}>
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {t('suspend')} {t('students')}
+                Suspend Student
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Split View Layout */}
-      <div className="flex gap-4" style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }}>
-        {/* Left Panel - Student List (~40% width) */}
-        <div className="w-2/5 flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-3 border-b border-gray-100 space-y-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder={t('search')}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
-                data-testid="search-input"
-              />
+      {/* Filters */}
+      <div className="flex gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Input
+            placeholder="Search by name or Student ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+            data-testid="search-input"
+          />
+        </div>
+        <select
+          value={selectedClass}
+          onChange={(e) => setSelectedClass(e.target.value)}
+          className="h-10 rounded-lg border border-slate-200 px-3 min-w-[150px]"
+          data-testid="filter-class"
+        >
+          <option value="">All Classes</option>
+          {classes.map(cls => (
+            <option key={cls.id} value={cls.id}>
+              {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="active" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="active">
+            <User className="w-4 h-4 mr-2" />
+            Active ({students.length})
+          </TabsTrigger>
+          <TabsTrigger value="suspended">
+            <Ban className="w-4 h-4 mr-2" />
+            Suspended ({suspendedStudents.length})
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Active Students */}
+        <TabsContent value="active">
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="spinner w-10 h-10" />
             </div>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full h-9 rounded-lg border border-slate-200 px-3 text-sm"
-              data-testid="filter-class"
-            >
-              <option value="">{t('all_classes')}</option>
-              {classes.map(cls => (
-                <option key={cls.id} value={cls.id}>
-                  {cls.name}{cls.section && cls.section !== 'A' ? ` - ${cls.section}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <Tabs defaultValue="active" className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="mx-3 mt-2 shrink-0">
-              <TabsTrigger value="active" className="text-xs gap-1">
-                <User className="w-3.5 h-3.5" />
-                {t('active')} ({students.length})
-              </TabsTrigger>
-              <TabsTrigger value="suspended" className="text-xs gap-1">
-                <Ban className="w-3.5 h-3.5" />
-                {t('suspended')} ({suspendedStudents.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="active" className="flex-1 overflow-y-auto p-2 mt-0">
-              {loading ? (
-                <div className="flex justify-center py-10">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-                </div>
-              ) : students.length === 0 ? (
-                <div className="text-center py-10">
-                  <User className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-400">{t('no_data')}</p>
-                </div>
-              ) : (
-                <div className="space-y-1">
+          ) : students.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
+              <User className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500">{t('no_data')}</p>
+            </div>
+          ) : (
+            <div className="data-table">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-20">Photo</TableHead>
+                    <TableHead>Student ID</TableHead>
+                    <TableHead>{t('student_name')}</TableHead>
+                    <TableHead>{t('class_section')}</TableHead>
+                    <TableHead>{t('father_name')}</TableHead>
+                    <TableHead>{t('mobile')}</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>{t('actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {students.map((student) => (
-                    <div
-                      key={student.id}
-                      onClick={() => setSplitViewStudent(student)}
-                      className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all group ${
-                        splitViewStudent?.id === student.id
-                          ? 'bg-blue-50 border-2 border-blue-400 shadow-sm'
-                          : 'border-2 border-transparent hover:bg-slate-50 hover:border-blue-200'
-                      }`}
-                      data-testid={`student-row-${student.id}`}
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {student.photo_url ? (
-                          <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-5 h-5 text-slate-400" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-slate-900 truncate">{student.name}</p>
-                        <p className="text-xs text-slate-500 truncate">
-                          {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''} {student.father_name ? `| ${student.father_name}` : ''}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          student.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                          student.status === 'suspended' ? 'bg-amber-100 text-amber-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
+                    <TableRow key={student.id} data-testid={`student-row-${student.id}`}>
+                      <TableCell>
+                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+                          {student.photo_url ? (
+                            <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-5 h-5 text-slate-400" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm font-medium">{student.student_id || student.admission_no}</TableCell>
+                      <TableCell className="font-medium">{student.name}</TableCell>
+                      <TableCell>
+                        <span className="badge badge-info">
+                          {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''}
+                        </span>
+                      </TableCell>
+                      <TableCell>{student.father_name}</TableCell>
+                      <TableCell>{student.mobile}</TableCell>
+                      <TableCell>
+                        <span className={`badge ${getStatusBadge(student.status)}`}>
                           {student.status}
                         </span>
+                      </TableCell>
+                      <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="p-1 rounded hover:bg-slate-200 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                              <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
-                            </button>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openStudentProfile(student)}>
-                              <Eye className="w-4 h-4 mr-2 text-blue-600" />
-                              {t('view_profile')}
-                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(student)}>
                               <Edit className="w-4 h-4 mr-2" />
-                              {t('edit')}
+                              Edit Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setIdCardStudent(student); setShowIDCard(true); }}>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setIdCardStudent(student);
+                                setShowIDCard(true);
+                              }}
+                            >
                               <CreditCard className="w-4 h-4 mr-2 text-blue-600" />
-                              {t('id_card')}
+                              View ID Card
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => viewCredentials(student)}>
+                            <DropdownMenuItem 
+                              onClick={() => viewCredentials(student)}
+                            >
                               <Key className="w-4 h-4 mr-2 text-purple-600" />
                               Share Login Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setNewStudentCredentials({ student_id: student.student_id || student.id, name: student.name }); setShowFaceEnrollment(true); }}>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setNewStudentCredentials({
+                                  student_id: student.student_id || student.id,
+                                  name: student.name
+                                });
+                                setShowFaceEnrollment(true);
+                              }}
+                            >
                               <Camera className="w-4 h-4 mr-2 text-emerald-600" />
-                              {t('face_enrollment')}
+                              Face Enrollment
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => openSuspendDialog(student)}>
                               <Ban className="w-4 h-4 mr-2 text-amber-500" />
-                              {t('suspend')}
+                              Suspend
                             </DropdownMenuItem>
                             {['director', 'principal'].includes(user?.role) && (
-                              <DropdownMenuItem onClick={() => handleMarkLeft(student.id)} className="text-rose-600">
+                              <DropdownMenuItem 
+                                onClick={() => handleMarkLeft(student.id)}
+                                className="text-rose-600"
+                              >
                                 <LogOut className="w-4 h-4 mr-2" />
                                 Mark as Left (TC)
                               </DropdownMenuItem>
@@ -2038,303 +1980,80 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                             {(user?.role === 'director' || user?.role === 'admin') && (
                               <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => openDeleteDialog(student)} className="text-red-600 bg-red-50 hover:bg-red-100">
+                                <DropdownMenuItem 
+                                  onClick={() => openDeleteDialog(student)}
+                                  className="text-red-600 bg-red-50 hover:bg-red-100"
+                                >
                                   <Trash2 className="w-4 h-4 mr-2" />
-                                  {t('delete')}
+                                  Delete Permanently
                                 </DropdownMenuItem>
                               </>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </div>
-                    </div>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </div>
-              )}
-            </TabsContent>
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </TabsContent>
 
-            <TabsContent value="suspended" className="flex-1 overflow-y-auto p-2 mt-0">
-              {suspendedStudents.length === 0 ? (
-                <div className="text-center py-10">
-                  <Ban className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-400">No suspended students</p>
-                </div>
-              ) : (
-                <div className="space-y-1">
+        {/* Suspended Students */}
+        <TabsContent value="suspended">
+          {suspendedStudents.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
+              <Ban className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500">No suspended students</p>
+            </div>
+          ) : (
+            <div className="data-table">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student ID</TableHead>
+                    <TableHead>{t('student_name')}</TableHead>
+                    <TableHead>{t('class_section')}</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>{t('actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {suspendedStudents.map((student) => (
-                    <div
-                      key={student.id}
-                      onClick={() => setSplitViewStudent(student)}
-                      className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all group ${
-                        splitViewStudent?.id === student.id
-                          ? 'bg-amber-50 border-2 border-amber-400 shadow-sm'
-                          : 'border-2 border-transparent hover:bg-amber-50/50 hover:border-amber-200'
-                      }`}
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {student.photo_url ? (
-                          <img src={student.photo_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-5 h-5 text-amber-400" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-slate-900 truncate">{student.name}</p>
-                        <p className="text-xs text-amber-600 truncate">
-                          {student.class_name} | {suspendReasons[student.suspension_reason] || student.suspension_reason || 'Suspended'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">suspended</span>
+                    <TableRow key={student.id} className="bg-amber-50">
+                      <TableCell className="font-mono text-sm">{student.student_id || student.admission_no}</TableCell>
+                      <TableCell className="font-medium">{student.name}</TableCell>
+                      <TableCell>
+                        <span className="badge badge-warning">
+                          {student.class_name}{student.section && student.section !== 'A' ? ` - ${student.section}` : ''}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-amber-700">
+                          {suspendReasons[student.suspension_reason] || student.suspension_reason}
+                        </span>
+                      </TableCell>
+                      <TableCell>
                         {['director', 'principal'].includes(user?.role) && (
                           <Button
                             size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => { e.stopPropagation(); handleUnsuspend(student.id); }}
+                            className="bg-emerald-600 hover:bg-emerald-700"
+                            onClick={() => handleUnsuspend(student.id)}
                           >
-                            <RefreshCw className="w-3 h-3 mr-1" />
+                            <RefreshCw className="w-4 h-4 mr-1" />
                             Unsuspend
                           </Button>
                         )}
-                      </div>
-                    </div>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Right Panel - Student Profile (~60% width) */}
-        <div className="w-3/5 bg-white rounded-xl border border-gray-100 shadow-sm overflow-y-auto">
-          {!splitViewStudent ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400">
-              <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mb-4">
-                <User className="w-10 h-10 text-slate-300" />
-              </div>
-              <p className="text-lg font-medium text-slate-500">Select a student to view profile</p>
-              <p className="text-sm mt-1 text-slate-400">Click on any student from the left panel</p>
-            </div>
-          ) : (
-            <div className="p-6 space-y-5">
-              {/* Profile Header with Dual Photos */}
-              <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-100">
-                <div className="flex items-start gap-6">
-                  <div className="flex gap-4">
-                    <input type="file" ref={splitPhotoInputRef} className="hidden" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleProfilePhotoUpload(e, splitViewStudent.id)} />
-                    <div className="text-center">
-                      <div className="relative group cursor-pointer" onClick={() => splitPhotoInputRef.current?.click()}>
-                        <div className="w-24 h-24 rounded-xl bg-white border-3 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
-                          {splitViewStudent.photo_url ? (
-                            <img src={splitViewStudent.photo_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-12 h-12 text-slate-300" />
-                          )}
-                        </div>
-                        <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          {uploadingProfilePhoto ? (
-                            <Loader2 className="w-6 h-6 text-white animate-spin" />
-                          ) : (
-                            <Camera className="w-6 h-6 text-white" />
-                          )}
-                        </div>
-                        <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white shadow-md">
-                          <Camera className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1.5 font-medium">Click to upload</p>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-bold text-slate-900">{splitViewStudent.name}</h2>
-                    <p className="text-slate-500 mt-1">
-                      {splitViewStudent.student_id || splitViewStudent.admission_no} | {splitViewStudent.class_name}{splitViewStudent.section ? ` - ${splitViewStudent.section}` : ''}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                        splitViewStudent.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                        splitViewStudent.status === 'suspended' ? 'bg-amber-100 text-amber-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {splitViewStudent.status?.toUpperCase()}
-                      </span>
-                      {splitViewStudent.blood_group && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 font-medium">{splitViewStudent.blood_group}</span>
-                      )}
-                    </div>
-                    <div className="flex gap-2 mt-4 flex-wrap">
-                      <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => printStudentProfile(splitViewStudent)}>
-                        <Printer className="w-3.5 h-3.5" /> {t('print')}
-                      </Button>
-                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs" onClick={() => handleEdit(splitViewStudent)}>
-                        <Edit className="w-3.5 h-3.5" /> {t('edit')}
-                      </Button>
-                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-blue-600" onClick={() => { setIdCardStudent(splitViewStudent); setShowIDCard(true); }}>
-                        <CreditCard className="w-3.5 h-3.5" /> {t('id_card')}
-                      </Button>
-                      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-purple-600" onClick={() => viewCredentials(splitViewStudent)}>
-                        <Key className="w-3.5 h-3.5" /> Credentials
-                      </Button>
-                      {['director', 'principal'].includes(user?.role) && (
-                        <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs text-amber-600" onClick={() => {
-                          setResetPasswordStudent(splitViewStudent);
-                          setNewStudentPassword('');
-                          setShowResetPasswordDialog(true);
-                        }}>
-                          <Key className="w-3.5 h-3.5" /> {t('reset_password')}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section: Personal Info */}
-              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <User className="w-4 h-4" /> {t('personal_info')}
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
-                  {[
-                    [t('name'), splitViewStudent.name],
-                    [t('student_id'), splitViewStudent.student_id || splitViewStudent.admission_no],
-                    [t('classes'), splitViewStudent.class_name],
-                    [t('section'), splitViewStudent.section || 'A'],
-                    [t('gender'), splitViewStudent.gender],
-                    [t('dob'), splitViewStudent.dob],
-                    [t('blood_group'), splitViewStudent.blood_group],
-                    [t('admission_date'), splitViewStudent.admission_date],
-                    [t('category'), splitViewStudent.category],
-                    [t('caste'), splitViewStudent.caste],
-                    ['Sub Caste', splitViewStudent.sub_caste],
-                    [t('religion'), splitViewStudent.religion],
-                    [t('nationality'), splitViewStudent.nationality],
-                    ['Mother Tongue', splitViewStudent.mother_tongue],
-                    ['Birth Place', splitViewStudent.birth_place],
-                    ['Identification Mark', splitViewStudent.identification_mark],
-                    ['RTE Status', splitViewStudent.rte_status ? 'Yes' : 'No'],
-                    [t('aadhar_number'), splitViewStudent.aadhar_no],
-                    ['Scholar No', splitViewStudent.scholar_no],
-                    ['PEN Number', splitViewStudent.pen_number],
-                    ['SSSMID', splitViewStudent.sssmid],
-                    ['Samagra Family ID', splitViewStudent.samagra_family_id],
-                    ['Jan Aadhar No', splitViewStudent.jan_aadhar_no],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section: Family & Contact */}
-              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <Users className="w-4 h-4" /> {t('family_details')}
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
-                  {[
-                    [t('father_name'), splitViewStudent.father_name],
-                    ['Father Occupation', splitViewStudent.father_occupation],
-                    ['Father Qualification', splitViewStudent.father_qualification],
-                    [t('mother_name'), splitViewStudent.mother_name],
-                    ['Mother Occupation', splitViewStudent.mother_occupation],
-                    ['Mother Qualification', splitViewStudent.mother_qualification],
-                    [t('guardian_name'), splitViewStudent.guardian_name],
-                    ['Guardian Relation', splitViewStudent.guardian_relation],
-                    ['Guardian Mobile', splitViewStudent.guardian_mobile],
-                    ['Guardian Occupation', splitViewStudent.guardian_occupation],
-                    ['Annual Income', splitViewStudent.annual_income],
-                    [t('mobile'), splitViewStudent.mobile],
-                    ['Parent Phone', splitViewStudent.parent_phone],
-                    [t('email'), splitViewStudent.email],
-                    [t('address'), splitViewStudent.address],
-                    [t('emergency_contact'), splitViewStudent.emergency_contact],
-                    ['Emergency Name', splitViewStudent.emergency_contact_name],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section: Bank Details */}
-              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <Wallet className="w-4 h-4" /> {t('bank_details')}
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
-                  {[
-                    [t('bank_name'), splitViewStudent.bank_name],
-                    ['Account No', splitViewStudent.bank_account_no],
-                    ['IFSC Code', splitViewStudent.ifsc_code],
-                    ['Branch', splitViewStudent.bank_branch],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![splitViewStudent.bank_name, splitViewStudent.bank_account_no].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No bank details recorded</div>
-                )}
-              </div>
-
-              {/* Section: Transport & Medical */}
-              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <Bus className="w-4 h-4" /> {t('transport')}
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
-                  {[
-                    ['Transport Mode', splitViewStudent.transport_mode],
-                    ['Bus Route', splitViewStudent.bus_route],
-                    ['Bus Stop', splitViewStudent.bus_stop],
-                    ['Pickup Point', splitViewStudent.pickup_point],
-                    ['Medical Conditions', splitViewStudent.medical_conditions],
-                    ['Allergies', splitViewStudent.allergies],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![splitViewStudent.transport_mode, splitViewStudent.bus_route, splitViewStudent.medical_conditions, splitViewStudent.allergies].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No transport or medical details recorded</div>
-                )}
-              </div>
-
-              {/* Section: Previous Education */}
-              <div className="rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-500 text-white font-semibold text-sm flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4" /> Previous Education
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100">
-                  {[
-                    [t('previous_school'), splitViewStudent.previous_school],
-                    ['Previous Class', splitViewStudent.previous_class],
-                    ['Previous Percentage', splitViewStudent.previous_percentage],
-                    ['TC Number', splitViewStudent.tc_number],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![splitViewStudent.previous_school, splitViewStudent.previous_class, splitViewStudent.tc_number].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No previous education details recorded</div>
-                )}
-              </div>
+                </TableBody>
+              </Table>
             </div>
           )}
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Face Enrollment Modal */}
       {showFaceEnrollment && newStudentCredentials && (
@@ -2445,265 +2164,6 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
         </DialogContent>
       </Dialog>
 
-      {/* Student Full Profile Modal */}
-      <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
-        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <User className="w-6 h-6 text-blue-600" />
-              Student Profile (विद्यार्थी प्रोफ़ाइल)
-            </DialogTitle>
-          </DialogHeader>
-          
-          {profileStudent && (
-            <div className="space-y-4">
-              <input type="file" ref={profilePhotoInputRef} className="hidden" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleProfilePhotoUpload(e, profileStudent.id)} />
-              {/* Photo & Basic Header */}
-              <div className="text-center bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-100">
-                <div className="flex justify-center mb-3">
-                  <div className="relative group cursor-pointer" onClick={() => profilePhotoInputRef.current?.click()}>
-                    <div className="w-28 h-28 rounded-xl bg-white border-4 border-blue-300 shadow-lg flex items-center justify-center overflow-hidden">
-                      {profileStudent.photo_url ? (
-                        <img src={profileStudent.photo_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="w-14 h-14 text-slate-300" />
-                      )}
-                    </div>
-                    <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      {uploadingProfilePhoto ? (
-                        <Loader2 className="w-8 h-8 text-white animate-spin" />
-                      ) : (
-                        <Camera className="w-8 h-8 text-white" />
-                      )}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white shadow-md">
-                      <Camera className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold text-slate-900">{profileStudent.name}</h2>
-                <p className="text-slate-500 mt-1">
-                  {profileStudent.student_id || profileStudent.admission_no} | {profileStudent.class_name}{profileStudent.section ? ` - ${profileStudent.section}` : ''}
-                </p>
-                <span className={`inline-block mt-2 badge ${getStatusBadge(profileStudent.status)}`}>
-                  {profileStudent.status}
-                </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 flex-wrap justify-center">
-                <Button size="sm" className="gap-2" onClick={() => printStudentProfile(profileStudent)}>
-                  <Printer className="w-4 h-4" /> Print Profile
-                </Button>
-                <Button size="sm" variant="outline" className="gap-2" onClick={() => { setShowProfileModal(false); handleEdit(profileStudent); }}>
-                  <Edit className="w-4 h-4" /> {t('edit')}
-                </Button>
-                <Button size="sm" variant="outline" className="gap-2 text-blue-600" onClick={() => { setShowProfileModal(false); setIdCardStudent(profileStudent); setShowIDCard(true); }}>
-                  <CreditCard className="w-4 h-4" /> {t('id_card')}
-                </Button>
-              </div>
-
-              {/* Section: Basic Info */}
-              <div className="rounded-xl border border-blue-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  📋 Basic Information (मूल जानकारी)
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
-                  {[
-                    [t('name'), profileStudent.name],
-                    [t('student_id'), profileStudent.student_id || profileStudent.admission_no],
-                    [t('classes'), profileStudent.class_name],
-                    [t('section'), profileStudent.section || 'A'],
-                    [t('gender'), profileStudent.gender],
-                    [t('dob'), profileStudent.dob],
-                    [t('blood_group'), profileStudent.blood_group],
-                    [t('admission_date'), profileStudent.admission_date],
-                    [t('category'), profileStudent.category],
-                    [t('caste'), profileStudent.caste],
-                    ['Sub Caste', profileStudent.sub_caste],
-                    [t('religion'), profileStudent.religion],
-                    [t('nationality'), profileStudent.nationality],
-                    ['Mother Tongue', profileStudent.mother_tongue],
-                    ['Birth Place', profileStudent.birth_place],
-                    ['Identification Mark', profileStudent.identification_mark],
-                    ['RTE Status', profileStudent.rte_status ? 'Yes' : 'No'],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section: Identity Docs */}
-              <div className="rounded-xl border border-amber-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-amber-600 to-amber-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  🆔 Identity Documents (पहचान दस्तावेज़)
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
-                  {[
-                    [t('aadhar_number'), profileStudent.aadhar_no],
-                    ['Scholar No', profileStudent.scholar_no],
-                    ['PEN Number', profileStudent.pen_number],
-                    ['SSSMID', profileStudent.sssmid],
-                    ['Samagra Family ID', profileStudent.samagra_family_id],
-                    ['Jan Aadhar No', profileStudent.jan_aadhar_no],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![profileStudent.aadhar_no, profileStudent.scholar_no, profileStudent.pen_number, profileStudent.sssmid].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No identity documents recorded</div>
-                )}
-              </div>
-
-              {/* Section: Family Info */}
-              <div className="rounded-xl border border-green-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-green-600 to-green-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  👨‍👩‍👦 Family Information (पारिवारिक जानकारी)
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
-                  {[
-                    [t('father_name'), profileStudent.father_name],
-                    ['Father Occupation', profileStudent.father_occupation],
-                    ['Father Qualification', profileStudent.father_qualification],
-                    [t('mother_name'), profileStudent.mother_name],
-                    ['Mother Occupation', profileStudent.mother_occupation],
-                    ['Mother Qualification', profileStudent.mother_qualification],
-                    [t('guardian_name'), profileStudent.guardian_name],
-                    ['Guardian Relation', profileStudent.guardian_relation],
-                    ['Guardian Mobile', profileStudent.guardian_mobile],
-                    ['Guardian Occupation', profileStudent.guardian_occupation],
-                    ['Annual Income', profileStudent.annual_income],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section: Contact */}
-              <div className="rounded-xl border border-purple-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-600 to-purple-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  📞 Contact Information (संपर्क जानकारी)
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
-                  {[
-                    [t('mobile'), profileStudent.mobile],
-                    ['Parent Phone', profileStudent.parent_phone],
-                    [t('email'), profileStudent.email],
-                    [t('address'), profileStudent.address],
-                    [t('emergency_contact'), profileStudent.emergency_contact],
-                    ['Emergency Contact Name', profileStudent.emergency_contact_name],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section: Bank */}
-              <div className="rounded-xl border border-teal-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  🏦 Bank Details - Scholarship (बैंक विवरण)
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
-                  {[
-                    [t('bank_name'), profileStudent.bank_name],
-                    ['Account No', profileStudent.bank_account_no],
-                    ['IFSC Code', profileStudent.ifsc_code],
-                    ['Branch', profileStudent.bank_branch],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![profileStudent.bank_name, profileStudent.bank_account_no].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No bank details recorded</div>
-                )}
-              </div>
-
-              {/* Section: Transport */}
-              <div className="rounded-xl border border-orange-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  🚌 Transport (परिवहन)
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
-                  {[
-                    ['Transport Mode', profileStudent.transport_mode],
-                    ['Bus Route', profileStudent.bus_route],
-                    ['Bus Stop', profileStudent.bus_stop],
-                    ['Pickup Point', profileStudent.pickup_point],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![profileStudent.transport_mode, profileStudent.bus_route].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No transport details recorded</div>
-                )}
-              </div>
-
-              {/* Section: Medical */}
-              <div className="rounded-xl border border-red-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  🏥 Medical Information (चिकित्सा)
-                </div>
-                <div className="grid grid-cols-2 gap-px bg-slate-200">
-                  {[
-                    ['Medical Conditions', profileStudent.medical_conditions],
-                    ['Allergies', profileStudent.allergies],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![profileStudent.medical_conditions, profileStudent.allergies].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No medical information recorded</div>
-                )}
-              </div>
-
-              {/* Section: Previous Education */}
-              <div className="rounded-xl border border-indigo-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-4 py-2 font-semibold text-sm flex items-center gap-2">
-                  🎓 Previous Education (पूर्व शिक्षा)
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
-                  {[
-                    ['Previous School', profileStudent.previous_school],
-                    ['Previous Class', profileStudent.previous_class],
-                    ['Previous Percentage', profileStudent.previous_percentage],
-                    ['TC Number', profileStudent.tc_number],
-                  ].filter(([, v]) => v).map(([label, value], i) => (
-                    <div key={i} className="bg-white p-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="font-medium text-sm text-slate-800">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                {![profileStudent.previous_school, profileStudent.previous_class, profileStudent.tc_number].some(Boolean) && (
-                  <div className="bg-white p-3 text-center text-sm text-slate-400">No previous education details recorded</div>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Student Credentials Sharing Dialog */}
       <Dialog open={showCredentialsDialog} onOpenChange={setShowCredentialsDialog}>
         <DialogContent className="max-w-md">
@@ -2749,16 +2209,8 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                   <span className="text-slate-400 text-sm">Password:</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-bold text-lg text-green-300">
-                      {showStudentPasswordField ? credentialsStudent.default_password : '********'}
+                      {credentialsStudent.default_password}
                     </span>
-                    <Button 
-                      size="sm" 
-                      variant="ghost"
-                      className="h-7 w-7 p-0 text-white hover:bg-slate-700"
-                      onClick={() => setShowStudentPasswordField(!showStudentPasswordField)}
-                    >
-                      {showStudentPasswordField ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </Button>
                     <Button 
                       size="sm" 
                       variant="ghost"
@@ -2773,23 +2225,6 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
                   </div>
                 </div>
               </div>
-              
-              {/* Reset Password Button */}
-              {user?.role === 'director' && (
-                <Button 
-                  variant="outline"
-                  className="w-full gap-2 border-amber-300 text-amber-700 hover:bg-amber-50"
-                  onClick={() => {
-                    setResetPasswordStudent(credentialsStudent);
-                    setNewStudentPassword('');
-                    setShowCredentialsDialog(false);
-                    setShowResetPasswordDialog(true);
-                  }}
-                >
-                  <Key className="w-4 h-4" />
-                  {t('reset_password')}
-                </Button>
-              )}
               
               {/* App Link */}
               <div className="bg-blue-50 rounded-lg p-3 text-center">
@@ -2824,56 +2259,6 @@ Generated on ${new Date().toLocaleDateString('en-IN')} | Schooltino ERP
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Reset Password Dialog */}
-      {showResetPasswordDialog && resetPasswordStudent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowResetPasswordDialog(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-              <Key className="w-5 h-5 text-amber-600" />
-              Reset Student Password
-            </h3>
-            <div className="bg-slate-50 rounded-lg p-3 mb-4">
-              <p className="font-medium">{resetPasswordStudent.name}</p>
-              <p className="text-sm text-slate-500">
-                {resetPasswordStudent.student_id || resetPasswordStudent.admission_no || 'N/A'} • {resetPasswordStudent.class_name || 'N/A'}
-              </p>
-            </div>
-            <div className="space-y-3 mb-4">
-              <Label>New Password (कम से कम 4 characters)</Label>
-              <div className="relative">
-                <Input
-                  type={showStudentPasswordField ? 'text' : 'password'}
-                  value={newStudentPassword}
-                  onChange={e => setNewStudentPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowStudentPasswordField(!showStudentPasswordField)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showStudentPasswordField ? <Eye className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} className="flex-1">
-                {t('cancel')}
-              </Button>
-              <Button
-                onClick={resetStudentPassword}
-                disabled={!newStudentPassword || newStudentPassword.length < 4 || resettingStudentPassword}
-                className="flex-1 bg-amber-600 hover:bg-amber-700"
-              >
-                {resettingStudentPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Key className="w-4 h-4 mr-2" />}
-                {t('reset_password')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

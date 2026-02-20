@@ -1,4 +1,4 @@
-# ./routes/syllabus_progress.py
+# /app/backend/routes/syllabus_progress.py
 """
 Syllabus Progress Tracking & AI Chapter Summary
 - Teachers update syllabus progress
@@ -8,19 +8,25 @@ Syllabus Progress Tracking & AI Chapter Summary
 
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any, Union
-from datetime import datetime, timezone
+from typing import Optional, List, Dict
+from datetime import datetime, timezone, timedelta
 import uuid
 import os
 import sys
-import sys; from pathlib import Path; sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append('/app/backend')
 
-from core.database import db
+from motor.motor_asyncio import AsyncIOMotorClient
+
+# Database connection
+mongo_url = os.environ.get('MONGO_URL')
+db_name = os.environ.get('DB_NAME')
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
 
 # Emergent LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
 router = APIRouter(prefix="/syllabus-progress", tags=["Syllabus Progress"])
 
@@ -35,8 +41,8 @@ class ChapterProgressUpdate(BaseModel):
     board: str  # NCERT or MPBSE
     chapter_number: int
     chapter_name: str
-    status: str  # not_started, in_progress, completed, skipped
-    topics_covered: Optional[List[Any]] = []
+    status: str  # not_started, in_progress, completed
+    topics_covered: Optional[List[str]] = []
     notes: Optional[str] = None
 
 class ChapterSummaryRequest(BaseModel):
@@ -63,7 +69,7 @@ class BulkProgressUpdate(BaseModel):
 async def get_current_user_from_token(token: str):
     """Extract user from JWT token"""
     import jwt
-    JWT_SECRET = os.environ.get('JWT_SECRET', 'schooltino-secret-key-2024')
+    JWT_SECRET = os.environ.get('JWT_SECRET')
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         user_id = payload.get("sub")
@@ -153,50 +159,12 @@ async def update_chapter_progress(
             teacher_name
         )
     
-    # Auto-assign homework for newly taught topics
-    auto_hw_count = 0
-    if progress.topics_covered:
-        for topic_item in progress.topics_covered:
-            topic_name = topic_item if isinstance(topic_item, str) else topic_item.get("name", "")
-            topic_status = "taught" if isinstance(topic_item, str) else topic_item.get("status", "taught")
-            
-            if topic_status == "taught" and topic_name:
-                existing_hw = await db.homework.find_one({
-                    "school_id": progress.school_id,
-                    "class_id": progress.class_id,
-                    "subject": progress.subject,
-                    "topic": topic_name,
-                    "auto_generated": True
-                })
-                if not existing_hw:
-                    hw_record = {
-                        "id": str(uuid.uuid4()),
-                        "school_id": progress.school_id,
-                        "class_id": progress.class_id,
-                        "subject": progress.subject,
-                        "chapter": progress.chapter_name,
-                        "topic": topic_name,
-                        "description": f"Revise and practice: {topic_name} (Chapter: {progress.chapter_name})",
-                        "assigned_by": teacher_name,
-                        "assigned_by_id": teacher_id,
-                        "assigned_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-                        "due_date": "",
-                        "status": "pending",
-                        "auto_generated": True,
-                        "board": progress.board,
-                        "created_at": datetime.now(timezone.utc).isoformat()
-                    }
-                    await db.homework.insert_one(hw_record)
-                    auto_hw_count += 1
-    
     # AI Confirmation Message
     ai_message = ""
     if progress.status == "completed":
         ai_message = f"✅ {teacher_name} ji, {progress.chapter_name} successfully complete mark ho gaya hai! Sabhi {progress.class_name} ke students ko notification bhej diya gaya hai."
     elif progress.status == "in_progress":
-        ai_message = f"📖 {progress.chapter_name} partially taught mark ho gaya hai. Jab complete ho jaye tab update kar dena!"
-    elif progress.status == "skipped":
-        ai_message = f"⏭️ {progress.chapter_name} skipped mark ho gaya hai."
+        ai_message = f"📖 {progress.chapter_name} in-progress mark ho gaya hai. Jab complete ho jaye tab update kar dena!"
     else:
         ai_message = f"📋 {progress.chapter_name} ka status update ho gaya hai."
     
@@ -210,8 +178,7 @@ async def update_chapter_progress(
             "chapter": progress.chapter_name,
             "status": progress.status
         },
-        "notification_sent": progress.status == "completed",
-        "auto_homework_count": auto_hw_count
+        "notification_sent": progress.status == "completed"
     }
 
 
@@ -289,6 +256,68 @@ async def get_student_syllabus_progress(school_id: str, class_id: str):
     progress_data["summary"] = " | ".join(summary_parts) if summary_parts else "No progress recorded yet"
     
     return progress_data
+
+
+@router.get("/analytics/{school_id}/{class_id}")
+async def get_syllabus_analytics(
+    school_id: str,
+    class_id: str,
+    subject: Optional[str] = None,
+    range: str = "month"
+):
+    """Get syllabus analytics for week/month/year"""
+    query = {"school_id": school_id, "class_id": class_id}
+    if subject:
+        query["subject"] = subject
+
+    records = await db.syllabus_progress.find(query, {"_id": 0}).to_list(500)
+
+    total = len(records)
+    completed = len([r for r in records if r.get("status") == "completed"])
+    in_progress = len([r for r in records if r.get("status") == "in_progress"])
+    not_started = max(total - completed - in_progress, 0)
+
+    now = datetime.now(timezone.utc)
+    days = 30
+    if range == "week":
+        days = 7
+    elif range == "year":
+        days = 365
+    range_start = now - timedelta(days=days)
+
+    completed_in_range = 0
+    updated_in_range = 0
+    for record in records:
+        updated_at = record.get("updated_at")
+        if updated_at:
+            try:
+                updated_dt = datetime.fromisoformat(updated_at)
+                if updated_dt >= range_start:
+                    updated_in_range += 1
+                    if record.get("status") == "completed":
+                        completed_in_range += 1
+            except Exception:
+                pass
+
+    completion_percentage = round((completed / total) * 100, 1) if total else 0
+
+    return {
+        "school_id": school_id,
+        "class_id": class_id,
+        "subject": subject,
+        "range": range,
+        "summary": {
+            "total_chapters": total,
+            "completed": completed,
+            "in_progress": in_progress,
+            "not_started": not_started,
+            "completion_percentage": completion_percentage
+        },
+        "range_stats": {
+            "updated_in_range": updated_in_range,
+            "completed_in_range": completed_in_range
+        }
+    }
 
 
 # ==================== AI CHAPTER SUMMARY ====================

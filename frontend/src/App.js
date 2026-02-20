@@ -1,220 +1,495 @@
-import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import './i18n';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { ThemeProvider } from './context/ThemeContext';
+
+// Pages
+import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
+import DashboardPage from './pages/DashboardPage';
+import StudentsPage from './pages/StudentsPage';
+// StaffPage removed - merged into EmployeeManagementPage
+import ClassesPage from './pages/ClassesPage';
+import AttendancePage from './pages/AttendancePage';
+import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
+import FeesPage from './pages/FeesPage';
+import NoticesPage from './pages/NoticesPage';
+import AIPaperPage from './pages/AIPaperPage';
+import AuditLogsPage from './pages/AuditLogsPage';
+import SettingsPage from './pages/SettingsPage';
+import UserManagementPage from './pages/UserManagementPage';
+import TeachTinoDashboard from './pages/TeachTinoDashboard';
+import StudentDashboard from './pages/StudentDashboard';
+import AIContentStudio from './pages/AIContentStudio';
+import VoiceAssistant from './pages/VoiceAssistant';
+import ImageGallery from './pages/ImageGallery';
+import SMSCenter from './pages/SMSCenter';
+import WebsiteIntegration from './pages/WebsiteIntegration';
+import LeaveManagement from './pages/LeaveManagement';
+import CCTVDashboard from './pages/CCTVDashboard';
+import SchoolAnalytics from './pages/SchoolAnalytics';
+import PermissionManager from './pages/PermissionManager';
+import SchoolRegistrationForm from './pages/SchoolRegistrationForm';
+import ZoomMeetings from './pages/ZoomMeetings';
+import SetupWizard from './pages/SetupWizard';
+import SubscriptionPage from './pages/SubscriptionPage';
+import TeachTinoLogin from './pages/TeachTinoLogin';
+import StudyTinoLogin from './pages/StudyTinoLogin';
+import OnlineExamSystem from './pages/OnlineExamSystem';
+import CCTVManagement from './pages/CCTVManagement';
+import StorageBackup from './pages/StorageBackup';
+import AdminActivityDashboard from './pages/AdminActivityDashboard';
+import FeePaymentPage from './pages/FeePaymentPage';
+import AccountantDashboard from './pages/AccountantDashboard';
+import SchoolSettingsPage from './pages/SchoolSettingsPage';
+import BoardNotificationsPage from './pages/BoardNotificationsPage';
+import FeeStructureManagement from './pages/FeeStructureManagement';
+import AIHistoryPage from './pages/AIHistoryPage';
+import FrontOfficePage from './pages/FrontOfficePage';
+import TransportPage from './pages/TransportPage';
+import HealthModulePage from './pages/HealthModulePage';
+import BiometricPage from './pages/BiometricPage';
+import TimetablePage from './pages/TimetablePage';
+import DirectorAIDashboard from './pages/DirectorAIDashboard';
+import MultiYearFeesPage from './pages/MultiYearFeesPage';
+import SalaryTrackingPage from './pages/SalaryTrackingPage';
+import StudentReceiptsPage from './pages/StudentReceiptsPage';
+import UnifiedPortal from './pages/UnifiedPortal';
+import TinoBrainDashboard from './pages/TinoBrainDashboard';
+import MarketingPage from './pages/MarketingPage';
+import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
+import SchoolMarketingPage from './pages/SchoolMarketingPage';
+import AdmitCardManagement from './pages/AdmitCardManagement';
+import ImprovedAdmitCardManagement from './pages/ImprovedAdmitCardManagement';
+import AdmitCardManagementFixed from './pages/AdmitCardManagementFixed';
+import PDFDownloadPage from './pages/PDFDownloadPage';
+import SetupGuidePage from './pages/SetupGuidePage';
+import SuperAdminPanel from './pages/SuperAdminPanel';
+import TeacherRoleManager from './pages/TeacherRoleManager';
+import SchoolCalendarPage from './pages/SchoolCalendarPage';
+import ComplaintFeedbackPage from './pages/ComplaintFeedbackPage';
+import PrayerSystemPage from './pages/PrayerSystemPage';
+import EventDesignerPage from './pages/EventDesignerPage';
+import FamilyPortalPage from './pages/FamilyPortalPage';
+import ParentPortalPage from './pages/ParentPortalPage';
+import StudyTinoLoginPage from './pages/StudyTinoLoginPage';
+import ParentPaymentPortal from './pages/ParentPaymentPortal';
+import SchoolManagementPage from './pages/SchoolManagementPage';
+import EmployeeManagementPage from './pages/EmployeeManagementPage';
+import LogoWatermarkSettings from './pages/LogoWatermarkSettings';
+import FeeManagementPage from './pages/FeeManagementPage';
+import TimetableManagement from './pages/TimetableManagement';
+import CertificateGenerator from './pages/CertificateGenerator';
+import ExamReportCard from './pages/ExamReportCard';
+import TinoAICenter from './pages/AIJarvisCenter';
+import TinoAIAgent from './pages/TinoAIAgent';
+
+// PWA Install Prompt
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+
+// Trial Mode Components
+import { TrialBanner, SupportFAB } from './components/TrialMode';
+
+// Notice Popup System
+import NoticePopup from './components/NoticePopup';
+
+// New Pages
+// StaffDirectory removed - merged into EmployeeManagementPage
+import ProfilePage from './pages/ProfilePage';
+
+// Components
 import Layout from './components/Layout';
 
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-      <p className="text-sm text-gray-500">Loading...</p>
-    </div>
-  </div>
-);
-
-const LandingPage = React.lazy(() => import('./pages/LandingPage'));
-const LoginPage = React.lazy(() => import('./pages/LoginPage'));
-const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
-const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
-const StudentsPage = React.lazy(() => import('./pages/StudentsPage'));
-const ClassesPage = React.lazy(() => import('./pages/ClassesPage'));
-const ImprovedAttendancePage = React.lazy(() => import('./pages/ImprovedAttendancePage'));
-const EmployeeManagementPage = React.lazy(() => import('./pages/EmployeeManagementPage'));
-const FeeManagementPage = React.lazy(() => import('./pages/FeeManagementPage'));
-const AdmissionCRMPage = React.lazy(() => import('./pages/AdmissionCRMPage'));
-const ExamReportCard = React.lazy(() => import('./pages/ExamReportCard'));
-const TimetableManagement = React.lazy(() => import('./pages/TimetableManagement'));
-const DigitalLibraryPage = React.lazy(() => import('./pages/DigitalLibraryPage'));
-const LiveClassesPage = React.lazy(() => import('./pages/LiveClassesPage'));
-const IntegratedCommunicationPage = React.lazy(() => import('./pages/IntegratedCommunicationPage'));
-const FrontOfficePage = React.lazy(() => import('./pages/FrontOfficePage'));
-const TransportPage = React.lazy(() => import('./pages/TransportPage'));
-const SchoolCalendarPage = React.lazy(() => import('./pages/SchoolCalendarPage'));
-const SchoolAnalytics = React.lazy(() => import('./pages/SchoolAnalytics'));
-const AIToolsPage = React.lazy(() => import('./pages/AIToolsPage'));
-const CCTVPage = React.lazy(() => import('./pages/CCTVPage'));
-const InventoryPage = React.lazy(() => import('./pages/InventoryPage'));
-const MultiBranchPage = React.lazy(() => import('./pages/MultiBranchPage'));
-const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
-const LoginCredentialsPage = React.lazy(() => import('./pages/LoginCredentialsPage'));
-const SubscriptionPage = React.lazy(() => import('./pages/SubscriptionPage'));
-const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
-const SchoolFeedPage = React.lazy(() => import('./pages/SchoolFeedPage'));
-const LeaveManagement = React.lazy(() => import('./pages/LeaveManagement'));
-const SetupWizard = React.lazy(() => import('./pages/SetupWizard'));
-const TeachTinoLogin = React.lazy(() => import('./pages/TeachTinoLogin'));
-const TeachTinoDashboard = React.lazy(() => import('./pages/TeachTinoDashboard'));
-const StudyTinoLoginPage = React.lazy(() => import('./pages/StudyTinoLoginPage'));
-const StudentDashboard = React.lazy(() => import('./pages/StudentDashboard'));
-
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-  componentDidCatch(error, errorInfo) {
-    console.error('App Error:', error, errorInfo);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc',padding:'20px'}}>
-          <div style={{textAlign:'center',maxWidth:'400px'}}>
-            <div style={{fontSize:'48px',marginBottom:'16px'}}>⚠️</div>
-            <h2 style={{fontSize:'20px',fontWeight:'bold',color:'#1e293b',marginBottom:'8px'}}>Something went wrong</h2>
-            <p style={{fontSize:'14px',color:'#64748b',marginBottom:'16px'}}>{this.state.error?.message || 'An unexpected error occurred'}</p>
-            <button onClick={() => { this.setState({ hasError: false, error: null }); window.location.href = '/app/dashboard'; }} style={{padding:'10px 24px',background:'#3b82f6',color:'white',border:'none',borderRadius:'8px',fontSize:'14px',fontWeight:'600',cursor:'pointer'}}>
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
+// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return children;
-};
-
-const AdminRoute = ({ children }) => {
-  const { isAuthenticated, loading, user } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  const adminRoles = ['director', 'principal', 'vice_principal', 'co_director', 'admin_staff', 'accountant', 'clerk', 'admission_staff'];
-  if (!adminRoles.includes(user?.role)) {
-    if (user?.role === 'student') return <Navigate to="/student-dashboard" replace />;
-    if (user?.role === 'teacher') return <Navigate to="/portal" replace />;
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+  
   return children;
 };
 
-const StudentRoute = ({ children }) => {
+// Role-based Protected Route - SECURITY
+const RoleProtectedRoute = ({ children, allowedRoles, redirectTo = "/login" }) => {
   const { isAuthenticated, loading, user } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!isAuthenticated) return <Navigate to="/studytino" replace />;
-  if (user?.role !== 'student') return <Navigate to="/app/dashboard" replace />;
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Check if user's role is in allowed roles
+  if (!allowedRoles.includes(user?.role)) {
+    // Redirect based on role
+    if (user?.role === 'student') {
+      return <Navigate to="/student-dashboard" replace />;
+    } else if (user?.role === 'teacher') {
+      return <Navigate to="/teacher-dashboard" replace />;
+    } else {
+      return <Navigate to={redirectTo} replace />;
+    }
+  }
+  
   return children;
 };
 
-const TeacherRoute = ({ children }) => {
+// Student Only Route - BLOCKS admin/teacher access
+const StudentOnlyRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!isAuthenticated) return <Navigate to="/teachtino" replace />;
-  const teacherRoles = ['teacher', 'principal', 'vice_principal', 'co_director', 'staff', 'admin_staff', 'accountant', 'clerk', 'admission_staff'];
-  if (!teacherRoles.includes(user?.role)) return <Navigate to="/login" replace />;
-  return children;
-};
-
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading, user } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
-  if (isAuthenticated && user) {
-    if (user.role === 'student') return <Navigate to="/student-dashboard" replace />;
-    if (user.role === 'teacher') return <Navigate to="/portal" replace />;
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/studytino" replace />;
+  }
+  
+  // Only students can access
+  if (user?.role !== 'student') {
     return <Navigate to="/app/dashboard" replace />;
   }
+  
   return children;
 };
 
-function SmartRedirect() {
-  const { user, isAuthenticated } = useAuth();
-  if (!isAuthenticated || !user) return <Navigate to="/" replace />;
-  if (user.role === 'student') return <Navigate to="/student-dashboard" replace />;
-  if (user.role === 'teacher') return <Navigate to="/portal" replace />;
-  return <Navigate to="/app/dashboard" replace />;
-}
+// Admin Only Route - Director, Principal only
+const AdminOnlyRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Only director, principal, vice_principal, co_director
+  const adminRoles = ['director', 'principal', 'vice_principal', 'co_director'];
+  if (!adminRoles.includes(user?.role)) {
+    // Redirect to their appropriate dashboard
+    if (user?.role === 'student') {
+      return <Navigate to="/student-dashboard" replace />;
+    } else if (user?.role === 'teacher') {
+      return <Navigate to="/teacher-dashboard" replace />;
+    }
+    return <Navigate to="/teacher-dashboard" replace />;
+  }
+  
+  return children;
+};
+
+// Public Route Component (redirect if already logged in)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="spinner w-12 h-12" />
+      </div>
+    );
+  }
+  
+  if (isAuthenticated && user) {
+    // Role-based redirect - All staff go to Unified Portal
+    const role = user.role;
+    if (['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director'].includes(role)) {
+      return <Navigate to="/portal" replace />;
+    } else if (role === 'student') {
+      return <Navigate to="/student-dashboard" replace />;
+    } else if (role === 'director') {
+      return <Navigate to="/app/dashboard" replace />;
+    }
+    return <Navigate to="/portal" replace />;
+  }
+  
+  return children;
+};
 
 function AppRoutes() {
   return (
     <Routes>
+      {/* Landing Page - Marketing Home */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/register" element={<RegisterPage />} />
+      
+      {/* Super Admin Panel - HIDDEN SECRET URL */}
+      <Route path="/owner-x7k9m2" element={<SuperAdminPanel />} />
+      
+      {/* Marketing Brochure Page - Shareable on WhatsApp */}
+      <Route path="/marketing" element={<MarketingPage />} />
+      <Route path="/brochure" element={<MarketingPage />} />
+      
+      {/* WhatsApp Pamphlets - Daily Shareable Content */}
+      <Route path="/pamphlets" element={<WhatsAppPamphlets />} />
+      <Route path="/whatsapp" element={<WhatsAppPamphlets />} />
+      
+      {/* PDF Download Page */}
+      <Route path="/download-brochure" element={<PDFDownloadPage />} />
+      <Route path="/pdf" element={<PDFDownloadPage />} />
+      
+      {/* School Marketing Page - Each school can share their page */}
+      <Route path="/school/:schoolId" element={<SchoolMarketingPage />} />
+      
+      {/* Public Routes */}
+      <Route 
+        path="/login" 
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        } 
+      />
 
+      {/* TeachTino Portal - Teacher Login */}
       <Route path="/teachtino" element={<TeachTinoLogin />} />
-      <Route path="/portal" element={<TeacherRoute><TeachTinoDashboard /></TeacherRoute>} />
+      
+      {/* StudyTino Portal - Combined Student & Parent Login */}
+      {/* Note: StudyTinoLoginPage is the new combined page at line 392 */}
+      <Route 
+        path="/studytino/receipts" 
+        element={
+          <StudentOnlyRoute>
+            <StudentReceiptsPage />
+          </StudentOnlyRoute>
+        } 
+      />
 
-      <Route path="/studytino" element={<StudyTinoLoginPage />} />
-      <Route path="/student-dashboard" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
+      {/* Student Dashboard - ONLY for students */}
+      <Route 
+        path="/student-dashboard" 
+        element={
+          <StudentOnlyRoute>
+            <StudentDashboard />
+          </StudentOnlyRoute>
+        } 
+      />
 
-      <Route path="/app" element={<AdminRoute><Layout /></AdminRoute>}>
+      {/* Admin Protected Routes - Director/Principal only */}
+      <Route
+        path="/app"
+        element={
+          <AdminOnlyRoute>
+            <Layout />
+          </AdminOnlyRoute>
+        }
+      >
         <Route index element={<Navigate to="/app/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="school-analytics" element={<SchoolAnalytics />} />
+        <Route path="users" element={<Navigate to="/app/employee-management" replace />} />
+        <Route path="permission-manager" element={<PermissionManager />} />
         <Route path="students" element={<StudentsPage />} />
-        <Route path="staff" element={<EmployeeManagementPage />} />
+        <Route path="staff" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="classes" element={<ClassesPage />} />
         <Route path="attendance" element={<ImprovedAttendancePage />} />
-        <Route path="fees" element={<FeeManagementPage />} />
-        <Route path="admissions" element={<AdmissionCRMPage />} />
-        <Route path="exams" element={<ExamReportCard />} />
-        <Route path="timetable" element={<TimetableManagement />} />
-        <Route path="library" element={<DigitalLibraryPage />} />
-        <Route path="live-classes" element={<LiveClassesPage />} />
-        <Route path="communication" element={<IntegratedCommunicationPage />} />
+        <Route path="fees" element={<FeesPage />} />
+        <Route path="notices" element={<NoticesPage />} />
+        <Route path="ai-paper" element={<AIPaperPage />} />
+        <Route path="ai-content" element={<Navigate to="/app/event-designer" replace />} />
+        <Route path="voice-assistant" element={<VoiceAssistant />} />
+        <Route path="gallery" element={<ImageGallery />} />
+        <Route path="sms" element={<SMSCenter />} />
+        <Route path="website" element={<WebsiteIntegration />} />
+        <Route path="leave" element={<LeaveManagement />} />
+        <Route path="cctv" element={<CCTVDashboard />} />
+        <Route path="cctv-management" element={<CCTVManagement />} />
+        <Route path="storage" element={<StorageBackup />} />
+        <Route path="activity" element={<AdminActivityDashboard />} />
+        <Route path="accountant" element={<AccountantDashboard />} />
+        <Route path="fee-structure" element={<FeeStructureManagement />} />
+        <Route path="fee-management" element={<FeeManagementPage />} />
+        <Route path="timetable-management" element={<TimetableManagement />} />
+        <Route path="certificates" element={<CertificateGenerator />} />
+        <Route path="exam-report" element={<ExamReportCard />} />
+        <Route path="tino-ai" element={<TinoAICenter />} />
+        <Route path="tino-agent" element={<TinoAIAgent />} />
+        <Route path="staff-directory" element={<Navigate to="/app/employee-management" replace />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="meetings" element={<ZoomMeetings />} />
+        <Route path="school-registration" element={<SchoolRegistrationForm />} />
+        <Route path="setup-wizard" element={<SetupWizard />} />
+        <Route path="subscription" element={<SubscriptionPage />} />
+        <Route path="exams" element={<OnlineExamSystem />} />
+        <Route path="ai-history" element={<AIHistoryPage />} />
         <Route path="front-office" element={<FrontOfficePage />} />
         <Route path="transport" element={<TransportPage />} />
-        <Route path="calendar" element={<SchoolCalendarPage />} />
-        <Route path="analytics" element={<SchoolAnalytics />} />
-        <Route path="ai-tools" element={<AIToolsPage />} />
-        <Route path="cctv" element={<CCTVPage />} />
-        <Route path="inventory" element={<InventoryPage />} />
-        <Route path="multi-branch" element={<MultiBranchPage />} />
-        <Route path="school-feed" element={<SchoolFeedPage />} />
-        <Route path="leave" element={<LeaveManagement />} />
-        <Route path="login-credentials" element={<LoginCredentialsPage />} />
+        <Route path="health" element={<HealthModulePage />} />
+        <Route path="biometric" element={<BiometricPage />} />
+        <Route path="timetable" element={<TimetablePage />} />
+        <Route path="teacher-roles" element={<Navigate to="/app/employee-management" replace />} />
+        <Route path="director-ai" element={<DirectorAIDashboard />} />
+        <Route path="tino-brain" element={<TinoBrainDashboard />} />
+        <Route path="multi-year-fees" element={<MultiYearFeesPage />} />
+        <Route path="salary" element={<SalaryTrackingPage />} />
+        <Route path="admit-cards" element={<AdmitCardManagementFixed />} />
+        <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="subscription" element={<SubscriptionPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="setup-wizard" element={<SetupWizard />} />
+        <Route path="school-settings" element={<Navigate to="/app/school-management" replace />} />
+        <Route path="board-notifications" element={<BoardNotificationsPage />} />
+        <Route path="setup-guide" element={<SetupGuidePage />} />
+        <Route path="school-calendar" element={<SchoolCalendarPage />} />
+        <Route path="complaints" element={<ComplaintFeedbackPage />} />
+        <Route path="prayer-system" element={<PrayerSystemPage />} />
+        <Route path="event-designer" element={<EventDesignerPage />} />
+        <Route path="family-portal" element={<FamilyPortalPage />} />
+        <Route path="payment-settings" element={<Navigate to="/app/school-management" replace />} />
+        <Route path="parent-pay" element={<ParentPaymentPortal />} />
+        <Route path="school-management" element={<SchoolManagementPage />} />
+        <Route path="employee-management" element={<EmployeeManagementPage />} />
+        <Route path="logo-settings" element={<LogoWatermarkSettings />} />
       </Route>
-
-      {/* Legacy redirects */}
+      
+      {/* Old routes redirect to /app */}
       <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
       <Route path="/students" element={<Navigate to="/app/students" replace />} />
+      <Route path="/staff" element={<Navigate to="/app/staff" replace />} />
+      <Route path="/classes" element={<Navigate to="/app/classes" replace />} />
       <Route path="/fees" element={<Navigate to="/app/fees" replace />} />
       <Route path="/attendance" element={<Navigate to="/app/attendance" replace />} />
+      <Route path="/notices" element={<Navigate to="/app/notices" replace />} />
       <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
-      <Route path="/teacher-dashboard" element={<Navigate to="/portal" replace />} />
 
+      {/* TeachTino Portal - Only for Teachers */}
+      <Route
+        path="/teacher-dashboard"
+        element={
+          <RoleProtectedRoute allowedRoles={['teacher', 'principal', 'vice_principal']} redirectTo="/login">
+            <TeachTinoDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+
+      {/* Unified Portal - For Staff (NOT students, NOT full admin access) */}
+      <Route
+        path="/portal"
+        element={
+          <RoleProtectedRoute 
+            allowedRoles={['teacher', 'admission_staff', 'clerk', 'staff', 'admin_staff', 'accountant', 'principal', 'vice_principal', 'co_director']} 
+            redirectTo="/login"
+          >
+            <UnifiedPortal />
+          </RoleProtectedRoute>
+        }
+      />
+
+      {/* Student Portal - Standalone */}
+      <Route
+        path="/student-dashboard"
+        element={
+          <ProtectedRoute>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* StudyTino Combined Login - Students & Parents */}
+      <Route path="/studytino" element={<StudyTinoLoginPage />} />
+
+      {/* Parent Portal - Standalone (No auth required - has own login) */}
+      <Route path="/parent-portal" element={<ParentPortalPage />} />
+
+      {/* Fee Payment Page - Student Access */}
+      <Route
+        path="/fee-payment"
+        element={
+          <ProtectedRoute>
+            <FeePaymentPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch all - Smart redirect based on role */}
       <Route path="*" element={<SmartRedirect />} />
     </Routes>
   );
 }
 
+// PWA Install Prompt Wrapper - Only shows when logged in
+function PWAInstallPromptWrapper() {
+  // Show PWA prompt to all users - no login required
+  return <PWAInstallPrompt />;
+}
+
+// Smart redirect based on user role
+function SmartRedirect() {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  const role = user.role;
+  // Students go to student dashboard
+  if (role === 'student') {
+    return <Navigate to="/student-dashboard" replace />;
+  }
+  // Director goes to full admin dashboard
+  if (role === 'director') {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+  // All other staff go to Unified Portal
+  return <Navigate to="/portal" replace />;
+}
+
 function App() {
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <AuthProvider>
-          <LanguageProvider>
-            <ThemeProvider>
-              <Suspense fallback={<PageLoader />}>
-                <AppRoutes />
-              </Suspense>
-              <Toaster
-                position="top-right"
-                richColors
-                closeButton
-                toastOptions={{ style: { fontFamily: 'Inter, sans-serif' } }}
-              />
-            </ThemeProvider>
-          </LanguageProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
+    <BrowserRouter>
+      <AuthProvider>
+        <LanguageProvider>
+          {/* Trial Banner removed from admin dashboard per user request */}
+          
+          <AppRoutes />
+          
+          {/* PWA Install Prompt - Shows after login */}
+          <PWAInstallPromptWrapper />
+          
+          {/* Notice Popup - Shows unread notices as popup */}
+          <NoticePopup />
+          
+          {/* Support FAB - Bottom right */}
+          <SupportFAB />
+          
+          <Toaster 
+            position="top-right" 
+            richColors 
+            closeButton
+            toastOptions={{
+              style: {
+                fontFamily: 'Inter, sans-serif'
+              }
+            }}
+          />
+        </LanguageProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

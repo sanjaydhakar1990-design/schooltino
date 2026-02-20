@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 class SchoolTinoDemoHealthCheckV2:
-    def __init__(self, base_url="https://smartschool-ai-4.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://teachfixed.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

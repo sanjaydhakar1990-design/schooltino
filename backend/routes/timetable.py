@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 from datetime import datetime, timezone, time
-from core.database import db
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
 import uuid
@@ -21,8 +21,35 @@ load_dotenv()
 
 router = APIRouter(prefix="/timetable", tags=["Timetable Management"])
 
+# Database connection
+def get_db():
+    client = AsyncIOMotorClient(os.environ['MONGO_URL'])
+    return client[os.environ['DB_NAME']]
+
+db = None
 def get_database():
+    global db
+    if db is None:
+        db = get_db()
     return db
+
+async def create_notification(db, school_id: str, teacher_id: str, subject: str, class_id: str, action: str):
+    title = "📘 Subject Assigned" if action == "assigned" else "🔁 Subject Updated"
+    message = f"Aapko class {class_id} ke liye {subject} assign/update किया गया है."
+    notification = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "title": title,
+        "message": message,
+        "type": "subject_assignment",
+        "target_user_id": teacher_id,
+        "target_roles": [],
+        "class_id": class_id,
+        "data": {"subject": subject, "class_id": class_id},
+        "read_by": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
 
 # Models
 class TimetableConfig(BaseModel):
@@ -117,9 +144,12 @@ async def add_subject_allocation(allocation: SubjectAllocation, school_id: str):
                 "periods_per_week": allocation.periods_per_week
             }}
         )
+        await create_notification(db, school_id, allocation.teacher_id, allocation.subject, allocation.class_id, "updated")
         return {"success": True, "message": "Allocation updated"}
     
     await db.subject_allocations.insert_one(allocation_doc)
+
+    await create_notification(db, school_id, allocation.teacher_id, allocation.subject, allocation.class_id, "assigned")
     
     return {
         "success": True,
@@ -184,6 +214,13 @@ async def generate_timetable(class_id: str, school_id: str):
     if not allocations:
         raise HTTPException(status_code=400, detail="No subject allocations found. Please add subjects first.")
     
+    # [NEW] Get class teacher info for first period priority
+    class_info = await db.classes.find_one(
+        {"id": class_id, "school_id": school_id},
+        {"_id": 0, "class_teacher_id": 1, "name": 1}
+    )
+    class_teacher_id = class_info.get("class_teacher_id") if class_info else None
+    
     # Get teacher names
     teacher_ids = [a["teacher_id"] for a in allocations]
     teachers = await db.users.find(
@@ -197,6 +234,18 @@ async def generate_timetable(class_id: str, school_id: str):
     working_days = config.get("working_days", DAYS[:6])
     periods_per_day = config.get("periods_per_day", 8)
     
+    # [NEW] Find class teacher's subject for first period
+    class_teacher_subject = None
+    if class_teacher_id:
+        for alloc in allocations:
+            if alloc["teacher_id"] == class_teacher_id:
+                class_teacher_subject = {
+                    "subject": alloc["subject"],
+                    "teacher_id": alloc["teacher_id"],
+                    "teacher_name": teacher_map.get(alloc["teacher_id"], "TBA")
+                }
+                break
+    
     # Create period distribution for each subject
     subject_periods = []
     for alloc in allocations:
@@ -207,7 +256,7 @@ async def generate_timetable(class_id: str, school_id: str):
                 "teacher_name": teacher_map.get(alloc["teacher_id"], "TBA")
             })
     
-    # Shuffle for randomness
+    # Shuffle for randomness (but keep class teacher subject separate for first period)
     random.shuffle(subject_periods)
     
     # Distribute across days
@@ -234,6 +283,17 @@ async def generate_timetable(class_id: str, school_id: str):
                 })
                 continue
             
+            # [NEW] First period = Class Teacher (for attendance)
+            if period_num == 1 and class_teacher_subject:
+                timetable[day].append({
+                    "period": period_num,
+                    "type": "class",
+                    "subject": class_teacher_subject["subject"],
+                    "teacher_id": class_teacher_subject["teacher_id"],
+                    "teacher_name": class_teacher_subject["teacher_name"]
+                })
+                continue
+            
             # Assign subject
             if period_idx < len(subject_periods):
                 entry = subject_periods[period_idx]
@@ -253,6 +313,7 @@ async def generate_timetable(class_id: str, school_id: str):
                     "subject": random.choice(["Library", "Sports", "Activity", "Self Study"])
                 })
     
+    
     # Save generated timetable
     timetable_doc = {
         "id": str(uuid.uuid4()),
@@ -266,6 +327,69 @@ async def generate_timetable(class_id: str, school_id: str):
     # Replace existing timetable
     await db.timetables.delete_many({"class_id": class_id, "school_id": school_id})
     await db.timetables.insert_one(timetable_doc)
+    
+    # [AUTO-SYNC] Automatically sync timetable to subject_allocations
+    print(f"[AUTO-SYNC] Syncing timetable to subject_allocations for class {class_id}...")
+    try:
+        sync_count = 0
+        allocations_map = {}
+        
+        for day, periods in timetable.items():
+            for period in periods:
+                if period.get("type") != "class":
+                    continue
+                    
+                teacher_id = period.get("teacher_id")
+                subject = period.get("subject")
+                
+                if not teacher_id or not subject:
+                    continue
+                
+                key = f"{teacher_id}_{class_id}_{subject}"
+                if key not in allocations_map:
+                    allocations_map[key] = {
+                        "teacher_id": teacher_id,
+                        "teacher_name": period.get("teacher_name", ""),
+                        "subject": subject,
+                        "periods": []
+                    }
+                allocations_map[key]["periods"].append(day)
+        
+        # Upsert subject_allocations
+        for key, data in allocations_map.items():
+            allocation = {
+                "id": str(uuid.uuid4()),
+                "teacher_id": data["teacher_id"],
+                "teacher_name": data["teacher_name"],
+                "class_id": class_id,
+                "class_name": class_name,
+                "subject": data["subject"],
+                "subject_name": data["subject"],
+                "school_id": school_id,
+                "periods_per_week": len(data["periods"]),
+                "topics_covered": 0,
+                "total_topics": 0,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "source": "timetable_auto_sync"
+            }
+            
+            result = await db.subject_allocations.update_one(
+                {
+                    "teacher_id": data["teacher_id"],
+                    "class_id": class_id,
+                    "subject": data["subject"]
+                },
+                {"$set": allocation},
+                upsert=True
+            )
+            
+            if result.upserted_id or result.modified_count > 0:
+                sync_count += 1
+        
+        print(f"[AUTO-SYNC] ✓ Synced {sync_count} subject allocations for class {class_id}")
+    except Exception as sync_err:
+        print(f"[AUTO-SYNC] Error (non-fatal): {sync_err}")
     
     return {
         "success": True,
@@ -305,7 +429,7 @@ async def get_teacher_timetable(teacher_id: str, school_id: str):
         {"_id": 0}
     ).to_list(length=50)
     
-    # [FIX] staff.id cross-reference
+    # [FIX] staff.id cross-reference — same as Method 1b in server.py
     if not allocations:
         staff_rec = await db.staff.find_one({"user_id": teacher_id}, {"_id": 0, "id": 1})
         if staff_rec:

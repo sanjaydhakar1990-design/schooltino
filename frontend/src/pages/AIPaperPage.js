@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,48 +9,10 @@ import { Label } from '../components/ui/label';
 import { Sparkles, FileText, Loader2, Download, ChevronRight, ChevronLeft, Check, AlertCircle, BookOpen, Printer, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { BOARDS, BOARD_SUBJECTS, getChapters, BOARD_MARKS_PATTERN, CLASS_PAPER_DEFAULTS, DRAWING_PAPER_TYPES } from '../data/boardSyllabus';
-import { getChaptersByMedium } from '../data/syllabusLatest2025';
 
-const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const SUBJECT_MAP_HI_TO_EN = {
-  'हिंदी': 'Hindi', 'गणित': 'Mathematics', 'विज्ञान': 'Science',
-  'सामाजिक विज्ञान': 'Social Science', 'संस्कृत': 'Sanskrit',
-  'पर्यावरण': 'EVS', 'पर्यावरण अध्ययन': 'EVS', 'चित्रकला': 'Drawing',
-  'सामान्य ज्ञान': 'General Knowledge', 'भौतिक विज्ञान': 'Physics',
-  'रसायन विज्ञान': 'Chemistry', 'जीव विज्ञान': 'Biology',
-  'भौतिकी': 'Physics', 'रसायन शास्त्र': 'Chemistry',
-  'वाणिज्य': 'Commerce', 'अर्थशास्त्र': 'Economics',
-  'वाणिज्य शास्त्र': 'Commerce', 'लेखाशास्त्र': 'Accountancy',
-  'राजस्थान अध्ययन': 'Rajasthan Studies',
-};
-
-const SUBJECT_MAP_EN_TO_HI = Object.fromEntries(
-  Object.entries(SUBJECT_MAP_HI_TO_EN).map(([hi, en]) => [en, hi])
-);
-
-const getSubjectInLanguage = (subject, targetLang) => {
-  if (targetLang === 'english') {
-    return SUBJECT_MAP_HI_TO_EN[subject] || subject;
-  } else if (targetLang === 'hindi') {
-    return SUBJECT_MAP_EN_TO_HI[subject] || subject;
-  }
-  return subject;
-};
-
-const getSubjectsForLanguage = (subjects, language) => {
-  if (language === 'english') {
-    return subjects.map(s => ({
-      original: s,
-      display: SUBJECT_MAP_HI_TO_EN[s] || s,
-    }));
-  }
-  return subjects.map(s => ({
-    original: s,
-    display: SUBJECT_MAP_EN_TO_HI[s] || s,
-  }));
-};
-
+// Language-specific text
 const LANG_TEXT = {
   hindi: {
     questionPrefix: 'प्र.',
@@ -65,7 +27,6 @@ const LANG_TEXT = {
     answerKey: 'उत्तर कुंजी',
     drawDiagram: '(चित्र सहित उत्तर दीजिए)',
     diagramAnswer: 'चित्र विवरण:',
-    section: 'खंड',
   },
   english: {
     questionPrefix: 'Q.',
@@ -80,91 +41,20 @@ const LANG_TEXT = {
     answerKey: 'Answer Key',
     drawDiagram: '(Answer with diagram)',
     diagramAnswer: 'Diagram Description:',
-    section: 'Section',
   }
-};
-
-const isDrawingSubject = (subject) => {
-  if (!subject) return false;
-  const s = subject.toLowerCase().trim();
-  const drawingNames = ['drawing', 'चित्रकला', 'art', 'art & craft', 'कला', 'art and craft', 'चित्र कला', 'craft'];
-  return drawingNames.some(name => s.includes(name) || s === name);
-};
-
-const SECTION_LABELS = {
-  hindi: { A: 'अ', B: 'ब', C: 'स', D: 'द' },
-  english: { A: 'A', B: 'B', C: 'C', D: 'D' },
-};
-
-const SECTION_NAMES = {
-  hindi: {
-    A: 'बहुविकल्पीय / रिक्त स्थान / सही-गलत',
-    B: 'लघु उत्तरीय प्रश्न (1-2 अंक)',
-    C: 'दीर्घ उत्तरीय प्रश्न (3-5 अंक)',
-    D: 'अति दीर्घ उत्तरीय प्रश्न (5+ अंक)',
-  },
-  english: {
-    A: 'MCQ / Fill in Blanks / True-False',
-    B: 'Short Answer Questions (1-2 Marks)',
-    C: 'Long Answer Questions (3-5 Marks)',
-    D: 'Very Long Answer Questions (5+ Marks)',
-  },
-};
-
-const getClassInstructions = (className, lang) => {
-  const isSmall = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2'].includes(className);
-  const isMid = ['Class 3', 'Class 4', 'Class 5'].includes(className);
-
-  if (lang === 'hindi') {
-    if (isSmall) return [
-      'सभी प्रश्न करने अनिवार्य हैं।',
-      'सुंदर और साफ लिखें।',
-      'चित्र रंगीन बनाएं।',
-    ];
-    if (isMid) return [
-      'सभी प्रश्न अनिवार्य हैं।',
-      'प्रत्येक प्रश्न के अंक उसके सामने दिए गए हैं।',
-      'साफ और सुंदर लिखें।',
-      'चित्र स्पष्ट और लेबल सहित बनाएं।',
-    ];
-    return [
-      'सभी प्रश्न अनिवार्य हैं।',
-      'प्रत्येक प्रश्न के अंक उसके सामने दिए गए हैं।',
-      'चित्र स्पष्ट और लेबल सहित बनाएं।',
-      'उत्तर स्पष्ट और व्यवस्थित लिखें।',
-    ];
-  }
-  if (isSmall) return [
-    'All questions are compulsory.',
-    'Write neatly and cleanly.',
-    'Color the pictures properly.',
-  ];
-  if (isMid) return [
-    'All questions are compulsory.',
-    'Marks for each question are indicated against it.',
-    'Write neatly and clearly.',
-    'Draw neat and labeled diagrams wherever required.',
-  ];
-  return [
-    'All questions are compulsory.',
-    'Marks for each question are indicated against it.',
-    'Draw neat and labeled diagrams wherever required.',
-    'Write answers clearly and in proper sequence.',
-  ];
 };
 
 export default function AIPaperPage() {
   const { t, i18n } = useTranslation();
   const { user, schoolId } = useAuth();
-  const { language: appLanguage } = useLanguage();
+  const { language: appLanguage } = useLanguage(); // Get app language from header toggle
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [paper, setPaper] = useState(null);
   const [schoolBoard, setSchoolBoard] = useState('CBSE');
-  const [useNcertSyllabus, setUseNcertSyllabus] = useState(true);
+  const [useNcertSyllabus, setUseNcertSyllabus] = useState(true); // Dual board support
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [availableChapters, setAvailableChapters] = useState([]);
-  const [chaptersLoading, setChaptersLoading] = useState(false);
   const [marksPattern, setMarksPattern] = useState(BOARD_MARKS_PATTERN.CBSE);
 
   const [formData, setFormData] = useState({
@@ -176,25 +66,29 @@ export default function AIPaperPage() {
     question_types: ['mcq', 'short'],
     total_marks: 80,
     time_duration: 180,
-    language: 'hindi',
+    language: 'hindi', // Paper language (separate from app UI language)
     custom_marks: {},
-    syllabus_source: 'auto'
+    syllabus_source: 'auto' // 'auto', 'ncert', 'state_board'
   });
 
+  // State for answer images
   const [answerImages, setAnswerImages] = useState({});
   const [generatingImage, setGeneratingImage] = useState(null);
   const [autoGeneratingImages, setAutoGeneratingImages] = useState(false);
   const [imageProgress, setImageProgress] = useState({ current: 0, total: 0 });
-  const [viewMode, setViewMode] = useState('question_paper');
-  const [printLayout, setPrintLayout] = useState('normal');
-  const [showSchoolName, setShowSchoolName] = useState(true);
-  const [schoolName, setSchoolName] = useState('');
+  
+  // Print layout options
+  const [printLayout, setPrintLayout] = useState('normal'); // 'normal', '2-up', '4-up'
 
   const classNames = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
 
+  // UI text based on app language (header toggle)
   const isAppHindi = appLanguage === 'hi' || i18n.language === 'hi';
+  
+  // Get current paper language text
   const langText = LANG_TEXT[formData.language] || LANG_TEXT.hindi;
 
+  // Fetch school's board on mount
   useEffect(() => {
     const fetchSchoolBoard = async () => {
       try {
@@ -203,8 +97,9 @@ export default function AIPaperPage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data) {
+          // Check for dual board system
           const primaryBoard = response.data.primary_board || response.data.board;
-          const useNcert = response.data.use_ncert_syllabus !== false;
+          const useNcert = response.data.use_ncert_syllabus !== false; // Default true
           
           if (primaryBoard) {
             const board = primaryBoard.toUpperCase();
@@ -214,9 +109,6 @@ export default function AIPaperPage() {
             else setSchoolBoard('CBSE');
           }
           setUseNcertSyllabus(useNcert);
-          if (response.data.name || response.data.school_name) {
-            setSchoolName(response.data.name || response.data.school_name);
-          }
         }
       } catch (error) {
         console.log('Using default board: CBSE with NCERT');
@@ -231,18 +123,16 @@ export default function AIPaperPage() {
 
   useEffect(() => {
     if (formData.class_name) {
+      // Get subjects from primary board
       let subjects = BOARD_SUBJECTS[schoolBoard]?.[formData.class_name] || [];
       
+      // If using NCERT syllabus, merge with NCERT subjects
       if (useNcertSyllabus && schoolBoard !== 'NCERT') {
         const ncertSubjects = BOARD_SUBJECTS['NCERT']?.[formData.class_name] || 
                               BOARD_SUBJECTS['CBSE']?.[formData.class_name] || [];
+        // Merge unique subjects (state board subjects + NCERT core subjects)
         const allSubjects = [...new Set([...subjects, ...ncertSubjects])];
         subjects = allSubjects;
-      }
-      
-      if (subjects.length === 0) {
-        const cbseSubjects = BOARD_SUBJECTS['CBSE']?.[formData.class_name] || [];
-        subjects = cbseSubjects;
       }
       
       setAvailableSubjects(subjects);
@@ -253,135 +143,78 @@ export default function AIPaperPage() {
     }
   }, [formData.class_name, schoolBoard, useNcertSyllabus]);
 
-  const fetchChaptersFromAPI = useCallback(async (board, className, subject) => {
-    const token = localStorage.getItem('token');
-    const classNum = className.replace('Class ', '');
-    const apiBoard = (board === 'CBSE') ? 'NCERT' : board;
-    
-    try {
-      const response = await axios.get(`${API}/syllabus-chapters`, {
-        params: { class_num: classNum, subject, board: apiBoard },
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        timeout: 8000
-      });
-      if (response.data?.chapters?.length > 0) {
-        return response.data.chapters.map((ch, idx) => ({
-          id: ch.id || `ch${idx + 1}`,
-          name: ch.name || ch.title || `Chapter ${idx + 1}`,
-          topics: ch.topics || [],
-          number: ch.number || idx + 1
-        }));
-      }
-    } catch (e) {}
-    
-    const endpoints = [];
-    if (board === 'MPBSE' || board === 'RBSE') {
-      endpoints.push(`${API}/syllabus/${board.toLowerCase()}/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
-      endpoints.push(`${API}/syllabus/ncert/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
-    } else if (board === 'NCERT' || board === 'CBSE') {
-      endpoints.push(`${API}/ncert/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
-      endpoints.push(`${API}/syllabus/ncert/syllabus/${classNum}?subject=${encodeURIComponent(subject)}`);
-    }
-    
-    for (const endpoint of endpoints) {
-      try {
-        const response = await axios.get(endpoint, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          timeout: 8000
-        });
-        if (response.data) {
-          let chapters = [];
-          if (response.data.subjects) {
-            const subjectData = response.data.subjects[subject] || Object.values(response.data.subjects)[0];
-            if (subjectData?.chapters) {
-              chapters = subjectData.chapters.map((ch, idx) => ({
-                id: ch.id || `ch${idx + 1}`,
-                name: ch.name || ch.title || `Chapter ${idx + 1}`,
-                topics: ch.topics || []
-              }));
-            }
-          }
-          if (chapters.length === 0 && response.data.chapters) {
-            chapters = response.data.chapters.map((ch, idx) => ({
-              id: ch.id || `ch${idx + 1}`,
-              name: ch.name || ch.title || `Chapter ${idx + 1}`,
-              topics: ch.topics || []
-            }));
-          }
-          if (chapters.length > 0) return chapters;
-        }
-      } catch (e) {}
-    }
-    
-    return [];
-  }, []);
-
   useEffect(() => {
-    if (!formData.class_name || !formData.subject) return;
-    
-    let cancelled = false;
-    
-    const loadChapters = async () => {
-      setChaptersLoading(true);
+    if (formData.class_name && formData.subject) {
+      // ✅ FORCE USE LATEST 2025-26 SYLLABUS WITH PROPER LANGUAGE
       let chapters = [];
       
-      const latestChapters = getChaptersByMedium(
-        formData.class_name,
-        formData.subject,
-        formData.language
+      try {
+        // Import and use latest syllabus
+        import('../data/syllabusLatest2025').then(module => {
+          const { getChaptersByMedium } = module;
+          chapters = getChaptersByMedium(
+            formData.class_name,
+            formData.subject,
+            formData.language // Use paper language for chapter titles
+          );
+          
+          if (chapters && chapters.length > 0) {
+            setAvailableChapters(chapters.map((name, idx) => ({ id: `ch${idx+1}`, name })));
+            return;
+          }
+        }).catch(e => console.log('Latest syllabus not loaded, using fallback'));
+      } catch (e) {
+        console.log('Error loading latest syllabus:', e);
+      }
+      
+      // Fallback to old method if new syllabus not available
+      // PRE-PRIMARY CLASSES - Direct lookup
+      const prePrimaryClasses = ['Nursery', 'LKG', 'UKG'];
+      if (prePrimaryClasses.includes(formData.class_name)) {
+        chapters = getChapters('CBSE', formData.class_name, formData.subject);
+        if (chapters.length === 0) {
+          chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
+        }
+        setAvailableChapters(chapters);
+        return;
+      }
+      
+      // Check if this is a core subject that typically follows NCERT
+      const ncertCoreSubjects = ['Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'EVS', 
+                                  'हिंदी', 'गणित', 'विज्ञान', 'सामाजिक विज्ञान', 'पर्यावरण', 'Drawing', 'चित्रकला', 'Art'];
+      const isNcertSubject = ncertCoreSubjects.some(s => 
+        formData.subject.toLowerCase().includes(s.toLowerCase()) || 
+        s.toLowerCase().includes(formData.subject.toLowerCase())
       );
       
-      if (latestChapters && latestChapters.length > 0) {
-        chapters = latestChapters.map((name, idx) => ({ id: `ch${idx + 1}`, name }));
-      }
-      
-      if (chapters.length === 0) {
-        try {
-          const apiChapters = await fetchChaptersFromAPI(schoolBoard, formData.class_name, formData.subject);
-          if (!cancelled && apiChapters.length > 0) {
-            chapters = apiChapters;
-          }
-        } catch (e) {
-          console.log('API fetch failed, using local data');
+      // Get chapters based on syllabus source selection or auto-detect
+      if (formData.syllabus_source === 'ncert' || (formData.syllabus_source === 'auto' && useNcertSyllabus && isNcertSubject)) {
+        // Use NCERT chapters for core subjects
+        chapters = getChapters('NCERT', formData.class_name, formData.subject);
+        if (chapters.length === 0) {
+          chapters = getChapters('CBSE', formData.class_name, formData.subject);
         }
       }
       
-      if (chapters.length === 0) {
-        const localChapters = getChapters(schoolBoard, formData.class_name, formData.subject);
-        if (localChapters && localChapters.length > 0) {
-          chapters = localChapters;
-        }
+      // If no NCERT chapters or using state board
+      if (chapters.length === 0 || formData.syllabus_source === 'state_board') {
+        chapters = getChapters(schoolBoard, formData.class_name, formData.subject);
       }
       
+      // Fallback to CBSE if nothing found
       if (chapters.length === 0) {
-        const cbseChapters = getChapters('CBSE', formData.class_name, formData.subject);
-        if (cbseChapters && cbseChapters.length > 0) {
-          chapters = cbseChapters;
-        }
+        chapters = getChapters('CBSE', formData.class_name, formData.subject);
       }
       
-      if (chapters.length === 0) {
-        const ncertChapters = getChapters('NCERT', formData.class_name, formData.subject);
-        if (ncertChapters && ncertChapters.length > 0) {
-          chapters = ncertChapters;
-        }
-      }
-      
-      if (!cancelled) {
-        setAvailableChapters(chapters);
-        setChaptersLoading(false);
-      }
-    };
-    
-    loadChapters();
-    
-    return () => { cancelled = true; };
-  }, [formData.class_name, formData.subject, formData.syllabus_source, formData.language, schoolBoard, useNcertSyllabus, fetchChaptersFromAPI]);
+      setAvailableChapters(chapters || []);
+    }
+  }, [formData.class_name, formData.subject, formData.syllabus_source, formData.language, schoolBoard, useNcertSyllabus]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
+    // When class changes, apply class-wise defaults
     if (name === 'class_name' && value) {
       const defaults = CLASS_PAPER_DEFAULTS[value];
       if (defaults) {
@@ -390,22 +223,26 @@ export default function AIPaperPage() {
           class_name: value,
           total_marks: defaults.totalMarks,
           time_duration: defaults.time,
-          question_types: defaults.questionTypes,
-          custom_marks: defaults.marks || {}
+          // Restrict question types for small classes
+          question_types: prev.question_types.filter(qt => {
+            // Remove long answer types for classes that don't have them
+            if (!defaults.hasLong && ['long', 'dirgha', 'nibandh', 'case_study'].includes(qt)) {
+              return false;
+            }
+            return true;
+          })
         }));
         
-        toast.success(isAppHindi 
-          ? `${value}: ${defaults.totalMarks} अंक, ${defaults.time} मिनट सेट हुआ` 
-          : `${value}: ${defaults.totalMarks} marks, ${defaults.time} min set`);
-        
+        // Show info toast about class defaults
         if (!defaults.hasLong) {
-          toast.info(isAppHindi ? `${value}: दीर्घ उत्तरीय प्रश्न इस कक्षा के लिए उपलब्ध नहीं हैं` : `${value}: Long answer questions not available for this class`);
+          toast.info(`${value}: Long answer questions not available for this class`);
         }
       }
     }
     
+    // When Drawing subject is selected, show special options
     if (name === 'subject' && (value.includes('Drawing') || value.includes('चित्रकला') || value.includes('Art'))) {
-      toast.info(isAppHindi ? 'चित्रकला पेपर में चित्र आधारित प्रश्न होंगे' : 'Drawing paper will include image-based questions');
+      toast.info('Drawing paper will include image-based questions');
     }
   };
 
@@ -451,15 +288,15 @@ export default function AIPaperPage() {
 
   const handleGenerate = async () => {
     if (formData.question_types.length === 0) {
-      toast.error(isAppHindi ? 'कम से कम एक प्रश्न प्रकार चुनें' : 'Select at least one question type');
+      toast.error('कम से कम एक प्रश्न प्रकार चुनें');
       return;
     }
     if (!formData.exam_name) {
-      toast.error(isAppHindi ? 'परीक्षा का नाम डालें' : 'Enter exam name');
+      toast.error('परीक्षा का नाम डालें');
       return;
     }
     if (formData.selectedChapters.length === 0) {
-      toast.error(isAppHindi ? 'कम से कम एक अध्याय चुनें' : 'Select at least one chapter');
+      toast.error('कम से कम एक अध्याय चुनें');
       return;
     }
 
@@ -480,7 +317,7 @@ export default function AIPaperPage() {
         question_types: formData.question_types,
         total_marks: parseInt(formData.total_marks),
         time_duration: parseInt(formData.time_duration),
-        language: formData.language,
+        language: formData.language, // Pass selected language
         marks_config: marksConfig,
         syllabus_year: '2025-26',
         board: schoolBoard
@@ -493,30 +330,20 @@ export default function AIPaperPage() {
       
       setPaper(response.data);
       setStep(3);
-      toast.success(isAppHindi ? 'पेपर तैयार है!' : 'Paper is ready!');
+      toast.success('पेपर तैयार है!');
       
-      if (isDrawingSubject(response.data.subject)) {
-        const allQuestions = response.data.questions?.map((q, idx) => ({ ...q, idx })) || [];
-        if (allQuestions.length > 0) {
-          toast.info(`${allQuestions.length} ${isAppHindi ? 'चित्र generate हो रहे हैं...' : 'reference images being generated...'}`);
-          autoGenerateImages(allQuestions, response.data.subject);
-        }
-      } else {
-        const diagramQuestions = response.data.questions
-          ?.map((q, idx) => ({ ...q, idx }))
-          .filter(q => q.type === 'diagram' || q.type === 'draw_color' || q.type === 'scenery' || 
-            q.requires_drawing || q.hasDrawing || q.diagram_required || q.diagram_description ||
-            (q.question && /diagram|चित्र|figure|draw|नामांकित|label/i.test(q.question))
-          ) || [];
-        
-        if (diagramQuestions.length > 0) {
-          toast.info(`${diagramQuestions.length} ${isAppHindi ? 'चित्र generate हो रहे हैं...' : 'images being generated...'}`);
-          autoGenerateImages(diagramQuestions, response.data.subject);
-        }
+      // Auto-generate images for diagram/drawing questions
+      const diagramQuestions = response.data.questions
+        .map((q, idx) => ({ ...q, idx }))
+        .filter(q => q.type === 'diagram' || q.type === 'draw_color' || q.type === 'scenery' || q.requires_drawing || q.hasDrawing);
+      
+      if (diagramQuestions.length > 0) {
+        toast.info(`${diagramQuestions.length} चित्र generate हो रहे हैं...`);
+        autoGenerateImages(diagramQuestions, response.data.subject);
       }
     } catch (error) {
       const msg = error.response?.data?.detail;
-      toast.error(typeof msg === 'string' ? msg : (isAppHindi ? 'पेपर बनाने में समस्या हुई' : 'Error generating paper'));
+      toast.error(typeof msg === 'string' ? msg : 'पेपर बनाने में समस्या हुई');
     } finally {
       setLoading(false);
     }
@@ -526,12 +353,12 @@ export default function AIPaperPage() {
     window.print();
   };
 
+  // Auto-generate images for all diagram/drawing questions
   const autoGenerateImages = async (diagramQuestions, subject) => {
     setAutoGeneratingImages(true);
     setImageProgress({ current: 0, total: diagramQuestions.length });
     
     const token = localStorage.getItem('token');
-    const drawingPaper = isDrawingSubject(subject);
     
     for (let i = 0; i < diagramQuestions.length; i++) {
       const q = diagramQuestions[i];
@@ -542,8 +369,7 @@ export default function AIPaperPage() {
           question: q.question,
           answer: q.answer || q.drawing_guide || q.diagram_description || 'Draw as described',
           subject: subject,
-          question_type: q.type,
-          is_drawing: drawingPaper
+          question_type: q.type
         }, {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 60000
@@ -561,7 +387,7 @@ export default function AIPaperPage() {
     }
     
     setAutoGeneratingImages(false);
-    toast.success(isAppHindi ? 'सभी चित्र तैयार हैं!' : 'All images ready!');
+    toast.success('सभी चित्र तैयार हैं!');
   };
 
   const generateAnswerImage = async (questionIdx, question) => {
@@ -574,8 +400,7 @@ export default function AIPaperPage() {
         question: question.question,
         answer: question.answer,
         subject: formData.subject,
-        question_type: question.type,
-        is_drawing: isDrawingSubject(formData.subject)
+        question_type: question.type
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -585,13 +410,13 @@ export default function AIPaperPage() {
           ...prev,
           [questionIdx]: response.data.image_url
         }));
-        toast.success(isAppHindi ? 'चित्र बन गया!' : 'Image generated!');
+        toast.success('चित्र बन गया!');
       } else {
-        toast.error(isAppHindi ? 'चित्र नहीं बन पाया' : 'Image generation failed');
+        toast.error('चित्र नहीं बन पाया');
       }
     } catch (error) {
       console.error('Image generation error:', error);
-      toast.error(isAppHindi ? 'चित्र बनाने में समस्या हुई' : 'Error generating image');
+      toast.error('चित्र बनाने में समस्या हुई');
     } finally {
       setGeneratingImage(null);
     }
@@ -601,51 +426,11 @@ export default function AIPaperPage() {
     id,
     label: data.label,
     marks: data.marks,
-    section: data.section,
   }));
-
-  const getQuestionsGroupedBySections = () => {
-    if (!paper?.questions) return [];
-    
-    const currentPattern = BOARD_MARKS_PATTERN[schoolBoard] || BOARD_MARKS_PATTERN.CBSE;
-    const sectionMap = {};
-    
-    paper.questions.forEach((q, idx) => {
-      let section = 'A';
-      const qType = q.type?.toLowerCase() || '';
-      
-      if (['mcq', 'fill_blank', 'fill_blanks', 'true_false', 'objective'].includes(qType)) {
-        section = 'A';
-      } else if (['short', 'vsaq', 'very_short', 'ati_laghu'].includes(qType)) {
-        section = 'B';
-      } else if (['long', 'laghu', 'dirgha', 'diagram', 'hots', 'case_study'].includes(qType)) {
-        section = 'C';
-      } else if (['very_long', 'nibandh', 'essay'].includes(qType)) {
-        section = 'D';
-      } else if (q.marks) {
-        if (q.marks <= 1) section = 'A';
-        else if (q.marks <= 2) section = 'B';
-        else if (q.marks <= 4) section = 'C';
-        else section = 'D';
-      }
-      
-      if (!sectionMap[section]) {
-        sectionMap[section] = [];
-      }
-      sectionMap[section].push({ ...q, originalIdx: idx });
-    });
-    
-    const orderedSections = ['A', 'B', 'C', 'D'].filter(s => sectionMap[s]?.length > 0);
-    return orderedSections.map(section => ({
-      section,
-      label: SECTION_LABELS[formData.language]?.[section] || section,
-      name: SECTION_NAMES[formData.language]?.[section] || '',
-      questions: sectionMap[section],
-    }));
-  };
 
   const renderStep1 = () => (
     <div className="space-y-6">
+      {/* Board Info with Dual Board Support */}
       <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
         <div className="flex items-center gap-3 mb-3">
           <BookOpen className="w-6 h-6 text-indigo-600" />
@@ -661,12 +446,7 @@ export default function AIPaperPage() {
           </div>
           <select
             value={schoolBoard}
-            onChange={(e) => {
-              setSchoolBoard(e.target.value);
-              setFormData(prev => ({ ...prev, subject: '', selectedChapters: [], class_name: '' }));
-              setAvailableChapters([]);
-              setAvailableSubjects([]);
-            }}
+            onChange={(e) => setSchoolBoard(e.target.value)}
             className="h-9 rounded-lg border border-indigo-300 px-2 text-sm bg-white"
           >
             {Object.entries(BOARDS).map(([key, val]) => (
@@ -675,28 +455,52 @@ export default function AIPaperPage() {
           </select>
         </div>
         
+        {/* Syllabus Source Selection */}
         <div className="flex flex-wrap gap-2 pt-3 border-t border-indigo-200">
           <span className="text-xs text-indigo-700 font-medium mr-2">{isAppHindi ? 'पाठ्यक्रम स्रोत:' : 'Syllabus Source:'}</span>
-          {['auto', 'ncert', 'state_board'].map(src => (
-            <label key={src} className="flex items-center gap-1 text-xs cursor-pointer">
-              <input
-                type="radio"
-                name="syllabus_source"
-                value={src}
-                checked={formData.syllabus_source === src}
-                onChange={(e) => setFormData(prev => ({ ...prev, syllabus_source: e.target.value }))}
-                className="w-3 h-3"
-              />
-              <span className={formData.syllabus_source === src ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
-                {src === 'auto' ? (isAppHindi ? 'स्वचालित (अनुशंसित)' : 'Auto (Recommended)') :
-                 src === 'ncert' ? (isAppHindi ? 'केवल NCERT' : 'NCERT Only') :
-                 (isAppHindi ? `केवल ${schoolBoard}` : `${schoolBoard} Only`)}
-              </span>
-            </label>
-          ))}
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input
+              type="radio"
+              name="syllabus_source"
+              value="auto"
+              checked={formData.syllabus_source === 'auto'}
+              onChange={(e) => setFormData(prev => ({ ...prev, syllabus_source: e.target.value }))}
+              className="w-3 h-3"
+            />
+            <span className={formData.syllabus_source === 'auto' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
+              {isAppHindi ? 'स्वचालित (अनुशंसित)' : 'Auto (Recommended)'}
+            </span>
+          </label>
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input
+              type="radio"
+              name="syllabus_source"
+              value="ncert"
+              checked={formData.syllabus_source === 'ncert'}
+              onChange={(e) => setFormData(prev => ({ ...prev, syllabus_source: e.target.value }))}
+              className="w-3 h-3"
+            />
+            <span className={formData.syllabus_source === 'ncert' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
+              {isAppHindi ? 'केवल NCERT' : 'NCERT Only'}
+            </span>
+          </label>
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input
+              type="radio"
+              name="syllabus_source"
+              value="state_board"
+              checked={formData.syllabus_source === 'state_board'}
+              onChange={(e) => setFormData(prev => ({ ...prev, syllabus_source: e.target.value }))}
+              className="w-3 h-3"
+            />
+            <span className={formData.syllabus_source === 'state_board' ? 'text-indigo-900 font-semibold' : 'text-indigo-600'}>
+              {isAppHindi ? `केवल ${schoolBoard}` : `${schoolBoard} Only`}
+            </span>
+          </label>
         </div>
       </div>
 
+      {/* Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-sm font-medium">{isAppHindi ? 'कक्षा (Class)' : 'Class'} *</Label>
@@ -725,10 +529,9 @@ export default function AIPaperPage() {
             disabled={!formData.class_name}
           >
             <option value="">{formData.class_name ? (isAppHindi ? 'विषय चुनें' : 'Select Subject') : (isAppHindi ? 'पहले कक्षा चुनें' : 'First select class')}</option>
-            {availableSubjects.map(s => {
-              const displayName = formData.language === 'english' ? getSubjectInLanguage(s, 'english') : getSubjectInLanguage(s, 'hindi');
-              return <option key={s} value={s}>{displayName !== s ? `${displayName} (${s})` : s}</option>;
-            })}
+            {availableSubjects.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
         </div>
 
@@ -764,15 +567,13 @@ export default function AIPaperPage() {
         </div>
       </div>
 
+      {/* Chapter Selection */}
       {formData.subject && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">
-              {isAppHindi ? 'अध्याय चुनें (Select Chapters)' : 'Select Chapters'} *
-              {chaptersLoading && <Loader2 className="w-4 h-4 inline ml-2 animate-spin" />}
-            </Label>
+            <Label className="text-sm font-medium">{isAppHindi ? 'अध्याय चुनें (Select Chapters)' : 'Select Chapters'} *</Label>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={selectAllChapters} disabled={chaptersLoading}>
+              <Button type="button" variant="outline" size="sm" onClick={selectAllChapters}>
                 {isAppHindi ? 'सभी चुनें' : 'Select All'}
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={clearAllChapters}>
@@ -781,18 +582,11 @@ export default function AIPaperPage() {
             </div>
           </div>
           
-          {chaptersLoading ? (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
-              <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-              <span className="text-sm text-blue-700">
-                {isAppHindi ? 'अध्याय लोड हो रहे हैं...' : 'Loading chapters...'}
-              </span>
-            </div>
-          ) : availableChapters.length > 0 ? (
+          {availableChapters.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-3 border border-slate-200 rounded-lg bg-slate-50">
               {availableChapters.map((ch, idx) => (
                 <button
-                  key={ch.id || idx}
+                  key={ch.id}
                   type="button"
                   onClick={() => handleChapterToggle(ch.name)}
                   className={`p-3 rounded-lg border text-left transition-all text-sm flex items-center gap-2 ${
@@ -846,7 +640,7 @@ export default function AIPaperPage() {
   const renderStep2 = () => (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Label className="text-sm font-medium">{isAppHindi ? 'प्रश्न प्रकार चुनें' : 'Select Question Types'} ({schoolBoard} {isAppHindi ? 'पैटर्न' : 'Pattern'}) *</Label>
+        <Label className="text-sm font-medium">{isAppHindi ? 'प्रश्न प्रकार चुनें' : 'Select Question Types'} ({schoolBoard} Pattern) *</Label>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {questionTypes.map(type => (
@@ -873,11 +667,6 @@ export default function AIPaperPage() {
                 </button>
                 <div className="flex-1">
                   <p className="font-medium text-sm">{type.label}</p>
-                  {type.section && (
-                    <span className="text-xs text-slate-500">
-                      {langText.section} {SECTION_LABELS[formData.language]?.[type.section] || type.section}
-                    </span>
-                  )}
                   
                   {formData.question_types.includes(type.id) && (
                     <div className="mt-2 flex items-center gap-2">
@@ -899,24 +688,9 @@ export default function AIPaperPage() {
         </div>
       </div>
 
-      {formData.class_name && CLASS_PAPER_DEFAULTS[formData.class_name] && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm font-medium text-blue-800 mb-1">
-            {isAppHindi ? `📋 ${formData.class_name} के लिए ऑटो-सेटिंग:` : `📋 Auto-settings for ${formData.class_name}:`}
-          </p>
-          <div className="flex flex-wrap gap-3 text-xs text-blue-700">
-            <span className="bg-blue-100 px-2 py-1 rounded">{isAppHindi ? 'कुल अंक' : 'Total Marks'}: {CLASS_PAPER_DEFAULTS[formData.class_name].totalMarks}</span>
-            <span className="bg-blue-100 px-2 py-1 rounded">{isAppHindi ? 'समय' : 'Time'}: {CLASS_PAPER_DEFAULTS[formData.class_name].time} {isAppHindi ? 'मिनट' : 'min'}</span>
-            {Object.entries(CLASS_PAPER_DEFAULTS[formData.class_name].marks || {}).map(([type, m]) => (
-              <span key={type} className="bg-blue-100 px-2 py-1 rounded">{type}: {m} {isAppHindi ? 'अंक' : 'marks'}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">{isAppHindi ? 'कठिनाई स्तर' : 'Difficulty Level'}</Label>
+          <Label className="text-sm font-medium">कठिनाई स्तर</Label>
           <select
             name="difficulty"
             value={formData.difficulty}
@@ -954,27 +728,9 @@ export default function AIPaperPage() {
         </div>
       </div>
 
-      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={showSchoolName} onChange={() => setShowSchoolName(!showSchoolName)} className="rounded" />
-          <span className="text-sm font-medium">{isAppHindi ? 'पेपर पर स्कूल का नाम दिखाएं' : 'Show School Name on Paper'}</span>
-        </label>
-        {showSchoolName && (
-          <div className="space-y-1">
-            <Label className="text-sm font-medium">{isAppHindi ? 'स्कूल का नाम' : 'School Name'}</Label>
-            <Input
-              value={schoolName}
-              onChange={(e) => setSchoolName(e.target.value)}
-              placeholder={isAppHindi ? 'स्कूल का नाम लिखें' : 'Enter school name'}
-              className="h-10"
-            />
-          </div>
-        )}
-      </div>
-
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={() => setStep(1)}>
-          <ChevronLeft className="w-5 h-5 mr-2" /> {isAppHindi ? 'पीछे जाएं' : 'Go Back'}
+          <ChevronLeft className="w-5 h-5 mr-2" /> पीछे जाएं
         </Button>
         <Button
           onClick={handleGenerate}
@@ -998,366 +754,215 @@ export default function AIPaperPage() {
     </div>
   );
 
-  const printSection = (sectionId) => {
-    const el = document.getElementById(sectionId);
-    if (!el) return;
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) { toast.error('Please allow popups'); return; }
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>Print</title>
-      <style>@page{margin:15mm;size:A4}*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      body{font-family:Arial,sans-serif;font-size:12pt;line-height:1.6;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      img{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      .paper-header{text-align:center;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px}
-      .paper-header h1{font-size:16pt;margin-bottom:4px}.paper-header h2{font-size:14pt}
-      .paper-header .meta{font-size:10pt;color:#444;margin-top:4px}
-      .paper-header .marks-time{display:flex;justify-content:center;gap:40px;margin-top:8px;font-size:11pt;font-weight:bold}
-      .instructions{border:1px solid #999;padding:8px 12px;margin-bottom:16px;font-size:10pt}
-      .instructions p{font-weight:bold;margin-bottom:4px}
-      .section-header{background:#f0f0f0;padding:6px 12px;font-weight:bold;font-size:12pt;margin:16px 0 8px;border:1px solid #ccc}
-      .question{margin-bottom:10px;padding-left:8px}.question .q-num{font-weight:bold;min-width:40px;display:inline-block}
-      .question .q-marks{font-size:9pt;color:#666}.options{margin-left:50px;margin-top:4px}
-      .options p{margin-bottom:2px}
-      .answer-item{border-bottom:1px solid #ddd;padding:8px 0;margin-bottom:4px}
-      .answer-item .q-num{font-weight:bold;color:#1e40af;min-width:40px;display:inline-block}
-      .answer-item .marking-points{margin-left:40px;margin-top:4px;font-size:10pt}
-      .answer-item .marking-points li{margin-bottom:2px}
-      .diagram-box{border:1px solid #ccc;padding:8px;margin-top:6px;background:#f9f9f9;border-radius:4px}
-      .diagram-box p{font-size:10pt}.diagram-box img{max-width:100%;height:auto;max-height:200px}
-      .reference-image-box{border:2px solid #93c5fd;border-radius:8px;padding:10px;margin-top:8px;background:#eff6ff;text-align:center}
-      .reference-image-box p{font-size:9pt;font-weight:bold;color:#1d4ed8;margin-bottom:6px}
-      .reference-image-box img{max-width:100%;height:auto;max-height:200px;display:block;margin:0 auto}
-      .drawing-space{border:2px dashed #9ca3af;border-radius:8px;padding:16px;margin-top:8px;min-height:120px;text-align:center}
-      .drawing-space p{color:#9ca3af;font-size:10pt}
-      .page-break{page-break-before:always}
-      </style></head><body>${el.innerHTML}
-      <script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`);
-    printWindow.document.close();
-  };
-
-  const renderStep3 = () => {
-    const sections = getQuestionsGroupedBySections();
-    const qp = paper?.question_paper;
-    const ak = paper?.answer_paper;
-    const displaySubject = formData.language === 'english' ? getSubjectInLanguage(paper?.subject, 'english') : paper?.subject;
-    const drawingPaper = isDrawingSubject(paper?.subject);
-    
-    return (
-      <div className="space-y-6">
-        {autoGeneratingImages && (
-          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 print:hidden">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
-              <div className="flex-1">
-                <p className="font-medium text-purple-800">
-                  {isAppHindi ? 'चित्र बन रहे हैं...' : 'Generating diagrams...'} ({imageProgress.current}/{imageProgress.total})
-                </p>
-                <div className="w-full bg-purple-200 rounded-full h-2 mt-2">
-                  <div className="bg-purple-600 h-2 rounded-full transition-all duration-300" style={{ width: `${imageProgress.total > 0 ? (imageProgress.current / imageProgress.total) * 100 : 0}%` }} />
-                </div>
+  const renderStep3 = () => (
+    <div className="space-y-6">
+      {/* Auto Image Generation Progress - hidden in print */}
+      {autoGeneratingImages && (
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 print:hidden">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+            <div className="flex-1">
+              <p className="font-medium text-purple-800">
+                चित्र बन रहे हैं... ({imageProgress.current}/{imageProgress.total})
+              </p>
+              <div className="w-full bg-purple-200 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(imageProgress.current / imageProgress.total) * 100}%` }}
+                />
               </div>
             </div>
           </div>
-        )}
-
-        <div className="flex justify-between items-center flex-wrap gap-3 print:hidden">
-          <Button variant="outline" onClick={() => { setPaper(null); setStep(1); setAnswerImages({}); setViewMode('question_paper'); }}>
-            {formData.language === 'hindi' ? 'नया पेपर बनाएं' : 'Create New Paper'}
-          </Button>
-          
-          <div className="flex bg-slate-100 rounded-lg p-1">
-            <button onClick={() => setViewMode('question_paper')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'question_paper' ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}>
-              {formData.language === 'hindi' ? 'प्रश्न पत्र' : 'Question Paper'}
-            </button>
-            <button onClick={() => setViewMode('answer_key')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'answer_key' ? 'bg-white shadow text-green-700' : 'text-slate-600 hover:text-slate-900'}`}>
-              {formData.language === 'hindi' ? 'उत्तर कुंजी' : 'Answer Key'}
-            </button>
-          </div>
-          
-          <Button onClick={() => printSection(viewMode === 'question_paper' ? 'printable-question-paper' : 'printable-answer-key')} className="bg-indigo-600 hover:bg-indigo-700" disabled={autoGeneratingImages}>
-            <Printer className="w-5 h-5 mr-2" />
-            {viewMode === 'question_paper' 
-              ? (formData.language === 'hindi' ? 'प्रश्न पत्र प्रिंट' : 'Print Question Paper')
-              : (formData.language === 'hindi' ? 'उत्तर कुंजी प्रिंट' : 'Print Answer Key')}
-          </Button>
         </div>
+      )}
 
-        {viewMode === 'question_paper' && (
-          <div className="bg-white rounded-xl border border-slate-200" data-testid="paper-preview" id="printable-question-paper">
-            <div className="p-8">
-              <div className="paper-header text-center border-b-2 border-black pb-4 mb-6">
-                {showSchoolName && schoolName && (
-                  <p className="text-lg font-bold mb-1">{schoolName}</p>
-                )}
-                <h1 className="text-xl font-bold mb-1">{paper?.exam_name || (formData.language === 'hindi' ? 'परीक्षा' : 'Examination')}</h1>
-                <h2 className="text-lg font-semibold">{displaySubject} - {paper?.class_name}</h2>
-                <p className="text-sm text-gray-600 mt-1">{BOARDS[schoolBoard]?.name} | 2025-26</p>
-                <div className="flex justify-center gap-12 mt-3 text-sm font-medium">
-                  <span>{langText.totalMarks}: {paper?.total_marks}</span>
-                  <span>{langText.time}: {paper?.time_duration} {langText.minutes}</span>
-                </div>
-              </div>
+      {/* Action buttons - hidden in print */}
+      <div className="flex justify-between items-center flex-wrap gap-3 print:hidden">
+        <Button variant="outline" onClick={() => { setPaper(null); setStep(1); setAnswerImages({}); }}>
+          {formData.language === 'hindi' ? 'नया पेपर बनाएं' : 'Create New Paper'}
+        </Button>
+        
+        {/* Print Layout Options */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">{formData.language === 'hindi' ? 'प्रिंट लेआउट:' : 'Print Layout:'}</span>
+          <select 
+            className="border rounded px-2 py-1 text-sm"
+            value={printLayout}
+            onChange={(e) => setPrintLayout(e.target.value)}
+          >
+            <option value="normal">{formData.language === 'hindi' ? 'सामान्य (1 पेपर)' : 'Normal (1 paper)'}</option>
+            <option value="2-up">{formData.language === 'hindi' ? '2 पेपर प्रति पेज' : '2 papers per page'}</option>
+            <option value="4-up">{formData.language === 'hindi' ? '4 पेपर प्रति पेज' : '4 papers per page'}</option>
+          </select>
+        </div>
+        
+        <Button onClick={handlePrint} className="bg-indigo-600 hover:bg-indigo-700" disabled={autoGeneratingImages}>
+          <Printer className="w-5 h-5 mr-2" />
+          {formData.language === 'hindi' ? 'प्रिंट करें' : 'Print Paper'}
+        </Button>
+      </div>
 
-              <div className="mb-6 p-3 bg-gray-50 rounded-lg text-sm border border-gray-200">
-                <p className="font-semibold mb-2">{langText.instructions}:</p>
-                <ol className="list-decimal list-inside text-gray-700 space-y-1">
-                  {getClassInstructions(formData.class_name, formData.language).map((inst, idx) => (
-                    <li key={idx}>{inst}</li>
-                  ))}
-                </ol>
-              </div>
+      {/* PRINTABLE PAPER - Clean design for printing */}
+      <div 
+        className="bg-white rounded-xl border border-slate-200 print:border-0 print:shadow-none print:rounded-none" 
+        data-testid="paper-preview"
+        id="printable-paper"
+      >
+        {/* Paper Header */}
+        <div className="p-8 print:p-4">
+          <div className="text-center border-b-2 border-black pb-4 mb-6">
+            <h1 className="text-xl font-bold mb-1">{paper?.exam_name}</h1>
+            <h2 className="text-lg font-semibold">{paper?.subject} - {paper?.class_name}</h2>
+            <div className="flex justify-center gap-12 mt-3 text-sm font-medium">
+              <span>{langText.totalMarks}: {paper?.total_marks}</span>
+              <span>{langText.time}: {paper?.time_duration} {langText.minutes}</span>
+            </div>
+          </div>
 
-              <div className="space-y-6">
-                {sections.length > 0 ? (
-                  sections.map((sec) => {
-                    const prevSectionsCounts = sections
-                      .slice(0, sections.indexOf(sec))
-                      .reduce((sum, s) => sum + s.questions.length, 0);
+          {/* Instructions */}
+          <div className="mb-6 p-3 bg-gray-50 rounded-lg text-sm print:bg-transparent print:border print:border-gray-300">
+            <p className="font-semibold mb-2">{langText.instructions}:</p>
+            <ol className="list-decimal list-inside text-gray-700 space-y-1">
+              <li>{langText.inst1}</li>
+              <li>{langText.inst2}</li>
+              <li>{langText.inst3}</li>
+            </ol>
+          </div>
+
+          {/* Questions */}
+          <div className="space-y-5">
+            {paper?.questions?.map((q, idx) => (
+              <div key={idx} className="pb-3" data-testid={`question-${idx}`}>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold min-w-[45px]">{langText.questionPrefix}{idx + 1}.</span>
+                  <div className="flex-1">
+                    <p className="font-medium">{q.question}</p>
+                    <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
                     
-                    return (
-                      <div key={sec.section} className="mb-4">
-                        <div className="bg-gray-100 px-4 py-2 rounded-lg mb-4 border border-gray-300">
-                          <h3 className="font-bold text-base">
-                            {langText.section} - {sec.label} : {sec.name}
-                            <span className="text-sm font-normal text-gray-600 ml-2">
-                              ({sec.questions.reduce((s, q) => s + (q.marks || 0), 0)} {langText.marks})
-                            </span>
-                          </h3>
-                        </div>
-                        
-                        <div className="space-y-4 pl-2">
-                          {sec.questions.map((q, qIdx) => {
-                            const globalNum = prevSectionsCounts + qIdx + 1;
-                            return (
-                              <div key={q.originalIdx} className="pb-3">
-                                <div className="flex items-start gap-2">
-                                  <span className="font-bold min-w-[45px]">{langText.questionPrefix}{globalNum}.</span>
-                                  <div className="flex-1">
-                                    <p className="font-medium">{q.question || q.q_text}</p>
-                                    <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
-                                    {(() => {
-                                      const qText = q.question || q.q_text || '';
-                                      const needsDiagram = q.type === 'diagram' || q.requires_drawing || q.diagram_required || q.diagram_description || /diagram|चित्र|figure|draw|नामांकित|label/i.test(qText);
-                                      return (
-                                        <>
-                                          {needsDiagram && (
-                                            <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
-                                          )}
-                                          {q.internal_choice && q.choice_question && (
-                                            <div className="mt-2 pl-4 border-l-2 border-amber-300">
-                                              <p className="text-sm text-amber-700 font-medium">{formData.language === 'hindi' ? 'अथवा (OR)' : 'OR'}</p>
-                                              <p className="font-medium mt-1">{q.choice_question}</p>
-                                            </div>
-                                          )}
-                                          {answerImages[q.originalIdx] && (
-                                            <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
-                                              <p className="text-xs font-semibold text-blue-700 mb-2">
-                                                {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
-                                              </p>
-                                              <img src={answerImages[q.originalIdx]} alt={`Reference Q${globalNum}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
-                                            </div>
-                                          )}
-                                          {!answerImages[q.originalIdx] && autoGeneratingImages && (needsDiagram || drawingPaper) && (
-                                            <div className="mt-2 text-xs text-purple-600 italic print:hidden">
-                                              <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
-                                              {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
-                                            </div>
-                                          )}
-                                          {(needsDiagram || drawingPaper) && (
-                                            <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: drawingPaper ? '150px' : '100px' }}>
-                                              <p className="text-center text-gray-400 text-sm">
-                                                {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
-                                              </p>
-                                            </div>
-                                          )}
-                                        </>
-                                      );
-                                    })()}
-                                    {q.drawing_guide && (
-                                      <p className="text-xs text-gray-500 mt-1 italic">{q.drawing_guide}</p>
-                                    )}
-                                  </div>
-                                </div>
-                                {q.options && q.options.length > 0 && (
-                                  <div className="ml-12 mt-2 space-y-1">
-                                    {q.options.map((opt, i) => {
-                                      const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
-                                      const prefix = String.fromCharCode(97 + i);
-                                      return <p key={i} className="text-gray-800">({prefix}) {cleanOption}</p>;
-                                    })}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  paper?.questions?.map((q, idx) => (
-                    <div key={idx} className="pb-3">
-                      <div className="flex items-start gap-2">
-                        <span className="font-bold min-w-[45px]">{langText.questionPrefix}{idx + 1}.</span>
-                        <div className="flex-1">
-                          <p className="font-medium">{q.question}</p>
-                          <span className="text-sm text-gray-600">[{q.marks} {langText.marks}]</span>
-                          {(() => {
-                            const qText = q.question || '';
-                            const needsDiagram = q.type === 'diagram' || q.requires_drawing || q.diagram_required || q.diagram_description || /diagram|चित्र|figure|draw|नामांकित|label/i.test(qText);
-                            return (
-                              <>
-                                {needsDiagram && (
-                                  <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
-                                )}
-                                {answerImages[idx] && (
-                                  <div className="mt-3 p-3 border-2 border-blue-300 rounded-lg bg-blue-50">
-                                    <p className="text-xs font-semibold text-blue-700 mb-2">
-                                      {formData.language === 'hindi' ? 'संदर्भ चित्र / Reference Image' : 'Reference Image'}
-                                    </p>
-                                    <img src={answerImages[idx]} alt={`Reference Q${idx + 1}`} className="max-w-full h-auto max-h-52 object-contain mx-auto block" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
-                                  </div>
-                                )}
-                                {!answerImages[idx] && autoGeneratingImages && (needsDiagram || drawingPaper) && (
-                                  <div className="mt-2 text-xs text-purple-600 italic print:hidden">
-                                    <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
-                                    {formData.language === 'hindi' ? 'चित्र बन रहा है...' : 'Generating image...'}
-                                  </div>
-                                )}
-                                {(needsDiagram || drawingPaper) && (
-                                  <div className="mt-3 border-2 border-dashed border-gray-400 rounded-lg p-4" style={{ minHeight: drawingPaper ? '150px' : '100px' }}>
-                                    <p className="text-center text-gray-400 text-sm">
-                                      {formData.language === 'hindi' ? '✏️ यहाँ चित्र बनाएं / Drawing Space' : '✏️ Drawing Space'}
-                                    </p>
-                                  </div>
-                                )}
-                                {q.drawing_guide && (
-                                  <p className="text-xs text-gray-500 mt-1 italic">{q.drawing_guide}</p>
-                                )}
-                              </>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                      {q.options && q.options.length > 0 && (
-                        <div className="ml-12 mt-2 space-y-1">
-                          {q.options.map((opt, i) => {
-                            const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
-                            const prefix = String.fromCharCode(97 + i);
-                            return <p key={i} className="text-gray-800">({prefix}) {cleanOption}</p>;
-                          })}
+                    {q.type === 'diagram' && (
+                      <p className="text-sm text-gray-600 mt-1 italic">{langText.drawDiagram}</p>
+                    )}
+                  </div>
+                </div>
+                
+                {/* MCQ Options */}
+                {q.options && q.options.length > 0 && (
+                  <div className="ml-12 mt-2 space-y-1">
+                    {q.options.map((opt, i) => {
+                      // Remove any existing prefix like "a)", "a.", "(a)" from options
+                      const cleanOption = opt.replace(/^[a-d][\)\.\s]+\s*/i, '').replace(/^\([a-d]\)\s*/i, '');
+                      const prefix = String.fromCharCode(97 + i); // a, b, c, d
+                      return (
+                        <p key={i} className="text-gray-800">
+                          ({prefix}) {cleanOption}
+                        </p>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Answer Key - SEPARATE PAGE in Print */}
+          <div className="mt-10 pt-6 border-t-2 border-dashed border-gray-400 page-break-before print:mt-0 print:pt-8 print:border-0" style={{ pageBreakBefore: 'always' }}>
+            <h2 className="text-lg font-bold mb-4 text-center border-b pb-2">{langText.answerKey}</h2>
+            <div className="space-y-4">
+              {paper?.questions?.map((q, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded-lg print:bg-transparent print:border-b print:rounded-none print:p-2">
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-indigo-700 print:text-black min-w-[45px]">
+                      {langText.questionPrefix}{idx + 1}:
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-gray-800">{q.answer}</p>
+                      
+                      {/* Diagram answer description */}
+                      {q.type === 'diagram' && q.diagram_description && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded text-sm print:bg-transparent print:border print:border-gray-300">
+                          <p className="font-medium text-blue-800 print:text-black">{langText.diagramAnswer}</p>
+                          <p className="text-blue-700 print:text-gray-700">{q.diagram_description}</p>
                         </div>
                       )}
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="mt-8 text-center text-sm text-gray-500 border-t pt-4">
-                *** {formData.language === 'hindi' ? 'शुभकामनाएँ' : 'Best of Luck'} ***
-              </div>
-            </div>
-          </div>
-        )}
-
-        {viewMode === 'answer_key' && (
-          <div className="bg-white rounded-xl border border-green-200" id="printable-answer-key">
-            <div className="p-8">
-              <div className="text-center border-b-2 border-green-600 pb-4 mb-6">
-                <h1 className="text-xl font-bold text-green-800 mb-1">
-                  {formData.language === 'hindi' ? 'उत्तर कुंजी / मार्किंग स्कीम' : 'ANSWER KEY / MARKING SCHEME'}
-                </h1>
-                <h2 className="text-lg font-semibold">{paper?.exam_name} - {displaySubject} - {paper?.class_name}</h2>
-                <p className="text-sm text-gray-600 mt-1">{BOARDS[schoolBoard]?.name} | 2025-26 | {langText.totalMarks}: {paper?.total_marks}</p>
-              </div>
-
-              <div className="space-y-4">
-                {(ak?.answers || paper?.questions || []).map((item, idx) => {
-                  const q = paper?.questions?.[idx] || {};
-                  const answer = item.model_answer || item.correct_answer || item.answer || q.answer || '';
-                  const qNum = item.q_no || idx + 1;
-                  const marks = item.marks || q.marks || 0;
-                  const qType = item.type || q.type || '';
-                  
-                  return (
-                    <div key={idx} className="p-4 bg-green-50 rounded-lg border border-green-100">
-                      <div className="flex items-start gap-2">
-                        <span className="font-bold text-green-700 min-w-[50px]">
-                          {langText.questionPrefix}{qNum}:
-                        </span>
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-500 mb-1 italic">{q.question}</p>
-                          <p className="text-gray-800 font-medium">{answer}</p>
-                          <span className="text-xs text-green-600">[{marks} {langText.marks}]</span>
-                          
-                          {item.explanation && (
-                            <p className="text-sm text-blue-700 mt-1 italic">{formData.language === 'hindi' ? 'व्याख्या: ' : 'Explanation: '}{item.explanation}</p>
-                          )}
-
-                          {item.marking_points && item.marking_points.length > 0 && (
-                            <div className="mt-2 pl-4 border-l-2 border-green-300">
-                              <p className="text-xs font-semibold text-green-700 mb-1">{formData.language === 'hindi' ? 'अंक विभाजन:' : 'Marking Points:'}</p>
-                              <ul className="text-sm text-gray-700 space-y-0.5">
-                                {item.marking_points.map((pt, pi) => <li key={pi}>• {pt}</li>)}
-                              </ul>
-                            </div>
-                          )}
-
-                          {item.diagram_steps && item.diagram_steps.length > 0 && (
-                            <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
-                              <p className="text-xs font-semibold text-blue-700 mb-1">{formData.language === 'hindi' ? 'चित्र निर्देश:' : 'Diagram Steps:'}</p>
-                              <ol className="text-sm text-gray-700 space-y-0.5 list-decimal list-inside">
-                                {item.diagram_steps.map((st, si) => <li key={si}>{st}</li>)}
-                              </ol>
-                            </div>
-                          )}
-
-                          {(() => {
-                            const qText = q.question || item.question || '';
-                            const needsDiagram = qType === 'diagram' || q.requires_drawing || q.diagram_required || q.diagram_description ||
-                              qType === 'long' || qType === 'very_long' || qType === 'dirgha' || qType === 'laghu' ||
-                              /diagram|चित्र|figure|draw|नामांकित|label/i.test(qText);
-                            return (
-                              <>
-                                {(qType === 'diagram' || q.diagram_description) && (
-                                  <div className="mt-2 p-2 bg-blue-50 rounded text-sm border border-blue-200">
-                                    <p className="font-medium text-blue-800">{langText.diagramAnswer}</p>
-                                    <p className="text-blue-700">{q.diagram_description || q.drawing_guide || ''}</p>
-                                  </div>
-                                )}
-
-                                {answerImages[idx] && (
-                                  <div className="mt-3">
-                                    <img src={answerImages[idx]} alt={`Diagram Q${qNum}`} className="max-w-full h-auto rounded-lg border shadow-sm max-h-64 object-contain" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
-                                  </div>
-                                )}
-                                
-                                {needsDiagram && !answerImages[idx] && (
-                                  <Button variant="outline" size="sm" onClick={() => generateAnswerImage(idx, q)} disabled={generatingImage === idx} className="mt-2 print:hidden">
-                                    {generatingImage === idx ? (
-                                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isAppHindi ? 'चित्र बना रहा...' : 'Generating...'}</>
-                                    ) : (
-                                      <><Image className="w-4 h-4 mr-2" />{isAppHindi ? 'AI चित्र बनाएं' : 'Generate AI Diagram'}</>
-                                    )}
-                                  </Button>
-                                )}
-                              </>
-                            );
-                          })()}
+                      
+                      {/* Generated Image for diagram/visual questions */}
+                      {answerImages[idx] && (
+                        <div className="mt-3">
+                          <img 
+                            src={answerImages[idx]} 
+                            alt={`Answer diagram for Q${idx + 1}`}
+                            className="max-w-full h-auto rounded-lg border shadow-sm max-h-64 object-contain"
+                          />
                         </div>
-                      </div>
+                      )}
+                      
+                      {/* Generate Image Button - Only for diagram/long type questions */}
+                      {(q.type === 'diagram' || q.type === 'long') && !answerImages[idx] && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => generateAnswerImage(idx, q)}
+                          disabled={generatingImage === idx}
+                          className="mt-2 print:hidden"
+                        >
+                          {generatingImage === idx ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              चित्र बना रहा है...
+                            </>
+                          ) : (
+                            <>
+                              <Image className="w-4 h-4 mr-2" />
+                              AI से चित्र बनाएं
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        )}
+        </div>
       </div>
-    );
-  };
+
+      {/* Print Styles - Injected CSS */}
+      <style>{`
+        @media print {
+          /* Hide everything except the paper */
+          body * {
+            visibility: hidden;
+          }
+          #printable-paper, #printable-paper * {
+            visibility: visible;
+          }
+          #printable-paper {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 20px;
+            font-size: 12pt;
+          }
+          /* Remove browser headers/footers */
+          @page {
+            margin: 15mm;
+            size: A4;
+          }
+          /* Ensure clean page breaks */
+          .print\\:break-before-page {
+            page-break-before: always;
+          }
+        }
+      `}</style>
+    </div>
+  );
 
   return (
     <div className="space-y-6 print:space-y-0" data-testid="ai-paper-page">
+      {/* Header - Hidden in print */}
       <div className="print:hidden">
         <h1 className="text-2xl font-bold text-slate-900">
           {isAppHindi ? 'AI प्रश्न पत्र जनरेटर' : 'AI Question Paper Generator'}
@@ -1365,6 +970,7 @@ export default function AIPaperPage() {
         <p className="text-slate-500 mt-1">{BOARDS[schoolBoard]?.name} 2025-26 {isAppHindi ? 'पाठ्यक्रम' : 'Syllabus'}</p>
       </div>
 
+      {/* Stepper - Hidden in print */}
       <div className="flex items-center justify-center gap-4 print:hidden">
         {[
           { num: 1, label: isAppHindi ? 'विषय चुनें' : 'Select Subject' },
@@ -1387,6 +993,7 @@ export default function AIPaperPage() {
         ))}
       </div>
 
+      {/* Content */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 print:p-0 print:border-0 print:shadow-none">
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}

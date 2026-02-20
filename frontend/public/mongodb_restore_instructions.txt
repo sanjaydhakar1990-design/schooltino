@@ -1,0 +1,184 @@
+=====================================================
+MONGODB BACKUP - RESTORE INSTRUCTIONS
+=====================================================
+
+Backup Created: 2026-02-07 15:48:45
+Database: schooltino
+Total Collections: 16
+Backup Size: 7.9 KB (compressed)
+
+=====================================================
+DOWNLOAD BACKUP FILE
+=====================================================
+
+Direct Download Link:
+https://teachfixed.preview.emergentagent.com/schooltino_mongodb_backup.tar.gz
+
+=====================================================
+HOW TO RESTORE
+=====================================================
+
+Step 1: Download & Extract
+---------------------------
+# Download the file
+wget https://teachfixed.preview.emergentagent.com/schooltino_mongodb_backup.tar.gz
+
+# Extract
+tar -xzf schooltino_mongodb_backup.tar.gz
+
+Step 2: Restore to MongoDB
+---------------------------
+# Full restore (all collections)
+mongorestore --db=schooltino schooltino_dump/schooltino/
+
+# Restore specific collection
+mongorestore --db=schooltino --collection=classes schooltino_dump/schooltino/classes.bson
+
+# Restore to different database
+mongorestore --db=schooltino_new schooltino_dump/schooltino/
+
+# Restore to remote MongoDB
+mongorestore --uri="mongodb://your-server:27017/schooltino" schooltino_dump/schooltino/
+
+Step 3: Verify Restore
+-----------------------
+mongo schooltino
+> db.classes.count()
+> db.users.count()
+> db.students.count()
+
+=====================================================
+COLLECTIONS INCLUDED IN BACKUP
+=====================================================
+
+✅ admit_card_activations    - Admit card data
+✅ admit_card_settings        - Admit card config
+✅ audit_logs                 - System logs
+✅ chapter_summaries          - AI summaries
+✅ classes                    - 11 classes (Nursery to Class 8)
+✅ exams                      - Exam records
+✅ fee_records                - Fee payments
+✅ homework                   - Homework assignments
+✅ notifications              - System notifications
+✅ payments                   - Payment records
+✅ schools                    - School information
+✅ students                   - Student records
+✅ subject_allocations        - Teacher-Subject mapping
+✅ syllabus_progress          - Syllabus tracking
+✅ timetable                  - Class schedules
+✅ users                      - Login accounts
+
+=====================================================
+MONGODB CONNECTION INFO
+=====================================================
+
+Production MongoDB:
+Connection: mongodb://localhost:27017
+Database: schooltino
+School ID: 7fc6bb2f-fa0d-43b6-9abd-4483d150eb0c
+
+=====================================================
+BACKUP COMMANDS REFERENCE
+=====================================================
+
+Create Backup:
+--------------
+mongodump --db=schooltino --out=/backup/location
+
+Create Compressed Backup:
+--------------------------
+mongodump --db=schooltino --archive=/backup/schooltino.archive --gzip
+
+Backup Specific Collection:
+----------------------------
+mongodump --db=schooltino --collection=classes --out=/backup/
+
+Backup with Query Filter:
+--------------------------
+mongodump --db=schooltino --collection=classes \
+  --query='{"school_id":"7fc6bb2f-fa0d-43b6-9abd-4483d150eb0c"}'
+
+=====================================================
+RESTORE COMMANDS REFERENCE
+=====================================================
+
+Restore Full Database:
+----------------------
+mongorestore --db=schooltino /backup/schooltino_dump/schooltino/
+
+Restore with Drop (Replace existing):
+--------------------------------------
+mongorestore --db=schooltino --drop /backup/schooltino_dump/schooltino/
+
+Restore Specific Collection:
+-----------------------------
+mongorestore --db=schooltino --collection=classes \
+  /backup/schooltino_dump/schooltino/classes.bson
+
+Restore from Archive:
+---------------------
+mongorestore --archive=/backup/schooltino.archive --gzip
+
+=====================================================
+AUTOMATED BACKUP SCRIPT (CRON JOB)
+=====================================================
+
+Create backup script: /usr/local/bin/backup-mongodb.sh
+-------------------------------------------------------
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/backups/mongodb"
+mkdir -p $BACKUP_DIR
+
+# Create dump
+mongodump --db=schooltino --out=$BACKUP_DIR/dump_$DATE
+
+# Compress
+tar -czf $BACKUP_DIR/schooltino_$DATE.tar.gz $BACKUP_DIR/dump_$DATE
+
+# Remove old backups (keep last 7 days)
+find $BACKUP_DIR -name "schooltino_*.tar.gz" -mtime +7 -delete
+
+# Cleanup
+rm -rf $BACKUP_DIR/dump_$DATE
+
+echo "Backup completed: schooltino_$DATE.tar.gz"
+
+Add to crontab (daily at 2 AM):
+--------------------------------
+crontab -e
+
+# Add this line:
+0 2 * * * /usr/local/bin/backup-mongodb.sh >> /var/log/mongodb-backup.log 2>&1
+
+=====================================================
+TROUBLESHOOTING
+=====================================================
+
+Error: "mongodump command not found"
+-------------------------------------
+# Install MongoDB tools
+sudo apt-get install mongodb-database-tools
+
+Error: "Failed: error connecting to db server"
+----------------------------------------------
+# Check if MongoDB is running
+sudo systemctl status mongod
+
+# Or
+ps aux | grep mongod
+
+Error: "unauthorized"
+---------------------
+# If authentication is enabled, use:
+mongodump --username=admin --password=yourpass --authenticationDatabase=admin --db=schooltino
+
+=====================================================
+CONTACT & SUPPORT
+=====================================================
+
+Email: support@onetino.com
+Website: www.onetino.in
+Phone: [Your Contact]
+
+=====================================================

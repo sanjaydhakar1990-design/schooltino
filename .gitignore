@@ -1,9 +1,12 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
 # IDE and editors
 .idea/
 .vscode/
 
 # Dependencies
 node_modules/
+/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -23,13 +26,14 @@ next-env.d.ts
 *.tsbuildinfo
 
 # Production builds
+/build
 dist/
+dist
 
-# Environment files
+# Environment files (comprehensive coverage)
+
 *token.json*
 *credentials.json*
-*.env
-*.env.*
 
 # Logs and debug files
 npm-debug.log*
@@ -44,40 +48,21 @@ dump.rdb
 
 # Python
 __pycache__/
-*.pyc
+*pyc*
 venv/
 .venv/
-
-# ====================== SENSITIVE DATA FILES ======================
-# NEVER commit these files to version control!
-**/production_data*.json
-**/production_data*.csv
-**/school_data_export*.json
-**/school_data_export*.csv
-**/*passwords*.json
-**/*passwords*.csv
-**/*backup*.json
-**/*backup*.tar.gz
-**/*backup*.tar
-**/*dump*.json
-**/*dump*.sql
-*mongodb_backup*
-*_backup*
-*.bak
-
-# Uploaded user files (can contain student photos, documents etc.)
-backend/uploads/
-
-# Local DB dumps
-*.mongodump
 
 # Development tools
 chainlit.md
 .chainlit
 .ipynb_checkpoints/
+.ac
 
 # Deployment
 .vercel
+
+# Data and databases
+agenthub/agents/youtube/db
 
 # Archive files and large assets
 **/*.zip
@@ -90,11 +75,295 @@ chainlit.md
 
 # Build caches
 .cache/
-frontend/node_modules/.cache/
 
-# React build output (generated files - do not commit)
-frontend/build/
-
-# Claude Code tool directories
-.claude/
-.local/
+# Mobile development
+android-sdk/ frontend/node_modules/.cache/default-development/0.pack
+frontend/node_modules/.cache/default-development/4.pack
+frontend/node_modules/.cache/default-development/0.pack
+frontend/node_modules/.cache/default-development/1.pack
+frontend/node_modules/.cache/default-development/2.pack
+frontend/node_modules/.cache/default-development/5.pack
+frontend/node_modules/.cache/default-development/7.pack
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/3.pack
+frontend/node_modules/.cache/default-development/6.pack
+frontend/node_modules/.cache/default-development/8.pack
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/9.pack
+frontend/node_modules/.cache/default-development/3.pack_
+frontend/node_modules/.cache/default-development/10.pack
+frontend/node_modules/.cache/default-development/11.pack
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/12.pack
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/1.pack_
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/7.pack_
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/13.pack
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*

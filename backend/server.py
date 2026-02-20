@@ -4,8 +4,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import re
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, validator
 from typing import List, Optional, Dict, Any
@@ -17,34 +19,429 @@ import qrcode
 from io import BytesIO
 import base64
 import aiofiles
-import certifi
+# Removed: from syllabus_data_2025_26 import ... (data now inlined below)
 
 ROOT_DIR = Path(__file__).parent
 UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 (UPLOAD_DIR / "images").mkdir(exist_ok=True)
 (UPLOAD_DIR / "documents").mkdir(exist_ok=True)
+(ROOT_DIR / "static").mkdir(exist_ok=True)
 
 load_dotenv(ROOT_DIR / '.env')
 
-from core.database import client, db
+# MongoDB connection
+mongo_url = os.environ['MONGO_URL']
+client = AsyncIOMotorClient(mongo_url)
+db = client[os.environ['DB_NAME']]
 
-# JWT Settings - Import from core.auth to avoid duplicate secret definitions
-# This ensures only ONE secret is used throughout the entire application
-from core.auth import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRATION_HOURS
+# ==================== INLINE SYLLABUS DATA (2025-26) ====================
+"""
+Latest 2025-26 Syllabus Data
+Board-wise syllabus with books, chapters, and topics
+"""
+
+# CBSE/NCERT Syllabus 2025-26
+CBSE_SYLLABUS_2025_26 = {
+    "Nursery": {
+        "Mathematics": {
+            "book": "Early Mathematics - Pre-Primary",
+            "chapters": [
+                {"name": "Numbers 1-10", "topics": ["Counting", "Number Recognition", "Writing Numbers"]},
+                {"name": "Shapes", "topics": ["Circle", "Square", "Triangle", "Rectangle"]},
+                {"name": "Colors", "topics": ["Primary Colors", "Color Recognition"]},
+                {"name": "Patterns", "topics": ["Simple Patterns", "Arranging Objects"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold - Pre-Primary",
+            "chapters": [
+                {"name": "Alphabets A-Z", "topics": ["Capital Letters", "Small Letters", "Letter Sounds"]},
+                {"name": "Words", "topics": ["Two Letter Words", "Three Letter Words"]},
+                {"name": "Rhymes", "topics": ["Action Rhymes", "Fun Rhymes"]}
+            ]
+        },
+        "Hindi": {
+            "book": "Rimjhim - Pre-Primary",
+            "chapters": [
+                {"name": "स्वर (Vowels)", "topics": ["अ से अः", "मात्राएं"]},
+                {"name": "व्यंजन (Consonants)", "topics": ["क से ज्ञ"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around - Pre-Primary",
+            "chapters": [
+                {"name": "Myself", "topics": ["Body Parts", "Senses"]},
+                {"name": "My Family", "topics": ["Family Members", "Relations"]},
+                {"name": "Animals", "topics": ["Domestic Animals", "Wild Animals"]}
+            ]
+        }
+    },
+    "LKG": {
+        "Mathematics": {
+            "book": "Mathematics for Class LKG",
+            "chapters": [
+                {"name": "Numbers 1-20", "topics": ["Counting Objects", "Before-After", "More-Less"]},
+                {"name": "Addition", "topics": ["Adding Objects", "Single Digit Addition"]},
+                {"name": "Shapes & Sizes", "topics": ["Big-Small", "Long-Short", "Shapes"]},
+                {"name": "Measurement", "topics": ["Heavy-Light", "Full-Empty"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold - LKG",
+            "chapters": [
+                {"name": "Phonics", "topics": ["Letter Sounds", "Blending", "CVC Words"]},
+                {"name": "Reading", "topics": ["Simple Sentences", "Picture Reading"]},
+                {"name": "Writing", "topics": ["Writing Words", "Simple Sentences"]}
+            ]
+        },
+        "Hindi": {
+            "book": "Rimjhim - LKG",
+            "chapters": [
+                {"name": "वर्णमाला", "topics": ["स्वर व्यंजन", "बारहखड़ी"]},
+                {"name": "शब्द निर्माण", "topics": ["दो अक्षर के शब्द", "तीन अक्षर के शब्द"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around - LKG",
+            "chapters": [
+                {"name": "My Body", "topics": ["Body Parts Functions", "Hygiene"]},
+                {"name": "My School", "topics": ["School Building", "Teachers", "Friends"]},
+                {"name": "Plants & Trees", "topics": ["Parts of Plant", "Trees Around Us"]}
+            ]
+        }
+    },
+    "UKG": {
+        "Mathematics": {
+            "book": "Mathematics for Class UKG (NCERT)",
+            "chapters": [
+                {"name": "Numbers 1-50", "topics": ["Number Names", "Place Value", "Comparing Numbers"]},
+                {"name": "Addition & Subtraction", "topics": ["Add within 20", "Subtract within 20", "Word Problems"]},
+                {"name": "Time", "topics": ["Days of Week", "Months", "Reading Clock"]},
+                {"name": "Money", "topics": ["Coins Recognition", "Counting Money"]},
+                {"name": "Geometry", "topics": ["2D Shapes", "3D Objects", "Symmetry"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold - UKG",
+            "chapters": [
+                {"name": "Reading Comprehension", "topics": ["Short Stories", "Answering Questions"]},
+                {"name": "Grammar Basics", "topics": ["Nouns", "Verbs", "Articles"]},
+                {"name": "Writing", "topics": ["Sentences", "Paragraph Writing"]},
+                {"name": "Poems", "topics": ["Recitation", "Understanding Poems"]}
+            ]
+        },
+        "Hindi": {
+            "book": "Rimjhim - UKG",
+            "chapters": [
+                {"name": "पठन (Reading)", "topics": ["कहानियां", "कविताएं"]},
+                {"name": "लेखन (Writing)", "topics": ["वाक्य रचना", "अनुच्छेद लेखन"]},
+                {"name": "व्याकरण", "topics": ["संज्ञा", "सर्वनाम", "विशेषण"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around - UKG",
+            "chapters": [
+                {"name": "Living & Non-Living", "topics": ["Characteristics", "Differences"]},
+                {"name": "Our Environment", "topics": ["Air", "Water", "Land"]},
+                {"name": "Transport", "topics": ["Road Transport", "Water Transport", "Air Transport"]},
+                {"name": "Festivals", "topics": ["National Festivals", "Religious Festivals"]}
+            ]
+        }
+    },
+    "Class 1": {
+        "Mathematics": {
+            "book": "Math-Magic (NCERT Class 1)",
+            "chapters": [
+                {"name": "Chapter 1: Shapes and Space", "topics": ["Identifying Shapes", "Drawing Shapes", "Spatial Understanding"]},
+                {"name": "Chapter 2: Numbers from One to Nine", "topics": ["Counting", "Number Names", "Ordering"]},
+                {"name": "Chapter 3: Addition", "topics": ["Add within 9", "Picture Addition", "Word Problems"]},
+                {"name": "Chapter 4: Subtraction", "topics": ["Take Away", "Subtract within 9"]},
+                {"name": "Chapter 5: Numbers from Ten to Twenty", "topics": ["Teen Numbers", "Place Value"]},
+                {"name": "Chapter 6: Time", "topics": ["Morning-Afternoon-Night", "Days of Week"]},
+                {"name": "Chapter 7: Measurement", "topics": ["Long-Short", "Heavy-Light", "Comparing"]},
+                {"name": "Chapter 8: Numbers from Twenty-one to Fifty", "topics": ["Counting to 50", "Skip Counting"]},
+                {"name": "Chapter 9: Data Handling", "topics": ["Collecting Data", "Picture Graphs"]},
+                {"name": "Chapter 10: Patterns", "topics": ["Number Patterns", "Shape Patterns"]},
+                {"name": "Chapter 11: Numbers", "topics": ["Numbers to 100", "Even-Odd"]},
+                {"name": "Chapter 12: Money", "topics": ["Coins", "Notes", "Buying-Selling"]},
+                {"name": "Chapter 13: How Many?", "topics": ["Estimation", "Counting Strategies"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold (NCERT Class 1)",
+            "chapters": [
+                {"name": "Unit 1: A Happy Child", "topics": ["Reading", "Vocabulary", "Comprehension"]},
+                {"name": "Unit 2: Three Little Pigs", "topics": ["Story Elements", "Sequencing"]},
+                {"name": "Unit 3: After a Bath", "topics": ["Poetry", "Rhyming Words"]},
+                {"name": "Unit 4: The Bubble", "topics": ["Describing Words", "Sentences"]},
+                {"name": "Unit 5: Lalu and Peelu", "topics": ["Friendship", "Dialogue"]},
+                {"name": "Unit 6: Merry-Go-Round", "topics": ["Fun Activities", "Action Words"]},
+                {"name": "Unit 7: A Little Turtle", "topics": ["Animals", "Habitats"]},
+                {"name": "Unit 8: Bubble The Clown", "topics": ["Entertainment", "Expressions"]},
+                {"name": "Unit 9: Anandi's Rainbow", "topics": ["Colors", "Nature"]},
+                {"name": "Unit 10: The Tiger and The Mosquito", "topics": ["Moral Stories", "Characters"]}
+            ]
+        },
+        "Hindi": {
+            "book": "Rimjhim (NCERT Class 1)",
+            "chapters": [
+                {"name": "पाठ 1: झूला", "topics": ["कविता", "शब्दार्थ", "अभ्यास"]},
+                {"name": "पाठ 2: आम की कहानी", "topics": ["कहानी", "पात्र", "घटनाक्रम"]},
+                {"name": "पाठ 3: आम की टोकरी", "topics": ["फल", "गिनती", "वर्णन"]},
+                {"name": "पाठ 4: पत्ते ही पत्ते", "topics": ["प्रकृति", "रंग", "आकार"]},
+                {"name": "पाठ 5: पकोड़ी", "topics": ["भोजन", "स्वाद"]},
+                {"name": "पाठ 6: छुक-छुक गाड़ी", "topics": ["यात्रा", "परिवहन"]},
+                {"name": "पाठ 7: रसोईघर", "topics": ["घर", "सामान"]},
+                {"name": "पाठ 8: चूहो! म्याऊँ सो रही है", "topics": ["जानवर", "क्रियाएं"]}
+            ]
+        },
+        "EVS": {
+            "book": "Looking Around (NCERT Class 1-2)",
+            "chapters": [
+                {"name": "Chapter 1: What's Your Name?", "topics": ["Names", "Family", "Identity"]},
+                {"name": "Chapter 2: Relations", "topics": ["Family Tree", "Relationships"]},
+                {"name": "Chapter 3: My House", "topics": ["Types of Houses", "Rooms", "Materials"]},
+                {"name": "Chapter 4: My Family", "topics": ["Family Members", "Occupations"]},
+                {"name": "Chapter 5: Food We Eat", "topics": ["Types of Food", "Healthy Food"]},
+                {"name": "Chapter 6: Shelter", "topics": ["Animal Homes", "Human Homes"]},
+                {"name": "Chapter 7: Water", "topics": ["Uses of Water", "Sources", "Conservation"]},
+                {"name": "Chapter 8: Plants Around Us", "topics": ["Parts of Plant", "Uses of Plants"]},
+                {"name": "Chapter 9: Animals", "topics": ["Domestic Animals", "Wild Animals", "Pet Care"]}
+            ]
+        }
+    },
+    "Class 2": {
+        "Mathematics": {
+            "book": "Math-Magic (NCERT Class 2)",
+            "chapters": [
+                {"name": "Chapter 1: What is Long, What is Round?", "topics": ["Measurement", "Shapes", "Comparison"]},
+                {"name": "Chapter 2: Counting in Groups", "topics": ["Skip Counting", "Grouping"]},
+                {"name": "Chapter 3: How Much Can You Carry?", "topics": ["Weight", "Capacity"]},
+                {"name": "Chapter 4: Counting in Tens", "topics": ["Place Value", "Tens & Ones"]},
+                {"name": "Chapter 5: Patterns", "topics": ["Number Patterns", "Shape Patterns"]},
+                {"name": "Chapter 6: Footprints", "topics": ["Measurement", "Estimation"]},
+                {"name": "Chapter 7: Jugs and Mugs", "topics": ["Capacity", "Litres"]},
+                {"name": "Chapter 8: Tens and Ones", "topics": ["2-Digit Numbers", "Expanded Form"]},
+                {"name": "Chapter 9: My Funday", "topics": ["Time", "Calendar", "Days"]},
+                {"name": "Chapter 10: Add Our Points", "topics": ["Addition", "Word Problems"]},
+                {"name": "Chapter 11: Lines and Lines", "topics": ["Straight Lines", "Curves"]},
+                {"name": "Chapter 12: Give and Take", "topics": ["Subtraction", "Borrowing"]},
+                {"name": "Chapter 13: The Longest Step", "topics": ["Measurement Units", "Comparison"]},
+                {"name": "Chapter 14: Birds Come, Birds Go", "topics": ["Data Handling", "Counting"]},
+                {"name": "Chapter 15: How Many Ponytails?", "topics": ["Multiplication Concept", "Repeated Addition"]}
+            ]
+        },
+        "English": {
+            "book": "Marigold (NCERT Class 2)",
+            "chapters": [
+                {"name": "Unit 1: First Day at School", "topics": ["New Experiences", "School Life"]},
+                {"name": "Unit 2: Haldi's Adventure", "topics": ["Adventure Stories", "Bravery"]},
+                {"name": "Unit 3: I am Lucky!", "topics": ["Gratitude", "Feelings"]},
+                {"name": "Unit 4: A Smile", "topics": ["Poetry", "Emotions"]},
+                {"name": "Unit 5: The Wind and the Sun", "topics": ["Fables", "Moral Lessons"]},
+                {"name": "Unit 6: Rain", "topics": ["Nature Poetry", "Seasons"]},
+                {"name": "Unit 7: On My Blackboard", "topics": ["School Activities", "Creativity"]},
+                {"name": "Unit 8: Curlylocks and the Three Bears", "topics": ["Fairy Tales", "Story Elements"]},
+                {"name": "Unit 9: Makhan's Mischief", "topics": ["Humor", "Characters"]},
+                {"name": "Unit 10: I am the Music Man", "topics": ["Music", "Rhymes"]}
+            ]
+        }
+    }
+}
+
+# State Board Variations (can be expanded)
+STATE_BOARD_SYLLABUS_2025_26 = {
+    # Similar structure as CBSE but with state-specific books
+    "Nursery": CBSE_SYLLABUS_2025_26["Nursery"],  # Usually same for pre-primary
+    "LKG": CBSE_SYLLABUS_2025_26["LKG"],
+    "UKG": CBSE_SYLLABUS_2025_26["UKG"]
+}
+
+# ICSE Syllabus (can be expanded based on specific publishers)
+ICSE_SYLLABUS_2025_26 = {
+    "Nursery": CBSE_SYLLABUS_2025_26["Nursery"],
+    "LKG": CBSE_SYLLABUS_2025_26["LKG"],
+    "UKG": CBSE_SYLLABUS_2025_26["UKG"]
+}
+
+# MP Board + NCERT Syllabus 2025-26 (Madhya Pradesh)
+# MP Board follows NCERT curriculum with state-specific additions
+MP_BOARD_NCERT_SYLLABUS_2025_26 = {
+    "Nursery": CBSE_SYLLABUS_2025_26["Nursery"],  # Same as NCERT for pre-primary
+    "LKG": CBSE_SYLLABUS_2025_26["LKG"],
+    "UKG": CBSE_SYLLABUS_2025_26["UKG"],
+    "Class 1": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT) + MP Board Supplement",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + MP Board हिंदी पाठ्यपुस्तक",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Hindi"]["chapters"] + [
+                {"name": "पाठ 9: मध्यप्रदेश की कहानी", "topics": ["राज्य परिचय", "संस्कृति"]},
+                {"name": "पाठ 10: हमारा राज्य", "topics": ["भूगोल", "नदियाँ", "पर्वत"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + MP Environment Studies",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["EVS"]["chapters"] + [
+                {"name": "Chapter 10: मध्यप्रदेश का पर्यावरण", "topics": ["जंगल", "वन्यजीव", "नर्मदा नदी"]}
+            ]
+        }
+    },
+    "Class 2": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + MP Board हिंदी",
+            "chapters": [
+                {"name": "पाठ 1: ऊँट चला", "topics": ["कविता", "पशु"]},
+                {"name": "पाठ 2: भालू ने खेली फुटबॉल", "topics": ["कहानी", "खेल"]},
+                {"name": "पाठ 3: म्याऊँ, म्याऊँ!!", "topics": ["जानवर", "आवाजें"]},
+                {"name": "पाठ 4: अधिक बलवान कौन?", "topics": ["बल", "तुलना"]},
+                {"name": "पाठ 5: दोस्त की मदद", "topics": ["मित्रता", "सहायता"]},
+                {"name": "पाठ 6: बहुत हुआ", "topics": ["निर्णय", "साहस"]},
+                {"name": "पाठ 7: मेरी किताब", "topics": ["पढ़ाई", "ज्ञान"]},
+                {"name": "पाठ 8: तितली और कली", "topics": ["प्रकृति", "फूल"]},
+                {"name": "पाठ 9: MP की विशेषताएं", "topics": ["संस्कृति", "इतिहास"]},
+                {"name": "पाठ 10: हमारी नदियाँ", "topics": ["नर्मदा", "बेतवा", "चंबल"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + MP पर्यावरण अध्ययन",
+            "chapters": [
+                {"name": "Chapter 1: मेरा परिवार", "topics": ["रिश्ते", "जिम्मेदारी"]},
+                {"name": "Chapter 2: हमारा घर", "topics": ["घर के प्रकार", "कमरे"]},
+                {"name": "Chapter 3: भोजन", "topics": ["स्वस्थ भोजन", "MP के व्यंजन"]},
+                {"name": "Chapter 4: जानवर", "topics": ["पालतू", "जंगली", "MP के वन्यजीव"]},
+                {"name": "Chapter 5: पौधे", "topics": ["सागौन", "महुआ", "तेंदू"]},
+                {"name": "Chapter 6: जल", "topics": ["जल स्रोत", "नर्मदा", "जल संरक्षण"]},
+                {"name": "Chapter 7: मध्यप्रदेश का भूगोल", "topics": ["पर्वत", "नदियाँ", "जंगल"]},
+                {"name": "Chapter 8: हमारे त्योहार", "topics": ["होली", "दिवाली", "नवरात्रि"]}
+            ]
+        }
+    }
+}
+
+# RBSC + NCERT Syllabus 2025-26 (Rajasthan Board)
+# Rajasthan Board follows NCERT with Rajasthan-specific content
+RBSC_NCERT_SYLLABUS_2025_26 = {
+    "Nursery": CBSE_SYLLABUS_2025_26["Nursery"],
+    "LKG": CBSE_SYLLABUS_2025_26["LKG"],
+    "UKG": CBSE_SYLLABUS_2025_26["UKG"],
+    "Class 1": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + राजस्थान हिंदी पुस्तक",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["Hindi"]["chapters"] + [
+                {"name": "पाठ 9: राजस्थान की धरती", "topics": ["रेगिस्तान", "संस्कृति"]},
+                {"name": "पाठ 10: हमारा राज्य", "topics": ["जयपुर", "जोधपुर", "उदयपुर"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + राजस्थान पर्यावरण",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 1"]["EVS"]["chapters"] + [
+                {"name": "Chapter 10: थार मरुस्थल", "topics": ["रेत के टीले", "ऊँट", "रेगिस्तानी पौधे"]}
+            ]
+        }
+    },
+    "Class 2": {
+        "Mathematics": {
+            "book": "गणित का जादू (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["Mathematics"]["chapters"]
+        },
+        "English": {
+            "book": "Marigold (NCERT Class 2)",
+            "chapters": CBSE_SYLLABUS_2025_26["Class 2"]["English"]["chapters"]
+        },
+        "Hindi": {
+            "book": "रिमझिम (NCERT) + राजस्थान बोर्ड हिंदी",
+            "chapters": [
+                {"name": "पाठ 1: ऊँट चला", "topics": ["कविता", "राजस्थान का राज्य पशु"]},
+                {"name": "पाठ 2: भालू ने खेली फुटबॉल", "topics": ["कहानी", "खेल"]},
+                {"name": "पाठ 3: म्याऊँ, म्याऊँ!!", "topics": ["जानवर", "ध्वनि"]},
+                {"name": "पाठ 4: अधिक बलवान कौन?", "topics": ["बल", "तुलना"]},
+                {"name": "पाठ 5: दोस्त की मदद", "topics": ["मित्रता", "सहयोग"]},
+                {"name": "पाठ 6: बहुत हुआ", "topics": ["निर्णय", "साहस"]},
+                {"name": "पाठ 7: मेरी किताब", "topics": ["शिक्षा", "ज्ञान"]},
+                {"name": "पाठ 8: तितली और कली", "topics": ["प्रकृति", "फूल"]},
+                {"name": "पाठ 9: राजस्थान की वीरता", "topics": ["इतिहास", "राजपूत"]},
+                {"name": "पाठ 10: रेगिस्तान का जीवन", "topics": ["जल संरक्षण", "खेजड़ी"]}
+            ]
+        },
+        "EVS": {
+            "book": "आस-पास (NCERT) + राजस्थान पर्यावरण",
+            "chapters": [
+                {"name": "Chapter 1: मेरा परिवार", "topics": ["संयुक्त परिवार", "रिश्ते"]},
+                {"name": "Chapter 2: राजस्थानी घर", "topics": ["हवेली", "मिट्टी के घर", "झोपड़ी"]},
+                {"name": "Chapter 3: राजस्थानी भोजन", "topics": ["दाल-बाटी-चूरमा", "घी", "बाजरा"]},
+                {"name": "Chapter 4: जानवर", "topics": ["ऊँट", "चिंकारा", "मोर"]},
+                {"name": "Chapter 5: पौधे", "topics": ["खेजड़ी", "बबूल", "रोहिड़ा"]},
+                {"name": "Chapter 6: जल", "topics": ["कुएं", "बावड़ी", "जल संचयन"]},
+                {"name": "Chapter 7: थार का रेगिस्तान", "topics": ["रेत", "गर्मी", "अनुकूलन"]},
+                {"name": "Chapter 8: त्योहार", "topics": ["गणगौर", "तीज", "होली"]}
+            ]
+        }
+    }
+}
+
+def get_syllabus_for_class_subject(board: str, class_name: str, subject: str):
+    """Get syllabus data for specific class and subject"""
+    board = board.upper()
+    
+    # MP Board + NCERT (Madhya Pradesh)
+    if "MP" in board or "MADHYA PRADESH" in board or "MP BOARD" in board:
+        syllabus_data = MP_BOARD_NCERT_SYLLABUS_2025_26
+    # RBSC + NCERT (Rajasthan Board)
+    elif "RBSC" in board or "RAJASTHAN" in board or "RBSE" in board:
+        syllabus_data = RBSC_NCERT_SYLLABUS_2025_26
+    # CBSE/NCERT
+    elif "CBSE" in board or "NCERT" in board:
+        syllabus_data = CBSE_SYLLABUS_2025_26
+    # ICSE
+    elif "ICSE" in board:
+        syllabus_data = ICSE_SYLLABUS_2025_26
+    # State Board (Generic)
+    elif "STATE" in board:
+        syllabus_data = STATE_BOARD_SYLLABUS_2025_26
+    else:
+        # Default to CBSE if board not specified
+        syllabus_data = CBSE_SYLLABUS_2025_26
+    
+    class_data = syllabus_data.get(class_name, {})
+    subject_data = class_data.get(subject, {})
+    
+    return subject_data
+
+# ==================== END SYLLABUS DATA ====================
+
+
+# JWT Settings
+JWT_SECRET = os.environ.get('JWT_SECRET', 'schooltino-secret-key-2024')
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24
 
 app = FastAPI(title="Schooltino API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
-
-# ====================== RATE LIMITING ======================
-from core.rate_limiter import limiter, _rate_limit_exceeded_handler, RateLimitExceeded, RATE_LIMIT_AVAILABLE
-if RATE_LIMIT_AVAILABLE:
-    app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-    logging.info("Rate limiting is ACTIVE")
-else:
-    logging.warning("Rate limiting is NOT active. Install slowapi: pip install slowapi")
 
 # Import modular routes
 from routes.ncert import router as ncert_router
@@ -76,7 +473,8 @@ from routes.complaints import router as complaints_router
 from routes.sports_activities import router as activities_router
 from routes.razorpay_payment import router as razorpay_router
 from routes.admit_card import router as admit_card_router
-from routes.prayer import router as prayer_router
+from routes.dual_credits import router as dual_credits_router
+from routes.team_unified import router as team_unified_router
 from routes.ai_auto_config import router as ai_auto_config_router
 from routes.school_gallery import router as gallery_router
 from routes.govt_exam_docs import router as govt_exam_router
@@ -87,17 +485,6 @@ from routes.tino_voice import router as tino_voice_router
 from routes.did_avatar import router as did_avatar_router
 from routes.documents import router as documents_router
 from routes.bulk_import import router as bulk_import_router
-from routes.dual_credits import router as dual_credits_router, deduct_credits_internal
-from routes.syllabus_sync import router as syllabus_sync_router
-from routes.branches import router as branches_router
-from routes.staff_attendance import router as staff_attendance_router
-from routes.e_store import router as e_store_router
-from routes.integrations import router as integrations_router
-from routes.school_feed import router as school_feed_router
-
-# ==================== NEW SAAS & MULTI-TENANT ROUTES ====================
-from routes.saas_billing import router as saas_billing_router
-from routes.school_onboarding import router as school_onboarding_router
 
 # ==================== MODELS ====================
 
@@ -164,90 +551,6 @@ class UserPermissions(BaseModel):
     reports: bool = False  # View all reports
 
 # Default permissions for each role
-MODULE_PERMISSIONS_DEFAULT = {
-    "director": {
-        "dashboard": True, "students": True, "staff": True, "classes": True,
-        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
-        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
-        "fee_management": True, "admissions": True, "communication_hub": True,
-        "front_office": True, "transport": True, "inventory": True, "cctv": True,
-        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": True,
-        "settings": True, "login_credentials": True, "student_leave": True
-    },
-    "principal": {
-        "dashboard": True, "students": True, "staff": True, "classes": True,
-        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
-        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
-        "fee_management": True, "admissions": True, "communication_hub": True,
-        "front_office": True, "transport": True, "inventory": True, "cctv": True,
-        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": False,
-        "settings": False, "login_credentials": False, "student_leave": True
-    },
-    "vice_principal": {
-        "dashboard": True, "students": True, "staff": True, "classes": True,
-        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
-        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
-        "fee_management": True, "admissions": False, "communication_hub": True,
-        "front_office": True, "transport": False, "inventory": False, "cctv": True,
-        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": False,
-        "settings": False, "login_credentials": False, "student_leave": True
-    },
-    "teacher": {
-        "dashboard": True, "students": True, "staff": False, "classes": True,
-        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
-        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
-        "fee_management": False, "admissions": False, "communication_hub": True,
-        "front_office": False, "transport": False, "inventory": False, "cctv": False,
-        "calendar": True, "ai_tools": True, "analytics": False, "multi_branch": False,
-        "settings": False, "login_credentials": False, "student_leave": True
-    },
-    "accountant": {
-        "dashboard": True, "students": True, "staff": False, "classes": False,
-        "attendance": False, "timetable": False, "exams_reports": False, "homework": False,
-        "syllabus_tracking": False, "digital_library": False, "live_classes": False,
-        "fee_management": True, "admissions": False, "communication_hub": False,
-        "front_office": False, "transport": True, "inventory": True, "cctv": False,
-        "calendar": False, "ai_tools": False, "analytics": True, "multi_branch": False,
-        "settings": False, "login_credentials": False, "student_leave": False
-    },
-    "clerk": {
-        "dashboard": True, "students": True, "staff": False, "classes": True,
-        "attendance": True, "timetable": False, "exams_reports": False, "homework": False,
-        "syllabus_tracking": False, "digital_library": False, "live_classes": False,
-        "fee_management": False, "admissions": True, "communication_hub": True,
-        "front_office": True, "transport": False, "inventory": False, "cctv": False,
-        "calendar": False, "ai_tools": False, "analytics": False, "multi_branch": False,
-        "settings": False, "login_credentials": False, "student_leave": False
-    },
-    "admission_staff": {
-        "dashboard": True, "students": True, "staff": False, "classes": False,
-        "attendance": False, "timetable": False, "exams_reports": False, "homework": False,
-        "syllabus_tracking": False, "digital_library": False, "live_classes": False,
-        "fee_management": False, "admissions": True, "communication_hub": False,
-        "front_office": True, "transport": False, "inventory": False, "cctv": False,
-        "calendar": False, "ai_tools": False, "analytics": False, "multi_branch": False,
-        "settings": False, "login_credentials": False, "student_leave": False
-    },
-    "admin_staff": {
-        "dashboard": True, "students": True, "staff": True, "classes": True,
-        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
-        "syllabus_tracking": True, "digital_library": True, "live_classes": False,
-        "fee_management": True, "admissions": True, "communication_hub": True,
-        "front_office": True, "transport": True, "inventory": True, "cctv": False,
-        "calendar": True, "ai_tools": False, "analytics": True, "multi_branch": False,
-        "settings": False, "login_credentials": False, "student_leave": False
-    },
-    "co_director": {
-        "dashboard": True, "students": True, "staff": True, "classes": True,
-        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
-        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
-        "fee_management": True, "admissions": True, "communication_hub": True,
-        "front_office": True, "transport": True, "inventory": True, "cctv": True,
-        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": True,
-        "settings": False, "login_credentials": False, "student_leave": True
-    }
-}
-
 DEFAULT_PERMISSIONS = {
     "director": {
         "dashboard": True, "school_analytics": True, "user_management": True,
@@ -334,78 +637,50 @@ DEFAULT_PERMISSIONS = {
 
 # School Models - Comprehensive School Registration
 class SchoolCreate(BaseModel):
-    model_config = {"extra": "allow"}
-
-    name: str = ""
-    address: str = ""
-    board_type: str = "CBSE"
-    city: str = ""
-    state: str = ""
+    # Basic Info
+    name: str
+    address: str
+    board_type: str  # CBSE, ICSE, State Board, IB
+    city: str
+    state: str
     pincode: Optional[str] = None
     phone: Optional[str] = None
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     
-    registration_number: Optional[str] = None
-    established_year: Optional[int] = None
-    website_url: Optional[str] = None
-    logo_url: Optional[str] = None
-    school_photo_url: Optional[str] = None
+    # Extended Info for AI
+    registration_number: Optional[str] = None  # School registration/affiliation number
+    established_year: Optional[int] = None  # Year school was established
+    website_url: Optional[str] = None  # School website
+    logo_url: Optional[str] = None  # School logo
+    school_photo_url: Optional[str] = None  # Main school building photo
     
-    school_type: Optional[str] = None
-    medium: Optional[str] = None
-    shift: Optional[str] = None
-    total_capacity: Optional[int] = None
+    # School Details for AI Context
+    school_type: Optional[str] = None  # Primary, Secondary, Senior Secondary, K-12
+    medium: Optional[str] = None  # Hindi, English, Regional
+    shift: Optional[str] = None  # Morning, Day, Both
+    total_capacity: Optional[int] = None  # Max student capacity
     
-    motto: Optional[str] = None
+    # About School (for AI context)
+    motto: Optional[str] = None  # School motto
     principal_name: Optional[str] = None
     principal_message: Optional[str] = None
-    about_school: Optional[str] = None
+    about_school: Optional[str] = None  # Brief description
     vision: Optional[str] = None
     mission: Optional[str] = None
-    achievements: Optional[str] = None
-    facilities: Optional[List[str]] = None
+    achievements: Optional[str] = None  # Notable achievements
+    facilities: Optional[List[str]] = None  # Labs, Library, Sports, etc.
     
+    # Social & Contact
     facebook_url: Optional[str] = None
     instagram_url: Optional[str] = None
     youtube_url: Optional[str] = None
     whatsapp_number: Optional[str] = None
     
-    app_requirements: Optional[str] = None
-    ai_assistant_name: Optional[str] = None
-
-    signature_url: Optional[str] = None
-    seal_url: Optional[str] = None
-    watermark_enabled: Optional[bool] = None
-    watermark_opacity: Optional[float] = None
-    watermark_size: Optional[str] = None
-    watermark_position: Optional[str] = None
-    watermark_apply: Optional[dict] = None
-
-    logo_size: Optional[int] = None
-    logo_opacity: Optional[int] = None
-    logo_apply_to: Optional[dict] = None
-    
-    razorpay_key_id: Optional[str] = None
-    razorpay_key_secret: Optional[str] = None
-    upi_ids: Optional[List[dict]] = None
-    payment_mode: Optional[str] = None
-    bank_name: Optional[str] = None
-    bank_account_no: Optional[str] = None
-    bank_ifsc: Optional[str] = None
-    bank_branch: Optional[str] = None
-    
-    school_start_time: Optional[str] = None
-    school_end_time: Optional[str] = None
-
-    @validator('established_year', 'total_capacity', pre=True, always=True)
-    def empty_str_to_none(cls, v):
-        if v == '' or v == 'null':
-            return None
-        return v
+    # App Customization
+    app_requirements: Optional[str] = None  # What features school needs most
+    ai_assistant_name: Optional[str] = None  # Custom AI assistant name for this school
 
 class SchoolResponse(BaseModel):
-    model_config = {"extra": "allow"}
-
     id: str
     name: str
     address: Optional[str] = None
@@ -416,17 +691,20 @@ class SchoolResponse(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     
+    # Extended Info
     registration_number: Optional[str] = None
     established_year: Optional[int] = None
     website_url: Optional[str] = None
     logo_url: Optional[str] = None
     school_photo_url: Optional[str] = None
     
+    # School Details
     school_type: Optional[str] = None
     medium: Optional[str] = None
     shift: Optional[str] = None
     total_capacity: Optional[int] = None
     
+    # About School
     motto: Optional[str] = None
     principal_name: Optional[str] = None
     principal_message: Optional[str] = None
@@ -436,26 +714,18 @@ class SchoolResponse(BaseModel):
     achievements: Optional[str] = None
     facilities: Optional[List[str]] = None
     
+    # Social
     facebook_url: Optional[str] = None
     instagram_url: Optional[str] = None
     youtube_url: Optional[str] = None
     whatsapp_number: Optional[str] = None
     
+    # App Settings
     app_requirements: Optional[str] = None
     ai_assistant_name: Optional[str] = None
-
-    signature_url: Optional[str] = None
-    seal_url: Optional[str] = None
-    logo_size: Optional[int] = None
-    logo_opacity: Optional[int] = None
-    watermark_enabled: Optional[bool] = None
-    watermark_opacity: Optional[float] = None
-    watermark_size: Optional[str] = None
-    watermark_position: Optional[str] = None
-    watermark_apply: Optional[dict] = None
     
-    created_at: Optional[str] = None
-    is_active: Optional[bool] = True
+    created_at: str
+    is_active: bool = True
 
 # Class Models
 class ClassCreate(BaseModel):
@@ -463,7 +733,6 @@ class ClassCreate(BaseModel):
     section: str  # A, B, C
     school_id: str
     class_teacher_id: Optional[str] = None
-    subjects: Optional[List[str]] = None
 
 class ClassResponse(BaseModel):
     id: str
@@ -473,19 +742,19 @@ class ClassResponse(BaseModel):
     class_teacher_id: Optional[str] = None
     student_count: int = 0
     created_at: str
-    subjects: Optional[List[str]] = None
 
 # Student Models
 class StudentCreate(BaseModel):
     name: str
     class_id: str
     school_id: str
-    father_name: str
-    mother_name: str
-    dob: str
-    gender: str
-    address: str
-    mobile: str  # Parent mobile for OTP
+    # Made optional for quick admission
+    father_name: Optional[str] = None
+    mother_name: Optional[str] = None
+    dob: Optional[str] = None
+    gender: Optional[str] = "male"
+    address: Optional[str] = None
+    mobile: Optional[str] = None  # Parent mobile for OTP
     email: Optional[EmailStr] = None
     blood_group: Optional[str] = None
     photo_url: Optional[str] = None
@@ -636,7 +905,6 @@ class StudentResponse(BaseModel):
     previous_class: Optional[str] = None
     previous_percentage: Optional[str] = None
     tc_number: Optional[str] = None
-    plain_password: Optional[str] = None
 
 # Staff Models
 class StaffCreate(BaseModel):
@@ -656,72 +924,46 @@ class StaffCreate(BaseModel):
 class StaffResponse(BaseModel):
     id: str
     name: str
-    employee_id: Optional[str] = None
+    employee_id: str
     school_id: str
     designation: str
     department: Optional[str] = None
     qualification: Optional[str] = None
     joining_date: Optional[str] = None
-    mobile: Optional[str] = None
-    email: Optional[str] = None
+    mobile: str
+    email: str
     address: Optional[str] = None
     salary: Optional[float] = None
     photo_url: Optional[str] = None
     is_active: bool = True
-    created_at: Optional[str] = None
-    user_id: Optional[str] = None
-    has_login: bool = False
+    created_at: str
+    user_id: Optional[str] = None  # Linked user account
+    has_login: bool = False  # Whether staff has login credentials
 
 # Unified Employee Model (Staff + User combined)
 class UnifiedEmployeeCreate(BaseModel):
+    # Personal Details
     name: str
     mobile: str
     email: EmailStr
     address: Optional[str] = None
     photo_url: Optional[str] = None
+    
+    # Employment Details
     school_id: str
-    designation: str
+    designation: str  # teacher, accountant, librarian, peon, principal, admin_staff, clerk
     department: Optional[str] = None
     qualification: Optional[str] = None
     joining_date: Optional[str] = None
     salary: Optional[float] = None
-    gender: Optional[str] = None
-    dob: Optional[str] = None
-    blood_group: Optional[str] = None
-    marital_status: Optional[str] = None
-    father_name: Optional[str] = None
-    spouse_name: Optional[str] = None
-    nationality: Optional[str] = "Indian"
-    permanent_address: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    pincode: Optional[str] = None
-    aadhar_no: Optional[str] = None
-    pan_number: Optional[str] = None
-    uan_number: Optional[str] = None
-    esi_number: Optional[str] = None
-    voter_id: Optional[str] = None
-    driving_license: Optional[str] = None
-    specialization: Optional[str] = None
-    experience_years: Optional[str] = None
-    previous_employer: Optional[str] = None
-    bank_name: Optional[str] = None
-    bank_account_no: Optional[str] = None
-    ifsc_code: Optional[str] = None
-    bank_branch: Optional[str] = None
-    salary_type: Optional[str] = "monthly"
-    pf_applicable: Optional[bool] = False
-    esi_applicable: Optional[bool] = False
-    tds_applicable: Optional[bool] = False
-    emergency_contact: Optional[str] = None
-    emergency_contact_name: Optional[str] = None
-    emergency_relation: Optional[str] = None
-    create_login: bool = True
-    password: Optional[str] = None
-    role: str = "teacher"
-    custom_permissions: Optional[Dict[str, bool]] = None
-    can_teach: bool = False
     
+    # Login & Permissions
+    create_login: bool = True  # Whether to create login account
+    password: Optional[str] = None  # Default: mobile number
+    role: str = "teacher"  # Role for permissions
+    custom_permissions: Optional[Dict[str, bool]] = None  # Override default permissions
+    
+    # Validator to convert empty strings to None for all optional fields
     @validator('*', pre=True)
     def empty_str_to_none(cls, v):
         if v == "":
@@ -730,58 +972,25 @@ class UnifiedEmployeeCreate(BaseModel):
 
 class UnifiedEmployeeResponse(BaseModel):
     id: str
-    employee_id: Optional[str] = None
+    employee_id: str
     name: str
-    mobile: Optional[str] = None
-    email: Optional[str] = None
+    mobile: str
+    email: str
     address: Optional[str] = None
     photo_url: Optional[str] = None
-    school_id: Optional[str] = None
-    designation: Optional[str] = "teacher"
+    school_id: str
+    designation: str
     department: Optional[str] = None
     qualification: Optional[str] = None
     joining_date: Optional[str] = None
     salary: Optional[float] = None
-    gender: Optional[str] = None
-    dob: Optional[str] = None
-    blood_group: Optional[str] = None
-    marital_status: Optional[str] = None
-    father_name: Optional[str] = None
-    spouse_name: Optional[str] = None
-    nationality: Optional[str] = None
-    permanent_address: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    pincode: Optional[str] = None
-    aadhar_no: Optional[str] = None
-    pan_number: Optional[str] = None
-    uan_number: Optional[str] = None
-    esi_number: Optional[str] = None
-    voter_id: Optional[str] = None
-    driving_license: Optional[str] = None
-    specialization: Optional[str] = None
-    experience_years: Optional[str] = None
-    previous_employer: Optional[str] = None
-    bank_name: Optional[str] = None
-    bank_account_no: Optional[str] = None
-    ifsc_code: Optional[str] = None
-    bank_branch: Optional[str] = None
-    salary_type: Optional[str] = None
-    pf_applicable: Optional[bool] = False
-    esi_applicable: Optional[bool] = False
-    tds_applicable: Optional[bool] = False
-    emergency_contact: Optional[str] = None
-    emergency_contact_name: Optional[str] = None
-    emergency_relation: Optional[str] = None
     is_active: bool = True
-    created_at: Optional[str] = None
+    created_at: str
+    # Login details
     has_login: bool = False
     user_id: Optional[str] = None
     role: Optional[str] = None
     permissions: Optional[Dict[str, bool]] = None
-    module_permissions: Optional[Dict[str, bool]] = None
-    can_teach: bool = False
-    plain_password: Optional[str] = None
 
 # Attendance Models
 class AttendanceCreate(BaseModel):
@@ -917,19 +1126,17 @@ class AuditLogResponse(BaseModel):
 
 # AI Paper Generator Models
 class PaperGenerateRequest(BaseModel):
-    board: str = "CBSE"
     subject: str
     class_name: str
-    chapter: str
-    chapters: Optional[List[str]] = None
-    syllabus_topics: Optional[List[str]] = None
-    exam_name: Optional[str] = None
-    difficulty: str
-    question_types: List[str]
+    chapter: str  # Can be single chapter or comma-separated multiple chapters
+    chapters: Optional[List[str]] = None  # New: List of specific chapters to include
+    exam_name: Optional[str] = None  # Exam name like "Half Yearly", "Unit Test"
+    difficulty: str  # easy, medium, hard, mixed
+    question_types: List[str]  # mcq, short, long, fill_blank
     total_marks: int
-    time_duration: int
+    time_duration: int  # in minutes
     language: str = "english"
-    include_all_chapters: bool = False
+    include_all_chapters: bool = False  # If true, include all chapters of subject
 
 class PaperGenerateResponse(BaseModel):
     id: str
@@ -940,12 +1147,8 @@ class PaperGenerateResponse(BaseModel):
     chapters_included: Optional[List[str]] = None
     questions: List[Dict[str, Any]]
     total_marks: int
-    actual_marks: Optional[int] = None
     time_duration: int
     created_at: str
-    marks_verified: Optional[bool] = None
-    question_paper: Optional[Dict[str, Any]] = None
-    answer_paper: Optional[Dict[str, Any]] = None
 
 # Dashboard Stats
 class DashboardStats(BaseModel):
@@ -1108,35 +1311,40 @@ def verify_jwt_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    payload = verify_jwt_token(credentials.credentials)
+    try:
+        payload = verify_jwt_token(credentials.credentials)
+    except Exception as e:
+        print(f"JWT verification failed: {e}")
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
     
     # Check if it's a student login
     if payload.get("role") == "student":
         student = await db.students.find_one({"id": payload["sub"]}, {"_id": 0, "password": 0})
         if not student:
-            raise HTTPException(status_code=401, detail="Student not found")
-        # Add role for consistency
+            # Return payload as fallback for student
+            return {
+                "id": payload["sub"],
+                "role": "student",
+                "school_id": payload.get("school_id"),
+                "email": payload.get("email")
+            }
         student["role"] = "student"
         return student
     
     # Regular user (admin, teacher, staff)
     user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0})
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+        # Return payload as fallback if user not found in DB
+        # This allows token-based auth even if DB is empty/different
+        print(f"User not found in DB, using payload. ID: {payload.get('sub')}")
+        return {
+            "id": payload["sub"],
+            "role": payload.get("role", "user"),
+            "school_id": payload.get("school_id"),
+            "email": payload.get("email"),
+            "name": payload.get("name", "User")
+        }
     return user
-
-async def require_staff(current_user: dict = Depends(get_current_user)):
-    if current_user.get("role") == "student":
-        raise HTTPException(status_code=403, detail="Access denied. Staff only.")
-    return current_user
-
-async def require_admin(current_user: dict = Depends(get_current_user)):
-    role = current_user.get("role", "")
-    if role in ("student", "parent"):
-        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
-    if role not in ("director", "admin", "principal", "vice_principal", "accountant", "clerk", "manager"):
-        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
-    return current_user
 
 async def log_audit(user_id: str, action: str, module: str, details: dict, ip_address: str = None):
     audit_log = {
@@ -1149,6 +1357,38 @@ async def log_audit(user_id: str, action: str, module: str, details: dict, ip_ad
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.audit_logs.insert_one(audit_log)
+
+async def create_notification(
+    school_id: str,
+    title: str,
+    message: str,
+    notification_type: str,
+    target_user_id: Optional[str] = None,
+    target_roles: Optional[List[str]] = None,
+    class_id: Optional[str] = None,
+    data: Optional[Dict[str, Any]] = None
+):
+    notification = {
+        "id": str(uuid.uuid4()),
+        "school_id": school_id,
+        "title": title,
+        "message": message,
+        "type": notification_type,
+        "target_user_id": target_user_id,
+        "target_roles": target_roles or [],
+        "class_id": class_id,
+        "data": data or {},
+        "read_by": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
+    return notification
+
+def extract_class_number(class_name: Optional[str]) -> Optional[str]:
+    if not class_name:
+        return None
+    match = re.search(r"\d+", class_name)
+    return match.group(0) if match else None
 
 async def check_if_holiday(school_id: str, date_str: str) -> str:
     """Check if given date is a holiday for the school. Returns holiday name if true, None otherwise."""
@@ -1256,143 +1496,36 @@ async def check_setup():
 
 # ==================== QUICK SCHOOL REGISTRATION (No OTP) ====================
 
-import secrets
-import string
-
-def generate_secure_password(length=10):
-    upper = [secrets.choice(string.ascii_uppercase) for _ in range(2)]
-    lower = [secrets.choice(string.ascii_lowercase) for _ in range(3)]
-    digits = [secrets.choice(string.digits) for _ in range(3)]
-    special = [secrets.choice("@#$&!") for _ in range(2)]
-    password = list(upper + lower + digits + special)
-    secrets.SystemRandom().shuffle(password)
-    return ''.join(password)
-
 class QuickSchoolSetup(BaseModel):
     """Quick setup for new school - creates school + director in one API"""
     school_name: str
     school_address: Optional[str] = None
     school_phone: Optional[str] = None
     school_email: Optional[str] = None
-    school_board: str = "CBSE"
+    school_board: str = "CBSE"  # CBSE, ICSE, State Board, etc.
     director_name: str
     director_email: EmailStr
-    director_password: Optional[str] = None
+    director_password: str
     director_mobile: Optional[str] = None
-
-class SchoolRegister(BaseModel):
-    """School registration with auto-generated password"""
-    school_name: str
-    school_board: str = "CBSE"
-    school_city: str = ""
-    school_state: str = ""
-    school_phone: Optional[str] = None
-    director_name: str
-    director_email: EmailStr
-    director_mobile: Optional[str] = None
-
-@api_router.post("/auth/register-school")
-async def register_school(data: SchoolRegister):
-    existing_email = await db.users.find_one({"email": data.director_email})
-    if existing_email:
-        raise HTTPException(status_code=400, detail="This email is already registered. Please sign in or use a different email.")
-
-    existing_school = await db.schools.find_one({"name": data.school_name, "city": data.school_city})
-    if existing_school:
-        raise HTTPException(status_code=400, detail="A school with this name already exists in this city.")
-
-    raw_password = generate_secure_password()
-    school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
-
-    name_words = [w for w in data.school_name.upper().split() if w not in ("THE", "OF", "AND", "FOR", "IN", "AT", "A", "AN", "SCHOOL", "VIDYALAYA", "CONVENT", "PUBLIC", "HIGHER", "SECONDARY")]
-    if len(name_words) >= 2:
-        school_code = ''.join(w[0] for w in name_words[:3])
-    elif name_words:
-        school_code = name_words[0][:3]
-    else:
-        school_code = data.school_name.upper().replace(" ", "")[:3]
-    if len(school_code) < 2:
-        school_code = school_id[-4:].upper()
-    existing_code = await db.schools.find_one({"school_code": school_code})
-    if existing_code:
-        school_code = school_code + school_id[-2:].upper()
-
-    school_data = {
-        "id": school_id,
-        "name": data.school_name,
-        "school_code": school_code,
-        "board": data.school_board,
-        "city": data.school_city,
-        "state": data.school_state,
-        "phone": data.school_phone or "",
-        "email": data.director_email,
-        "address": f"{data.school_city}, {data.school_state}",
-        "is_active": True,
-        "is_trial": True,
-        "trial_start_date": datetime.now(timezone.utc).isoformat(),
-        "trial_days": 30,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.schools.insert_one(school_data)
-
-    hashed_pw = bcrypt.hashpw(raw_password.encode(), bcrypt.gensalt()).decode()
-    director_id = str(uuid.uuid4())
-    director_data = {
-        "id": director_id,
-        "email": data.director_email,
-        "password": hashed_pw,
-        "plain_password": raw_password,
-        "name": data.director_name,
-        "role": "director",
-        "mobile": data.director_mobile or "",
-        "school_id": school_id,
-        "status": "active",
-        "is_active": True,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.users.insert_one(director_data)
-
-    token = create_jwt_token(director_data)
-
-    await log_audit(director_id, "school_registration", "auth", {
-        "school_id": school_id,
-        "school_name": data.school_name,
-        "director_name": data.director_name,
-        "director_email": data.director_email
-    })
-
-    return {
-        "success": True,
-        "message": f"School '{data.school_name}' registered successfully!",
-        "school": {
-            "id": school_id,
-            "name": data.school_name,
-            "board": data.school_board,
-            "city": data.school_city,
-            "state": data.school_state,
-            "is_trial": True,
-            "trial_days": 30
-        },
-        "director": {
-            "id": director_id,
-            "name": data.director_name,
-            "email": data.director_email,
-            "role": "director"
-        },
-        "generated_password": raw_password,
-        "access_token": token,
-        "token_type": "bearer"
-    }
 
 @api_router.post("/auth/quick-school-setup")
 async def quick_school_setup(data: QuickSchoolSetup):
+    """
+    Quick registration for new school - NO OTP required!
+    Creates:
+    1. School record
+    2. Director account for that school
+    Returns login token immediately
+    """
+    # Check if director email already exists
     existing_email = await db.users.find_one({"email": data.director_email})
     if existing_email:
         raise HTTPException(status_code=400, detail="Email already registered. Please login or use different email.")
     
-    raw_password = data.director_password or generate_secure_password()
+    # Generate unique school ID
     school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
     
+    # Create School
     school_data = {
         "id": school_id,
         "name": data.school_name,
@@ -1408,14 +1541,15 @@ async def quick_school_setup(data: QuickSchoolSetup):
     }
     await db.schools.insert_one(school_data)
     
-    hashed_pw = bcrypt.hashpw(raw_password.encode(), bcrypt.gensalt()).decode()
+    # Hash password
+    hashed_pw = bcrypt.hashpw(data.director_password.encode(), bcrypt.gensalt()).decode()
     
+    # Create Director
     director_id = str(uuid.uuid4())
     director_data = {
         "id": director_id,
         "email": data.director_email,
         "password": hashed_pw,
-        "plain_password": raw_password,
         "name": data.director_name,
         "role": "director",
         "mobile": data.director_mobile or "",
@@ -1426,8 +1560,10 @@ async def quick_school_setup(data: QuickSchoolSetup):
     }
     await db.users.insert_one(director_data)
     
+    # Generate token for immediate login
     token = create_jwt_token(director_data)
     
+    # Log the registration
     await log_audit(director_id, "quick_school_setup", "auth", {
         "school_id": school_id,
         "school_name": data.school_name,
@@ -1437,7 +1573,7 @@ async def quick_school_setup(data: QuickSchoolSetup):
     
     return {
         "success": True,
-        "message": f"School '{data.school_name}' created successfully!",
+        "message": f"School '{data.school_name}' created successfully! 🎉",
         "school": {
             "id": school_id,
             "name": data.school_name,
@@ -1451,7 +1587,6 @@ async def quick_school_setup(data: QuickSchoolSetup):
             "email": data.director_email,
             "role": "director"
         },
-        "generated_password": raw_password,
         "access_token": token,
         "token_type": "bearer",
         "login_url": "/login",
@@ -1515,6 +1650,7 @@ async def get_me(current_user: dict = Depends(get_current_user)):
             "mother_name": current_user.get("mother_name")
         }
     
+    # Get permissions for user
     user_role = current_user["role"]
     if user_role == "director":
         permissions = DEFAULT_PERMISSIONS["director"]
@@ -1523,13 +1659,7 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     else:
         permissions = DEFAULT_PERMISSIONS.get(user_role, {})
     
-    if user_role == "director":
-        module_permissions = MODULE_PERMISSIONS_DEFAULT["director"]
-    elif "module_permissions" in current_user and current_user["module_permissions"]:
-        module_permissions = current_user["module_permissions"]
-    else:
-        module_permissions = MODULE_PERMISSIONS_DEFAULT.get(user_role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
-    
+    # For regular users - return with permissions
     return {
         "id": current_user["id"],
         "email": current_user["email"],
@@ -1537,10 +1667,8 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "role": current_user["role"],
         "mobile": current_user.get("mobile"),
         "school_id": current_user.get("school_id"),
-        "photo_url": current_user.get("photo_url"),
         "created_at": current_user["created_at"],
-        "permissions": permissions,
-        "module_permissions": module_permissions
+        "permissions": permissions
     }
 
 # ==================== USER MANAGEMENT ROUTES ====================
@@ -1590,7 +1718,6 @@ async def create_user_account(user_data: UserCreate, current_user: dict = Depend
         "id": str(uuid.uuid4()),
         "email": user_data.email,
         "password": hashed_pw,
-        "plain_password": user_data.password,
         "name": user_data.name,
         "role": user_data.role,
         "mobile": user_data.mobile,
@@ -1625,7 +1752,7 @@ async def create_user_account(user_data: UserCreate, current_user: dict = Depend
 async def get_school_users(school_id: str, current_user: dict = Depends(get_current_user)):
     """Get all active users for a school"""
     users = await db.users.find(
-        {"school_id": school_id, "status": "active", "is_active": True},
+        {"school_id": school_id, "is_active": True, "$or": [{"status": "active"}, {"status": {"$exists": False}}]},
         {"_id": 0, "password": 0}
     ).to_list(200)
     
@@ -1929,92 +2056,6 @@ async def update_user_permissions(user_id: str, perm_data: dict, current_user: d
     
     return {"message": "Permissions updated successfully", "user_id": user_id}
 
-@api_router.get("/staff/module-permissions")
-async def get_all_staff_module_permissions(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only Director can view staff permissions")
-    school_id = current_user.get("school_id")
-    staff = await db.users.find(
-        {"school_id": school_id, "role": {"$nin": ["director", "student"]}},
-        {"_id": 0, "id": 1, "name": 1, "email": 1, "role": 1, "module_permissions": 1, "employee_id": 1}
-    ).to_list(500)
-    result = []
-    for s in staff:
-        role = s.get("role", "teacher")
-        mp = s.get("module_permissions") or MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
-        result.append({
-            "id": s["id"],
-            "name": s.get("name", ""),
-            "email": s.get("email", ""),
-            "role": role,
-            "employee_id": s.get("employee_id", ""),
-            "module_permissions": mp,
-            "is_custom": bool(s.get("module_permissions"))
-        })
-    return result
-
-@api_router.put("/staff/{staff_id}/module-permissions")
-async def update_staff_module_permissions(staff_id: str, perm_data: dict, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only Director can update permissions")
-    school_id = current_user.get("school_id")
-    module_perms = perm_data.get("module_permissions", {})
-    staff = await db.staff.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
-    if staff:
-        if staff.get("role") == "director":
-            raise HTTPException(status_code=400, detail="Cannot modify Director permissions")
-        await db.staff.update_one({"id": staff_id}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
-        if staff.get("user_id"):
-            await db.users.update_one({"id": staff["user_id"]}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
-        elif staff.get("email"):
-            await db.users.update_one({"email": staff["email"], "school_id": school_id}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
-        await log_audit(current_user["id"], "update_module_permissions", "staff", {
-            "staff_id": staff_id, "staff_name": staff.get("name"), "module_permissions": module_perms
-        })
-        return {"message": "Module permissions updated", "staff_id": staff_id}
-    user = await db.users.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
-    if user:
-        if user.get("role") == "director":
-            raise HTTPException(status_code=400, detail="Cannot modify Director permissions")
-        await db.users.update_one({"id": staff_id}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
-        if user.get("staff_id"):
-            await db.staff.update_one({"id": user["staff_id"]}, {"$set": {"module_permissions": module_perms, "permissions": module_perms}})
-        await log_audit(current_user["id"], "update_module_permissions", "users", {
-            "user_id": staff_id, "user_name": user.get("name"), "module_permissions": module_perms
-        })
-        return {"message": "Module permissions updated", "user_id": staff_id}
-    raise HTTPException(status_code=404, detail="Staff not found")
-
-@api_router.post("/staff/{staff_id}/reset-module-permissions")
-async def reset_staff_module_permissions(staff_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only Director can reset permissions")
-    school_id = current_user.get("school_id")
-    staff = await db.staff.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
-    role = "teacher"
-    if staff:
-        role = staff.get("role", "teacher")
-        default_perms = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
-        await db.staff.update_one({"id": staff_id}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
-        if staff.get("user_id"):
-            await db.users.update_one({"id": staff["user_id"]}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
-        elif staff.get("email"):
-            await db.users.update_one({"email": staff["email"], "school_id": school_id}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
-        return {"message": "Permissions reset to defaults", "module_permissions": default_perms}
-    user = await db.users.find_one({"id": staff_id, "school_id": school_id}, {"_id": 0})
-    if user:
-        role = user.get("role", "teacher")
-        default_perms = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
-        await db.users.update_one({"id": staff_id}, {"$set": {"module_permissions": default_perms, "permissions": default_perms}})
-        return {"message": "Permissions reset to defaults", "module_permissions": default_perms}
-    raise HTTPException(status_code=404, detail="Staff not found")
-
-@api_router.get("/module-permissions/defaults")
-async def get_module_permission_defaults(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only Director can view defaults")
-    return MODULE_PERMISSIONS_DEFAULT
-
 @api_router.post("/users/{user_id}/grant-full-access")
 async def grant_full_access(user_id: str, current_user: dict = Depends(get_current_user)):
     """Director grants full admin access to a user (like Co-Director)"""
@@ -2197,6 +2238,20 @@ async def assign_classes_to_user(user_id: str, class_data: dict, current_user: d
         "class_ids": class_ids,
         "count": len(class_ids)
     })
+
+    class_records = await db.classes.find(
+        {"id": {"$in": class_ids}},
+        {"_id": 0, "name": 1}
+    ).to_list(100)
+    class_names = [c.get("name") for c in class_records if c.get("name")]
+    await create_notification(
+        school_id=user.get("school_id") or current_user.get("school_id"),
+        title="🏫 Class Assignment Updated",
+        message=f"Aapko {len(class_ids)} class assign ki gayi hain: {', '.join(class_names) if class_names else 'Assigned classes'}",
+        notification_type="class_assignment",
+        target_user_id=user_id,
+        data={"class_ids": class_ids}
+    )
     
     return {
         "success": True,
@@ -2254,6 +2309,30 @@ async def assign_teacher_to_class(teacher_id: str, assignment: dict, current_use
         "subject": subject,
         "is_class_teacher": is_class_teacher
     })
+
+    class_info = await db.classes.find_one({"id": class_id}, {"_id": 0, "name": 1}) if class_id else None
+    class_name = class_info.get("name") if class_info else class_id
+
+    if subject:
+        await create_notification(
+            school_id=teacher.get("school_id") or current_user.get("school_id"),
+            title=f"📘 Subject Assigned: {subject}",
+            message=f"Aapko {class_name} ke liye {subject} assign kiya gaya hai.",
+            notification_type="subject_assignment",
+            target_user_id=teacher_id,
+            class_id=class_id,
+            data={"subject": subject, "class_id": class_id}
+        )
+
+    if is_class_teacher and class_id:
+        await create_notification(
+            school_id=teacher.get("school_id") or current_user.get("school_id"),
+            title="👩‍🏫 Class Teacher Assignment",
+            message=f"Aapko {class_name} ka class teacher assign kiya gaya hai.",
+            notification_type="class_teacher_assignment",
+            target_user_id=teacher_id,
+            class_id=class_id
+        )
     
     return {"message": f"Teacher {teacher['name']} assigned successfully"}
 
@@ -2271,6 +2350,111 @@ async def get_teacher_assignments(teacher_id: str, current_user: dict = Depends(
         "assigned_subjects": teacher.get("assigned_subjects", []),
         "is_class_teacher": teacher.get("is_class_teacher", False),
         "class_teacher_of": teacher.get("class_teacher_of")
+    }
+
+
+@api_router.get("/teacher/subjects")
+async def get_teacher_subjects(
+    teacher_id: Optional[str] = None,
+    school_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get teacher's assigned subjects with class info and timetable"""
+    resolved_teacher_id = teacher_id or current_user.get("id")
+    resolved_school_id = school_id or current_user.get("school_id")
+    teacher_name = current_user.get("name", "")
+
+    # Method 1: Get from subject_allocations
+    allocations = await db.subject_allocations.find(
+        {"teacher_id": resolved_teacher_id, "school_id": resolved_school_id},
+        {"_id": 0}
+    ).to_list(200)
+
+    # Method 1b: If empty, check staff cross-ref (class was assigned with staff.id instead of users.id)
+    if not allocations:
+        staff_rec = await db.staff.find_one({"user_id": resolved_teacher_id}, {"_id": 0, "id": 1})
+        if staff_rec:
+            allocations = await db.subject_allocations.find(
+                {"teacher_id": staff_rec["id"], "school_id": resolved_school_id},
+                {"_id": 0}
+            ).to_list(200)
+            # Auto-fix: update all these allocations to correct teacher_id
+            if allocations:
+                await db.subject_allocations.update_many(
+                    {"teacher_id": staff_rec["id"], "school_id": resolved_school_id},
+                    {"$set": {"teacher_id": resolved_teacher_id}}
+                )
+                print(f"[AUTO-FIX] subject_allocations teacher_id corrected: {staff_rec['id']} → {resolved_teacher_id}")
+
+    class_ids = list({a.get("class_id") for a in allocations if a.get("class_id")})
+    class_records = await db.classes.find(
+        {"id": {"$in": class_ids}},
+        {"_id": 0, "id": 1, "name": 1, "class_name": 1}
+    ).to_list(200)
+    class_map = {c["id"]: c for c in class_records}
+
+    school = await db.schools.find_one({"id": resolved_school_id}, {"_id": 0, "board": 1, "board_type": 1})
+    board = (school or {}).get("board") or (school or {}).get("board_type") or "NCERT"
+
+    subjects = []
+    seen_combinations = set()
+    
+    for alloc in allocations:
+        class_info = class_map.get(alloc.get("class_id"), {})
+        class_name = class_info.get("name") or class_info.get("class_name")
+        subject_name = alloc.get("subject") or alloc.get("subject_name")
+        
+        combination_key = f"{class_name}_{subject_name}"
+        if combination_key not in seen_combinations:
+            subjects.append({
+                "class_id": alloc.get("class_id"),
+                "class_name": class_name or alloc.get("class_id"),
+                "class_number": extract_class_number(class_name),
+                "subject_name": subject_name,
+                "subject": subject_name,
+                "teacher_id": resolved_teacher_id,
+                "periods_per_week": alloc.get("periods_per_week", 0),
+                "board": board,
+                "topics_covered": alloc.get("topics_covered", 0),
+                "total_topics": alloc.get("total_topics", 0)
+            })
+            seen_combinations.add(combination_key)
+
+    # Method 2: Fallback to timetable if subject_allocations is empty
+    if len(subjects) == 0:
+        try:
+            # Try to get from timetable collection
+            timetable_entries = await db.timetable.find(
+                {"teacher_name": {"$regex": teacher_name, "$options": "i"}},
+                {"_id": 0, "class_name": 1, "subject": 1, "subject_name": 1}
+            ).to_list(100)
+            
+            for entry in timetable_entries:
+                class_name = entry.get("class_name")
+                subject_name = entry.get("subject") or entry.get("subject_name")
+                
+                combination_key = f"{class_name}_{subject_name}"
+                if combination_key not in seen_combinations:
+                    subjects.append({
+                        "class_id": None,
+                        "class_name": class_name,
+                        "class_number": extract_class_number(class_name),
+                        "subject_name": subject_name,
+                        "subject": subject_name,
+                        "teacher_id": resolved_teacher_id,
+                        "periods_per_week": 0,
+                        "board": board,
+                        "source": "timetable"
+                    })
+                    seen_combinations.add(combination_key)
+        except Exception as e:
+            print(f"Timetable lookup error: {e}")
+
+    return {
+        "teacher_id": resolved_teacher_id,
+        "school_id": resolved_school_id,
+        "subjects": subjects,
+        "total": len(subjects)
     }
 
 @api_router.delete("/teachers/{teacher_id}/remove-assignment/{class_id}")
@@ -2317,26 +2501,8 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
     if current_user["role"] not in ["director", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
-    while await db.schools.find_one({"id": school_id}):
-        school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
-    
-    name_words = [w for w in school.name.upper().split() if w not in ("THE", "OF", "AND", "FOR", "IN", "AT", "A", "AN", "SCHOOL", "VIDYALAYA", "CONVENT", "PUBLIC", "HIGHER", "SECONDARY")]
-    if len(name_words) >= 2:
-        school_code = ''.join(w[0] for w in name_words[:3])
-    elif name_words:
-        school_code = name_words[0][:3]
-    else:
-        school_code = school.name.upper().replace(" ", "")[:3]
-    if len(school_code) < 2:
-        school_code = school_id[-4:].upper()
-    existing_code = await db.schools.find_one({"school_code": school_code})
-    if existing_code:
-        school_code = school_code + school_id[-2:].upper()
-    
     school_data = {
-        "id": school_id,
-        "school_code": school_code,
+        "id": f"SCH-{school.name[:3].upper()}-{datetime.now().year}",
         **school.model_dump(),
         "is_active": True,
         "created_by": current_user["id"],
@@ -2344,6 +2510,7 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
     }
     await db.schools.insert_one(school_data)
     
+    # Add this school to user's managed_schools list
     await db.users.update_one(
         {"id": current_user["id"]},
         {"$addToSet": {"managed_schools": school_data["id"]}}
@@ -2352,28 +2519,6 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
     await log_audit(current_user["id"], "create", "schools", {"school_id": school_data["id"], "name": school.name})
     
     return SchoolResponse(**school_data)
-
-@api_router.delete("/schools/{school_id}")
-async def delete_school(school_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only director can delete schools")
-    
-    student_count = await db.students.count_documents({"school_id": school_id})
-    employee_count = await db.employees.count_documents({"school_id": school_id})
-    user_count = await db.users.count_documents({"school_id": school_id})
-    
-    if student_count > 0 or employee_count > 0:
-        raise HTTPException(status_code=400, detail=f"Cannot delete school with {student_count} students and {employee_count} employees. Remove all data first.")
-    
-    result = await db.schools.delete_one({"id": school_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="School not found")
-    
-    await db.classes.delete_many({"school_id": school_id})
-    
-    await log_audit(current_user["id"], "delete", "schools", {"school_id": school_id})
-    
-    return {"message": "School deleted successfully"}
 
 @api_router.get("/schools", response_model=List[SchoolResponse])
 async def get_schools(current_user: dict = Depends(get_current_user)):
@@ -2403,15 +2548,13 @@ async def get_schools(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/schools/{school_id}", response_model=SchoolResponse)
 async def get_school(school_id: str, current_user: dict = Depends(get_current_user)):
+    # Verify user has access to this school
     if not current_user.get("is_superadmin") and current_user.get("school_id") != school_id:
         raise HTTPException(status_code=403, detail="Not authorized to access this school")
     
     school = await db.schools.find_one({"id": school_id}, {"_id": 0})
     if not school:
         raise HTTPException(status_code=404, detail="School not found")
-    if not school.get("school_code"):
-        code = await get_school_code(school_id)
-        school["school_code"] = code
     return SchoolResponse(**school)
 
 @api_router.put("/schools/{school_id}", response_model=SchoolResponse)
@@ -2424,7 +2567,7 @@ async def update_school(school_id: str, school: SchoolCreate, current_user: dict
     if not existing:
         raise HTTPException(status_code=404, detail="School not found")
     
-    update_data = {k: v for k, v in school.model_dump().items() if v is not None}
+    update_data = school.model_dump()
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     update_data["updated_by"] = current_user["id"]
     
@@ -2433,28 +2576,6 @@ async def update_school(school_id: str, school: SchoolCreate, current_user: dict
     
     updated = await db.schools.find_one({"id": school_id}, {"_id": 0})
     return SchoolResponse(**updated)
-
-@api_router.post("/upload/photo")
-async def upload_generic_photo(file: UploadFile = File(...), school_id: str = Form(""), current_user: dict = Depends(get_current_user)):
-    """Upload a generic photo (staff, student, etc) and return URL"""
-    if current_user["role"] not in ["director", "admin", "principal", "vice_principal", "teacher"]:
-        raise HTTPException(status_code=403, detail="Not authorized to upload photos")
-    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-    if file.content_type and file.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Only image files (JPEG, PNG, WebP, GIF) are allowed")
-    os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
-    file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-    if file_ext.lower() not in ["jpg", "jpeg", "png", "webp", "gif"]:
-        raise HTTPException(status_code=400, detail="Invalid file extension")
-    file_name = f"photo_{school_id}_{uuid.uuid4().hex[:8]}.{file_ext}"
-    file_path = UPLOAD_DIR / "images" / file_name
-    content = await file.read()
-    if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File size must be under 5MB")
-    async with aiofiles.open(file_path, 'wb') as f:
-        await f.write(content)
-    photo_url = f"/api/uploads/images/{file_name}"
-    return {"url": photo_url, "photo_url": photo_url}
 
 @api_router.post("/schools/{school_id}/upload-photo")
 async def upload_school_photo(school_id: str, file: UploadFile = File(...), photo_type: str = "logo", current_user: dict = Depends(get_current_user)):
@@ -2485,87 +2606,6 @@ async def upload_school_photo(school_id: str, file: UploadFile = File(...), phot
     return {"message": "Photo uploaded", "url": photo_url, "type": photo_type}
 
 
-# ==================== STUDENT/STAFF PHOTO UPDATE ====================
-class ProfilePhotoRequest(BaseModel):
-    photo_data: str
-
-@api_router.post("/students/{student_id}/update-photo")
-async def update_student_photo(student_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] == "student" and current_user.get("id") != student_id:
-        raise HTTPException(status_code=403, detail="Not authorized to update other student's photo")
-    if current_user["role"] not in ["director", "principal", "admin", "teacher", "student"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    student = await db.students.find_one({"id": student_id})
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    if request.photo_data.startswith("data:image"):
-        import base64 as b64mod
-        header, data = request.photo_data.split(",", 1)
-        ext = "jpg"
-        if "png" in header:
-            ext = "png"
-        file_name = f"student_{student_id}_{uuid.uuid4().hex[:8]}.{ext}"
-        os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
-        file_path = UPLOAD_DIR / "images" / file_name
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(b64mod.b64decode(data))
-        photo_url = f"/api/uploads/images/{file_name}"
-    else:
-        photo_url = request.photo_data
-    await db.students.update_one({"id": student_id}, {"$set": {"photo_url": photo_url}})
-    return {"message": "Photo updated", "photo_url": photo_url}
-
-@api_router.post("/staff/{staff_id}/update-photo")
-async def update_staff_photo(staff_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin"] and current_user.get("id") != staff_id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    employee = await db.staff.find_one({"$or": [{"id": staff_id}, {"employee_id": staff_id}]})
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
-    if request.photo_data.startswith("data:image"):
-        import base64 as b64mod
-        header, data = request.photo_data.split(",", 1)
-        ext = "jpg"
-        if "png" in header:
-            ext = "png"
-        file_name = f"staff_{staff_id}_{uuid.uuid4().hex[:8]}.{ext}"
-        os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
-        file_path = UPLOAD_DIR / "images" / file_name
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(b64mod.b64decode(data))
-        photo_url = f"/api/uploads/images/{file_name}"
-    else:
-        photo_url = request.photo_data
-    await db.staff.update_one(
-        {"$or": [{"id": staff_id}, {"employee_id": staff_id}]},
-        {"$set": {"photo_url": photo_url}}
-    )
-    user_id = employee.get("user_id")
-    if user_id:
-        await db.users.update_one({"id": user_id}, {"$set": {"photo_url": photo_url}})
-    return {"message": "Photo updated", "photo_url": photo_url}
-
-@api_router.post("/users/{user_id}/update-photo")
-async def update_user_photo(user_id: str, request: ProfilePhotoRequest, current_user: dict = Depends(get_current_user)):
-    if current_user.get("id") != user_id and current_user["role"] not in ["director", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    if request.photo_data.startswith("data:image"):
-        import base64 as b64mod
-        header, data = request.photo_data.split(",", 1)
-        ext = "jpg"
-        if "png" in header:
-            ext = "png"
-        file_name = f"user_{user_id}_{uuid.uuid4().hex[:8]}.{ext}"
-        os.makedirs(UPLOAD_DIR / "images", exist_ok=True)
-        file_path = UPLOAD_DIR / "images" / file_name
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(b64mod.b64decode(data))
-        photo_url = f"/api/uploads/images/{file_name}"
-    else:
-        photo_url = request.photo_data
-    await db.users.update_one({"id": user_id}, {"$set": {"photo_url": photo_url}})
-    return {"message": "Photo updated", "photo_url": photo_url}
-
 # ==================== LOGO UPDATE ENDPOINT ====================
 class LogoUpdateRequest(BaseModel):
     logo_url: str
@@ -2589,40 +2629,6 @@ async def update_school_logo(school_id: str, request: LogoUpdateRequest, current
     )
     
     return {"success": True, "message": "Logo saved successfully", "logo_url": request.logo_url}
-
-
-# ==================== BRANDING SETTINGS ENDPOINT ====================
-class BrandingRequest(BaseModel):
-    logo_url: Optional[str] = None
-    logo_size: Optional[int] = 100
-    logo_opacity: Optional[int] = 100
-    watermark_enabled: Optional[bool] = False
-    watermark_opacity: Optional[int] = 5
-    watermark_size: Optional[str] = "large"
-
-@api_router.post("/schools/{school_id}/branding")
-async def update_school_branding(school_id: str, request: BrandingRequest, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "admin", "principal"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    existing = await db.schools.find_one({"id": school_id})
-    if not existing:
-        raise HTTPException(status_code=404, detail="School not found")
-    
-    update_data = {
-        "logo_url": request.logo_url,
-        "logo_size": request.logo_size,
-        "logo_opacity": request.logo_opacity,
-        "watermark_enabled": request.watermark_enabled,
-        "watermark_opacity": request.watermark_opacity,
-        "watermark_size": request.watermark_size,
-        "updated_at": datetime.now(timezone.utc).isoformat()
-    }
-    
-    await db.schools.update_one({"id": school_id}, {"$set": update_data})
-    await log_audit(current_user["id"], "update", "school_branding", {"school_id": school_id})
-    
-    return {"success": True, "message": "Branding settings saved successfully"}
 
 
 # ==================== WATERMARK SETTINGS ENDPOINT ====================
@@ -2746,13 +2752,436 @@ async def create_class(class_data: ClassCreate, current_user: dict = Depends(get
 @api_router.get("/classes", response_model=List[ClassResponse])
 async def get_classes(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     query = {}
-    user_school = current_user.get("school_id")
-    if user_school:
-        query["school_id"] = user_school
-    elif school_id:
+    if school_id:
         query["school_id"] = school_id
     classes = await db.classes.find(query, {"_id": 0}).to_list(100)
     return [ClassResponse(**c) for c in classes]
+
+@api_router.post("/syllabus/load-latest")
+async def load_latest_syllabus(
+    school_id: str,
+    board: Optional[str] = "CBSE",
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Load latest 2025-26 syllabus for all classes and subjects
+    Automatically populates topic counts in subject_allocations
+    """
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get all subject allocations for school
+    allocations = await db.subject_allocations.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    updated_count = 0
+    
+    for alloc in allocations:
+        class_name = alloc.get("class_name")
+        subject = alloc.get("subject") or alloc.get("subject_name")
+        
+        if not class_name or not subject:
+            continue
+        
+        # Get syllabus data from our latest 2025-26 data
+        syllabus_data = get_syllabus_for_class_subject(board, class_name, subject)
+        
+        if syllabus_data and "chapters" in syllabus_data:
+            book_name = syllabus_data.get("book", f"{subject} - {class_name}")
+            chapters = syllabus_data["chapters"]
+            
+            # Count total topics
+            total_topics = sum(len(chapter.get("topics", [])) for chapter in chapters)
+            
+            # Update allocation with book and topic info
+            update_result = await db.subject_allocations.update_one(
+                {
+                    "teacher_id": alloc.get("teacher_id"),
+                    "class_id": alloc.get("class_id"),
+                    "subject": subject
+                },
+                {"$set": {
+                    "book_name": book_name,
+                    "total_topics": total_topics,
+                    "chapters": chapters,
+                    "board": board,
+                    "academic_year": "2025-26",
+                    "syllabus_loaded": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            if update_result.modified_count > 0:
+                updated_count += 1
+    
+    return {
+        "message": f"Latest {board} 2025-26 syllabus loaded",
+        "updated_allocations": updated_count,
+        "total_allocations": len(allocations)
+    }
+
+@api_router.get("/syllabus/{class_name}/{subject}")
+async def get_syllabus(
+    class_name: str,
+    subject: str,
+    board: Optional[str] = "CBSE",
+    current_user: dict = Depends(get_current_user)
+):
+    """Get full syllabus details for a class and subject"""
+    syllabus_data = get_syllabus_for_class_subject(board, class_name, subject)
+    
+    if not syllabus_data:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Syllabus not found for {class_name} - {subject} ({board})"
+        )
+    
+    return {
+        "class": class_name,
+        "subject": subject,
+        "board": board,
+        "academic_year": "2025-26",
+        **syllabus_data
+    }
+
+@api_router.post("/timetable/sync-allocations")
+async def sync_timetable_to_allocations(school_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Automatically sync timetable entries to subject_allocations
+    Admin jab timetable set karta hai, yeh endpoint call hoga aur automatically subjects allocate ho jayenge
+    """
+    if current_user["role"] not in ["director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get all timetable entries for school
+    timetable_entries = await db.timetable.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    if not timetable_entries:
+        return {"message": "No timetable entries found", "synced": 0}
+    
+    # Group by teacher + class + subject
+    allocations_map = {}
+    
+    for entry in timetable_entries:
+        teacher_id = entry.get("teacher_id")
+        teacher_name = entry.get("teacher_name")
+        class_id = entry.get("class_id")
+        class_name = entry.get("class_name")
+        subject = entry.get("subject") or entry.get("subject_name")
+        
+        if not teacher_id or not subject:
+            continue
+        
+        key = f"{teacher_id}_{class_id}_{subject}"
+        
+        if key not in allocations_map:
+            allocations_map[key] = {
+                "teacher_id": teacher_id,
+                "teacher_name": teacher_name,
+                "class_id": class_id,
+                "class_name": class_name,
+                "subject": subject,
+                "subject_name": subject,
+                "periods": []
+            }
+        
+        # Count periods per week
+        allocations_map[key]["periods"].append(entry.get("day"))
+    
+    # Now create/update subject_allocations
+    synced_count = 0
+    for key, alloc_data in allocations_map.items():
+        periods_per_week = len(alloc_data["periods"])
+        
+        allocation = {
+            "id": str(uuid.uuid4()),
+            "teacher_id": alloc_data["teacher_id"],
+            "teacher_name": alloc_data["teacher_name"],
+            "class_id": alloc_data["class_id"],
+            "class_name": alloc_data["class_name"],
+            "subject": alloc_data["subject"],
+            "subject_name": alloc_data["subject_name"],
+            "school_id": school_id,
+            "periods_per_week": periods_per_week,
+            "topics_covered": 0,
+            "total_topics": 0,  # Will be set when syllabus is loaded
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "source": "timetable_sync"
+        }
+        
+        # Upsert (update if exists, insert if not)
+        result = await db.subject_allocations.update_one(
+            {
+                "teacher_id": alloc_data["teacher_id"],
+                "class_id": alloc_data["class_id"],
+                "subject": alloc_data["subject"]
+            },
+            {"$set": allocation},
+            upsert=True
+        )
+        
+        if result.upserted_id or result.modified_count > 0:
+            synced_count += 1
+    
+    return {
+        "message": "Timetable synced to subject allocations",
+        "synced": synced_count,
+        "total_entries": len(timetable_entries)
+    }
+
+@api_router.get("/teacher/debug-classes")
+async def debug_teacher_classes(current_user: dict = Depends(get_current_user)):
+    """Debug endpoint to see why classes are not showing for teacher"""
+    teacher_id = current_user.get("id")
+    school_id = current_user.get("school_id")
+    teacher_name = current_user.get("name", "")
+    
+    debug_info = {
+        "teacher_info": {
+            "id": teacher_id,
+            "name": teacher_name,
+            "email": current_user.get("email"),
+            "school_id": school_id
+        },
+        "detection_methods": {},
+        "found_classes": [],
+        "raw_data": {}
+    }
+    
+    # Fetch all classes for the school
+    all_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(100)
+    debug_info["raw_data"]["total_classes_in_school"] = len(all_classes)
+    debug_info["raw_data"]["sample_classes"] = all_classes[:3] if all_classes else []
+    
+    seen_class_ids = set()
+    
+    # Method 1: class_teacher_id match
+    method1_classes = [cls for cls in all_classes if cls.get("class_teacher_id") == teacher_id]
+    debug_info["detection_methods"]["method1_class_teacher_id"] = {
+        "count": len(method1_classes),
+        "classes": [c.get("name") or c.get("class_name") for c in method1_classes]
+    }
+    for cls in method1_classes:
+        if cls.get("id") not in seen_class_ids:
+            debug_info["found_classes"].append(cls)
+            seen_class_ids.add(cls.get("id"))
+    
+    # Method 2: Check user's assigned_classes field
+    user = await db.users.find_one({"id": teacher_id}, {"_id": 0, "assigned_classes": 1})
+    assigned_class_ids = user.get("assigned_classes", []) if user else []
+    debug_info["raw_data"]["user_assigned_classes"] = assigned_class_ids
+    
+    method2_classes = [cls for cls in all_classes if cls.get("id") in assigned_class_ids]
+    debug_info["detection_methods"]["method2_assigned_classes"] = {
+        "count": len(method2_classes),
+        "classes": [c.get("name") or c.get("class_name") for c in method2_classes]
+    }
+    for cls in method2_classes:
+        if cls.get("id") not in seen_class_ids:
+            debug_info["found_classes"].append(cls)
+            seen_class_ids.add(cls.get("id"))
+    
+    # Method 3: Name-based matching
+    method3_classes = []
+    if teacher_name:
+        for cls in all_classes:
+            class_teacher_name = cls.get("class_teacher_name", "")
+            if class_teacher_name:
+                # Exact match
+                if teacher_name.lower() == class_teacher_name.lower():
+                    method3_classes.append(cls)
+                    if cls.get("id") not in seen_class_ids:
+                        debug_info["found_classes"].append(cls)
+                        seen_class_ids.add(cls.get("id"))
+                # Partial match
+                elif any(part.lower() in class_teacher_name.lower() for part in teacher_name.split()):
+                    method3_classes.append(cls)
+                    if cls.get("id") not in seen_class_ids:
+                        debug_info["found_classes"].append(cls)
+                        seen_class_ids.add(cls.get("id"))
+    
+    debug_info["detection_methods"]["method3_name_matching"] = {
+        "count": len(method3_classes),
+        "classes": [c.get("name") or c.get("class_name") for c in method3_classes],
+        "sample_class_teacher_names": [c.get("class_teacher_name") for c in all_classes[:5]]
+    }
+    
+    # Method 4: subject_allocations
+    subject_allocations = await db.subject_allocations.find(
+        {"teacher_id": teacher_id, "school_id": school_id},
+        {"_id": 0}
+    ).to_list(200)
+    debug_info["raw_data"]["subject_allocations_count"] = len(subject_allocations)
+    debug_info["raw_data"]["subject_allocations_sample"] = subject_allocations[:3] if subject_allocations else []
+    
+    if subject_allocations:
+        allocated_class_ids = list(set([alloc.get("class_id") for alloc in subject_allocations if alloc.get("class_id")]))
+        method4_classes = [cls for cls in all_classes if cls.get("id") in allocated_class_ids]
+        debug_info["detection_methods"]["method4_subject_allocations"] = {
+            "count": len(method4_classes),
+            "classes": [c.get("name") or c.get("class_name") for c in method4_classes]
+        }
+        for cls in method4_classes:
+            if cls.get("id") not in seen_class_ids:
+                debug_info["found_classes"].append(cls)
+                seen_class_ids.add(cls.get("id"))
+    else:
+        debug_info["detection_methods"]["method4_subject_allocations"] = {
+            "count": 0,
+            "classes": [],
+            "note": "No subject allocations found"
+        }
+    
+    # Method 5: timetable
+    try:
+        timetable_entries = await db.timetable.find(
+            {"teacher_name": {"$regex": teacher_name, "$options": "i"}},
+            {"_id": 0, "class_name": 1, "subject": 1}
+        ).to_list(100)
+        debug_info["raw_data"]["timetable_entries_count"] = len(timetable_entries)
+        debug_info["raw_data"]["timetable_entries_sample"] = timetable_entries[:3] if timetable_entries else []
+        
+        if timetable_entries:
+            timetable_class_names = list(set([entry.get("class_name") for entry in timetable_entries if entry.get("class_name")]))
+            method5_classes = []
+            for cls in all_classes:
+                class_name = cls.get("name") or cls.get("class_name")
+                if class_name and class_name in timetable_class_names:
+                    method5_classes.append(cls)
+                    if cls.get("id") not in seen_class_ids:
+                        debug_info["found_classes"].append(cls)
+                        seen_class_ids.add(cls.get("id"))
+            
+            debug_info["detection_methods"]["method5_timetable"] = {
+                "count": len(method5_classes),
+                "classes": [c.get("name") or c.get("class_name") for c in method5_classes],
+                "timetable_class_names": timetable_class_names
+            }
+        else:
+            debug_info["detection_methods"]["method5_timetable"] = {
+                "count": 0,
+                "classes": [],
+                "note": "No timetable entries found"
+            }
+    except Exception as e:
+        debug_info["detection_methods"]["method5_timetable"] = {
+            "error": str(e),
+            "note": "Timetable collection may not exist"
+        }
+    
+    debug_info["summary"] = {
+        "total_classes_found": len(debug_info["found_classes"]),
+        "working_methods": [k for k, v in debug_info["detection_methods"].items() if isinstance(v, dict) and v.get("count", 0) > 0]
+    }
+    
+    return debug_info
+
+@api_router.get("/teacher/my-classes")
+async def get_teacher_classes(current_user: dict = Depends(get_current_user)):
+    """Get all classes assigned to the current teacher (multiple methods)"""
+    teacher_id = current_user.get("id")
+    school_id = current_user.get("school_id")
+    teacher_name = current_user.get("name", "")
+    
+    # Fetch all classes for the school
+    all_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(100)
+    
+    teacher_classes = []
+    seen_class_ids = set()
+    
+    # Method 1: class_teacher_id match
+    for cls in all_classes:
+        if cls.get("class_teacher_id") == teacher_id:
+            if cls.get("id") not in seen_class_ids:
+                teacher_classes.append(cls)
+                seen_class_ids.add(cls.get("id"))
+
+    # Method 6: Cross-ref staff — class_teacher_id might be staff.id instead of users.id
+    # This happens when ClassesPage used /staff fallback. Self-healing: no migration needed.
+    if not teacher_classes:
+        staff_record = await db.staff.find_one({"user_id": teacher_id}, {"_id": 0, "id": 1})
+        if staff_record:
+            staff_id = staff_record.get("id")
+            for cls in all_classes:
+                if cls.get("class_teacher_id") == staff_id:
+                    if cls.get("id") not in seen_class_ids:
+                        teacher_classes.append(cls)
+                        seen_class_ids.add(cls.get("id"))
+                        # Auto-fix: correct class_teacher_id in DB right now
+                        await db.classes.update_one(
+                            {"id": cls["id"]},
+                            {"$set": {"class_teacher_id": teacher_id}}
+                        )
+                        print(f"[AUTO-FIX] Class {cls.get('name')} class_teacher_id corrected: {staff_id} → {teacher_id}")
+
+    # Method 2: Check user's assigned_classes field
+    user = await db.users.find_one({"id": teacher_id}, {"_id": 0, "assigned_classes": 1})
+    if user and user.get("assigned_classes"):
+        assigned_class_ids = user.get("assigned_classes", [])
+        for cls in all_classes:
+            if cls.get("id") in assigned_class_ids and cls.get("id") not in seen_class_ids:
+                teacher_classes.append(cls)
+                seen_class_ids.add(cls.get("id"))
+    
+    # Method 3: Name-based matching (case-insensitive, partial match)
+    if teacher_name:
+        for cls in all_classes:
+            class_teacher_name = cls.get("class_teacher_name", "")
+            # Try both exact and partial name matching
+            if class_teacher_name:
+                # Check if full name matches
+                if teacher_name.lower() == class_teacher_name.lower():
+                    if cls.get("id") not in seen_class_ids:
+                        teacher_classes.append(cls)
+                        seen_class_ids.add(cls.get("id"))
+                # Check if any part of the name matches (first name or last name)
+                elif any(part.lower() in class_teacher_name.lower() for part in teacher_name.split()):
+                    if cls.get("id") not in seen_class_ids:
+                        teacher_classes.append(cls)
+                        seen_class_ids.add(cls.get("id"))
+    
+    # Method 4: Check timetable/subject allocations
+    # If teacher has subjects assigned to a class, they should see that class
+    subject_allocations = await db.subject_allocations.find(
+        {"teacher_id": teacher_id, "school_id": school_id},
+        {"_id": 0, "class_id": 1}
+    ).to_list(200)
+    
+    if subject_allocations:
+        allocated_class_ids = list(set([alloc.get("class_id") for alloc in subject_allocations if alloc.get("class_id")]))
+        for cls in all_classes:
+            if cls.get("id") in allocated_class_ids and cls.get("id") not in seen_class_ids:
+                teacher_classes.append(cls)
+                seen_class_ids.add(cls.get("id"))
+    
+    # Method 5: Check timetable collection directly (if exists)
+    try:
+        timetable_entries = await db.timetable.find(
+            {"teacher_name": {"$regex": teacher_name, "$options": "i"}},
+            {"_id": 0, "class_name": 1}
+        ).to_list(100)
+        
+        if timetable_entries:
+            timetable_class_names = list(set([entry.get("class_name") for entry in timetable_entries if entry.get("class_name")]))
+            for cls in all_classes:
+                class_name = cls.get("name") or cls.get("class_name")
+                if class_name and class_name in timetable_class_names:
+                    if cls.get("id") not in seen_class_ids:
+                        teacher_classes.append(cls)
+                        seen_class_ids.add(cls.get("id"))
+    except Exception as e:
+        print(f"Timetable check error: {e}")
+    
+    return {
+        "classes": teacher_classes,
+        "count": len(teacher_classes)
+    }
 
 @api_router.get("/classes/{class_id}", response_model=ClassResponse)
 async def get_class(class_id: str, current_user: dict = Depends(get_current_user)):
@@ -2766,6 +3195,14 @@ async def update_class(class_id: str, class_data: ClassCreate, current_user: dic
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Fetch old class to detect class_teacher_id change
+    old_class = await db.classes.find_one({"id": class_id}, {"_id": 0})
+    if not old_class:
+        raise HTTPException(status_code=404, detail="Class not found")
+    
+    old_teacher_id = old_class.get("class_teacher_id")
+    new_teacher_id = class_data.class_teacher_id
+    
     result = await db.classes.update_one(
         {"id": class_id},
         {"$set": class_data.model_dump()}
@@ -2773,32 +3210,166 @@ async def update_class(class_id: str, class_data: ClassCreate, current_user: dic
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Class not found")
     
-    await log_audit(current_user["id"], "update", "classes", {"class_id": class_id})
+    # --- Sync teacher records when class_teacher_id changes ---
+    if new_teacher_id and new_teacher_id != old_teacher_id:
+        # Add class to NEW teacher's assigned_classes
+        await db.users.update_one(
+            {"id": new_teacher_id},
+            {"$addToSet": {"assigned_classes": class_id}}
+        )
+        # Set class_teacher_name on class for name-based fallback
+        new_teacher = await db.users.find_one({"id": new_teacher_id}, {"_id": 0, "name": 1})
+        if new_teacher:
+            await db.classes.update_one(
+                {"id": class_id},
+                {"$set": {"class_teacher_name": new_teacher.get("name", "")}}
+            )
+        # Remove class from OLD teacher's assigned_classes
+        if old_teacher_id:
+            await db.users.update_one(
+                {"id": old_teacher_id},
+                {"$pull": {"assigned_classes": class_id}}
+            )
+    elif not new_teacher_id and old_teacher_id:
+        # Teacher was removed entirely
+        await db.users.update_one(
+            {"id": old_teacher_id},
+            {"$pull": {"assigned_classes": class_id}}
+        )
+        await db.classes.update_one(
+            {"id": class_id},
+            {"$unset": {"class_teacher_name": ""}}
+        )
+    
+    await log_audit(current_user["id"], "update", "classes", {"class_id": class_id, "class_teacher_changed": new_teacher_id != old_teacher_id})
     updated = await db.classes.find_one({"id": class_id}, {"_id": 0})
     return ClassResponse(**updated)
 
-@api_router.put("/classes/{class_id}/subjects")
-async def update_class_subjects(class_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+
+@api_router.post("/classes/{class_id}/assign-subjects")
+async def assign_subjects_to_class(class_id: str, body: dict, current_user: dict = Depends(get_current_user)):
+    """
+    Bulk-assign subjects to a teacher for a class.
+    Creates subject_allocations records so teacher dashboard shows subjects.
+    Body: { "teacher_id": "...", "subjects": ["Mathematics", "English", ...] }
+    """
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
-    subject_ids = data.get("subjects", [])
-    result = await db.classes.update_one(
-        {"id": class_id},
-        {"$set": {"subjects": subject_ids}}
-    )
-    if result.matched_count == 0:
+    
+    teacher_id = body.get("teacher_id")
+    subjects = body.get("subjects", [])
+    school_id = current_user.get("school_id")
+    
+    if not teacher_id or not subjects:
+        raise HTTPException(status_code=400, detail="teacher_id and subjects are required")
+    
+    teacher = await db.users.find_one({"id": teacher_id}, {"_id": 0, "name": 1})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    cls = await db.classes.find_one({"id": class_id}, {"_id": 0, "name": 1, "school_id": 1})
+    if not cls:
         raise HTTPException(status_code=404, detail="Class not found")
-    return {"message": "Class subjects updated", "subjects": subject_ids}
+    
+    created = 0
+    updated = 0
+    for subject in subjects:
+        existing = await db.subject_allocations.find_one({
+            "class_id": class_id,
+            "subject": subject,
+            "school_id": school_id
+        })
+        if existing:
+            if existing.get("teacher_id") != teacher_id:
+                await db.subject_allocations.update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": {"teacher_id": teacher_id, "updated_at": datetime.now(timezone.utc).isoformat()}}
+                )
+                updated += 1
+        else:
+            await db.subject_allocations.insert_one({
+                "id": str(uuid.uuid4()),
+                "school_id": school_id,
+                "class_id": class_id,
+                "subject": subject,
+                "teacher_id": teacher_id,
+                "periods_per_week": 4,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            created += 1
+    
+    # Ensure teacher has this class in assigned_classes
+    await db.users.update_one(
+        {"id": teacher_id},
+        {"$addToSet": {"assigned_classes": class_id}}
+    )
+    
+    await log_audit(current_user["id"], "assign_subjects", "subject_allocations", {
+        "class_id": class_id, "teacher_id": teacher_id,
+        "subjects": subjects, "created": created, "updated": updated
+    })
+    
+    return {
+        "message": f"{created} subjects assigned, {updated} updated for {teacher.get('name')} in {cls.get('name')}",
+        "created": created, "updated": updated,
+        "class_id": class_id, "teacher_id": teacher_id, "subjects": subjects
+    }
 
-@api_router.get("/subject-allocations")
-async def get_subject_allocations(school_id: str, current_user: dict = Depends(get_current_user)):
-    classes = await db.classes.find({"school_id": school_id}, {"_id": 0, "id": 1, "subjects": 1}).to_list(100)
-    allocations = []
-    for cls in classes:
-        if cls.get("subjects"):
-            for sid in cls["subjects"]:
-                allocations.append({"class_id": cls["id"], "subject_id": sid})
-    return allocations
+@api_router.post("/classes/migrate-teacher-ids")
+async def migrate_class_teacher_ids(current_user: dict = Depends(get_current_user)):
+    """One-time migration: fix class_teacher_id from staff.id → users.id.
+       Old ClassesPage was calling /api/staff fallback which returned staff.id,
+       but TeachTino JWT uses users.id. This endpoint corrects existing data."""
+    if current_user["role"] not in ["director", "admin"]:
+        raise HTTPException(status_code=403, detail="Only Director/Admin can run migration")
+
+    school_id = current_user.get("school_id")
+    all_classes = await db.classes.find({"school_id": school_id, "class_teacher_id": {"$ne": None}}, {"_id": 0}).to_list(100)
+
+    fixed = []
+    skipped = []
+
+    for cls in all_classes:
+        old_teacher_id = cls.get("class_teacher_id")
+        if not old_teacher_id:
+            continue
+
+        # Check if this ID already points to a valid user (users.id) — if yes, skip
+        user_match = await db.users.find_one({"id": old_teacher_id}, {"_id": 0, "id": 1, "name": 1})
+        if user_match:
+            skipped.append({"class": cls.get("name"), "reason": "Already correct users.id", "teacher": user_match.get("name")})
+            continue
+
+        # It's a staff.id — look up staff record to get user_id
+        staff_match = await db.staff.find_one({"id": old_teacher_id}, {"_id": 0, "id": 1, "name": 1, "user_id": 1})
+        if staff_match and staff_match.get("user_id"):
+            correct_user_id = staff_match["user_id"]
+            # Update class with correct users.id
+            await db.classes.update_one(
+                {"id": cls["id"]},
+                {"$set": {"class_teacher_id": correct_user_id, "class_teacher_name": staff_match.get("name", "")}}
+            )
+            # Also sync assigned_classes on the user
+            await db.users.update_one(
+                {"id": correct_user_id},
+                {"$addToSet": {"assigned_classes": cls["id"]}}
+            )
+            fixed.append({
+                "class": cls.get("name"),
+                "old_id": old_teacher_id,
+                "new_id": correct_user_id,
+                "teacher": staff_match.get("name")
+            })
+        else:
+            skipped.append({"class": cls.get("name"), "reason": "Staff has no user_id (no login)", "old_id": old_teacher_id})
+
+    await log_audit(current_user["id"], "migrate", "classes", {"fixed": len(fixed), "skipped": len(skipped), "details": {"fixed": fixed, "skipped": skipped}})
+
+    return {
+        "message": f"Migration complete: {len(fixed)} fixed, {len(skipped)} skipped",
+        "fixed": fixed,
+        "skipped": skipped
+    }
 
 @api_router.delete("/classes/{class_id}")
 async def delete_class(class_id: str, current_user: dict = Depends(get_current_user)):
@@ -2814,42 +3385,33 @@ async def delete_class(class_id: str, current_user: dict = Depends(get_current_u
 
 # ==================== STUDENT ADMISSION ROUTES ====================
 
-async def get_school_code(school_id: str) -> str:
-    school = await db.schools.find_one({"id": school_id})
-    if school and school.get("school_code"):
-        return school["school_code"]
-    if school:
-        name = school.get("name", "")
-        words = [w for w in name.upper().split() if w not in ("THE", "OF", "AND", "FOR", "IN", "AT", "A", "AN", "SCHOOL", "VIDYALAYA", "CONVENT", "PUBLIC", "HIGHER", "SECONDARY")]
-        if len(words) >= 2:
-            code = ''.join(w[0] for w in words[:3])
-        elif words:
-            code = words[0][:3]
-        else:
-            code = name.upper().replace(" ", "")[:3]
-        if len(code) < 2:
-            code = school_id[-4:].upper()
-        await db.schools.update_one({"id": school_id}, {"$set": {"school_code": code}})
-        return code
-    return school_id[-4:].upper()
-
 async def generate_smart_student_id(school_id: str, admission_year: int = None) -> str:
-    code = await get_school_code(school_id)
+    """
+    Generate globally unique student ID
+    Format: STU-<YEAR>-<UNIQUE_SEQ>
+    Example: STU-2026-00001
+    """
     year = admission_year or datetime.now().year
     
+    # Get global count of all students for this year
     count = await db.students.count_documents({
-        "school_id": school_id,
-        "student_id": {"$regex": f"^STU-{code}-{year}-"}
+        "student_id": {"$regex": f"^STU-{year}-"}
     })
-    seq_no = str(count + 1).zfill(4)
-    new_id = f"STU-{code}-{year}-{seq_no}"
-    while await db.students.find_one({"student_id": new_id}):
-        count += 1
+    
+    # Generate sequence number (00001, 00002, etc.)
+    seq_no = str(count + 1).zfill(5)
+    
+    return f"STU-{year}-{seq_no}"
+    seq_no = str(count + 1).zfill(3)
+    
+    # If sequence > 999, use 4 digits
+    if count >= 999:
         seq_no = str(count + 1).zfill(4)
-        new_id = f"STU-{code}-{year}-{seq_no}"
-    return new_id
+    
+    return f"STU-{school_abbr}-{year}-{seq_no}"
 
 def generate_student_id(school_id: str) -> str:
+    """Generate unique student ID (legacy sync version) like STD-2026-000123"""
     year = datetime.now().year
     random_part = str(uuid.uuid4().int)[:6].zfill(6)
     return f"STD-{year}-{random_part}"
@@ -2890,20 +3452,23 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
         student_id = await generate_smart_student_id(student.school_id, admission_year)
         retry_count += 1
     
-    default_password = student.mobile or "123456"
-    hashed_pw = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
+    # Generate temporary password
+    temp_password = generate_temp_password()
+    hashed_pw = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt()).decode()
     
+    # Determine status - if Director/Principal adds, directly active
+    # If staff adds, pending approval (optional - can be configured)
     status = "active" if current_user["role"] in ["director", "principal"] else "active"
     
+    # Create student record
     student_data = {
         "id": str(uuid.uuid4()),
         "student_id": student_id,
-        "admission_no": student_id,
+        "admission_no": student_id,  # Same as student_id for backward compatibility
         **student.model_dump(),
         "status": status,
         "is_active": True,
         "password": hashed_pw,
-        "plain_password": default_password,
         "password_changed": False,
         "admitted_by": current_user["id"],
         "admitted_at": datetime.now(timezone.utc).isoformat(),
@@ -2986,52 +3551,30 @@ class StudentLoginRequest(BaseModel):
     password: Optional[str] = None
     mobile: Optional[str] = None
     dob: Optional[str] = None
-    school_id: Optional[str] = None
 
 @api_router.post("/students/login")
-async def student_login(request: StudentLoginRequest):
+async def student_login(
+    student_id: Optional[str] = None,
+    password: Optional[str] = None,
+    mobile: Optional[str] = None,
+    dob: Optional[str] = None
+):
     """Student login with Student ID + Password OR Mobile + DOB"""
     
     student = None
     
-    if request.student_id and request.password:
-        query = {"student_id": request.student_id}
-        if request.school_id:
-            query["school_id"] = request.school_id
-        student = await db.students.find_one(query, {"_id": 0})
+    if student_id and password:
+        # Login with Student ID + Password
+        student = await db.students.find_one({"student_id": student_id}, {"_id": 0})
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Student ID")
         
-        if not student.get("password"):
-            mobile = (student.get("mobile") or student.get("father_mobile") or student.get("mother_mobile") or "").replace(" ", "").replace("-", "").strip()
-            if not mobile:
-                raise HTTPException(status_code=401, detail="Password not set. Contact school.")
-            hashed_pw = bcrypt.hashpw(mobile.encode(), bcrypt.gensalt()).decode()
-            await db.students.update_one({"id": student["id"]}, {"$set": {"password": hashed_pw, "plain_password": mobile}})
-            student["password"] = hashed_pw
-        
-        if not bcrypt.checkpw(request.password.encode(), student["password"].encode()):
+        if not bcrypt.checkpw(password.encode(), student["password"].encode()):
             raise HTTPException(status_code=401, detail="Invalid password")
     
-    elif request.mobile and request.dob:
-        clean_mobile = request.mobile.replace(" ", "").replace("-", "").strip()
-        base_query = {"dob": request.dob}
-        if request.school_id:
-            base_query["school_id"] = request.school_id
-        student = await db.students.find_one({**base_query, "mobile": clean_mobile}, {"_id": 0})
-        if not student:
-            student = await db.students.find_one({**base_query, "father_mobile": clean_mobile}, {"_id": 0})
-        if not student:
-            student = await db.students.find_one({**base_query, "mother_mobile": clean_mobile}, {"_id": 0})
-        if not student:
-            all_students = await db.students.find(base_query, {"_id": 0}).to_list(500)
-            for s in all_students:
-                s_mobile = (s.get("mobile") or "").replace(" ", "").replace("-", "").strip()
-                s_father = (s.get("father_mobile") or "").replace(" ", "").replace("-", "").strip()
-                s_mother = (s.get("mother_mobile") or "").replace(" ", "").replace("-", "").strip()
-                if clean_mobile in [s_mobile, s_father, s_mother]:
-                    student = s
-                    break
+    elif mobile and dob:
+        # Login with Mobile + DOB
+        student = await db.students.find_one({"mobile": mobile, "dob": dob}, {"_id": 0})
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Mobile or Date of Birth")
     
@@ -3084,7 +3627,7 @@ async def student_change_password(student_id: str, old_password: str, new_passwo
     
     await db.students.update_one(
         {"student_id": student_id},
-        {"$set": {"password": new_hashed, "plain_password": new_password, "password_changed": True}}
+        {"$set": {"password": new_hashed, "password_changed": True}}
     )
     
     return {"message": "Password changed successfully"}
@@ -3137,49 +3680,6 @@ async def unsuspend_student(id: str, current_user: dict = Depends(get_current_us
     
     return {"message": "Student unsuspended"}
 
-@api_router.put("/students/{student_id}/reset-password")
-async def reset_student_password(
-    student_id: str,
-    body: dict = Body(...),
-    current_user: dict = Depends(get_current_user)
-):
-    """Director resets student password"""
-    if current_user["role"] not in ["director", "principal"]:
-        raise HTTPException(status_code=403, detail="Only Director/Principal can reset passwords")
-    
-    new_password = body.get("new_password")
-    if not new_password or len(new_password) < 4:
-        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
-    
-    school_id = current_user.get("school_id")
-    student = await db.students.find_one(
-        {"$and": [
-            {"school_id": school_id},
-            {"$or": [{"id": student_id}, {"admission_no": student_id}]}
-        ]},
-        {"_id": 0}
-    )
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    
-    hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
-    
-    await db.students.update_one(
-        {"$and": [
-            {"school_id": school_id},
-            {"$or": [{"id": student_id}, {"admission_no": student_id}]}
-        ]},
-        {"$set": {"password": hashed, "plain_password": new_password}}
-    )
-    
-    if student.get("user_id"):
-        await db.users.update_one(
-            {"id": student["user_id"]},
-            {"$set": {"password": hashed}}
-        )
-    
-    return {"message": f"Password reset for {student.get('name', 'student')}", "student_id": student_id}
-
 @api_router.post("/students/{id}/mark-left")
 async def mark_student_left(id: str, reason: str, tc_number: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     """Mark student as left (TC issued)"""
@@ -3220,8 +3720,8 @@ async def create_student(student: StudentCreate, current_user: dict = Depends(ge
     while await db.students.find_one({"student_id": student_id}):
         student_id = generate_student_id(student.school_id)
     
-    default_password = student.mobile or "123456"
-    hashed_pw = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
+    temp_password = generate_temp_password()
+    hashed_pw = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt()).decode()
     
     student_data = {
         "id": str(uuid.uuid4()),
@@ -3231,7 +3731,6 @@ async def create_student(student: StudentCreate, current_user: dict = Depends(ge
         "status": "active",
         "is_active": True,
         "password": hashed_pw,
-        "plain_password": default_password,
         "password_changed": False,
         "admitted_by": current_user["id"],
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -3250,13 +3749,10 @@ async def get_students(
     class_id: Optional[str] = None,
     search: Optional[str] = None,
     status: Optional[str] = None,
-    current_user: dict = Depends(require_staff)
+    current_user: dict = Depends(get_current_user)
 ):
     query = {}
-    user_school = current_user.get("school_id")
-    if user_school:
-        query["school_id"] = user_school
-    elif school_id:
+    if school_id:
         query["school_id"] = school_id
     if class_id:
         query["class_id"] = class_id
@@ -3273,31 +3769,32 @@ async def get_students(
     
     students = await db.students.find(query, {"_id": 0, "password": 0}).to_list(500)
     
-    is_director = current_user.get("role") == "director"
+    # Enrich with class info
     for student in students:
         class_doc = await db.classes.find_one({"id": student["class_id"]}, {"_id": 0})
         if class_doc:
             student["class_name"] = class_doc["name"]
             student["section"] = class_doc["section"]
+        # Ensure required fields exist
         if "student_id" not in student:
             student["student_id"] = student.get("admission_no", "N/A")
         if "status" not in student:
             student["status"] = "active" if student.get("is_active", True) else "inactive"
-        if not is_director:
-            student.pop("plain_password", None)
     
     return [StudentResponse(**s) for s in students]
 
 
+# Simple search endpoints for accountant dashboard (no auth required)
 @api_router.get("/students/search")
-async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20, current_user: dict = Depends(require_staff)):
+async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
+    """
+    Simple student search for accountant forms
+    """
     if not q or len(q) < 2:
         return {"students": []}
     
-    user_school = current_user.get("school_id")
     query = {
         "status": {"$in": ["active", None]},
-        "school_id": user_school,
         "$or": [
             {"name": {"$regex": q, "$options": "i"}},
             {"student_id": {"$regex": q, "$options": "i"}},
@@ -3305,11 +3802,15 @@ async def search_students_simple(q: str, school_id: Optional[str] = None, limit:
         ]
     }
     
+    if school_id:
+        query["school_id"] = school_id
+    
     students = await db.students.find(
         query,
         {"_id": 0}
     ).limit(limit).to_list(limit)
     
+    # Remove password from results
     for s in students:
         s.pop("password", None)
     
@@ -3362,33 +3863,43 @@ async def delete_student(student_id: str, current_user: dict = Depends(get_curre
 
 
 @api_router.get("/staff/search")
-async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: int = 20, current_user: dict = Depends(require_staff)):
+async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
+    """
+    Simple staff search for accountant forms
+    """
     if not q or len(q) < 2:
         return {"staff": []}
     
-    user_school = current_user.get("school_id")
     query = {
-        "school_id": user_school,
         "$or": [
             {"name": {"$regex": q, "$options": "i"}},
             {"email": {"$regex": q, "$options": "i"}}
         ]
     }
     
+    if school_id:
+        query["school_id"] = school_id
+    
+    # Search in users collection (teachers, directors, accountants)
     users = await db.users.find(
         {**query, "role": {"$in": ["teacher", "director", "principal", "accountant", "clerk"]}},
         {"_id": 0}
     ).limit(limit).to_list(limit)
     
+    # Remove passwords from results
     for u in users:
         u.pop("password", None)
     
+    # Also search in staff collection
     staff = await db.staff.find(
         query,
         {"_id": 0}
     ).limit(limit).to_list(limit)
     
-    return {"staff": users + staff}
+    # Combine results
+    all_staff = users + staff
+    
+    return {"staff": all_staff}
 
 
 # ==================== STAFF ROUTES ====================
@@ -3418,13 +3929,10 @@ async def get_staff(
     school_id: Optional[str] = None,
     designation: Optional[str] = None,
     search: Optional[str] = None,
-    current_user: dict = Depends(require_staff)
+    current_user: dict = Depends(get_current_user)
 ):
     query = {"is_active": True}
-    user_school = current_user.get("school_id")
-    if user_school:
-        query["school_id"] = user_school
-    elif school_id:
+    if school_id:
         query["school_id"] = school_id
     if designation:
         query["designation"] = designation
@@ -3468,25 +3976,15 @@ DESIGNATION_ROLE_MAP = {
     "vice_principal": "principal",
     "teacher": "teacher",
     "senior_teacher": "teacher",
-    "hod": "teacher",
-    "sports_teacher": "teacher",
-    "music_teacher": "teacher",
-    "computer_teacher": "teacher",
-    "yoga_teacher": "teacher",
-    "counselor": "teacher",
     "accountant": "admin_staff",
     "clerk": "clerk",
     "admin_staff": "admin_staff",
-    "receptionist": "admin_staff",
-    "transport_incharge": "admin_staff",
-    "hostel_warden": "admin_staff",
     "librarian": "teacher",
     "lab_assistant": "teacher",
     "peon": "peon",
     "driver": "peon",
     "security": "peon",
-    "sweeper": "peon",
-    "nurse": "peon"
+    "sweeper": "peon"
 }
 
 @api_router.post("/employees", response_model=UnifiedEmployeeResponse)
@@ -3507,7 +4005,10 @@ async def create_unified_employee(
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered as user")
     
-    employee_id = await generate_employee_id(employee.school_id)
+    # Generate employee ID
+    year = datetime.now().year
+    count = await db.staff.count_documents({"school_id": employee.school_id}) + 1
+    employee_id = f"EMP-{year}-{str(count).zfill(5)}"
     
     # Determine role based on designation
     role = DESIGNATION_ROLE_MAP.get(employee.designation.lower().replace(" ", "_"), "teacher")
@@ -3521,11 +4022,7 @@ async def create_unified_employee(
     if employee.custom_permissions:
         permissions.update(employee.custom_permissions)
     
-    # Set module permissions from defaults or custom
-    module_permissions = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {})).copy()
-    if employee.custom_permissions:
-        module_permissions.update(employee.custom_permissions)
-    
+    # Create staff record
     staff_data = {
         "id": str(uuid.uuid4()),
         "employee_id": employee_id,
@@ -3540,45 +4037,12 @@ async def create_unified_employee(
         "qualification": employee.qualification or "",
         "joining_date": employee.joining_date or datetime.now(timezone.utc).date().isoformat(),
         "salary": employee.salary,
-        "gender": employee.gender,
-        "dob": employee.dob,
-        "blood_group": employee.blood_group,
-        "marital_status": employee.marital_status,
-        "father_name": employee.father_name,
-        "spouse_name": employee.spouse_name,
-        "nationality": employee.nationality,
-        "permanent_address": employee.permanent_address,
-        "city": employee.city,
-        "state": employee.state,
-        "pincode": employee.pincode,
-        "aadhar_no": employee.aadhar_no,
-        "pan_number": employee.pan_number,
-        "uan_number": employee.uan_number,
-        "esi_number": employee.esi_number,
-        "voter_id": employee.voter_id,
-        "driving_license": employee.driving_license,
-        "specialization": employee.specialization,
-        "experience_years": employee.experience_years,
-        "previous_employer": employee.previous_employer,
-        "bank_name": employee.bank_name,
-        "bank_account_no": employee.bank_account_no,
-        "ifsc_code": employee.ifsc_code,
-        "bank_branch": employee.bank_branch,
-        "salary_type": employee.salary_type,
-        "pf_applicable": employee.pf_applicable,
-        "esi_applicable": employee.esi_applicable,
-        "tds_applicable": employee.tds_applicable,
-        "emergency_contact": employee.emergency_contact,
-        "emergency_contact_name": employee.emergency_contact_name,
-        "emergency_relation": employee.emergency_relation,
         "is_active": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "has_login": employee.create_login,
         "user_id": None,
         "role": role,
-        "permissions": permissions,
-        "module_permissions": module_permissions,
-        "can_teach": employee.can_teach
+        "permissions": permissions
     }
     
     user_id = None
@@ -3594,16 +4058,13 @@ async def create_unified_employee(
             "email": employee.email,
             "mobile": employee.mobile,
             "password": hashed_password,
-            "plain_password": password,
             "role": role,
             "school_id": employee.school_id,
             "permissions": permissions,
-            "module_permissions": module_permissions,
             "is_active": True,
             "employee_id": employee_id,
             "staff_id": staff_data["id"],
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "can_teach": employee.can_teach
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(user_data)
         user_id = user_data["id"]
@@ -3650,38 +4111,7 @@ async def get_employees(
     
     employees = await db.staff.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     
-    if current_user.get("role") == "director":
-        for emp in employees:
-            if emp.get("email"):
-                user_rec = await db.users.find_one({"email": emp["email"]}, {"plain_password": 1, "module_permissions": 1})
-                if user_rec:
-                    if not emp.get("plain_password") and user_rec.get("plain_password"):
-                        emp["plain_password"] = user_rec["plain_password"]
-                    if user_rec.get("module_permissions") and not emp.get("module_permissions"):
-                        emp["module_permissions"] = user_rec["module_permissions"]
-            if not emp.get("module_permissions"):
-                role = emp.get("role", "teacher")
-                emp["module_permissions"] = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
-    else:
-        for emp in employees:
-            emp.pop("plain_password", None)
-    
     return [UnifiedEmployeeResponse(**emp) for emp in employees]
-
-@api_router.get("/employees/teaching-staff/{school_id}")
-async def get_teaching_staff(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get all staff who can teach (teachers + anyone with can_teach=True)"""
-    query = {
-        "school_id": school_id,
-        "is_active": True,
-        "$or": [
-            {"designation": {"$regex": "teacher", "$options": "i"}},
-            {"role": "teacher"},
-            {"can_teach": True}
-        ]
-    }
-    staff = await db.staff.find(query, {"_id": 0}).to_list(500)
-    return staff
 
 @api_router.get("/employees/{employee_id}", response_model=UnifiedEmployeeResponse)
 async def get_employee(employee_id: str, current_user: dict = Depends(get_current_user)):
@@ -3722,6 +4152,7 @@ async def update_employee(
     if employee.custom_permissions:
         permissions.update(employee.custom_permissions)
     
+    # Update staff record
     update_data = {
         "name": employee.name,
         "mobile": employee.mobile,
@@ -3733,41 +4164,9 @@ async def update_employee(
         "qualification": employee.qualification,
         "joining_date": employee.joining_date,
         "salary": employee.salary,
-        "gender": employee.gender,
-        "dob": employee.dob,
-        "blood_group": employee.blood_group,
-        "marital_status": employee.marital_status,
-        "father_name": employee.father_name,
-        "spouse_name": employee.spouse_name,
-        "nationality": employee.nationality,
-        "permanent_address": employee.permanent_address,
-        "city": employee.city,
-        "state": employee.state,
-        "pincode": employee.pincode,
-        "aadhar_no": employee.aadhar_no,
-        "pan_number": employee.pan_number,
-        "uan_number": employee.uan_number,
-        "esi_number": employee.esi_number,
-        "voter_id": employee.voter_id,
-        "driving_license": employee.driving_license,
-        "specialization": employee.specialization,
-        "experience_years": employee.experience_years,
-        "previous_employer": employee.previous_employer,
-        "bank_name": employee.bank_name,
-        "bank_account_no": employee.bank_account_no,
-        "ifsc_code": employee.ifsc_code,
-        "bank_branch": employee.bank_branch,
-        "salary_type": employee.salary_type,
-        "pf_applicable": employee.pf_applicable,
-        "esi_applicable": employee.esi_applicable,
-        "tds_applicable": employee.tds_applicable,
-        "emergency_contact": employee.emergency_contact,
-        "emergency_contact_name": employee.emergency_contact_name,
-        "emergency_relation": employee.emergency_relation,
         "role": role,
         "permissions": permissions,
-        "has_login": employee.create_login,
-        "can_teach": employee.can_teach
+        "has_login": employee.create_login
     }
     
     await db.staff.update_one(
@@ -3784,12 +4183,10 @@ async def update_employee(
                 "email": employee.email,
                 "mobile": employee.mobile,
                 "role": role,
-                "permissions": permissions,
-                "can_teach": employee.can_teach
+                "permissions": permissions
             }
             if employee.password:
                 user_update["password"] = bcrypt.hashpw(employee.password.encode(), bcrypt.gensalt()).decode()
-                user_update["plain_password"] = employee.password
             
             await db.users.update_one(
                 {"id": existing["user_id"]},
@@ -3806,7 +4203,6 @@ async def update_employee(
                 "email": employee.email,
                 "mobile": employee.mobile,
                 "password": hashed_password,
-                "plain_password": password,
                 "role": role,
                 "school_id": employee.school_id,
                 "permissions": permissions,
@@ -3861,163 +4257,6 @@ async def update_employee_permissions(
         )
     
     return {"message": "Permissions updated", "permissions": permissions}
-
-@api_router.put("/employees/{employee_id}/reset-password")
-async def reset_employee_password(
-    employee_id: str,
-    body: dict = Body(...),
-    current_user: dict = Depends(get_current_user)
-):
-    """Director resets employee password"""
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only Director can reset passwords")
-    
-    new_password = body.get("new_password")
-    if not new_password or len(new_password) < 6:
-        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
-    
-    school_id = current_user.get("school_id")
-    employee = await db.staff.find_one(
-        {"$and": [
-            {"school_id": school_id},
-            {"$or": [{"id": employee_id}, {"employee_id": employee_id}]}
-        ]},
-        {"_id": 0}
-    )
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
-    
-    if not employee.get("user_id"):
-        raise HTTPException(status_code=400, detail="Employee does not have a login account")
-    
-    hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
-    await db.users.update_one(
-        {"id": employee["user_id"]},
-        {"$set": {"password": hashed, "plain_password": new_password}}
-    )
-    
-    return {"message": f"Password reset for {employee['name']}", "employee_id": employee_id}
-
-@api_router.post("/admin/bulk-reset-passwords-to-mobile")
-async def bulk_reset_passwords_to_mobile(
-    current_user: dict = Depends(get_current_user)
-):
-    """Reset ALL staff and student passwords to their mobile numbers"""
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only Director can do this")
-    
-    school_id = current_user.get("school_id")
-    results = {"staff_updated": 0, "students_updated": 0, "staff_skipped": 0, "students_skipped": 0}
-    
-    staff_list = await db.staff.find({"school_id": school_id}, {"_id": 0}).to_list(None)
-    for s in staff_list:
-        mobile = (s.get("mobile") or "").replace(" ", "").replace("-", "").strip()
-        if not mobile or not s.get("user_id"):
-            results["staff_skipped"] += 1
-            continue
-        hashed = bcrypt.hashpw(mobile.encode(), bcrypt.gensalt()).decode()
-        await db.users.update_one(
-            {"id": s["user_id"]},
-            {"$set": {"password": hashed, "plain_password": mobile}}
-        )
-        results["staff_updated"] += 1
-    
-    students = await db.students.find({"school_id": school_id}, {"_id": 0}).to_list(None)
-    for stu in students:
-        mobile = (stu.get("mobile") or stu.get("father_mobile") or stu.get("mother_mobile") or "").replace(" ", "").replace("-", "").strip()
-        if not mobile:
-            results["students_skipped"] += 1
-            continue
-        hashed = bcrypt.hashpw(mobile.encode(), bcrypt.gensalt()).decode()
-        await db.students.update_one(
-            {"id": stu["id"]},
-            {"$set": {"password": hashed, "plain_password": mobile, "password_changed": False}}
-        )
-        if stu.get("user_id"):
-            await db.users.update_one(
-                {"id": stu["user_id"]},
-                {"$set": {"password": hashed, "plain_password": mobile}}
-            )
-        results["students_updated"] += 1
-    
-    return {"message": "All passwords reset to mobile numbers", **results}
-
-@api_router.get("/admin/credentials")
-async def get_all_credentials(
-    type: Optional[str] = "all",
-    search: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
-):
-    """Director views all staff and student login credentials"""
-    if current_user["role"] != "director":
-        raise HTTPException(status_code=403, detail="Only Director can view credentials")
-    
-    school_id = current_user.get("school_id")
-    result = {"staff": [], "students": []}
-    
-    if type in ["all", "staff"]:
-        staff_users = await db.users.find(
-            {"school_id": school_id, "role": {"$ne": "director"}},
-            {"_id": 0, "id": 1, "name": 1, "email": 1, "mobile": 1, "role": 1, 
-             "plain_password": 1, "is_active": 1, "employee_id": 1, "created_at": 1}
-        ).to_list(500)
-        
-        for u in staff_users:
-            result["staff"].append({
-                "id": u.get("id"),
-                "name": u.get("name", ""),
-                "email": u.get("email", ""),
-                "mobile": u.get("mobile", ""),
-                "role": u.get("role", ""),
-                "employee_id": u.get("employee_id", ""),
-                "login_id": u.get("email", ""),
-                "password": u.get("plain_password", ""),
-                "is_active": u.get("is_active", True),
-                "created_at": u.get("created_at", "")
-            })
-    
-    if type in ["all", "students"]:
-        query = {"school_id": school_id, "is_active": {"$ne": False}}
-        if search:
-            query["$or"] = [
-                {"name": {"$regex": search, "$options": "i"}},
-                {"student_id": {"$regex": search, "$options": "i"}}
-            ]
-        
-        students = await db.students.find(
-            query,
-            {"_id": 0, "id": 1, "name": 1, "student_id": 1, "class_id": 1,
-             "plain_password": 1, "mobile": 1, "father_name": 1, "mother_name": 1,
-             "is_active": 1, "status": 1, "created_at": 1}
-        ).to_list(1000)
-        
-        class_ids = list(set(s.get("class_id", "") for s in students if s.get("class_id")))
-        classes = {}
-        if class_ids:
-            class_docs = await db.classes.find(
-                {"id": {"$in": class_ids}},
-                {"_id": 0, "id": 1, "name": 1, "section": 1}
-            ).to_list(100)
-            classes = {c["id"]: f"{c.get('name', '')} {c.get('section', '')}".strip() for c in class_docs}
-        
-        for s in students:
-            result["students"].append({
-                "id": s.get("id"),
-                "name": s.get("name", ""),
-                "student_id": s.get("student_id", ""),
-                "class_name": classes.get(s.get("class_id", ""), ""),
-                "class_id": s.get("class_id", ""),
-                "login_id": s.get("student_id", ""),
-                "password": s.get("plain_password", ""),
-                "mobile": s.get("mobile", ""),
-                "father_name": s.get("father_name", ""),
-                "is_active": s.get("is_active", True),
-                "status": s.get("status", "active"),
-                "created_at": s.get("created_at", "")
-            })
-    
-    await log_audit(current_user["id"], "view_credentials", "admin", {"type": type})
-    return result
 
 @api_router.post("/employees/{employee_id}/toggle-login")
 async def toggle_employee_login(
@@ -4318,12 +4557,9 @@ async def get_attendance(
     date: Optional[str] = None,
     from_date: Optional[str] = None,
     to_date: Optional[str] = None,
-    current_user: dict = Depends(require_staff)
+    current_user: dict = Depends(get_current_user)
 ):
     query = {}
-    user_school = current_user.get("school_id")
-    if user_school:
-        query["school_id"] = user_school
     if class_id:
         query["class_id"] = class_id
     if student_id:
@@ -4345,18 +4581,17 @@ async def get_attendance(
 
 @api_router.get("/attendance/stats")
 async def get_attendance_stats(
-    school_id: str = None,
+    school_id: str,
     date: Optional[str] = None,
-    current_user: dict = Depends(require_staff)
+    current_user: dict = Depends(get_current_user)
 ):
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    user_school = current_user.get("school_id") or school_id
-    total_students = await db.students.count_documents({"school_id": user_school, "is_active": True})
-    present = await db.attendance.count_documents({"school_id": user_school, "date": date, "status": "present"})
-    absent = await db.attendance.count_documents({"school_id": user_school, "date": date, "status": "absent"})
-    late = await db.attendance.count_documents({"school_id": user_school, "date": date, "status": "late"})
+    total_students = await db.students.count_documents({"school_id": school_id, "is_active": True})
+    present = await db.attendance.count_documents({"school_id": school_id, "date": date, "status": "present"})
+    absent = await db.attendance.count_documents({"school_id": school_id, "date": date, "status": "absent"})
+    late = await db.attendance.count_documents({"school_id": school_id, "date": date, "status": "late"})
     
     return {
         "date": date,
@@ -4728,10 +4963,10 @@ async def create_fee_plan(plan: FeePlanCreate, current_user: dict = Depends(get_
     return FeePlanResponse(**plan_data)
 
 @api_router.get("/fees/plans", response_model=List[FeePlanResponse])
-async def get_fee_plans(school_id: Optional[str] = None, current_user: dict = Depends(require_staff)):
-    user_school = current_user.get("school_id")
+async def get_fee_plans(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     query = {"is_active": True}
-    query["school_id"] = user_school or school_id
+    if school_id:
+        query["school_id"] = school_id
     plans = await db.fee_plans.find(query, {"_id": 0}).to_list(100)
     return [FeePlanResponse(**p) for p in plans]
 
@@ -4760,10 +4995,11 @@ async def get_fee_invoices(
     school_id: Optional[str] = None,
     student_id: Optional[str] = None,
     status: Optional[str] = None,
-    current_user: dict = Depends(require_staff)
+    current_user: dict = Depends(get_current_user)
 ):
-    user_school = current_user.get("school_id")
-    query = {"school_id": user_school or school_id}
+    query = {}
+    if school_id:
+        query["school_id"] = school_id
     if student_id:
         query["student_id"] = student_id
     if status:
@@ -4831,12 +5067,12 @@ async def get_fee_payments(
     return [FeePaymentResponse(**p) for p in payments]
 
 @api_router.get("/fees/stats")
-async def get_fee_stats(school_id: str, month: Optional[str] = None, current_user: dict = Depends(require_staff)):
-    user_school = current_user.get("school_id")
+async def get_fee_stats(school_id: str, month: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     if not month:
         month = datetime.now(timezone.utc).strftime("%Y-%m")
     
-    invoices = await db.fee_invoices.find({"school_id": user_school or school_id, "month": month}, {"_id": 0}).to_list(1000)
+    # Total expected
+    invoices = await db.fee_invoices.find({"school_id": school_id, "month": month}, {"_id": 0}).to_list(1000)
     total_expected = sum(i.get("final_amount", 0) for i in invoices)
     total_collected = sum(i.get("paid_amount", 0) for i in invoices)
     pending = total_expected - total_collected
@@ -4865,6 +5101,17 @@ async def create_notice(notice: NoticeCreate, current_user: dict = Depends(get_c
     }
     await db.notices.insert_one(notice_data)
     await log_audit(current_user["id"], "create", "notices", {"notice_id": notice_data["id"], "title": notice.title})
+
+    target_audience = notice.target_audience or []
+    if "all" in target_audience or "teachers" in target_audience:
+        await create_notification(
+            school_id=notice.school_id,
+            title=f"📢 Notice: {notice.title}",
+            message=notice.content[:140] + ("..." if len(notice.content) > 140 else ""),
+            notification_type="notice",
+            target_roles=["teacher", "principal", "vice_principal", "director"],
+            data={"notice_id": notice_data["id"], "priority": notice.priority}
+        )
     
     # Get creator name
     notice_data["created_by_name"] = current_user["name"]
@@ -4878,10 +5125,7 @@ async def get_notices(
     current_user: dict = Depends(get_current_user)
 ):
     query = {"is_active": True}
-    user_school = current_user.get("school_id")
-    if user_school:
-        query["school_id"] = user_school
-    elif school_id:
+    if school_id:
         query["school_id"] = school_id
     if priority:
         query["priority"] = priority
@@ -5032,6 +5276,56 @@ async def mark_notice_as_read(notice_id: str, user_id: str):
     return {"success": True, "message": "Notice marked as read"}
 
 
+# ==================== NOTIFICATIONS ====================
+
+@api_router.get("/notifications")
+async def get_notifications(
+    school_id: str,
+    user_id: str,
+    role: Optional[str] = None,
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user)
+):
+    target_role = role or current_user.get("role")
+    query = {
+        "school_id": school_id,
+        "$or": [
+            {"target_user_id": user_id},
+            {"target_roles": {"$in": [target_role]}},
+            {"target_roles": []}
+        ]
+    }
+    notifications = await db.notifications.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    for note in notifications:
+        note["is_read"] = user_id in note.get("read_by", [])
+    return {"notifications": notifications, "total": len(notifications)}
+
+
+@api_router.post("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    user_id = data.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id required")
+    await db.notifications.update_one(
+        {"id": notification_id},
+        {"$addToSet": {"read_by": user_id}}
+    )
+    return {"success": True}
+
+
+@api_router.post("/notifications/mark-all-read")
+async def mark_all_notifications_read(data: dict, current_user: dict = Depends(get_current_user)):
+    user_id = data.get("user_id")
+    school_id = data.get("school_id")
+    if not user_id or not school_id:
+        raise HTTPException(status_code=400, detail="user_id and school_id required")
+    await db.notifications.update_many(
+        {"school_id": school_id},
+        {"$addToSet": {"read_by": user_id}}
+    )
+    return {"success": True}
+
+
 # ==================== AUDIT LOG ROUTES ====================
 
 @api_router.get("/audit-logs", response_model=List[AuditLogResponse])
@@ -5121,12 +5415,15 @@ async def generate_paper(request: PaperGenerateRequest, current_user: dict = Dep
     if current_user["role"] not in ["director", "principal", "teacher", "exam_controller", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    sarvam_api_key = os.environ.get("SARVAM_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    api_key = emergent_key or openai_key
     
-    if not sarvam_api_key:
-        raise HTTPException(status_code=500, detail="Sarvam API key not configured. Add SARVAM_API_KEY in Settings.")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="API key not configured")
     
     try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
         
         # Calculate marks distribution based on question types with proper percentages
         type_config = {
@@ -5197,16 +5494,6 @@ LANGUAGE REQUIREMENT - STRICTLY HINDI:
 - Use proper Hindi scientific terms (e.g., 'ऑक्सीजन' not 'Oxygen', 'प्रकाश संश्लेषण' not 'Photosynthesis')
 - Example Hindi question: "प्रकाश संश्लेषण की प्रक्रिया को समझाइए।"
 - Example Hindi answer: "प्रकाश संश्लेषण वह प्रक्रिया है जिसमें पौधे सूर्य के प्रकाश का उपयोग करके..."
-"""
-        elif request.language == "bilingual":
-            lang_instruction = """
-LANGUAGE REQUIREMENT - BILINGUAL (ENGLISH + HINDI):
-- Write EVERY question in BOTH English AND Hindi
-- Format each question as: "English question / हिंदी में प्रश्न"
-- Write ALL answers in BOTH English AND Hindi
-- Write ALL MCQ options in BOTH languages
-- Example: "Explain the process of photosynthesis. / प्रकाश संश्लेषण की प्रक्रिया को समझाइए।"
-- Example answer: "Photosynthesis is the process... / प्रकाश संश्लेषण वह प्रक्रिया है..."
 """
         else:
             lang_instruction = """
@@ -5356,46 +5643,20 @@ BOARD PATTERN 2025-26:
 🧩 CLASS-WISE AUTO LOGIC
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {"• Nursery–UKG: Picture, match, oral, draw, colour" if request.class_name in ["Nursery", "LKG", "UKG"] else ""}
-{"• Class 1–2: Objective, picture/diagram based, visual activities" if request.class_name in ["Class 1", "Class 2"] else ""}
-{"• Class 3–5: Objective, picture/diagram based" if request.class_name in ["Class 3", "Class 4", "Class 5"] else ""}
+{"• Class 1–5: Objective, picture/diagram based" if request.class_name in ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"] else ""}
 {"• Class 6–8: MCQ, very short, short, diagrams" if request.class_name in ["Class 6", "Class 7", "Class 8"] else ""}
 {"• Class 9–10: MCQ, assertion-reason, case study, numericals" if request.class_name in ["Class 9", "Class 10"] else ""}
 {"• Class 11–12: Competency-based, analytical, case study" if request.class_name in ["Class 11", "Class 12"] else ""}
 
-{'''━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🧒 YOUNG CHILDREN PAPER (SPECIAL)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-This is a paper for young children. Include image/picture-based questions like:
-matching, coloring, identifying pictures, tracing, connecting dots, circling correct answers with pictures.
-Each question should describe what image/picture to draw alongside it in a 'diagram_description' field.
-At least 60% questions should be visual/picture-based.
-Use simple language appropriate for young learners.
-Every question that involves a picture MUST have a "diagram_description" field describing the image to be drawn.
-Example: "diagram_description": "Draw a row of 5 fruits: apple, banana, mango, grapes, orange. Student circles the biggest fruit."
-''' if request.class_name in ["Nursery", "LKG", "UKG", "Class 1", "Class 2"] else ""}
-
+🖼️ DIAGRAM QUESTIONS (AUTO)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🖼️ DIAGRAM QUESTIONS (MANDATORY)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CRITICAL: You MUST include diagram questions for Science, Math, Geography subjects.
-For EVERY diagram question, you MUST include these fields:
-• "type": "diagram"
-• "diagram_required": true
-• "diagram_description": "Detailed description of what the diagram should contain"
-• "requires_drawing": true
-
-Subject-specific diagram requirements:
-• Biology/Science → Cell diagram, plant parts, human body systems, food chain, water cycle
-• Physics → Circuit diagrams, ray diagrams, force diagrams, magnetic field lines
-• Chemistry → Atom structure, periodic table elements, experimental setup
-• Geography/SST → Maps, climate zones, landforms
-• Mathematics → Geometric figures, graphs, number lines, coordinate geometry
-• Hindi/English → No diagrams needed for language subjects
-
-Example diagram question:
-{{"type": "diagram", "question": "Draw a well-labelled diagram of the structure of a plant cell. / पादप कोशिका की संरचना का नामांकित चित्र बनाइए।", "answer": "Diagram with: Cell wall, Cell membrane, Nucleus, Chloroplast, Vacuole, Cytoplasm, Mitochondria", "marks": 3, "difficulty": "medium", "diagram_required": true, "requires_drawing": true, "diagram_description": "Plant cell showing rectangular shape with cell wall, cell membrane inside, large central vacuole, nucleus with nucleolus, chloroplasts (green), mitochondria, endoplasmic reticulum, and cytoplasm. All parts labeled with arrows."}}
-
-MINIMUM DIAGRAM REQUIREMENT: At least 2-3 diagram questions in Science/Math papers.
+If syllabus requires diagrams/maps/graphs:
+• Include: "Draw a neat and labelled diagram of..."
+• Geography → Maps
+• Biology → Diagrams
+• Physics → Ray/Circuit diagrams
+• Maths → Graphs
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📥 OUTPUT (SEPARATE SECTIONS)
@@ -5508,15 +5769,13 @@ Return in this EXACT JSON format:
             {{
                 "q_no": 15,
                 "type": "diagram",
-                "model_answer": "Diagram instructions with all labeled parts...",
+                "model_answer": "Diagram instructions...",
                 "diagram_steps": [
-                    "Step 1: Draw main structure/outline",
+                    "Step 1: Draw main structure",
                     "Step 2: Label parts - A: [name], B: [name], C: [name]",
-                    "Step 3: Add arrows/connections and details"
+                    "Step 3: Add arrows/connections"
                 ],
-                "diagram_description": "Detailed description of the diagram showing all parts with proper labels and arrows",
-                "marks": 3,
-                "diagram_required": true
+                "marks": 3
             }}
         ]
     }},
@@ -5539,22 +5798,18 @@ Return in this EXACT JSON format:
 GENERATE THE PAPER NOW! Return ONLY the JSON object above.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
 
-        import httpx
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"paper-{str(uuid.uuid4())[:8]}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o-mini")
         
-        topics_hint = ""
-        if request.syllabus_topics:
-            topics_hint = f"\nSpecific Topics to Cover: {', '.join(request.syllabus_topics)}"
-        
-        chapters_hint = ""
-        if request.chapters and len(request.chapters) > 0:
-            chapters_hint = f"\nChapters Included: {', '.join(request.chapters)}"
-        
-        user_msg_text = f"""Generate a complete question paper with these EXACT requirements:
+        # ✅ IMPROVED USER MESSAGE - More explicit about marks
+        user_msg = UserMessage(text=f"""Generate a complete question paper with these EXACT requirements:
 
 Subject: {request.subject}
 Class: {request.class_name}  
-Chapter/Topic: {request.chapter}{chapters_hint}{topics_hint}
-Board: {request.board}
+Chapter/Topic: {request.chapter}
 Total Marks: {request.total_marks} (MUST BE EXACT - verify sum at end!)
 Language: {request.language}
 Difficulty: {request.difficulty}
@@ -5566,109 +5821,24 @@ Example: If total marks = 20, and you have:
 - 10 MCQs × 1 mark = 10 marks
 - 2 Short × 3 marks = 6 marks  
 - 1 Long × 4 marks = 4 marks
-Total = 10+6+4 = 20 marks
+Total = 10+6+4 = 20 marks ✓
 
-Generate the paper now in pure {request.language} language."""
+Generate the paper now in pure {request.language} language.""")
+        response = await chat.send_message(user_msg)
         
-        async with httpx.AsyncClient() as http_client:
-            sarvam_response = await http_client.post(
-                "https://api.sarvam.ai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {sarvam_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "sarvam-m",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_msg_text}
-                    ],
-                    "max_tokens": 8000,
-                    "temperature": 0.7
-                },
-                timeout=120.0
-            )
-            
-            if sarvam_response.status_code != 200:
-                logging.error(f"Sarvam API error: {sarvam_response.status_code} - {sarvam_response.text}")
-                raise HTTPException(status_code=500, detail="AI service temporarily unavailable. Please try again.")
-            
-            sarvam_data = sarvam_response.json()
-            response = sarvam_data.get("choices", [{}])[0].get("message", {}).get("content", "")
-        
+        # Parse response
         import json
         import re
         
-        def clean_json_string(raw_json):
-            """Clean common LLM JSON errors"""
-            s = raw_json
-            s = re.sub(r'```json\s*', '', s)
-            s = re.sub(r'```\s*$', '', s)
-            s = re.sub(r',\s*([}\]])', r'\1', s)
-            s = re.sub(r'(["\d\w])\s*\n\s*(")', r'\1,\n\2', s)
-            s = s.replace('\n', ' ')
-            s = re.sub(r'(?<!\\)"([^"]*?)(?<!\\)":\s*"([^"]*?)(?<!\\)"([^,}\]\s])', r'"\1": "\2"\3', s)
-            s = re.sub(r'//.*?(?=[\n,}\]])', '', s)
-            s = re.sub(r'/\*.*?\*/', '', s, flags=re.DOTALL)
-            return s
-        
+        # Extract JSON from response
         json_match = re.search(r'\{[\s\S]*\}', response)
-        questions_data = None
         if json_match:
-            raw = json_match.group()
-            try:
-                questions_data = json.loads(raw)
-            except json.JSONDecodeError:
-                cleaned = clean_json_string(raw)
-                try:
-                    questions_data = json.loads(cleaned)
-                except json.JSONDecodeError:
-                    bracket_count = 0
-                    last_valid_end = -1
-                    for i, ch in enumerate(cleaned):
-                        if ch == '{': bracket_count += 1
-                        elif ch == '}': 
-                            bracket_count -= 1
-                            if bracket_count == 0:
-                                last_valid_end = i
-                                break
-                    if last_valid_end > 0:
-                        try:
-                            questions_data = json.loads(cleaned[:last_valid_end+1])
-                        except json.JSONDecodeError:
-                            pass
-                    
-                    if not questions_data:
-                        q_pattern = re.findall(r'"question"\s*:\s*"([^"]+)"', raw)
-                        a_pattern = re.findall(r'"answer"\s*:\s*"([^"]+)"', raw)
-                        m_pattern = re.findall(r'"marks"\s*:\s*(\d+)', raw)
-                        t_pattern = re.findall(r'"type"\s*:\s*"([^"]+)"', raw)
-                        if q_pattern:
-                            questions_data = {"questions": []}
-                            for idx, q in enumerate(q_pattern):
-                                questions_data["questions"].append({
-                                    "question": q,
-                                    "answer": a_pattern[idx] if idx < len(a_pattern) else "Answer not generated",
-                                    "marks": int(m_pattern[idx]) if idx < len(m_pattern) else 2,
-                                    "type": t_pattern[idx] if idx < len(t_pattern) else "short"
-                                })
-                            logging.warning(f"Used regex fallback to extract {len(q_pattern)} questions from malformed JSON")
-        
-        if not questions_data:
+            questions_data = json.loads(json_match.group())
+        else:
             questions_data = {"questions": []}
         
+        # Validate and fix marks if needed
         questions = questions_data.get("questions", [])
-        if not questions and "question_paper" in questions_data:
-            sections = questions_data.get("question_paper", {}).get("sections", [])
-            for section in sections:
-                for q in section.get("questions", []):
-                    questions.append(q)
-        
-        if not questions and "sections" in questions_data:
-            for section in questions_data.get("sections", []):
-                for q in section.get("questions", []):
-                    questions.append(q)
-        
         actual_total = sum(q.get("marks", 0) for q in questions)
         
         # If marks don't match, try to adjust
@@ -5679,55 +5849,18 @@ Generate the paper now in pure {request.language} language."""
             retry_count += 1
             logging.info(f"Paper marks mismatch: {actual_total} vs {request.total_marks}. Retry {retry_count}")
             
+            # Retry with more specific prompt
             retry_prompt = f"""The paper you generated has {actual_total} marks but I need EXACTLY {request.total_marks} marks.
 Please regenerate with the correct number of questions. Current distribution needs adjustment.
 Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no less."""
             
-            async with httpx.AsyncClient() as http_client:
-                retry_resp = await http_client.post(
-                    "https://api.sarvam.ai/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {sarvam_api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "sarvam-m",
-                        "messages": [
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_msg_text},
-                            {"role": "assistant", "content": response},
-                            {"role": "user", "content": retry_prompt}
-                        ],
-                        "max_tokens": 8000,
-                        "temperature": 0.7
-                    },
-                    timeout=120.0
-                )
-                if retry_resp.status_code == 200:
-                    retry_data = retry_resp.json()
-                    response = retry_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            retry_msg = UserMessage(text=retry_prompt)
+            response = await chat.send_message(retry_msg)
             
             json_match = re.search(r'\{[\s\S]*\}', response)
             if json_match:
-                raw_retry = json_match.group()
-                try:
-                    questions_data = json.loads(raw_retry)
-                except json.JSONDecodeError:
-                    try:
-                        questions_data = json.loads(clean_json_string(raw_retry))
-                    except json.JSONDecodeError:
-                        logging.warning("Retry JSON also malformed, keeping previous questions")
-                        break
+                questions_data = json.loads(json_match.group())
                 questions = questions_data.get("questions", [])
-                if not questions and "question_paper" in questions_data:
-                    sections = questions_data.get("question_paper", {}).get("sections", [])
-                    for section in sections:
-                        for q in section.get("questions", []):
-                            questions.append(q)
-                if not questions and "sections" in questions_data:
-                    for section in questions_data.get("sections", []):
-                        for q in section.get("questions", []):
-                            questions.append(q)
                 actual_total = sum(q.get("marks", 0) for q in questions)
         
         # Only as last resort, adjust marks (but with better questions)
@@ -5755,9 +5888,6 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
         # Final verification
         final_total = sum(q.get("marks", 0) for q in questions)
         
-        question_paper = questions_data.get("question_paper", None)
-        answer_paper = questions_data.get("answer_paper", None)
-        
         paper_data = {
             "id": str(uuid.uuid4()),
             "subject": request.subject,
@@ -5769,28 +5899,12 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
             "actual_marks": final_total,
             "time_duration": request.time_duration,
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "marks_verified": final_total == request.total_marks,
-            "question_paper": question_paper,
-            "answer_paper": answer_paper
+            "marks_verified": final_total == request.total_marks
         }
         
         # Save to DB
         await db.generated_papers.insert_one(paper_data)
         await log_audit(current_user["id"], "generate", "ai_papers", {"paper_id": paper_data["id"], "subject": request.subject})
-        
-        # Deduct credits (15 credits per paper - 3x markup over API cost)
-        school_id = current_user.get("school_id", "")
-        if school_id:
-            try:
-                await deduct_credits_internal(
-                    user_id=current_user["id"],
-                    school_id=school_id,
-                    feature="ai_paper_generate",
-                    count=1,
-                    description=f"AI Paper: {request.subject} - {request.class_name}"
-                )
-            except Exception as credit_err:
-                logging.warning(f"Credit deduction failed (paper still generated): {credit_err}")
         
         return PaperGenerateResponse(**paper_data)
         
@@ -5798,411 +5912,67 @@ Generate questions that sum to EXACTLY {request.total_marks} marks. No more, no 
         logging.error(f"AI Paper generation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate paper: {str(e)}")
 
-def generate_local_svg(question: str, answer: str, subject: str, is_drawing: bool = False) -> str:
-    """Generate a local SVG diagram without any API call"""
-    import html as html_module
-    q_lower = (question + " " + answer).lower()
-    title = question[:60] + "..." if len(question) > 60 else question
-    title = html_module.escape(title)
-    
-    if is_drawing:
-        return generate_drawing_svg(q_lower, title, answer)
-    
-    sub_lower = subject.lower()
-    if any(w in sub_lower for w in ['science', 'विज्ञान', 'biology', 'जीव', 'evs', 'पर्यावरण']):
-        return generate_science_svg(q_lower, title, answer)
-    elif any(w in sub_lower for w in ['math', 'गणित']):
-        return generate_math_svg(q_lower, title, answer)
-    elif any(w in sub_lower for w in ['social', 'सामाजिक', 'geography', 'भूगोल', 'history', 'इतिहास']):
-        return generate_sst_svg(q_lower, title, answer)
-    elif any(w in sub_lower for w in ['physics', 'भौतिक']):
-        return generate_physics_svg(q_lower, title, answer)
-    elif any(w in sub_lower for w in ['chemistry', 'रसायन']):
-        return generate_chemistry_svg(q_lower, title, answer)
-    else:
-        return generate_generic_diagram_svg(title, answer)
-
-def generate_drawing_svg(q_lower, title, answer):
-    """Generate SVG for drawing/art subjects"""
-    if any(w in q_lower for w in ['सेब', 'apple', 'फल', 'fruit']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#FFF8E7"/>
-<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">सेब / Apple - Reference Drawing</text>
-<ellipse cx="250" cy="220" rx="100" ry="110" fill="#FF4444" stroke="#222" stroke-width="3"/>
-<ellipse cx="220" cy="220" rx="80" ry="100" fill="#FF6666" stroke="none"/>
-<path d="M250 110 Q260 80 280 90" stroke="#228B22" stroke-width="4" fill="none"/>
-<ellipse cx="270" cy="85" rx="25" ry="12" fill="#228B22" stroke="#1a6e1a" stroke-width="2"/>
-<rect x="246" y="110" width="8" height="30" rx="3" fill="#8B4513" stroke="#5a2d0c" stroke-width="1"/>
-<ellipse cx="220" cy="190" rx="15" ry="20" fill="rgba(255,255,255,0.3)"/>
-<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">रंग भरें / Color it</text>
-</svg>'''
-    elif any(w in q_lower for w in ['तितली', 'butterfly']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#F0FFF0"/>
-<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">तितली / Butterfly</text>
-<ellipse cx="250" cy="200" rx="12" ry="50" fill="#8B4513" stroke="#333" stroke-width="2"/>
-<ellipse cx="200" cy="170" rx="60" ry="45" fill="#FF69B4" stroke="#333" stroke-width="2.5" transform="rotate(-15 200 170)"/>
-<ellipse cx="300" cy="170" rx="60" ry="45" fill="#FF69B4" stroke="#333" stroke-width="2.5" transform="rotate(15 300 170)"/>
-<ellipse cx="200" cy="230" rx="50" ry="40" fill="#FFB347" stroke="#333" stroke-width="2.5" transform="rotate(10 200 230)"/>
-<ellipse cx="300" cy="230" rx="50" ry="40" fill="#FFB347" stroke="#333" stroke-width="2.5" transform="rotate(-10 300 230)"/>
-<circle cx="195" cy="165" r="12" fill="#4169E1" stroke="#333" stroke-width="1.5"/>
-<circle cx="305" cy="165" r="12" fill="#4169E1" stroke="#333" stroke-width="1.5"/>
-<circle cx="195" cy="225" r="10" fill="#FF4500" stroke="#333" stroke-width="1.5"/>
-<circle cx="305" cy="225" r="10" fill="#FF4500" stroke="#333" stroke-width="1.5"/>
-<circle cx="250" cy="148" r="8" fill="#8B4513" stroke="#333" stroke-width="1.5"/>
-<circle cx="244" cy="145" r="2" fill="#000"/>
-<circle cx="256" cy="145" r="2" fill="#000"/>
-<path d="M242 138 Q230 110 225 105" stroke="#333" stroke-width="2" fill="none"/>
-<path d="M258 138 Q270 110 275 105" stroke="#333" stroke-width="2" fill="none"/>
-<circle cx="225" cy="103" r="3" fill="#333"/>
-<circle cx="275" cy="103" r="3" fill="#333"/>
-<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">चित्र पूरा करें और रंग भरें</text>
-</svg>'''
-    elif any(w in q_lower for w in ['घर', 'house', 'home', 'मकान']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#87CEEB"/>
-<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">घर / House</text>
-<rect x="150" y="180" width="200" height="160" fill="#FFD700" stroke="#333" stroke-width="3"/>
-<polygon points="250,80 130,180 370,180" fill="#FF4444" stroke="#333" stroke-width="3"/>
-<rect x="220" y="260" width="60" height="80" fill="#8B4513" stroke="#333" stroke-width="2"/>
-<circle cx="270" cy="300" r="4" fill="#FFD700"/>
-<rect x="170" y="210" width="40" height="40" fill="#87CEEB" stroke="#333" stroke-width="2"/>
-<line x1="190" y1="210" x2="190" y2="250" stroke="#333" stroke-width="1.5"/>
-<line x1="170" y1="230" x2="210" y2="230" stroke="#333" stroke-width="1.5"/>
-<rect x="290" y="210" width="40" height="40" fill="#87CEEB" stroke="#333" stroke-width="2"/>
-<line x1="310" y1="210" x2="310" y2="250" stroke="#333" stroke-width="1.5"/>
-<line x1="290" y1="230" x2="330" y2="230" stroke="#333" stroke-width="1.5"/>
-<rect x="230" y="100" width="15" height="40" fill="#888" stroke="#333" stroke-width="1.5"/>
-<circle cx="400" cy="70" r="35" fill="#FFD700" stroke="#FFA500" stroke-width="2"/>
-<line x1="400" y1="25" x2="400" y2="15" stroke="#FFA500" stroke-width="2"/>
-<line x1="440" y1="70" x2="450" y2="70" stroke="#FFA500" stroke-width="2"/>
-<line x1="360" y1="70" x2="350" y2="70" stroke="#FFA500" stroke-width="2"/>
-<rect x="0" y="340" width="500" height="60" fill="#228B22"/>
-<circle cx="80" cy="310" rx="30" ry="40" fill="#228B22" stroke="#1a6e1a" stroke-width="2"/>
-<rect x="77" y="310" width="6" height="30" fill="#8B4513"/>
-<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#FFF">सुंदर घर बनाइए / Draw a beautiful house</text>
-</svg>'''
-    elif any(w in q_lower for w in ['बगीचा', 'garden', 'पेड़', 'tree', 'फूल', 'flower', 'scenery', 'दृश्य']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#87CEEB"/>
-<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">बगीचा / Garden Scenery</text>
-<circle cx="420" cy="60" r="35" fill="#FFD700"/>
-<path d="M0 280 Q125 230 250 270 Q375 310 500 260 L500 400 L0 400 Z" fill="#228B22"/>
-<rect x="100" y="170" width="12" height="110" fill="#8B4513"/>
-<circle cx="106" cy="140" r="45" fill="#2E8B57"/>
-<circle cx="80" cy="155" r="30" fill="#32CD32"/>
-<circle cx="130" cy="155" r="30" fill="#3CB371"/>
-<rect x="350" y="190" width="10" height="90" fill="#8B4513"/>
-<circle cx="355" cy="165" r="35" fill="#228B22"/>
-<circle cx="340" cy="175" r="25" fill="#32CD32"/>
-<circle cx="370" cy="175" r="25" fill="#2E8B57"/>
-<g transform="translate(200,280)"><path d="M0 0 Q5 -20 0 -40" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-45" r="10" fill="#FF69B4" stroke="#333" stroke-width="1"/><circle cx="0" cy="-45" r="4" fill="#FFD700"/></g>
-<g transform="translate(250,290)"><path d="M0 0 Q5 -25 0 -50" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-55" r="12" fill="#FF4444" stroke="#333" stroke-width="1"/><circle cx="0" cy="-55" r="4" fill="#FFD700"/></g>
-<g transform="translate(300,275)"><path d="M0 0 Q5 -20 0 -35" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-40" r="9" fill="#9370DB" stroke="#333" stroke-width="1"/><circle cx="0" cy="-40" r="3" fill="#FFD700"/></g>
-<g transform="translate(170,285)"><path d="M0 0 Q-3 -18 0 -30" stroke="#228B22" stroke-width="3" fill="none"/><circle cx="0" cy="-35" r="8" fill="#FF6347" stroke="#333" stroke-width="1"/><circle cx="0" cy="-35" r="3" fill="#FFD700"/></g>
-<path d="M80 50 Q100 30 120 50 Q140 30 160 50" fill="#FFF" stroke="none"/>
-<path d="M300 40 Q315 25 330 40 Q345 25 360 40" fill="#FFF" stroke="none"/>
-<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="13" fill="#FFF">सुंदर बगीचे का चित्र बनाइए</text>
-</svg>'''
-    elif any(w in q_lower for w in ['पैटर्न', 'pattern', 'रंगोली', 'rangoli', 'border']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#FFF8DC"/>
-<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">पैटर्न / Pattern</text>
-<g transform="translate(250,200)">
-<polygon points="0,-80 15,-25 75,-25 25,10 45,65 0,30 -45,65 -25,10 -75,-25 -15,-25" fill="#FF6347" stroke="#333" stroke-width="2"/>
-<polygon points="0,-55 10,-18 50,-18 18,7 30,45 0,20 -30,45 -18,7 -50,-18 -10,-18" fill="#FFD700" stroke="#333" stroke-width="1.5"/>
-<circle cx="0" cy="0" r="20" fill="#FF69B4" stroke="#333" stroke-width="2"/>
-<circle cx="0" cy="0" r="10" fill="#FFD700" stroke="#333" stroke-width="1"/>
-<circle cx="0" cy="-50" r="6" fill="#4169E1"/>
-<circle cx="47" cy="-16" r="6" fill="#4169E1"/>
-<circle cx="29" cy="40" r="6" fill="#4169E1"/>
-<circle cx="-29" cy="40" r="6" fill="#4169E1"/>
-<circle cx="-47" cy="-16" r="6" fill="#4169E1"/>
-</g>
-<circle cx="80" cy="80" r="8" fill="#FF4500"/><circle cx="80" cy="120" r="8" fill="#32CD32"/><circle cx="80" cy="160" r="8" fill="#FF4500"/><circle cx="80" cy="200" r="8" fill="#32CD32"/>
-<circle cx="420" cy="80" r="8" fill="#32CD32"/><circle cx="420" cy="120" r="8" fill="#FF4500"/><circle cx="420" cy="160" r="8" fill="#32CD32"/><circle cx="420" cy="200" r="8" fill="#FF4500"/>
-<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">पैटर्न पूरा करें और रंग भरें</text>
-</svg>'''
-    else:
-        import html as html_module
-        safe_title = html_module.escape(answer[:80] if answer else question[:80])
-        return f'''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#FFF5EE"/>
-<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">संदर्भ चित्र / Reference Drawing</text>
-<rect x="50" y="50" width="400" height="300" rx="15" fill="#FFF" stroke="#DDD" stroke-width="2"/>
-<circle cx="250" cy="160" r="60" fill="#FFE4E1" stroke="#FF6B6B" stroke-width="3"/>
-<text x="250" y="155" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">✏️</text>
-<text x="250" y="175" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">Draw Here</text>
-<text x="250" y="270" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">{safe_title}</text>
-<line x1="100" y1="290" x2="400" y2="290" stroke="#DDD" stroke-width="1" stroke-dasharray="5,5"/>
-<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="13" fill="#888">चित्र बनाइए और रंग भरिए</text>
-</svg>'''
-
-def generate_science_svg(q_lower, title, answer):
-    """Generate science diagram SVGs"""
-    if any(w in q_lower for w in ['plant cell', 'पादप कोशिका', 'cell', 'कोशिका']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#F0FFF0"/>
-<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#1a5276">पादप कोशिका / Plant Cell</text>
-<rect x="100" y="50" width="300" height="300" rx="20" fill="#E8F5E9" stroke="#2E7D32" stroke-width="3"/>
-<rect x="115" y="65" width="270" height="270" rx="15" fill="#C8E6C9" stroke="#388E3C" stroke-width="2"/>
-<ellipse cx="250" cy="160" rx="50" ry="40" fill="#BBDEFB" stroke="#1565C0" stroke-width="2"/>
-<circle cx="250" cy="155" r="12" fill="#1565C0"/>
-<ellipse cx="180" cy="250" rx="30" ry="20" fill="#A5D6A7" stroke="#2E7D32" stroke-width="1.5"/>
-<ellipse cx="320" cy="130" rx="25" ry="18" fill="#A5D6A7" stroke="#2E7D32" stroke-width="1.5"/>
-<ellipse cx="300" cy="270" rx="28" ry="22" fill="#A5D6A7" stroke="#2E7D32" stroke-width="1.5"/>
-<rect x="140" y="150" width="40" height="100" rx="8" fill="rgba(255,183,77,0.4)" stroke="#F57C00" stroke-width="1.5"/>
-<ellipse cx="200" cy="300" rx="60" ry="20" fill="rgba(129,212,250,0.5)" stroke="#0288D1" stroke-width="1.5"/>
-<line x1="400" y1="80" x2="310" y2="80" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
-<text x="405" y="84" font-family="Arial" font-size="11" fill="#333">कोशिका भित्ति / Cell Wall</text>
-<line x1="400" y1="110" x2="320" y2="130" stroke="#333" stroke-width="1"/>
-<text x="405" y="114" font-family="Arial" font-size="11" fill="#333">हरितलवक / Chloroplast</text>
-<line x1="400" y1="160" x2="300" y2="160" stroke="#333" stroke-width="1"/>
-<text x="405" y="164" font-family="Arial" font-size="11" fill="#333">केन्द्रक / Nucleus</text>
-<line x1="400" y1="190" x2="300" y2="200" stroke="#333" stroke-width="1"/>
-<text x="405" y="194" font-family="Arial" font-size="11" fill="#333">कोशिका झिल्ली / Cell Membrane</text>
-<line x1="400" y1="250" x2="310" y2="260" stroke="#333" stroke-width="1"/>
-<text x="405" y="254" font-family="Arial" font-size="11" fill="#333">माइटोकॉन्ड्रिया / Mitochondria</text>
-<line x1="400" y1="310" x2="260" y2="305" stroke="#333" stroke-width="1"/>
-<text x="405" y="314" font-family="Arial" font-size="11" fill="#333">रिक्तिका / Vacuole</text>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
-</svg>'''
-    elif any(w in q_lower for w in ['water cycle', 'जल चक्र', 'hydrological']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#E3F2FD"/>
-<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#1565C0">जल चक्र / Water Cycle</text>
-<circle cx="420" cy="60" r="30" fill="#FFC107"/>
-<path d="M420 25 L420 15 M445 35 L455 25 M450 60 L460 60 M445 85 L455 95 M420 95 L420 105 M395 85 L385 95 M390 60 L380 60 M395 35 L385 25" stroke="#FFC107" stroke-width="2"/>
-<path d="M0 320 Q50 280 120 310 Q180 260 250 290 Q350 250 400 280 Q450 260 500 300 L500 400 L0 400 Z" fill="#4CAF50"/>
-<path d="M300 400 Q320 340 380 350 Q420 320 500 350 L500 400 Z" fill="#795548"/>
-<path d="M350 350 L380 260 L410 350" fill="#795548" stroke="#5D4037" stroke-width="2"/>
-<ellipse cx="150" cy="370" rx="80" ry="20" fill="#2196F3" stroke="#1565C0" stroke-width="2"/>
-<path d="M130 360 Q140 340 180 345 Q200 330 230 350" stroke="#1565C0" stroke-width="1.5" fill="none"/>
-<path d="M120 350 C140 300 160 250 200 180" stroke="#2196F3" stroke-width="2" fill="none" stroke-dasharray="4,3"/>
-<text x="110" y="230" font-family="Arial" font-size="11" fill="#1565C0" transform="rotate(-60 110 230)">वाष्पीकरण / Evaporation</text>
-<path d="M60 80 Q100 50 140 80 Q180 50 220 80" fill="#B3E5FC" stroke="#29B6F6" stroke-width="2"/>
-<path d="M220 100 Q240 120 230 140 Q240 120 250 140 Q260 120 270 140" stroke="#2196F3" stroke-width="2" fill="none"/>
-<text x="180" y="65" font-family="Arial" font-size="11" fill="#1565C0">बादल / Cloud</text>
-<text x="260" y="155" font-family="Arial" font-size="11" fill="#1565C0">वर्षा / Rain</text>
-<path d="M250 170 Q260 250 200 310" stroke="#2196F3" stroke-width="2" fill="none" stroke-dasharray="4,3"/>
-<text x="280" y="260" font-family="Arial" font-size="11" fill="#1565C0">संघनन / Condensation</text>
-</svg>'''
-    elif any(w in q_lower for w in ['food chain', 'खाद्य श्रृंखला', 'food web']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#F1F8E9"/>
-<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#33691E">खाद्य श्रृंखला / Food Chain</text>
-<rect x="30" y="160" width="90" height="60" rx="10" fill="#A5D6A7" stroke="#2E7D32" stroke-width="2"/>
-<text x="75" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#1B5E20">पौधे / Plants</text>
-<text x="75" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#388E3C">(उत्पादक)</text>
-<rect x="160" y="160" width="90" height="60" rx="10" fill="#FFF9C4" stroke="#F9A825" stroke-width="2"/>
-<text x="205" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#E65100">टिड्डा / Insect</text>
-<text x="205" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#F57F17">(प्राथमिक उपभोक्ता)</text>
-<rect x="290" y="160" width="90" height="60" rx="10" fill="#FFCCBC" stroke="#E64A19" stroke-width="2"/>
-<text x="335" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#BF360C">मेंढक / Frog</text>
-<text x="335" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#D84315">(द्वितीयक उपभोक्ता)</text>
-<rect x="390" y="160" width="90" height="60" rx="10" fill="#FFCDD2" stroke="#C62828" stroke-width="2"/>
-<text x="435" y="185" text-anchor="middle" font-family="Arial" font-size="11" fill="#B71C1C">सांप / Snake</text>
-<text x="435" y="200" text-anchor="middle" font-family="Arial" font-size="9" fill="#C62828">(तृतीयक उपभोक्ता)</text>
-<line x1="120" y1="190" x2="155" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
-<line x1="250" y1="190" x2="285" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
-<line x1="380" y1="190" x2="387" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
-<text x="250" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">ऊर्जा का प्रवाह → / Energy Flow →</text>
-<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
-</svg>'''
-    else:
-        return generate_generic_diagram_svg(title, answer)
-
-def generate_math_svg(q_lower, title, answer):
-    """Generate math diagram SVGs"""
-    if any(w in q_lower for w in ['triangle', 'त्रिभुज', 'angle']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#FFF3E0"/>
-<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#E65100">त्रिभुज / Triangle</text>
-<polygon points="250,80 100,320 400,320" fill="none" stroke="#1565C0" stroke-width="3"/>
-<text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">A</text>
-<text x="85" y="340" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">B</text>
-<text x="415" y="340" text-anchor="middle" font-family="Arial" font-size="13" fill="#333">C</text>
-<text x="160" y="195" text-anchor="middle" font-family="Arial" font-size="12" fill="#C62828">a</text>
-<text x="340" y="195" text-anchor="middle" font-family="Arial" font-size="12" fill="#C62828">b</text>
-<text x="250" y="350" text-anchor="middle" font-family="Arial" font-size="12" fill="#C62828">c</text>
-<path d="M120 300 L120 310 L130 310" fill="none" stroke="#333" stroke-width="1.5"/>
-<text x="250" y="390" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">∠A + ∠B + ∠C = 180°</text>
-</svg>'''
-    elif any(w in q_lower for w in ['circle', 'वृत्त', 'radius', 'त्रिज्या']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#E8EAF6"/>
-<text x="250" y="30" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#283593">वृत्त / Circle</text>
-<circle cx="250" cy="210" r="130" fill="none" stroke="#1565C0" stroke-width="3"/>
-<circle cx="250" cy="210" r="3" fill="#C62828"/>
-<text x="258" y="205" font-family="Arial" font-size="12" fill="#C62828">O (केन्द्र)</text>
-<line x1="250" y1="210" x2="380" y2="210" stroke="#C62828" stroke-width="2"/>
-<text x="315" y="200" font-family="Arial" font-size="12" fill="#C62828">r (त्रिज्या)</text>
-<line x1="120" y1="210" x2="380" y2="210" stroke="#2E7D32" stroke-width="2" stroke-dasharray="5,3"/>
-<text x="250" y="235" text-anchor="middle" font-family="Arial" font-size="12" fill="#2E7D32">d = 2r (व्यास / Diameter)</text>
-<text x="250" y="385" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">परिधि = 2πr, क्षेत्रफल = πr²</text>
-</svg>'''
-    else:
-        return generate_generic_diagram_svg(title, answer)
-
-def generate_physics_svg(q_lower, title, answer):
-    """Generate physics diagram SVGs"""
-    if any(w in q_lower for w in ['circuit', 'परिपथ', 'electric']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#ECEFF1"/>
-<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#263238">विद्युत परिपथ / Electric Circuit</text>
-<rect x="100" y="80" width="300" height="250" rx="5" fill="none" stroke="#1565C0" stroke-width="3"/>
-<line x1="150" y1="80" x2="200" y2="80" stroke="#C62828" stroke-width="3"/>
-<line x1="200" y1="70" x2="200" y2="90" stroke="#C62828" stroke-width="3"/>
-<line x1="210" y1="75" x2="210" y2="85" stroke="#C62828" stroke-width="2"/>
-<text x="205" y="60" text-anchor="middle" font-family="Arial" font-size="11" fill="#C62828">बैटरी / Battery</text>
-<circle cx="250" cy="330" r="20" fill="none" stroke="#FF6F00" stroke-width="2.5"/>
-<text x="250" y="335" text-anchor="middle" font-family="Arial" font-size="16" fill="#FF6F00">×</text>
-<text x="250" y="370" text-anchor="middle" font-family="Arial" font-size="11" fill="#FF6F00">बल्ब / Bulb</text>
-<rect x="380" y="170" width="20" height="40" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
-<text x="430" y="195" font-family="Arial" font-size="11" fill="#2E7D32">प्रतिरोध / Resistor</text>
-<circle cx="100" cy="200" r="5" fill="#333" stroke="#333" stroke-width="2"/>
-<text x="60" y="205" font-family="Arial" font-size="11" fill="#333">स्विच / Switch</text>
-</svg>'''
-    else:
-        return generate_generic_diagram_svg(title, answer)
-
-def generate_chemistry_svg(q_lower, title, answer):
-    """Generate chemistry diagram SVGs"""
-    if any(w in q_lower for w in ['atom', 'परमाणु', 'electron', 'structure']):
-        return '''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#EDE7F6"/>
-<text x="250" y="25" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#4A148C">परमाणु संरचना / Atom Structure</text>
-<circle cx="250" cy="210" r="30" fill="#FFCDD2" stroke="#C62828" stroke-width="2"/>
-<text x="250" y="205" text-anchor="middle" font-family="Arial" font-size="10" fill="#B71C1C">प्रोटॉन +</text>
-<text x="250" y="220" text-anchor="middle" font-family="Arial" font-size="10" fill="#333">न्यूट्रॉन</text>
-<circle cx="250" cy="210" r="70" fill="none" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="5,3"/>
-<circle cx="320" cy="210" r="8" fill="#1565C0"/><text x="335" y="215" font-family="Arial" font-size="10" fill="#1565C0">e⁻</text>
-<circle cx="180" cy="210" r="8" fill="#1565C0"/>
-<circle cx="250" cy="210" r="120" fill="none" stroke="#2E7D32" stroke-width="1.5" stroke-dasharray="5,3"/>
-<circle cx="250" cy="90" r="8" fill="#2E7D32"/><text x="270" y="95" font-family="Arial" font-size="10" fill="#2E7D32">e⁻</text>
-<circle cx="370" cy="210" r="8" fill="#2E7D32"/>
-<circle cx="130" cy="210" r="8" fill="#2E7D32"/>
-<circle cx="250" cy="330" r="8" fill="#2E7D32"/>
-<text x="250" y="380" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">केन्द्रक / Nucleus → कक्षा / Orbit → इलेक्ट्रॉन / Electron</text>
-</svg>'''
-    else:
-        return generate_generic_diagram_svg(title, answer)
-
-def generate_sst_svg(q_lower, title, answer):
-    """Generate social science diagram SVGs"""
-    return generate_generic_diagram_svg(title, answer)
-
-def generate_generic_diagram_svg(title, answer):
-    """Generate a generic educational diagram SVG"""
-    import html as html_module
-    safe_title = html_module.escape(title[:70] if title else "Diagram")
-    safe_answer = html_module.escape(answer[:200] if answer else "")
-    lines = safe_answer.split('. ')[:5]
-    
-    svg = f'''<svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-<rect width="500" height="400" fill="#F5F5F5"/>
-<text x="250" y="28" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#1a237e">{safe_title}</text>
-<line x1="50" y1="38" x2="450" y2="38" stroke="#1a237e" stroke-width="1.5"/>
-<rect x="100" y="60" width="300" height="280" rx="12" fill="#FFF" stroke="#90CAF9" stroke-width="2"/>'''
-    
-    y = 100
-    colors = ['#1565C0', '#2E7D32', '#C62828', '#F57F17', '#6A1B9A']
-    for i, line in enumerate(lines):
-        line = line.strip()
-        if not line:
-            continue
-        color = colors[i % len(colors)]
-        svg += f'''
-<circle cx="130" cy="{y}" r="6" fill="{color}"/>
-<text x="145" y="{y+5}" font-family="Arial" font-size="12" fill="#333">{html_module.escape(line[:45])}</text>'''
-        y += 45
-    
-    svg += '''
-<text x="250" y="375" text-anchor="middle" font-family="Arial" font-size="11" fill="#888">शैक्षणिक चित्र / Educational Diagram</text>
-</svg>'''
-    return svg
-
 @api_router.post("/ai/generate-answer-image")
 async def generate_answer_image(
     question: str = Body(...),
     answer: str = Body(...),
     subject: str = Body(...),
     question_type: str = Body(default="diagram"),
-    is_drawing: bool = Body(default=False),
     current_user: dict = Depends(get_current_user)
 ):
-    """Generate diagram SVG - uses local generator first, then tries Sarvam AI as enhancement"""
-    import base64
+    """Generate an image/diagram for paper answer key using Nano Banana"""
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    
+    if not emergent_key:
+        raise HTTPException(status_code=500, detail="Emergent LLM key not configured")
     
     try:
-        local_svg = generate_local_svg(question, answer, subject, is_drawing)
-        svg_b64 = base64.b64encode(local_svg.encode('utf-8')).decode('utf-8')
-        local_image_url = f"data:image/svg+xml;base64,{svg_b64}"
+        import base64
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
         
-        sarvam_api_key = os.environ.get("SARVAM_API_KEY")
-        if sarvam_api_key:
-            try:
-                import httpx
-                
-                if is_drawing:
-                    svg_prompt = f"""Create a REFERENCE SVG image for this Drawing/Art question:
-Question: {question}
-Description: {answer}
+        # Create a descriptive prompt for the image
+        image_prompt = f"""Create an educational diagram/illustration for a {subject} question paper answer key.
 
-Return ONLY valid SVG code with width="500" height="400". Use bright colors (#FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FFEAA7, #DDA0DD). Thick black outlines. Child-friendly. Return ONLY <svg>...</svg> code."""
-                else:
-                    svg_prompt = f"""Create an SVG diagram for this {subject} question:
-Question: {question}
-Answer: {answer}
+Topic: {question}
 
-Return ONLY valid SVG code with width="500" height="400". Use clean lines, labels, arrows. Colors: #1e40af, #059669, #dc2626. NCERT textbook style. Return ONLY <svg>...</svg> code."""
+The diagram should show: {answer}
 
-                async with httpx.AsyncClient() as http_client:
-                    resp = await http_client.post(
-                        "https://api.sarvam.ai/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {sarvam_api_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "model": "sarvam-m",
-                            "messages": [
-                                {"role": "system", "content": "You are an SVG diagram generator. Return ONLY valid SVG code."},
-                                {"role": "user", "content": svg_prompt}
-                            ],
-                            "max_tokens": 4000,
-                            "temperature": 0.3
-                        },
-                        timeout=30.0
-                    )
-                
-                if resp.status_code == 200:
-                    data = resp.json()
-                    content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-                    
-                    import re
-                    svg_match = re.search(r'<svg[\s\S]*?</svg>', content)
-                    if svg_match:
-                        svg_code = svg_match.group()
-                        if len(svg_code) > 200 and '<text' in svg_code:
-                            svg_b64_ai = base64.b64encode(svg_code.encode('utf-8')).decode('utf-8')
-                            return {
-                                "success": True,
-                                "image_url": f"data:image/svg+xml;base64,{svg_b64_ai}",
-                                "question": question,
-                                "answer": answer,
-                                "source": "ai"
-                            }
-            except Exception as api_err:
-                logging.warning(f"Sarvam API failed, using local SVG: {str(api_err)}")
+Requirements:
+- Clean, simple educational diagram suitable for school textbooks
+- Clear labels and annotations
+- Professional looking like NCERT textbook illustrations
+- Simple colors suitable for printing
+- Include all key parts mentioned"""
         
-        return {
-            "success": True,
-            "image_url": local_image_url,
-            "question": question,
-            "answer": answer,
-            "source": "local"
-        }
+        # Initialize chat with Gemini image model
+        session_id = f"answer-image-{uuid.uuid4()}"
+        chat = LlmChat(api_key=emergent_key, session_id=session_id, system_message="You are an educational diagram generator")
+        chat.with_model("gemini", "gemini-3-pro-image-preview").with_params(modalities=["image", "text"])
+        
+        msg = UserMessage(text=image_prompt)
+        text_response, images = await chat.send_message_multimodal_response(msg)
+        
+        if images and len(images) > 0:
+            # Get the first image and convert to data URL
+            img = images[0]
+            mime_type = img.get('mime_type', 'image/png')
+            img_data = img.get('data', '')
+            
+            # Create a data URL that can be used in img src
+            image_url = f"data:{mime_type};base64,{img_data}"
+            
+            return {
+                "success": True,
+                "image_url": image_url,
+                "question": question,
+                "answer": answer
+            }
+        else:
+            return {
+                "success": False,
+                "message": "No image generated",
+                "fallback_text": answer
+            }
             
     except Exception as e:
         logging.error(f"Answer image generation error: {str(e)}")
@@ -6605,15 +6375,6 @@ Language: {request.language}."""
 
 # ==================== TEACHTINO - TEACHER PORTAL ROUTES ====================
 
-async def get_teacher_all_ids(current_user: dict) -> list:
-    ids = [current_user["id"]]
-    if current_user.get("staff_id"):
-        ids.append(current_user["staff_id"])
-    staff_rec = await db.staff.find_one({"user_id": current_user["id"]}, {"_id": 0, "id": 1})
-    if staff_rec and staff_rec["id"] not in ids:
-        ids.append(staff_rec["id"])
-    return list(set(ids))
-
 class TeacherDashboardStats(BaseModel):
     my_classes: List[Dict[str, Any]]
     total_students: int
@@ -6632,13 +6393,13 @@ async def get_teacher_dashboard(current_user: dict = Depends(get_current_user)):
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     school_id = current_user.get("school_id")
     
-    teacher_ids = await get_teacher_all_ids(current_user)
-    
+    # Get classes where user is class teacher
     my_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
+        {"class_teacher_id": current_user["id"]},
         {"_id": 0}
     ).to_list(20)
     
+    # If no specific classes, get all classes for school (for principal/director)
     if not my_classes and current_user["role"] in ["principal", "vice_principal", "director"]:
         my_classes = await db.classes.find(
             {"school_id": school_id},
@@ -6679,93 +6440,11 @@ async def get_teacher_dashboard(current_user: dict = Depends(get_current_user)):
         recent_notices=notices
     )
 
-@api_router.get("/teacher/my-classes")
-async def get_my_classes(current_user: dict = Depends(get_current_user)):
-    """Get classes assigned to teacher - includes own classes + substitute classes"""
-    if current_user["role"] not in ["teacher", "principal", "vice_principal", "director"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    teacher_ids = await get_teacher_all_ids(current_user)
-    school_id = current_user.get("school_id")
-    
-    own_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
-        {"_id": 0}
-    ).to_list(20)
-    
-    own_class_ids = set(c["id"] for c in own_classes)
-    
-    for cls in own_classes:
-        cls["is_class_teacher"] = True
-        cls["is_substitute"] = False
-        cls["can_edit_attendance"] = True
-        cls["student_count"] = await db.students.count_documents({
-            "class_id": cls["id"],
-            "status": "active"
-        })
-    
-    sub_assignments = await db.substitute_assignments.find({
-        "substitute_teacher_id": {"$in": teacher_ids},
-        "school_id": school_id
-    }, {"_id": 0}).to_list(50)
-    
-    sub_class_ids = set()
-    for sa in sub_assignments:
-        cid = sa.get("class_id")
-        if cid and cid not in own_class_ids:
-            sub_class_ids.add(cid)
-    
-    if sub_class_ids:
-        sub_classes = await db.classes.find(
-            {"id": {"$in": list(sub_class_ids)}},
-            {"_id": 0}
-        ).to_list(20)
-        for cls in sub_classes:
-            cls["is_class_teacher"] = False
-            cls["is_substitute"] = True
-            cls["can_edit_attendance"] = True
-            cls["student_count"] = await db.students.count_documents({
-                "class_id": cls["id"],
-                "status": "active"
-            })
-            own_classes.append(cls)
-    
-    timetable_class_ids = set()
-    tt_slots = await db.timetables.find({
-        "school_id": school_id,
-        "teacher_id": {"$in": teacher_ids}
-    }, {"_id": 0, "class_id": 1}).to_list(200)
-    for s in tt_slots:
-        cid = s.get("class_id")
-        if cid and cid not in own_class_ids and cid not in sub_class_ids:
-            timetable_class_ids.add(cid)
-    
-    if timetable_class_ids:
-        tt_classes = await db.classes.find(
-            {"id": {"$in": list(timetable_class_ids)}},
-            {"_id": 0}
-        ).to_list(20)
-        for cls in tt_classes:
-            cls["is_class_teacher"] = False
-            cls["is_substitute"] = False
-            cls["can_edit_attendance"] = False
-            cls["student_count"] = await db.students.count_documents({
-                "class_id": cls["id"],
-                "status": "active"
-            })
-            own_classes.append(cls)
-    
-    return own_classes
-
 @api_router.get("/teacher/class/{class_id}/students")
-async def get_class_students(class_id: str, current_user: dict = Depends(require_staff)):
+async def get_class_students(class_id: str, current_user: dict = Depends(get_current_user)):
     """Get all students in a class for teacher"""
-    user_school = current_user.get("school_id")
-    query = {"class_id": class_id, "status": "active"}
-    if user_school:
-        query["school_id"] = user_school
     students = await db.students.find(
-        query,
+        {"class_id": class_id, "status": "active"},
         {"_id": 0, "password": 0}
     ).to_list(100)
     
@@ -6833,307 +6512,18 @@ Respond in Hindi-English mix. Be practical and helpful."""
         # Fallback to basic response
         return {"response": f"AI temporarily unavailable. Your query: {request.prompt}", "error": str(e)}
 
-# ==================== TEACHER APPROVAL REQUESTS ====================
-
-class TeacherRequestCreate(BaseModel):
-    request_type: str
-    title: str
-    description: str = ""
-    data: Optional[Dict[str, Any]] = None
-
-@api_router.post("/teacher/requests")
-async def create_teacher_request(request: TeacherRequestCreate, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["teacher", "principal", "vice_principal"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    req_data = {
-        "id": str(uuid.uuid4()),
-        "teacher_id": current_user["id"],
-        "teacher_name": current_user.get("name", ""),
-        "school_id": current_user.get("school_id", ""),
-        "request_type": request.request_type,
-        "title": request.title,
-        "description": request.description,
-        "data": request.data or {},
-        "status": "pending",
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "reviewed_at": None,
-        "reviewed_by": None,
-        "review_note": None
-    }
-    
-    await db.teacher_requests.insert_one(req_data)
-    
-    admin_notif = {
-        "id": str(uuid.uuid4()),
-        "school_id": current_user.get("school_id", ""),
-        "type": "teacher_request",
-        "title": f"Teacher Request: {request.title}",
-        "message": f"{current_user.get('name', 'Teacher')} ({request.request_type}): {request.description[:100]}",
-        "reference_id": req_data["id"],
-        "is_read": False,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "for_role": "director"
-    }
-    await db.admin_notifications.insert_one(admin_notif)
-    
-    return {"message": "Request submitted for admin approval", "id": req_data["id"], "status": "pending"}
-
-@api_router.get("/teacher/requests")
-async def get_teacher_requests(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["teacher", "principal", "vice_principal"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    requests = await db.teacher_requests.find(
-        {"teacher_id": current_user["id"]},
-        {"_id": 0}
-    ).sort("created_at", -1).to_list(50)
-    return requests
-
-@api_router.get("/admin/teacher-requests")
-async def get_all_teacher_requests(
-    status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
-):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    query = {"school_id": current_user.get("school_id", "")}
-    if status:
-        query["status"] = status
-    
-    requests = await db.teacher_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return requests
-
-@api_router.put("/admin/teacher-requests/{request_id}")
-async def review_teacher_request(
-    request_id: str,
-    action: str = Body(...),
-    note: str = Body(default=""),
-    current_user: dict = Depends(get_current_user)
-):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    if action not in ["approved", "rejected"]:
-        raise HTTPException(status_code=400, detail="Action must be 'approved' or 'rejected'")
-    
-    result = await db.teacher_requests.update_one(
-        {"id": request_id, "school_id": current_user.get("school_id", "")},
-        {"$set": {
-            "status": action,
-            "reviewed_at": datetime.now(timezone.utc).isoformat(),
-            "reviewed_by": current_user["id"],
-            "reviewer_name": current_user.get("name", ""),
-            "review_note": note
-        }}
-    )
-    
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Request not found")
-    
-    req = await db.teacher_requests.find_one({"id": request_id}, {"_id": 0})
-    if req:
-        teacher_notif = {
-            "id": str(uuid.uuid4()),
-            "school_id": current_user.get("school_id", ""),
-            "type": "request_response",
-            "title": f"Request {action.title()}: {req.get('title', '')}",
-            "message": f"Your request has been {action} by {current_user.get('name', 'Admin')}. {note}",
-            "reference_id": request_id,
-            "is_read": False,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "for_user": req.get("teacher_id")
-        }
-        await db.admin_notifications.insert_one(teacher_notif)
-    
-    return {"message": f"Request {action}", "status": action}
-
-@api_router.get("/admin/notifications")
-async def get_admin_notifications(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    notifs = await db.admin_notifications.find(
-        {"school_id": current_user.get("school_id", ""), "for_role": "director"},
-        {"_id": 0}
-    ).sort("created_at", -1).to_list(50)
-    return notifs
-
-@api_router.get("/teacher/my-notifications")
-async def get_teacher_notifications(current_user: dict = Depends(get_current_user)):
-    notifs = await db.admin_notifications.find(
-        {"for_user": current_user["id"]},
-        {"_id": 0}
-    ).sort("created_at", -1).to_list(50)
-    return notifs
-
-@api_router.put("/notifications/{notif_id}/read")
-async def mark_notification_read(notif_id: str, current_user: dict = Depends(get_current_user)):
-    await db.admin_notifications.update_one(
-        {"id": notif_id},
-        {"$set": {"is_read": True}}
-    )
-    return {"message": "Marked as read"}
-
-@api_router.get("/admin/pending-count")
-async def get_pending_count(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    count = await db.teacher_requests.count_documents({
-        "school_id": current_user.get("school_id", ""),
-        "status": "pending"
-    })
-    unread = await db.admin_notifications.count_documents({
-        "school_id": current_user.get("school_id", ""),
-        "for_role": "director",
-        "is_read": False
-    })
-    return {"pending_requests": count, "unread_notifications": unread}
-
 # ==================== TEACHER SYLLABUS & AI DAILY PLAN ====================
-
-@api_router.get("/teacher/my-subjects")
-async def get_teacher_subjects(current_user: dict = Depends(get_current_user)):
-    """Get subjects assigned to this teacher across all their classes"""
-    teacher = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
-    assigned_subjects = teacher.get("assigned_subjects", []) if teacher else []
-    
-    teacher_ids = await get_teacher_all_ids(current_user)
-    school_id = current_user.get("school_id")
-    
-    my_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
-        {"_id": 0}
-    ).to_list(20)
-    
-    if not my_classes and current_user["role"] in ["principal", "vice_principal", "director"]:
-        my_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
-    
-    timetable_subjects = set()
-    if school_id:
-        class_ids = [c["id"] for c in my_classes]
-        slots = await db.timetables.find({
-            "school_id": school_id,
-            "teacher_id": {"$in": teacher_ids}
-        }, {"_id": 0, "subject": 1, "class_id": 1}).to_list(200)
-        for s in slots:
-            if s.get("subject"):
-                timetable_subjects.add(s["subject"])
-    
-    all_subjects = list(set(assigned_subjects) | timetable_subjects)
-    
-    return {
-        "assigned_subjects": all_subjects if all_subjects else [],
-        "classes": [{"id": c["id"], "name": c.get("name", ""), "section": c.get("section", "")} for c in my_classes]
-    }
-
-@api_router.get("/teacher/my-timetable")
-async def get_teacher_timetable(current_user: dict = Depends(get_current_user)):
-    """Get timetable for this teacher - all their periods across all classes with time/duration"""
-    teacher_ids = await get_teacher_all_ids(current_user)
-    school_id = current_user.get("school_id")
-    
-    slots = await db.timetables.find({
-        "school_id": school_id,
-        "teacher_id": {"$in": teacher_ids}
-    }, {"_id": 0}).to_list(200)
-    
-    all_class_ids = set()
-    for s in slots:
-        cid = s.get("class_id")
-        if cid:
-            all_class_ids.add(cid)
-    
-    class_map = {}
-    if all_class_ids:
-        all_cls = await db.classes.find({"id": {"$in": list(all_class_ids)}}, {"_id": 0, "id": 1, "name": 1, "section": 1}).to_list(50)
-        for c in all_cls:
-            class_map[c["id"]] = f"{c.get('name', '')}{' - ' + c['section'] if c.get('section') else ''}"
-    
-    time_slots = await db.timetable_time_slots.find({"school_id": school_id}, {"_id": 0}).to_list(20)
-    time_map = {ts.get("period_id"): ts for ts in time_slots}
-    
-    from datetime import datetime as dt_cls
-    now = datetime.now(timezone.utc)
-    days_map = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    today_day = days_map[now.weekday()]
-    current_time_str = now.strftime("%H:%M")
-    
-    for s in slots:
-        s["class_name"] = class_map.get(s.get("class_id"), s.get("class_id", ""))
-        ts = time_map.get(s.get("period_id"))
-        if ts:
-            s["start_time"] = ts.get("start_time", "")
-            s["end_time"] = ts.get("end_time", "")
-            try:
-                st = dt_cls.strptime(ts.get("start_time", "00:00"), "%H:%M")
-                et = dt_cls.strptime(ts.get("end_time", "00:00"), "%H:%M")
-                duration_mins = int((et - st).total_seconds() / 60)
-                s["duration_minutes"] = max(duration_mins, 0)
-            except:
-                s["duration_minutes"] = 0
-            s["is_current"] = (s.get("day") == today_day and 
-                             ts.get("start_time", "") <= current_time_str <= ts.get("end_time", ""))
-            s["is_upcoming"] = (s.get("day") == today_day and 
-                              ts.get("start_time", "") > current_time_str)
-        else:
-            s["start_time"] = ""
-            s["end_time"] = ""
-            s["duration_minutes"] = 0
-            s["is_current"] = False
-            s["is_upcoming"] = False
-    
-    return {
-        "slots": slots,
-        "time_slots": sorted(time_slots, key=lambda x: x.get("period_id", 0)) if time_slots else [],
-        "today": today_day
-    }
-
-@api_router.get("/teacher/my-students")
-async def get_teacher_my_students(class_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """Get all students for teacher's classes"""
-    teacher_ids = await get_teacher_all_ids(current_user)
-    school_id = current_user.get("school_id")
-    
-    my_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
-        {"_id": 0}
-    ).to_list(20)
-    
-    if not my_classes and current_user["role"] in ["principal", "vice_principal", "director"]:
-        my_classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
-    
-    class_ids = [c["id"] for c in my_classes]
-    if class_id and class_id in class_ids:
-        class_ids = [class_id]
-    
-    students = await db.students.find(
-        {"class_id": {"$in": class_ids}, "status": "active"},
-        {"_id": 0, "password": 0}
-    ).sort("name", 1).to_list(500)
-    
-    class_map = {c["id"]: {"name": c.get("name", ""), "section": c.get("section", "")} for c in my_classes}
-    for s in students:
-        cls_info = class_map.get(s.get("class_id"), {})
-        s["class_name"] = cls_info.get("name", "")
-        s["class_section"] = cls_info.get("section", "")
-    
-    return {
-        "students": students,
-        "classes": [{"id": c["id"], "name": c.get("name", ""), "section": c.get("section", ""), "student_count": len([s for s in students if s.get("class_id") == c["id"]])} for c in my_classes]
-    }
 
 @api_router.get("/teacher/syllabus")
 async def get_teacher_syllabus(current_user: dict = Depends(get_current_user)):
     """Get syllabus progress for teacher's classes"""
     # Get classes assigned to this teacher
-    teacher_ids = await get_teacher_all_ids(current_user)
     my_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
+        {"class_teacher_id": current_user["id"]},
         {"_id": 0}
     ).to_list(20)
     
+    # If no specific classes, return all for school
     if not my_classes:
         school_id = current_user.get("school_id")
         my_classes = await db.classes.find(
@@ -7170,6 +6560,7 @@ async def get_teacher_syllabus(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/teacher/syllabus/{syllabus_id}")
 async def update_syllabus(syllabus_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Update syllabus progress"""
     result = await db.syllabus.update_one(
         {"id": syllabus_id},
         {"$set": {
@@ -7181,104 +6572,19 @@ async def update_syllabus(syllabus_id: str, data: dict, current_user: dict = Dep
     )
     return {"message": "Syllabus updated", "id": syllabus_id}
 
-@api_router.get("/syllabus-chapters")
-async def get_syllabus_chapters_for_class(
-    class_num: str,
-    subject: str,
-    board: str = "NCERT",
-    school_id: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
-):
-    user_school = current_user.get("school_id") or school_id
-    if user_school:
-        custom = await db.school_syllabus.find_one({
-            "school_id": user_school,
-            "board": board.upper(),
-            "class_num": class_num,
-            "subject": subject
-        }, {"_id": 0})
-        if custom and custom.get("chapters"):
-            return {
-                "board": board.upper(),
-                "class_num": class_num,
-                "subject": subject,
-                "chapters": custom["chapters"],
-                "source": "school_custom",
-                "book": custom.get("book", "")
-            }
-    
-    master = await db.syllabus_master.find_one({
-        "board": board.upper(),
-        "class_num": class_num,
-        "subject": subject
-    }, {"_id": 0})
-    
-    if master:
-        return {
-            "board": board.upper(),
-            "class_num": class_num,
-            "subject": subject,
-            "chapters": master.get("chapters", []),
-            "source": "default",
-            "book": master.get("book", ""),
-            "total_chapters": master.get("total_chapters", 0)
-        }
-    
-    return {
-        "board": board.upper(),
-        "class_num": class_num,
-        "subject": subject,
-        "chapters": [],
-        "source": "not_found"
-    }
-
-@api_router.get("/syllabus-subjects")
-async def get_syllabus_subjects_for_class(
-    class_num: str,
-    board: str = "NCERT",
-    current_user: dict = Depends(get_current_user)
-):
-    user_school = current_user.get("school_id")
-    result_map = {}
-    
-    master_subjects = await db.syllabus_master.find(
-        {"board": board.upper(), "class_num": class_num},
-        {"_id": 0, "subject": 1, "book": 1, "total_chapters": 1}
-    ).to_list(20)
-    for s in master_subjects:
-        result_map[s["subject"]] = {"name": s["subject"], "book": s.get("book", ""), "total_chapters": s.get("total_chapters", 0)}
-    
-    if user_school:
-        custom_subjects = await db.school_syllabus.find(
-            {"school_id": user_school, "board": board.upper(), "class_num": class_num},
-            {"_id": 0, "subject": 1, "book": 1, "chapters": 1}
-        ).to_list(20)
-        for s in custom_subjects:
-            result_map[s["subject"]] = {
-                "name": s["subject"],
-                "book": s.get("book", ""),
-                "total_chapters": len(s.get("chapters", [])),
-                "source": "school_custom"
-            }
-    
-    return {
-        "board": board.upper(),
-        "class_num": class_num,
-        "subjects": list(result_map.values())
-    }
-
 @api_router.get("/teacher/ai-daily-plan")
 async def get_ai_daily_plan(current_user: dict = Depends(get_current_user)):
     """AI-generated daily teaching plan"""
     today = datetime.now(timezone.utc)
     teacher_name = current_user.get("name", "Teacher").split()[0]
     
-    teacher_ids = await get_teacher_all_ids(current_user)
+    # Get teacher's classes
     my_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
+        {"class_teacher_id": current_user["id"]},
         {"_id": 0}
     ).to_list(10)
     
+    # Generate AI plan (mock for now - can integrate with actual AI)
     today_classes = []
     times = ["8:00 AM", "9:00 AM", "10:30 AM", "11:30 AM", "1:00 PM", "2:00 PM"]
     for idx, cls in enumerate(my_classes[:6]):
@@ -7338,14 +6644,14 @@ async def get_ai_daily_plan(current_user: dict = Depends(get_current_user)):
 @api_router.get("/teacher/weak-students")
 async def get_weak_students(current_user: dict = Depends(get_current_user)):
     """Get weak students for teacher's classes with AI strategies"""
-    teacher_ids = await get_teacher_all_ids(current_user)
     my_classes = await db.classes.find(
-        {"class_teacher_id": {"$in": teacher_ids}},
+        {"class_teacher_id": current_user["id"]},
         {"_id": 0}
     ).to_list(10)
     
     class_ids = [c["id"] for c in my_classes]
     
+    # Get students with weak performance (demo data)
     weak_students = await db.weak_students.find(
         {"class_id": {"$in": class_ids}},
         {"_id": 0}
@@ -7525,35 +6831,9 @@ async def mark_notice_read(notice_id: str, current_user: dict = Depends(get_curr
     )
     return {"message": "Notice marked as read"}
 
-class HomeworkCreate(BaseModel):
-    school_id: str
-    class_id: str
-    subject: str
-    description: str
-    due_date: Optional[str] = None
-    assigned_by: str
-    assigned_date: Optional[str] = None
-    chapter: Optional[str] = None
-    topic: Optional[str] = None
-    board: Optional[str] = None
-    chapter_number: Optional[int] = None
-    syllabus_topics: Optional[List[str]] = None
-
-@api_router.post("/homework")
-async def create_homework(homework: HomeworkCreate, current_user: dict = Depends(get_current_user)):
-    """Create homework (teacher only)"""
-    homework_doc = {
-        "id": str(uuid.uuid4()),
-        **homework.model_dump(),
-        "status": "pending",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.homework.insert_one(homework_doc)
-    return {"success": True, "message": "Homework assigned", "homework_id": homework_doc["id"]}
-
 @api_router.get("/student/homework")
 async def get_student_homework(current_user: dict = Depends(get_current_user)):
-    """Get homework for student's class (pending and active status)"""
+    """Get homework for student's class"""
     student = await db.students.find_one(
         {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
         {"_id": 0}
@@ -7564,41 +6844,10 @@ async def get_student_homework(current_user: dict = Depends(get_current_user)):
     
     homework = await db.homework.find({
         "class_id": student["class_id"],
-        "school_id": student["school_id"],
-        "status": {"$in": ["pending", "active"]}
+        "school_id": student["school_id"]
     }, {"_id": 0}).sort("due_date", 1).to_list(20)
     
     return homework
-
-@api_router.get("/homework")
-async def get_homework(school_id: str = None, class_id: str = None, current_user: dict = Depends(get_current_user)):
-    """Get homework for teacher (by school and optional class filter)"""
-    user_school = current_user.get("school_id")
-    query = {"school_id": user_school or school_id}
-    if class_id:
-        query["class_id"] = class_id
-    homework = await db.homework.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
-    return homework
-
-@api_router.post("/student/homework/{homework_id}/submit")
-async def submit_homework(homework_id: str, current_user: dict = Depends(get_current_user)):
-    """Submit homework (student)"""
-    student = await db.students.find_one(
-        {"$or": [{"id": current_user.get("id")}, {"student_id": current_user.get("student_id")}]},
-        {"_id": 0}
-    )
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    
-    await db.homework_submissions.insert_one({
-        "id": str(uuid.uuid4()),
-        "homework_id": homework_id,
-        "student_id": student.get("id") or student.get("student_id"),
-        "school_id": student["school_id"],
-        "status": "submitted",
-        "submitted_at": datetime.now(timezone.utc).isoformat()
-    })
-    return {"success": True, "message": "Homework submitted"}
 
 @api_router.get("/student/leaves")
 async def get_student_leaves(current_user: dict = Depends(get_current_user)):
@@ -7706,6 +6955,411 @@ You help with: Math, Science, English, Hindi, Social Studies, Computer Science, 
     except Exception as e:
         print(f"Student AI Error: {e}")
         return {"response": f"AI temporarily unavailable. Aapka question: {request.prompt}\n\nPlease try again later.", "error": str(e)}
+
+# ==================== STAFF LEAVES MANAGEMENT ====================
+
+class StaffLeaveRequest(BaseModel):
+    staff_id: str
+    school_id: str
+    leave_type: str  # casual, sick, earned, half_day
+    from_date: str
+    to_date: str
+    reason: str
+
+class StudentQueryCreate(BaseModel):
+    student_id: str
+    student_name: str
+    class_id: str
+    class_name: str
+    school_id: str
+    subject: str
+    question: str
+
+@api_router.post("/staff/leaves/apply")
+async def apply_staff_leave(leave_data: StaffLeaveRequest, current_user: dict = Depends(get_current_user)):
+    """Staff apply for leave"""
+    leave_doc = {
+        "id": str(uuid.uuid4()),
+        **leave_data.model_dump(),
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Get staff name
+    staff = await db.users.find_one({"id": leave_data.staff_id}, {"name": 1})
+    if staff:
+        leave_doc["staff_name"] = staff.get("name", "Unknown")
+    
+    await db.staff_leaves.insert_one(leave_doc)
+
+    await create_notification(
+        school_id=leave_data.school_id,
+        title="📝 New Leave आवेदन",
+        message=f"{leave_doc.get('staff_name', 'Staff')} ne {leave_data.leave_type} leave apply ki hai ({leave_data.from_date} से {leave_data.to_date}).",
+        notification_type="leave_request",
+        target_roles=["director", "principal"],
+        data={"leave_id": leave_doc["id"], "staff_id": leave_data.staff_id}
+    )
+    
+    return {"success": True, "message": "Leave application submitted", "leave_id": leave_doc["id"]}
+
+@api_router.get("/staff/leaves")
+async def get_staff_leaves(staff_id: str = None, school_id: str = None, current_user: dict = Depends(get_current_user)):
+    """Get staff leaves"""
+    query = {}
+    if staff_id:
+        query["staff_id"] = staff_id
+    if school_id:
+        query["school_id"] = school_id
+    
+    leaves = await db.staff_leaves.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return leaves
+
+@api_router.get("/staff/leaves/pending")
+async def get_pending_leaves(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get pending leaves for approval"""
+    leaves = await db.staff_leaves.find({
+        "school_id": school_id,
+        "status": "pending"
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return leaves
+
+@api_router.post("/staff/leaves/{leave_id}/approve")
+async def approve_leave(leave_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Approve staff leave"""
+    result = await db.staff_leaves.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "approved",
+            "approved_by": data.get("approved_by"),
+            "approved_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Leave not found")
+
+    leave = await db.staff_leaves.find_one({"id": leave_id}, {"_id": 0})
+    if leave:
+        await create_notification(
+            school_id=leave.get("school_id"),
+            title="✅ Leave Approved",
+            message=f"Aapki leave {leave.get('from_date')} se {leave.get('to_date')} approve ho gayi hai.",
+            notification_type="leave_approved",
+            target_user_id=leave.get("staff_id"),
+            data={"leave_id": leave_id}
+        )
+    return {"success": True, "message": "Leave approved"}
+
+@api_router.post("/staff/leaves/{leave_id}/reject")
+async def reject_leave(leave_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Reject staff leave"""
+    result = await db.staff_leaves.update_one(
+        {"id": leave_id},
+        {"$set": {
+            "status": "rejected",
+            "rejected_by": data.get("approved_by"),
+            "rejected_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Leave not found")
+
+    leave = await db.staff_leaves.find_one({"id": leave_id}, {"_id": 0})
+    if leave:
+        await create_notification(
+            school_id=leave.get("school_id"),
+            title="❌ Leave Rejected",
+            message=f"Aapki leave {leave.get('from_date')} se {leave.get('to_date')} reject ho gayi hai.",
+            notification_type="leave_rejected",
+            target_user_id=leave.get("staff_id"),
+            data={"leave_id": leave_id}
+        )
+    return {"success": True, "message": "Leave rejected"}
+
+
+# ==================== STUDENT QUERY SYSTEM ====================
+
+@api_router.post("/student/queries")
+async def create_student_query(query: StudentQueryCreate, current_user: dict = Depends(get_current_user)):
+    class_info = await db.classes.find_one({"id": query.class_id}, {"_id": 0, "class_teacher_id": 1, "class_teacher_name": 1})
+    teacher_id = class_info.get("class_teacher_id") if class_info else None
+    teacher_name = class_info.get("class_teacher_name") if class_info else None
+
+    subject_allocation = await db.subject_allocations.find_one({
+        "class_id": query.class_id,
+        "subject": query.subject,
+        "school_id": query.school_id
+    }, {"_id": 0})
+    if subject_allocation:
+        teacher_id = subject_allocation.get("teacher_id") or teacher_id
+        if teacher_id:
+            teacher_user = await db.users.find_one({"id": teacher_id}, {"_id": 0, "name": 1})
+            if teacher_user:
+                teacher_name = teacher_user.get("name")
+
+    query_doc = {
+        "id": str(uuid.uuid4()),
+        **query.model_dump(),
+        "teacher_id": teacher_id,
+        "teacher_name": teacher_name,
+        "status": "pending",
+        "answer": None,
+        "answered_by": None,
+        "answered_at": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.student_queries.insert_one(query_doc)
+
+    if teacher_id:
+        await create_notification(
+            school_id=query.school_id,
+            title="❓ New Student Query",
+            message=f"{query.student_name} ({query.class_name}) ne {query.subject} ka question bheja hai.",
+            notification_type="student_query",
+            target_user_id=teacher_id,
+            class_id=query.class_id,
+            data={"query_id": query_doc["id"], "student_id": query.student_id}
+        )
+
+    return {"success": True, "query_id": query_doc["id"]}
+
+
+@api_router.get("/student/queries")
+async def get_student_queries(student_id: str, school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    query = {"student_id": student_id}
+    if school_id:
+        query["school_id"] = school_id
+    queries = await db.student_queries.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return queries
+
+
+@api_router.get("/teacher/queries")
+async def get_teacher_queries(teacher_id: str, school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    query = {"teacher_id": teacher_id}
+    if school_id:
+        query["school_id"] = school_id
+    queries = await db.student_queries.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return queries
+
+
+@api_router.post("/teacher/queries/{query_id}/answer")
+async def answer_student_query(query_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    answer = data.get("answer")
+    answered_by = data.get("answered_by")
+    if not answer:
+        raise HTTPException(status_code=400, detail="Answer required")
+
+    result = await db.student_queries.update_one(
+        {"id": query_id},
+        {"$set": {
+            "answer": answer,
+            "status": "answered",
+            "answered_by": answered_by,
+            "answered_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Query not found")
+
+    query_doc = await db.student_queries.find_one({"id": query_id}, {"_id": 0})
+    if query_doc:
+        await create_notification(
+            school_id=query_doc.get("school_id"),
+            title="✅ Your Question Answered",
+            message=f"{query_doc.get('subject')} ka aapka question answer ho gaya hai.",
+            notification_type="query_answered",
+            target_user_id=query_doc.get("student_id"),
+            class_id=query_doc.get("class_id"),
+            data={"query_id": query_id}
+        )
+
+    return {"success": True, "message": "Answer submitted"}
+
+# ==================== HOMEWORK MANAGEMENT ====================
+
+class HomeworkCreate(BaseModel):
+    school_id: str
+    class_id: str
+    subject: str
+    description: str
+    chapter: Optional[str] = None  # [FIX] Added chapter field
+    topic: Optional[str] = None    # [FIX] Added topic field
+    due_date: Optional[str] = None
+    assigned_by: str
+    assigned_date: Optional[str] = None
+
+@api_router.post("/homework")
+async def create_homework(homework: HomeworkCreate, current_user: dict = Depends(get_current_user)):
+    """Create homework assignment"""
+    homework_doc = {
+        "id": str(uuid.uuid4()),
+        **homework.model_dump(),
+        "status": "pending",  # [FIX] Changed from "active" to "pending"
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.homework.insert_one(homework_doc)
+    return {"success": True, "message": "Homework assigned", "homework_id": homework_doc["id"]}
+
+@api_router.get("/homework")
+async def get_homework(school_id: str, class_id: str = None, current_user: dict = Depends(get_current_user)):
+    """Get homework list"""
+    query = {"school_id": school_id}
+    if class_id:
+        query["class_id"] = class_id
+    
+    homework = await db.homework.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return homework
+
+@api_router.post("/homework/submit")
+async def submit_homework(
+    file: UploadFile = File(...),
+    homework_id: str = Form(...),
+    student_id: str = Form(...),
+    school_id: str = Form(...),
+    class_id: str = Form(None),
+    subject: str = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Student submits homework with photo"""
+    import base64
+    
+    # Read file
+    content = await file.read()
+    
+    # Save to GridFS or as base64 for now
+    file_data = base64.b64encode(content).decode('utf-8')
+    file_url = f"data:{file.content_type};base64,{file_data[:100]}..."  # Truncated for storage
+    
+    # Get student name
+    student = await db.students.find_one({"id": student_id}, {"name": 1, "class_name": 1})
+    
+    # Get homework details
+    homework = await db.homework.find_one({"id": homework_id})
+    
+    submission = {
+        "id": str(uuid.uuid4()),
+        "homework_id": homework_id,
+        "student_id": student_id,
+        "student_name": student.get("name", "Unknown") if student else "Unknown",
+        "school_id": school_id,
+        "class_id": class_id or (homework.get("class_id") if homework else None),
+        "class_name": student.get("class_name") if student else "",
+        "subject": subject or (homework.get("subject") if homework else ""),
+        "image_data": file_data,
+        "image_url": file_url,
+        "teacher_id": homework.get("assigned_by") if homework else None,
+        "status": "pending",
+        "submitted_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.homework_submissions.insert_one(submission)
+    
+    # Update homework status for this student
+    await db.homework.update_one(
+        {"id": homework_id},
+        {"$addToSet": {"submitted_by": student_id}}
+    )
+    
+    return {"success": True, "message": "Homework submitted", "submission_id": submission["id"]}
+
+@api_router.get("/homework/submissions")
+async def get_homework_submissions(
+    school_id: str,
+    teacher_id: str = None,
+    class_id: str = None,
+    status: str = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get homework submissions for teacher review"""
+    query = {"school_id": school_id}
+    if teacher_id:
+        query["teacher_id"] = teacher_id
+    if class_id:
+        query["class_id"] = class_id
+    if status:
+        query["status"] = status
+    
+    submissions = await db.homework_submissions.find(query, {"_id": 0, "image_data": 0}).sort("submitted_at", -1).to_list(100)
+    return submissions
+
+@api_router.post("/homework/submissions/{submission_id}/review")
+async def review_homework(submission_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Teacher reviews homework submission"""
+    status = data.get("status", "approved")  # approved, revision
+    feedback = data.get("feedback", "")
+    reviewed_by = data.get("reviewed_by")
+    
+    result = await db.homework_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {
+            "status": status,
+            "feedback": feedback,
+            "reviewed_by": reviewed_by,
+            "reviewed_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    return {"success": True, "message": f"Homework {status}"}
+
+@api_router.get("/homework/submissions/{submission_id}/image")
+async def get_submission_image(submission_id: str, current_user: dict = Depends(get_current_user)):
+    """Get homework submission image"""
+    submission = await db.homework_submissions.find_one({"id": submission_id})
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    if submission.get("image_data"):
+        return {"image_data": submission["image_data"]}
+    
+    return {"image_url": submission.get("image_url")}
+
+# ==================== TINO CHAT FOR TEACHERS ====================
+
+@api_router.post("/tino/chat")
+async def tino_chat(request: dict, current_user: dict = Depends(get_current_user)):
+    """Tino AI chat endpoint"""
+    try:
+        from emergentintegrations.llm import LlmChat, UserMessage
+        
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            return {"response": "AI service not configured. Please contact admin."}
+        
+        message = request.get("message", "")
+        user_role = request.get("user_role", "teacher")
+        
+        system_prompt = f"""You are Tino, a helpful AI assistant for {user_role}s in Indian schools.
+You help with:
+- Attendance and student management
+- Leave applications
+- Homework and syllabus tracking
+- School notices and communications
+- General school administration queries
+
+Respond in a friendly Hinglish (Hindi-English mix) tone.
+Keep responses concise and helpful.
+"""
+        
+        session_id = f"tino-{current_user.get('id', 'default')[:8]}"
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=session_id,
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+        
+        user_msg = UserMessage(text=message)
+        response = await chat.send_message(user_msg)
+        
+        return {"response": response, "success": True}
+        
+    except Exception as e:
+        print(f"Tino Chat Error: {e}")
+        return {"response": "Sorry, AI service temporarily unavailable.", "error": str(e)}
 
 # ==================== HEALTH CHECK ====================
 
@@ -8948,7 +8602,7 @@ async def get_my_leaves(current_user: dict = Depends(get_current_user)):
     return leaves
 
 @api_router.get("/leave/pending")
-async def get_pending_leaves(current_user: dict = Depends(get_current_user)):
+async def get_leave_pending_alt(current_user: dict = Depends(get_current_user)):
     """Get pending leave applications for approval"""
     if current_user["role"] not in ["director", "principal", "vice_principal", "teacher"]:
         raise HTTPException(status_code=403, detail="Not authorized to view pending leaves")
@@ -8963,7 +8617,7 @@ async def get_pending_leaves(current_user: dict = Depends(get_current_user)):
     return leaves
 
 @api_router.post("/leave/{leave_id}/approve")
-async def approve_leave(leave_id: str, current_user: dict = Depends(get_current_user)):
+async def approve_leave_alt(leave_id: str, current_user: dict = Depends(get_current_user)):
     """Approve a leave application"""
     if current_user["role"] not in ["director", "principal", "vice_principal", "teacher"]:
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -8990,7 +8644,7 @@ async def approve_leave(leave_id: str, current_user: dict = Depends(get_current_
     return {"success": True, "message": "Leave approved"}
 
 @api_router.post("/leave/{leave_id}/reject")
-async def reject_leave(leave_id: str, reason: str = "", current_user: dict = Depends(get_current_user)):
+async def reject_leave_alt(leave_id: str, reason: str = "", current_user: dict = Depends(get_current_user)):
     """Reject a leave application"""
     if current_user["role"] not in ["director", "principal", "vice_principal", "teacher"]:
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -10009,15 +9663,17 @@ async def change_password(
     new_password: str = Form(...),
     current_user: dict = Depends(get_current_user)
 ):
-    """Change user password - syncs to staff/students collection for admin visibility"""
+    """Change user password"""
     user = await db.users.find_one({"id": current_user["id"]})
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Verify old password
     if not bcrypt.checkpw(old_password.encode(), user["password"].encode()):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     
+    # Hash new password
     hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
     
     await db.users.update_one(
@@ -10025,54 +9681,13 @@ async def change_password(
         {
             "$set": {
                 "password": hashed_pw,
-                "plain_password": new_password,
                 "password_change_required": False,
                 "password_changed_at": datetime.now(timezone.utc).isoformat()
             }
         }
     )
     
-    if user.get("staff_id") or user.get("employee_id"):
-        staff_filter = {"id": user["staff_id"]} if user.get("staff_id") else {"employee_id": user.get("employee_id")}
-        await db.staff.update_one(
-            staff_filter,
-            {"$set": {"plain_password": new_password, "password_changed_at": datetime.now(timezone.utc).isoformat()}}
-        )
-    
     await log_audit(current_user["id"], "change_password", "users", {"user_id": current_user["id"]})
-    
-    return {"message": "Password changed successfully"}
-
-@api_router.post("/student/change-password")
-async def student_change_password_auth(
-    old_password: str = Form(...),
-    new_password: str = Form(...),
-    current_user: dict = Depends(get_current_user)
-):
-    """Student changes password from StudyTino profile - syncs to students collection for admin visibility"""
-    student = await db.students.find_one({"id": current_user["id"]})
-    if not student:
-        student = await db.students.find_one({"student_id": current_user.get("student_id")})
-    
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    
-    if not bcrypt.checkpw(old_password.encode(), student["password"].encode()):
-        raise HTTPException(status_code=400, detail="Current password is incorrect")
-    
-    hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
-    
-    await db.students.update_one(
-        {"id": student["id"]},
-        {"$set": {
-            "password": hashed_pw,
-            "plain_password": new_password,
-            "password_changed": True,
-            "password_changed_at": datetime.now(timezone.utc).isoformat()
-        }}
-    )
-    
-    await log_audit(student["id"], "change_password", "students", {"student_id": student["id"]})
     
     return {"message": "Password changed successfully"}
 
@@ -11432,7 +11047,6 @@ class OnlinePaymentCreate(BaseModel):
     payer_upi_id: Optional[str] = None
     payer_name: Optional[str] = None
     remarks: Optional[str] = None
-    screenshot_url: Optional[str] = None
 
 @api_router.get("/school/settings")
 async def get_school_settings(school_id: str, current_user: dict = Depends(get_current_user)):
@@ -11485,184 +11099,6 @@ async def save_school_settings(settings: SchoolSettingsModel, current_user: dict
     await log_audit(current_user["id"], "update", "school_settings", {"school_id": settings.school_id})
     
     return {"message": "Settings saved successfully", "settings": settings_dict}
-
-# ==================== MODULE VISIBILITY ENDPOINTS ====================
-
-@api_router.get("/settings/module-visibility")
-async def get_module_visibility(current_user: dict = Depends(get_current_user)):
-    """Get module visibility settings for the school"""
-    school_id = current_user.get("school_id")
-    if not school_id:
-        return {}
-    
-    settings = await db.module_visibility.find_one(
-        {"school_id": school_id},
-        {"_id": 0, "school_id": 0, "updated_at": 0, "updated_by": 0}
-    )
-    
-    return settings.get("modules", {}) if settings else {}
-
-@api_router.post("/settings/module-visibility")
-async def save_module_visibility(body: dict, current_user: dict = Depends(get_current_user)):
-    """Save module visibility settings for the school"""
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    school_id = current_user.get("school_id")
-    if not school_id:
-        raise HTTPException(status_code=400, detail="No school selected")
-    
-    await db.module_visibility.update_one(
-        {"school_id": school_id},
-        {"$set": {
-            "school_id": school_id,
-            "modules": body,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "updated_by": current_user["id"]
-        }},
-        upsert=True
-    )
-    
-    return {"message": "Module visibility saved successfully"}
-
-# ==================== ANALYTICS ENDPOINTS ====================
-
-@api_router.get("/attendance/summary")
-async def get_attendance_summary(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get attendance summary for analytics page"""
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    
-    total_records = await db.attendance.count_documents({"school_id": school_id})
-    present_records = await db.attendance.count_documents({"school_id": school_id, "status": "present"})
-    
-    avg_attendance = round((present_records / total_records * 100), 1) if total_records > 0 else 0
-    
-    return {
-        "school_id": school_id,
-        "avg_attendance": avg_attendance,
-        "total_records": total_records,
-        "present_records": present_records,
-        "avg_performance": 0
-    }
-
-@api_router.get("/fee-payment/summary/{school_id}")
-async def get_fee_payment_summary(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get fee payment summary for analytics page"""
-    total_fees = await db.fee_payments.find({"school_id": school_id}).to_list(None)
-    
-    total_amount = sum(f.get("amount", 0) for f in total_fees)
-    paid_amount = sum(f.get("amount", 0) for f in total_fees if f.get("status") == "paid")
-    pending_amount = total_amount - paid_amount
-    
-    return {
-        "school_id": school_id,
-        "total_amount": total_amount,
-        "paid_amount": paid_amount,
-        "pending_amount": pending_amount,
-        "total_transactions": len(total_fees)
-    }
-
-@api_router.get("/analytics/teachers")
-async def get_teacher_analytics(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get teacher analytics with real computed metrics"""
-    teachers = await db.users.find(
-        {"school_id": school_id, "role": {"$in": ["teacher", "principal", "vice_principal"]}, "is_active": True},
-        {"_id": 0, "password": 0}
-    ).to_list(100)
-    
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
-    
-    result = []
-    for t in teachers:
-        tid = t.get("id", "")
-        teacher_ids = [tid]
-        staff = await db.staff.find_one({"user_id": tid}, {"_id": 0, "id": 1})
-        if staff:
-            teacher_ids.append(staff["id"])
-        
-        assigned_classes = await db.classes.find(
-            {"class_teacher_id": {"$in": teacher_ids}},
-            {"_id": 0, "id": 1, "name": 1, "section": 1}
-        ).to_list(10)
-        class_ids = [c["id"] for c in assigned_classes]
-        class_names = [f"{c.get('name','')}{' - '+c['section'] if c.get('section') else ''}" for c in assigned_classes]
-        
-        attendance_marked = await db.attendance.count_documents({
-            "marked_by": {"$in": teacher_ids},
-            "date": {"$gte": thirty_days_ago}
-        }) if teacher_ids else 0
-        
-        syllabus_entries = await db.syllabus_progress.find(
-            {"updated_by": {"$in": teacher_ids}},
-            {"_id": 0, "status": 1}
-        ).to_list(200)
-        total_chapters = len(syllabus_entries)
-        completed_chapters = len([s for s in syllabus_entries if s.get("status") == "completed"])
-        syllabus_pct = round((completed_chapters / total_chapters * 100), 1) if total_chapters > 0 else 0
-        
-        leaves_taken = await db.leaves.count_documents({
-            "user_id": tid,
-            "status": "approved",
-            "from_date": {"$gte": thirty_days_ago}
-        })
-        
-        result.append({
-            "id": tid,
-            "name": t.get("name", "Unknown"),
-            "designation": t.get("designation", t.get("role", "teacher")),
-            "photo_url": t.get("photo_url", ""),
-            "classes_assigned": len(assigned_classes),
-            "class_names": class_names,
-            "attendance_marked_30d": attendance_marked,
-            "syllabus_total": total_chapters,
-            "syllabus_completed": completed_chapters,
-            "syllabus_progress": syllabus_pct,
-            "leaves_30d": leaves_taken
-        })
-    
-    return result
-
-@api_router.get("/analytics/syllabus-progress")
-async def get_syllabus_progress(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get class-wise syllabus progress"""
-    classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
-    
-    result = []
-    for c in classes:
-        syllabus = await db.syllabus_progress.find_one(
-            {"school_id": school_id, "class_id": c.get("id")},
-            {"_id": 0}
-        )
-        result.append({
-            "class": c.get("name", c.get("class_name", "Class")),
-            "total": 100,
-            "completed": syllabus.get("completed", 0) if syllabus else 0,
-            "subjects": syllabus.get("subjects", {"math": 0, "science": 0, "english": 0, "hindi": 0}) if syllabus else {"math": 0, "science": 0, "english": 0, "hindi": 0}
-        })
-    
-    return result
-
-@api_router.get("/analytics/class-performance")
-async def get_class_performance(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get class-wise performance overview"""
-    classes = await db.classes.find({"school_id": school_id}, {"_id": 0}).to_list(50)
-    
-    result = []
-    for c in classes:
-        class_id = c.get("id")
-        student_count = await db.students.count_documents({"school_id": school_id, "class_id": class_id, "status": "active"})
-        
-        result.append({
-            "class": c.get("name", c.get("class_name", "Class")),
-            "students": student_count,
-            "avg_score": c.get("avg_score", 0),
-            "attendance": c.get("avg_attendance", 0),
-            "top_score": c.get("top_score", 0),
-            "lowest_score": c.get("lowest_score", 0)
-        })
-    
-    return result
 
 # ==================== PAYMENT SETTINGS & PARENT PAYMENT PORTAL ====================
 
@@ -11814,7 +11250,6 @@ async def record_parent_payment(payment: OnlinePaymentCreate, current_user: dict
         "payer_upi_id": payment.payer_upi_id,
         "payer_name": payment.payer_name or current_user.get("name"),
         "remarks": payment.remarks,
-        "screenshot_url": payment.screenshot_url,
         "status": "pending_verification",  # Admin needs to verify
         "paid_by": current_user["id"],
         "paid_by_name": current_user.get("name"),
@@ -11861,12 +11296,11 @@ async def get_pending_online_payments(school_id: str, current_user: dict = Depen
 @api_router.post("/admin/verify-payment/{payment_id}")
 async def verify_online_payment(
     payment_id: str,
-    body: dict = Body(...),
+    action: str = Body(...),  # approve or reject
+    remarks: str = Body(default=""),
     current_user: dict = Depends(get_current_user)
 ):
     """Verify and approve/reject online payment"""
-    action = body.get("action", "")
-    remarks = body.get("remarks", "")
     if current_user["role"] not in ["director", "principal", "admin", "admin_staff"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
@@ -12333,6 +11767,46 @@ async def delete_testimonial(school_id: str, testimonial_id: str, current_user: 
     await db.testimonials.delete_one({"id": testimonial_id, "school_id": school_id})
     return {"message": "Testimonial deleted"}
 
+# ==================== PRAYER SYSTEM ====================
+
+@api_router.get("/school/{school_id}/prayer-settings")
+async def get_prayer_settings(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get prayer schedule settings for a school"""
+    settings = await db.prayer_settings.find_one({"school_id": school_id}, {"_id": 0})
+    if not settings:
+        # Return default settings if none configured
+        return {
+            "school_id": school_id,
+            "prayers": [
+                {"name": "Fajr", "time": "05:30", "enabled": True},
+                {"name": "Dhuhr", "time": "12:30", "enabled": True},
+                {"name": "Asr", "time": "15:30", "enabled": True},
+                {"name": "Maghrib", "time": "18:00", "enabled": True},
+                {"name": "Isha", "time": "19:30", "enabled": True}
+            ],
+            "announcement_enabled": False,
+            "reminder_minutes": 5
+        }
+    return settings
+
+@api_router.post("/school/{school_id}/prayer-settings")
+async def save_prayer_settings(school_id: str, settings: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    """Save prayer schedule settings for a school"""
+    settings["school_id"] = school_id
+    settings["updated_at"] = datetime.now(timezone.utc).isoformat()
+    settings["updated_by"] = current_user.get("id")
+    
+    existing = await db.prayer_settings.find_one({"school_id": school_id})
+    if existing:
+        await db.prayer_settings.update_one(
+            {"school_id": school_id},
+            {"$set": settings}
+        )
+    else:
+        await db.prayer_settings.insert_one(settings)
+    
+    return {"success": True, "message": "Prayer settings saved", "settings": {k: v for k, v in settings.items() if k != "_id"}}
+
 # AI Calendar Image Generation with Nano Banana
 @api_router.post("/calendar/generate-image")
 async def generate_calendar_image(
@@ -12670,30 +12144,20 @@ async def generate_parent_id() -> str:
     
     return f"PAR-{year}-{seq}"
 
-async def generate_employee_id(school_id: str = None) -> str:
-    code = ""
-    if school_id:
-        code = await get_school_code(school_id)
+async def generate_employee_id() -> str:
+    """Generate globally unique Employee ID
+    Format: EMP-<YEAR>-<UNIQUE_SEQ>
+    Example: EMP-2026-00001
+    """
     year = datetime.now().year
     
-    if code:
-        count = await db.staff.count_documents({
-            "school_id": school_id,
-            "employee_id": {"$regex": f"^EMP-{code}-{year}-"}
-        })
-        seq = str(count + 1).zfill(4)
-        new_id = f"EMP-{code}-{year}-{seq}"
-        while await db.staff.find_one({"employee_id": new_id}):
-            count += 1
-            seq = str(count + 1).zfill(4)
-            new_id = f"EMP-{code}-{year}-{seq}"
-        return new_id
-    else:
-        count = await db.staff.count_documents({
-            "employee_id": {"$regex": f"^EMP-{year}-"}
-        })
-        seq = str(count + 1).zfill(5)
-        return f"EMP-{year}-{seq}"
+    # Get global count of all employees for this year
+    count = await db.staff.count_documents({
+        "employee_id": {"$regex": f"^EMP-{year}-"}
+    })
+    seq = str(count + 1).zfill(5)
+    
+    return f"EMP-{year}-{seq}"
 
 class ParentLoginRequest(BaseModel):
     mobile: Optional[str] = None
@@ -12891,11 +12355,11 @@ async def create_staff_with_auto_id(
     if existing:
         raise HTTPException(status_code=400, detail="Email already exists")
     
-    employee_id = await generate_employee_id(school_id)
+    # Generate Employee ID
+    employee_id = await generate_employee_id()
     
+    # Create user
     user_id = str(uuid.uuid4())
-    raw_pw = password or "school123"
-    hashed_pw = bcrypt.hashpw(raw_pw.encode(), bcrypt.gensalt()).decode()
     user = {
         "id": user_id,
         "employee_id": employee_id,
@@ -12904,8 +12368,7 @@ async def create_staff_with_auto_id(
         "mobile": mobile,
         "role": role,
         "school_id": school_id,
-        "password": hashed_pw,
-        "plain_password": raw_pw,
+        "password": password or "school123",  # Default password
         "permissions": {},
         "created_at": datetime.now(timezone.utc).isoformat(),
         "created_by": current_user["id"]
@@ -12941,14 +12404,11 @@ class FeeStructureModel(BaseModel):
     class_id: str
     academic_year: str
     fees: Dict[str, float]  # fee_type: amount
-    tuition_frequency: Optional[str] = "monthly"  # monthly or yearly
 
 class FeeCollectionModel(BaseModel):
     school_id: str
     student_id: str
     amount: float
-    academic_year: Optional[str] = None
-    fee_items: Optional[List[Dict[str, Any]]] = []  # [{fee_type, amount, months?}]
     fee_types: Optional[List[str]] = []
     months: Optional[List[str]] = []
     payment_mode: str = "cash"
@@ -12968,7 +12428,7 @@ class OldDueModel(BaseModel):
     added_by: Optional[str] = None
 
 # Generate receipt number
-async def generate_receipt_no(school_id: str) -> str:
+async def generate_receipt_no_seq(school_id: str) -> str:
     today = datetime.now()
     prefix = f"RCP-{today.strftime('%Y%m%d')}"
     count = await db.fee_collections.count_documents({
@@ -12978,13 +12438,12 @@ async def generate_receipt_no(school_id: str) -> str:
     return f"{prefix}-{str(count + 1).zfill(4)}"
 
 @api_router.get("/fee-structures")
-async def get_fee_structures(school_id: str = None, academic_year: Optional[str] = None, current_user: dict = Depends(require_staff)):
-    """Get all fee structures for a school, optionally filtered by academic year"""
-    user_school = current_user.get("school_id")
-    query = {"school_id": user_school or school_id}
-    if academic_year:
-        query["academic_year"] = academic_year
-    structures = await db.fee_structures_new.find(query, {"_id": 0}).to_list(100)
+async def get_fee_structures(school_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all fee structures for a school"""
+    structures = await db.fee_structures_new.find(
+        {"school_id": school_id},
+        {"_id": 0}
+    ).to_list(100)
     return structures
 
 @api_router.post("/fee-structures")
@@ -12993,6 +12452,7 @@ async def create_fee_structure(data: FeeStructureModel, current_user: dict = Dep
     if current_user["role"] not in ["director", "principal", "accountant", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Check if structure exists for this class
     existing = await db.fee_structures_new.find_one({
         "school_id": data.school_id,
         "class_id": data.class_id,
@@ -13004,12 +12464,12 @@ async def create_fee_structure(data: FeeStructureModel, current_user: dict = Dep
             {"id": existing["id"]},
             {"$set": {
                 "fees": data.fees,
-                "tuition_frequency": data.tuition_frequency or "monthly",
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
         return {"success": True, "message": "Fee structure updated", "id": existing["id"]}
     
+    # Create new
     structure_id = str(uuid.uuid4())
     structure = {
         "id": structure_id,
@@ -13021,13 +12481,11 @@ async def create_fee_structure(data: FeeStructureModel, current_user: dict = Dep
     return {"success": True, "message": "Fee structure created", "id": structure_id}
 
 @api_router.get("/fee-collections")
-async def get_fee_collections(school_id: str, student_id: Optional[str] = None, academic_year: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_fee_collections(school_id: str, student_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     """Get fee collections for a school"""
     query = {"school_id": school_id}
     if student_id:
         query["student_id"] = student_id
-    if academic_year:
-        query["academic_year"] = academic_year
     
     collections = await db.fee_collections.find(query, {"_id": 0}).sort("payment_date", -1).to_list(1000)
     return collections
@@ -13039,7 +12497,7 @@ async def collect_fee(data: FeeCollectionModel, current_user: dict = Depends(get
         raise HTTPException(status_code=403, detail="Not authorized")
     
     # Generate receipt number
-    receipt_no = data.receipt_no or await generate_receipt_no(data.school_id)
+    receipt_no = data.receipt_no or await generate_receipt_no_seq(data.school_id)
     
     collection_id = str(uuid.uuid4())
     collection = {
@@ -13051,58 +12509,18 @@ async def collect_fee(data: FeeCollectionModel, current_user: dict = Depends(get
     }
     await db.fee_collections.insert_one(collection)
     
+    # Update student's fee status
     student = await db.students.find_one({"id": data.student_id})
     if student:
         current_paid = student.get("total_fee_paid", 0)
-        new_total = current_paid + data.amount
         await db.students.update_one(
             {"id": data.student_id},
             {"$set": {
-                "total_fee_paid": new_total,
+                "total_fee_paid": current_paid + data.amount,
                 "last_payment_date": data.payment_date,
                 "last_receipt_no": receipt_no
             }}
         )
-        
-        fee_structure = await db.fee_structures_new.find_one({
-            "school_id": data.school_id,
-            "class_id": student.get("class_id")
-        })
-        if fee_structure:
-            total_fee = sum(fee_structure.get("fees", {}).values())
-            if total_fee > 0:
-                fee_percent = (new_total / total_fee) * 100
-                settings = await db.admit_card_settings.find_one({"school_id": data.school_id})
-                min_percent = settings.get("min_fee_percentage", 50) if settings else 50
-                
-                if fee_percent >= min_percent:
-                    student_class = student.get("class_id", "")
-                    pending_exams = await db.exams.find({
-                        "school_id": data.school_id,
-                        "status": {"$in": ["upcoming", "active", "scheduled"]}
-                    }).to_list(10)
-                    
-                    for exam in pending_exams:
-                        exam_classes = exam.get("classes", exam.get("class_ids", []))
-                        if exam_classes and student_class not in exam_classes:
-                            continue
-                        existing = await db.generated_admit_cards.find_one({
-                            "student_id": data.student_id,
-                            "exam_id": exam["id"]
-                        })
-                        if not existing:
-                            await db.generated_admit_cards.update_one(
-                                {"student_id": data.student_id, "exam_id": exam["id"]},
-                                {"$set": {
-                                    "student_id": data.student_id,
-                                    "exam_id": exam["id"],
-                                    "school_id": data.school_id,
-                                    "auto_activated": True,
-                                    "activated_by_fee": receipt_no,
-                                    "generated_at": datetime.now(timezone.utc).isoformat()
-                                }},
-                                upsert=True
-                            )
     
     return {"success": True, "receipt_no": receipt_no, "id": collection_id}
 
@@ -13354,7 +12772,6 @@ async def get_timetables(school_id: str, class_id: Optional[str] = None, current
     
     # Convert to nested format: { class_id: { day: { period_id: slot } } }
     result = {}
-    class_ids_set = set()
     for slot in timetables:
         cid = slot.get("class_id")
         day = slot.get("day")
@@ -13364,17 +12781,6 @@ async def get_timetables(school_id: str, class_id: Optional[str] = None, current
         if day not in result[cid]:
             result[cid][day] = {}
         result[cid][day][pid] = slot
-        class_ids_set.add(cid)
-    
-    # Enrich homeroom slots with class teacher info
-    for cid in class_ids_set:
-        class_doc = await db.classes.find_one({"id": cid, "school_id": school_id}, {"_id": 0, "class_teacher_id": 1, "class_teacher": 1})
-        if class_doc and class_doc.get("class_teacher_id"):
-            for day in result.get(cid, {}):
-                slot = result[cid][day].get(1)
-                if slot and slot.get("is_homeroom"):
-                    slot["teacher_id"] = class_doc.get("class_teacher_id", slot.get("teacher_id"))
-                    slot["teacher_name"] = class_doc.get("class_teacher", slot.get("teacher_name"))
     
     return result
 
@@ -13383,20 +12789,6 @@ async def save_timetable_slot(data: TimetableSlotModel, current_user: dict = Dep
     """Save a single timetable slot"""
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
-    if data.period_id == 1:
-        existing_homeroom = await db.timetables.find_one({
-            "school_id": data.school_id,
-            "class_id": data.class_id,
-            "day": data.day,
-            "period_id": 1,
-            "is_homeroom": True
-        })
-        if existing_homeroom:
-            raise HTTPException(status_code=400, detail="Period 1 is reserved for Homeroom/Attendance. Change class teacher to update.")
-        class_doc = await db.classes.find_one({"id": data.class_id, "school_id": data.school_id})
-        if class_doc and class_doc.get("class_teacher_id"):
-            raise HTTPException(status_code=400, detail="Period 1 is locked to class teacher for Homeroom. Remove class teacher first.")
     
     # Check if slot exists
     existing = await db.timetables.find_one({
@@ -13421,231 +12813,12 @@ async def save_timetable_slot(data: TimetableSlotModel, current_user: dict = Dep
 @api_router.delete("/timetables/slot")
 async def delete_timetable_slot(school_id: str, class_id: str, day: str, period_id: int, current_user: dict = Depends(get_current_user)):
     """Delete a timetable slot"""
-    if period_id == 1:
-        homeroom = await db.timetables.find_one({
-            "school_id": school_id, "class_id": class_id, "day": day, "period_id": 1, "is_homeroom": True
-        })
-        if homeroom:
-            raise HTTPException(status_code=400, detail="Cannot delete Homeroom period. Remove class teacher assignment first.")
     await db.timetables.delete_one({
         "school_id": school_id,
         "class_id": class_id,
         "day": day,
         "period_id": period_id
     })
-    return {"success": True}
-
-# ==================== TIMETABLE SETTINGS ====================
-
-class TimetableSettingsModel(BaseModel):
-    school_id: str
-    normal_period_duration: int = 40
-    first_period_extra_mins: int = 10
-    school_start_time: str = "08:00"
-    break_duration: int = 15
-    lunch_duration: int = 30
-    break_after_period: int = 3
-    lunch_after_period: int = 6
-    periods_per_day: int = 8
-    working_days: List[str] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
-@api_router.get("/timetable-settings")
-async def get_timetable_settings(school_id: str, current_user: dict = Depends(get_current_user)):
-    settings = await db.timetable_settings.find_one({"school_id": school_id}, {"_id": 0})
-    if not settings:
-        settings = {
-            "school_id": school_id,
-            "normal_period_duration": 40,
-            "first_period_extra_mins": 10,
-            "school_start_time": "08:00",
-            "break_duration": 15,
-            "lunch_duration": 30,
-            "break_after_period": 3,
-            "lunch_after_period": 6,
-            "periods_per_day": 8,
-            "working_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        }
-    return settings
-
-@api_router.post("/timetable-settings")
-async def save_timetable_settings(data: TimetableSettingsModel, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    settings = data.model_dump()
-    settings["updated_at"] = datetime.now(timezone.utc).isoformat()
-    await db.timetable_settings.update_one(
-        {"school_id": data.school_id},
-        {"$set": settings},
-        upsert=True
-    )
-    return {"success": True, "message": "Settings saved"}
-
-# ==================== CLASS TEACHER ASSIGNMENT ====================
-
-class ClassTeacherAssignment(BaseModel):
-    school_id: str
-    class_id: str
-    teacher_id: str
-
-@api_router.post("/class-teacher/assign")
-async def assign_class_teacher(data: ClassTeacherAssignment, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    staff_record = await db.staff.find_one({"id": data.teacher_id}, {"_id": 0})
-    user_record = await db.users.find_one({"id": data.teacher_id}, {"_id": 0})
-    
-    if not staff_record and not user_record:
-        staff_record = await db.staff.find_one({"user_id": data.teacher_id}, {"_id": 0})
-    if not user_record and staff_record and staff_record.get("user_id"):
-        user_record = await db.users.find_one({"id": staff_record["user_id"]}, {"_id": 0})
-    
-    if not staff_record and not user_record:
-        raise HTTPException(status_code=404, detail="Teacher not found")
-    
-    teacher_name = (staff_record or user_record or {}).get("name", "Unknown")
-    
-    if user_record:
-        resolved_id = user_record["id"]
-    elif staff_record and staff_record.get("user_id"):
-        resolved_id = staff_record["user_id"]
-    else:
-        resolved_id = data.teacher_id
-    
-    all_ids = list(set(filter(None, [
-        data.teacher_id,
-        resolved_id,
-        staff_record.get("id") if staff_record else None,
-        staff_record.get("user_id") if staff_record else None,
-        user_record.get("id") if user_record else None,
-        user_record.get("staff_id") if user_record else None
-    ])))
-    
-    old_classes = await db.classes.find({
-        "school_id": data.school_id,
-        "class_teacher_id": {"$in": all_ids},
-        "id": {"$ne": data.class_id}
-    }).to_list(10)
-    
-    for old_class in old_classes:
-        await db.classes.update_one(
-            {"id": old_class["id"]},
-            {"$set": {"class_teacher_id": None, "class_teacher": None}}
-        )
-        await db.timetables.update_many(
-            {"school_id": data.school_id, "class_id": old_class["id"], "is_homeroom": True},
-            {"$set": {"teacher_id": None, "teacher_name": None}}
-        )
-    
-    await db.classes.update_one(
-        {"id": data.class_id, "school_id": data.school_id},
-        {"$set": {
-            "class_teacher_id": resolved_id,
-            "class_teacher": teacher_name,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }}
-    )
-    
-    settings = await db.timetable_settings.find_one({"school_id": data.school_id})
-    working_days = settings.get("working_days", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]) if settings else ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    
-    for day in working_days:
-        await db.timetables.update_one(
-            {"school_id": data.school_id, "class_id": data.class_id, "day": day, "period_id": 1},
-            {"$set": {
-                "school_id": data.school_id,
-                "class_id": data.class_id,
-                "day": day,
-                "period_id": 1,
-                "subject_id": "homeroom",
-                "subject_name": "Homeroom / Attendance",
-                "teacher_id": resolved_id,
-                "teacher_name": teacher_name,
-                "is_homeroom": True,
-                "is_locked": True,
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            }},
-            upsert=True
-        )
-    
-    old_class_names = ", ".join([c.get("name", "") for c in old_classes]) if old_classes else ""
-    msg = f"{teacher_name} assigned as class teacher"
-    if old_class_names:
-        msg += f" (removed from {old_class_names})"
-    
-    return {"success": True, "message": msg, "teacher_name": teacher_name}
-
-# ==================== SUBSTITUTION MANAGEMENT ====================
-
-class SubstitutionModel(BaseModel):
-    school_id: str
-    class_id: str
-    date: str
-    period_id: int = 1
-    original_teacher_id: str
-    substitute_teacher_id: str
-    reason: str = ""
-    is_homeroom: bool = False
-
-@api_router.post("/substitutions")
-async def create_substitution(data: SubstitutionModel, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    sub_teacher = await db.staff.find_one({"id": data.substitute_teacher_id}, {"_id": 0, "name": 1})
-    if not sub_teacher:
-        sub_teacher = await db.users.find_one({"id": data.substitute_teacher_id}, {"_id": 0, "name": 1})
-    
-    orig_teacher = await db.staff.find_one({"id": data.original_teacher_id}, {"_id": 0, "name": 1})
-    if not orig_teacher:
-        orig_teacher = await db.users.find_one({"id": data.original_teacher_id}, {"_id": 0, "name": 1})
-    
-    class_doc = await db.classes.find_one({"id": data.class_id}, {"_id": 0, "name": 1})
-    class_name = class_doc.get("name", "") if class_doc else ""
-    
-    sub_id = str(uuid.uuid4())
-    sub_doc = {
-        "id": sub_id,
-        **data.model_dump(),
-        "substitute_teacher_name": sub_teacher.get("name", "Unknown") if sub_teacher else "Unknown",
-        "original_teacher_name": orig_teacher.get("name", "Unknown") if orig_teacher else "Unknown",
-        "class_name": class_name,
-        "status": "assigned",
-        "attendance_taken": False,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.substitutions.insert_one(sub_doc)
-    
-    period_label = "Homeroom (Attendance)" if data.is_homeroom else f"Period {data.period_id}"
-    await db.notifications.insert_one({
-        "id": str(uuid.uuid4()),
-        "school_id": data.school_id,
-        "user_id": data.substitute_teacher_id,
-        "type": "substitution",
-        "title": f"Substitution - {class_name}",
-        "message": f"Aaj {class_name} ka {period_label} aap sambhalenge. {'Attendance lena hai.' if data.is_homeroom else ''}",
-        "is_read": False,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    })
-    
-    return {"success": True, "id": sub_id, "message": f"Substitute assigned for {class_name}"}
-
-@api_router.get("/substitutions")
-async def get_substitutions(school_id: str, date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    query = {"school_id": school_id}
-    if date:
-        query["date"] = date
-    else:
-        query["date"] = datetime.now().strftime("%Y-%m-%d")
-    
-    subs = await db.substitutions.find(query, {"_id": 0}).to_list(100)
-    return subs
-
-@api_router.delete("/substitutions/{sub_id}")
-async def delete_substitution(sub_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["director", "principal", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    await db.substitutions.delete_one({"id": sub_id})
     return {"success": True}
 
 @api_router.post("/timetables/copy")
@@ -13768,27 +12941,8 @@ async def assign_substitute_teacher(data: dict, current_user: dict = Depends(get
         "message": "Substitute teacher assigned and notified"
     }
 
-@api_router.get("/notifications")
-async def get_notifications(
-    user_id: str,
-    school_id: str,
-    user_type: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Get notifications for user"""
-    notifications = await db.notifications.find({
-        "user_id": user_id,
-        "school_id": school_id,
-        "user_type": user_type
-    }).sort("created_at", -1).limit(50).to_list(50)
-    
-    for notif in notifications:
-        notif.pop("_id", None)
-    
-    return {"notifications": notifications}
-
 @api_router.post("/notifications/{notif_id}/mark-read")
-async def mark_notification_read(notif_id: str, current_user: dict = Depends(get_current_user)):
+async def mark_notif_read_alt(notif_id: str, current_user: dict = Depends(get_current_user)):
     """Mark notification as read"""
     await db.notifications.update_one(
         {"id": notif_id},
@@ -13947,16 +13101,6 @@ class BulkMarksModel(BaseModel):
     marks: List[Dict[str, Any]]  # [{student_id, subject_id, marks}]
     entered_by: Optional[str] = None
 
-@api_router.get("/exams")
-async def get_exams(school_id: str, class_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """Get all exams"""
-    query = {"school_id": school_id}
-    if class_id:
-        query["class_id"] = class_id
-    
-    exams = await db.exams.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return exams
-
 @api_router.post("/exam-schedule")
 async def create_exam_schedule(data: ExamModel, current_user: dict = Depends(get_current_user)):
     """Create exam schedule for marks entry"""
@@ -13981,11 +13125,10 @@ async def get_exam_schedules(school_id: str, class_id: Optional[str] = None, cur
     return exams
 
 @api_router.get("/marks")
-async def get_marks(school_id: str = None, class_id: str = "", exam_id: str = "", current_user: dict = Depends(require_staff)):
+async def get_marks(school_id: str, class_id: str, exam_id: str, current_user: dict = Depends(get_current_user)):
     """Get marks for a class and exam"""
-    user_school = current_user.get("school_id")
     marks = await db.marks.find({
-        "school_id": user_school or school_id,
+        "school_id": school_id,
         "class_id": class_id,
         "exam_id": exam_id
     }, {"_id": 0}).to_list(1000)
@@ -14431,7 +13574,6 @@ api_router.include_router(complaints_router)
 api_router.include_router(activities_router)
 api_router.include_router(razorpay_router)
 api_router.include_router(admit_card_router)
-api_router.include_router(prayer_router)
 api_router.include_router(ai_auto_config_router)
 api_router.include_router(gallery_router)
 api_router.include_router(govt_exam_router)
@@ -14443,96 +13585,62 @@ api_router.include_router(did_avatar_router)
 api_router.include_router(documents_router)
 api_router.include_router(bulk_import_router)
 api_router.include_router(dual_credits_router)
-api_router.include_router(syllabus_sync_router)
-
-api_router.include_router(branches_router)
-api_router.include_router(staff_attendance_router)
-api_router.include_router(e_store_router)
-api_router.include_router(integrations_router)
-api_router.include_router(school_feed_router)
-
-# ========== NEW SAAS ROUTES ==========
-api_router.include_router(saas_billing_router)        # /api/billing/*
-api_router.include_router(school_onboarding_router)   # /api/onboarding/*
+api_router.include_router(team_unified_router)
 
 app.include_router(api_router)
 
+# Root & Health Endpoints (must be after app.include_router)
 @app.get("/")
 async def root():
-    index_file = ROOT_DIR.parent / "frontend" / "build" / "index.html"
-    if index_file.exists():
-        return FileResponse(str(index_file))
-    return {"status": "ok", "app": "Schooltino"}
+    return {
+        "status": "ok",
+        "message": "Schooltino Backend API is running", 
+        "version": "1.0",
+        "endpoints": {
+            "health": "/health",
+            "healthz": "/healthz",
+            "ready": "/ready",
+            "api": "/api"
+        }
+    }
 
 @app.get("/health")
-async def health_check():
+async def app_health_check():
+    """Health check endpoint for deployment platforms"""
+    return {
+        "status": "healthy",
+        "service": "schooltino-backend",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+@app.get("/healthz")
+async def liveness():
+    """Kubernetes liveness probe - simple check"""
     return {"status": "ok"}
+
+@app.get("/ready")
+async def readiness_check():
+    """Readiness probe - checks if app can serve traffic"""
+    try:
+        await db.command("ping")
+        return {
+            "status": "ready",
+            "database": "connected",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database not ready: {str(e)}")
 
 # Mount static files for uploads and marketing materials
 app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 app.mount("/api/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="static")
 
-FRONTEND_BUILD_DIR = ROOT_DIR.parent / "frontend" / "build"
-if FRONTEND_BUILD_DIR.exists():
-    static_dir = FRONTEND_BUILD_DIR / "static"
-    if static_dir.exists():
-        app.mount("/static", StaticFiles(directory=str(static_dir)), name="frontend_static")
-
-    @app.get("/{full_path:path}")
-    async def serve_frontend(full_path: str):
-        if full_path == "health":
-            return {"status": "ok"}
-        file_path = FRONTEND_BUILD_DIR / full_path
-        if file_path.exists() and file_path.is_file():
-            media_type = None
-            if str(file_path).endswith('.js'):
-                media_type = 'application/javascript'
-            elif str(file_path).endswith('.css'):
-                media_type = 'text/css'
-            elif str(file_path).endswith('.json'):
-                media_type = 'application/json'
-            elif str(file_path).endswith('.png'):
-                media_type = 'image/png'
-            elif str(file_path).endswith('.ico'):
-                media_type = 'image/x-icon'
-            elif str(file_path).endswith('.svg'):
-                media_type = 'image/svg+xml'
-            return FileResponse(str(file_path), media_type=media_type)
-        index_file = FRONTEND_BUILD_DIR / "index.html"
-        if index_file.exists():
-            return FileResponse(str(index_file), media_type='text/html', headers={"Cache-Control": "no-cache"})
-        return {"status": "ok", "message": "Schooltino API"}
-else:
-    @app.get("/{full_path:path}")
-    async def serve_fallback(full_path: str):
-        return {"status": "ok", "message": "Schooltino API - frontend build not found"}
-
-# SECURITY: CORS - Only allow specific origins
-# Set CORS_ORIGINS in your .env file, e.g.:
-# CORS_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
-_cors_origins_env = os.environ.get('CORS_ORIGINS', '')
-if _cors_origins_env and _cors_origins_env.strip() != '*':
-    _allowed_origins = [o.strip() for o in _cors_origins_env.split(',') if o.strip()]
-else:
-    # Default safe origins for development - DO NOT use '*' in production
-    _allowed_origins = [
-        "http://localhost:3000",
-        "http://localhost:5000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5000",
-    ]
-    if not _cors_origins_env:
-        logging.warning(
-            "SECURITY WARNING: CORS_ORIGINS not set in .env. "
-            "Defaulting to localhost only. Set CORS_ORIGINS for production!"
-        )
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=_allowed_origins,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 logging.basicConfig(
@@ -14542,37 +13650,159 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
-async def create_indexes():
+async def startup_auto_migrate():
+    """Auto-migrate class_teacher_id & subject_allocations: staff.id → users.id.
+       Also auto-syncs timetable to subject_allocations on startup.
+       Runs silently on every startup; skips if already correct. Safe to run multiple times."""
     try:
-        await db.users.create_index("id", unique=True, sparse=True)
-        await db.users.create_index("email", sparse=True)
-        await db.users.create_index("school_id")
-        await db.users.create_index("employee_id", sparse=True)
-        await db.students.create_index("id", unique=True, sparse=True)
-        await db.students.create_index("student_id", sparse=True)
-        await db.students.create_index("school_id")
-        await db.students.create_index([("school_id", 1), ("class_id", 1)])
-        await db.students.create_index([("class_id", 1), ("status", 1)])
-        await db.staff.create_index("id", unique=True, sparse=True)
-        await db.staff.create_index("user_id", sparse=True)
-        await db.staff.create_index("school_id")
-        await db.classes.create_index("id", unique=True, sparse=True)
-        await db.classes.create_index("school_id")
-        await db.classes.create_index("class_teacher_id", sparse=True)
-        await db.attendance.create_index([("student_id", 1), ("date", 1)])
-        await db.attendance.create_index([("class_id", 1), ("date", 1)])
-        await db.attendance.create_index([("school_id", 1), ("date", 1)])
-        await db.fee_invoices.create_index("student_id")
-        await db.fee_invoices.create_index([("school_id", 1), ("status", 1)])
-        await db.notices.create_index([("school_id", 1), ("is_active", 1)])
-        await db.timetables.create_index([("school_id", 1), ("class_id", 1), ("day", 1)])
-        await db.online_payments.create_index([("school_id", 1), ("status", 1)])
-        await db.syllabus_progress.create_index([("school_id", 1), ("class_id", 1), ("subject", 1)])
-        await db.syllabus_progress.create_index("updated_by", sparse=True)
-        await db.attendance.create_index([("marked_by", 1), ("date", 1)])
-        logger.info("Database indexes created successfully")
+        # Give DB a moment to connect
+        import asyncio
+        await asyncio.sleep(1)
+
+        # Get all staff who have a login (user_id set)
+        staff_with_login = await db.staff.find(
+            {"user_id": {"$ne": None}},
+            {"_id": 0, "id": 1, "user_id": 1, "name": 1}
+        ).to_list(200)
+
+        if not staff_with_login:
+            return
+
+        # Build mapping: staff.id → users.id
+        staff_to_user = {s["id"]: s["user_id"] for s in staff_with_login}
+        staff_ids = list(staff_to_user.keys())
+
+        # Fix classes where class_teacher_id = staff.id
+        classes_to_fix = await db.classes.find(
+            {"class_teacher_id": {"$in": staff_ids}},
+            {"_id": 0, "id": 1, "name": 1, "class_teacher_id": 1}
+        ).to_list(200)
+
+        for cls in classes_to_fix:
+            old_id = cls["class_teacher_id"]
+            new_id = staff_to_user.get(old_id)
+            if new_id:
+                await db.classes.update_one(
+                    {"id": cls["id"]},
+                    {"$set": {"class_teacher_id": new_id}}
+                )
+                # Sync assigned_classes on the user
+                await db.users.update_one(
+                    {"id": new_id},
+                    {"$addToSet": {"assigned_classes": cls["id"]}}
+                )
+                print(f"[STARTUP-MIGRATE] Class '{cls.get('name')}' class_teacher_id: {old_id} → {new_id}")
+
+        # Fix subject_allocations where teacher_id = staff.id
+        allocs_to_fix = await db.subject_allocations.find(
+            {"teacher_id": {"$in": staff_ids}},
+            {"_id": 0, "id": 1, "teacher_id": 1, "class_id": 1, "subject": 1}
+        ).to_list(500)
+
+        for alloc in allocs_to_fix:
+            old_id = alloc["teacher_id"]
+            new_id = staff_to_user.get(old_id)
+            if new_id:
+                await db.subject_allocations.update_one(
+                    {"id": alloc["id"]},
+                    {"$set": {"teacher_id": new_id}}
+                )
+                print(f"[STARTUP-MIGRATE] Allocation '{alloc.get('subject')}' in class '{alloc.get('class_id')}' teacher_id: {old_id} → {new_id}")
+
+        if classes_to_fix or allocs_to_fix:
+            print(f"[STARTUP-MIGRATE] Done: {len(classes_to_fix)} classes + {len(allocs_to_fix)} allocations fixed")
+        else:
+            print("[STARTUP-MIGRATE] All IDs already correct — nothing to do")
+
+        # [NEW] Auto-sync timetable to subject_allocations
+        print("[STARTUP-SYNC] Auto-syncing timetable to subject_allocations...")
+        try:
+            all_schools = await db.schools.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+            total_synced = 0
+            
+            for school in all_schools:
+                school_id = school["id"]
+                
+                # Get timetable entries for this school
+                timetable_entries = await db.timetable.find(
+                    {"school_id": school_id},
+                    {"_id": 0}
+                ).to_list(1000)
+                
+                if not timetable_entries:
+                    continue
+                
+                # Group by teacher + class + subject
+                allocations_map = {}
+                
+                for entry in timetable_entries:
+                    teacher_id = entry.get("teacher_id")
+                    teacher_name = entry.get("teacher_name")
+                    class_id = entry.get("class_id")
+                    class_name = entry.get("class_name")
+                    subject = entry.get("subject") or entry.get("subject_name")
+                    
+                    if not teacher_id or not subject:
+                        continue
+                    
+                    # Check if teacher_id is actually staff.id (needs migration)
+                    if teacher_id in staff_to_user:
+                        teacher_id = staff_to_user[teacher_id]
+                    
+                    key = f"{teacher_id}_{class_id}_{subject}"
+                    
+                    if key not in allocations_map:
+                        allocations_map[key] = {
+                            "teacher_id": teacher_id,
+                            "teacher_name": teacher_name,
+                            "class_id": class_id,
+                            "class_name": class_name,
+                            "subject": subject,
+                            "periods": []
+                        }
+                    
+                    allocations_map[key]["periods"].append(entry.get("day"))
+                
+                # Create/update subject_allocations
+                for key, alloc_data in allocations_map.items():
+                    periods_per_week = len(alloc_data["periods"])
+                    
+                    allocation = {
+                        "id": str(uuid.uuid4()),
+                        "teacher_id": alloc_data["teacher_id"],
+                        "teacher_name": alloc_data["teacher_name"],
+                        "class_id": alloc_data["class_id"],
+                        "class_name": alloc_data["class_name"],
+                        "subject": alloc_data["subject"],
+                        "subject_name": alloc_data["subject"],
+                        "school_id": school_id,
+                        "periods_per_week": periods_per_week,
+                        "topics_covered": 0,
+                        "total_topics": 0,
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                        "source": "timetable_auto_sync"
+                    }
+                    
+                    result = await db.subject_allocations.update_one(
+                        {
+                            "teacher_id": alloc_data["teacher_id"],
+                            "class_id": alloc_data["class_id"],
+                            "subject": alloc_data["subject"]
+                        },
+                        {"$set": allocation},
+                        upsert=True
+                    )
+                    
+                    if result.upserted_id or result.modified_count > 0:
+                        total_synced += 1
+            
+            print(f"[STARTUP-SYNC] Timetable sync complete: {total_synced} allocations synced across {len(all_schools)} schools")
+        except Exception as sync_err:
+            print(f"[STARTUP-SYNC] Timetable sync error (non-fatal): {sync_err}")
+
     except Exception as e:
-        logger.warning(f"Index creation warning: {e}")
+        print(f"[STARTUP-MIGRATE] Error (non-fatal): {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
