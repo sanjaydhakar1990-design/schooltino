@@ -29,7 +29,6 @@ const AdmissionCRMPage = React.lazy(() => import('./pages/AdmissionCRMPage'));
 const ExamReportCard = React.lazy(() => import('./pages/ExamReportCard'));
 const TimetableManagement = React.lazy(() => import('./pages/TimetableManagement'));
 const DigitalLibraryPage = React.lazy(() => import('./pages/DigitalLibraryPage'));
-const HomeworkPage = React.lazy(() => import('./pages/HomeworkPage'));
 const LiveClassesPage = React.lazy(() => import('./pages/LiveClassesPage'));
 const IntegratedCommunicationPage = React.lazy(() => import('./pages/IntegratedCommunicationPage'));
 const FrontOfficePage = React.lazy(() => import('./pages/FrontOfficePage'));
@@ -163,7 +162,6 @@ function AppRoutes() {
         <Route path="exams" element={<ExamReportCard />} />
         <Route path="timetable" element={<TimetableManagement />} />
         <Route path="library" element={<DigitalLibraryPage />} />
-        <Route path="homework" element={<HomeworkPage />} />
         <Route path="live-classes" element={<LiveClassesPage />} />
         <Route path="communication" element={<IntegratedCommunicationPage />} />
         <Route path="front-office" element={<FrontOfficePage />} />

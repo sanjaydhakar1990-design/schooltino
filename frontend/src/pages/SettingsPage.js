@@ -66,7 +66,6 @@ export default function SettingsPage() {
     { key: 'attendance', label: 'Attendance' },
     { key: 'timetable', label: 'Timetable' },
     { key: 'exams_reports', label: 'Exams & Reports' },
-    { key: 'homework', label: 'Homework' },
     { key: 'digital_library', label: 'Digital Library' },
     { key: 'live_classes', label: 'Live Classes' },
     { key: 'fee_management', label: 'Fee Management' },

@@ -20,7 +20,6 @@ const breadcrumbKeyMap = {
   '/app/exams': 'exams_reports',
   '/app/timetable': 'timetable',
   '/app/library': 'digital_library',
-  '/app/homework': 'homework',
   '/app/live-classes': 'live_classes',
   '/app/communication': 'communication_hub',
   '/app/front-office': 'front_office',

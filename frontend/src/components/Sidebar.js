@@ -9,7 +9,7 @@ import {
   Clock, Brain, ChevronLeft, ChevronRight,
   BookOpen, Video, MessageSquare, Calendar,
   Shield, FileText, Building, Search, Package,
-  Tv, Target, Clipboard, BarChart3
+  Tv, Target, BarChart3
 } from 'lucide-react';
 
 const API = (process.env.REACT_APP_BACKEND_URL || '');
@@ -106,7 +106,6 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     { path: '/app/exams', icon: FileText, labelKey: 'exams_reports', moduleKey: 'exams_reports' },
     { path: '/app/timetable', icon: Clock, labelKey: 'timetable', moduleKey: 'timetable' },
     { path: '/app/library', icon: BookOpen, labelKey: 'digital_library', moduleKey: 'digital_library' },
-    { path: '/app/homework', icon: Clipboard, labelKey: 'homework', moduleKey: 'homework' },
     { path: '/app/live-classes', icon: Tv, labelKey: 'live_classes', moduleKey: 'live_classes' },
     { path: '/app/communication', icon: MessageSquare, labelKey: 'communication_hub', moduleKey: 'communication_hub' },
     { path: '/app/front-office', icon: Shield, labelKey: 'front_office', moduleKey: 'front_office' },

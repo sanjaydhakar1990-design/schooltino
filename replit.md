@@ -60,7 +60,7 @@ The design is heavily inspired by NextOS K-12, emphasizing simplicity and clarit
 - **Branding Controls**: Comprehensive logo and watermark settings with visual previews, applied across various system elements.
 
 ### Portal Structure
-1.  **SchoolTino** (Admin - `/app/*`) - 22 modules: Dashboard, Students, Staff, Classes, Attendance, Fees, Admissions, Exams, Timetable, Library, Homework, Live Classes, Communication, Front Office, Transport, Calendar, Analytics, AI Tools, CCTV, Inventory (optional), Multi-Branch, Settings.
+1.  **SchoolTino** (Admin - `/app/*`) - 21 modules: Dashboard, Students, Staff, Classes, Attendance, Fees, Admissions, Exams, Timetable, Library, Live Classes, Communication, Front Office, Transport, Calendar, Analytics, AI Tools, CCTV, Inventory (optional), Multi-Branch, Settings.
 2.  **TeachTino** (Teachers - `/portal`) - 10 modules: Dashboard, Classes, Attendance, Homework, Exams, Live Classes, Timetable, Feed, Leave, Profile.
 3.  **StudyTino** (Students - `/student-dashboard`) - 10 modules: Dashboard, Attendance, Fees, Results, Homework, Live Classes, Timetable, Feed, Library, Profile.
 

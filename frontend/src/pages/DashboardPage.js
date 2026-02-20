@@ -10,7 +10,7 @@ import {
   Video, MessageSquare, Calendar, Brain, Shield,
   BarChart3, ChevronRight, ArrowUpRight, ArrowDownRight,
   Target, Package, Building, Tv,
-  BookOpen, Clipboard, Wrench, UserPlus, AlertCircle
+  BookOpen, Wrench, UserPlus, AlertCircle
 } from 'lucide-react';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
@@ -196,7 +196,6 @@ export default function DashboardPage() {
     { icon: FileText, label: t('exams'), desc: t('exams_reports'), path: '/app/exams', gradient: 'from-pink-500 to-rose-500', mk: 'exams_reports' },
     { icon: Clock, label: t('timetable'), desc: t('schedule_class'), path: '/app/timetable', gradient: 'from-indigo-500 to-blue-500', mk: 'timetable' },
     { icon: BookOpen, label: t('library'), desc: t('digital_library'), path: '/app/library', gradient: 'from-purple-500 to-fuchsia-500', mk: 'digital_library' },
-    { icon: Clipboard, label: t('homework'), desc: t('homework_list'), path: '/app/homework', gradient: 'from-amber-500 to-orange-500', mk: 'homework' },
     { icon: Tv, label: t('live_classes'), desc: t('online_class'), path: '/app/live-classes', gradient: 'from-red-500 to-rose-500', mk: 'live_classes' },
     { icon: MessageSquare, label: t('communication'), desc: t('communication_hub'), path: '/app/communication', gradient: 'from-sky-500 to-cyan-500', mk: 'communication_hub' },
     { icon: Shield, label: t('front_office'), desc: t('visitor_management'), path: '/app/front-office', gradient: 'from-teal-500 to-cyan-500', mk: 'front_office' },
