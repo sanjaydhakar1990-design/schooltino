@@ -9,7 +9,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import {
   GraduationCap, Heart, Phone, Lock, Eye, EyeOff, LogIn, Loader2,
-  User, IdCard, ArrowRight, BookOpen, Users, Calendar
+  User, IdCard, ArrowRight, BookOpen, Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,27 +27,27 @@ export default function StudyTinoLoginPage() {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
+    student_id: '',
     mobile: '',
-    dob: '',
-    parent_id: '',
-    password: ''
+    password: '',
+    parent_id: ''
   });
 
   const handleStudentLogin = async (e) => {
     e.preventDefault();
     
-    if (!form.mobile) {
-      toast.error(isHindi ? 'Mobile Number enter kijiye' : 'Enter Mobile Number');
+    if (!form.student_id) {
+      toast.error(isHindi ? 'Student ID enter kijiye' : 'Enter Student ID');
       return;
     }
-    if (!form.dob) {
-      toast.error(isHindi ? 'Date of Birth enter kijiye' : 'Enter Date of Birth');
+    if (!form.password) {
+      toast.error(isHindi ? 'Password enter kijiye' : 'Enter Password');
       return;
     }
 
     setLoading(true);
     try {
-      const payload = { mobile: form.mobile, dob: form.dob };
+      const payload = { student_id: form.student_id, password: form.password };
 
       await studentLogin(payload);
       toast.success(isHindi ? 'Login successful!' : 'Login successful!');
@@ -238,7 +238,7 @@ export default function StudyTinoLoginPage() {
                 </h3>
                 <p className="text-xs text-gray-500">
                   {loginType === 'student'
-                    ? (isHindi ? 'Mobile Number aur Date of Birth se login kijiye' : 'Login with Mobile Number and Date of Birth')
+                    ? (isHindi ? 'Student ID aur Password se login kijiye' : 'Login with Student ID and Password')
                     : (isHindi ? 'Parent ID ya Mobile se login kijiye' : 'Login with Parent ID or Mobile')}
                 </p>
               </div>
@@ -270,15 +270,14 @@ export default function StudyTinoLoginPage() {
               <form onSubmit={loginType === 'student' ? handleStudentLogin : handleParentLogin} className="space-y-4">
                 {loginType === 'student' && (
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">{isHindi ? 'Mobile Number' : 'Mobile Number'}</Label>
+                    <Label className="text-sm font-medium text-gray-700">{isHindi ? 'Student ID' : 'Student ID'}</Label>
                     <div className="relative mt-2">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
-                        type="tel"
-                        value={form.mobile}
-                        onChange={(e) => setForm({ ...form, mobile: e.target.value })}
-                        placeholder="9876543210"
-                        maxLength={10}
+                        type="text"
+                        value={form.student_id}
+                        onChange={(e) => setForm({ ...form, student_id: e.target.value })}
+                        placeholder="STU-SCH-2026-00001"
                         className="pl-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
                       />
                     </div>
@@ -319,15 +318,23 @@ export default function StudyTinoLoginPage() {
 
                 {loginType === 'student' && (
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">{isHindi ? 'Date of Birth' : 'Date of Birth'}</Label>
+                    <Label className="text-sm font-medium text-gray-700">{t('password')}</Label>
                     <div className="relative mt-2">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
-                        type="date"
-                        value={form.dob}
-                        onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                        className="pl-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
+                        type={showPassword ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        placeholder="••••••••"
+                        className="pl-10 pr-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
                 )}
@@ -379,8 +386,8 @@ export default function StudyTinoLoginPage() {
               {loginType === 'student' && (
                 <p className="text-center text-xs text-gray-500 mt-5">
                   {isHindi 
-                    ? 'Aapke mobile aur date of birth se login kijiye'
-                    : 'Login with your registered mobile number and date of birth'}
+                    ? 'Student ID aur Password school se mila hai. Bhool gaye? School se contact kijiye.'
+                    : 'Student ID and Password provided by school. Forgot? Contact school.'}
                 </p>
               )}
             </div>
