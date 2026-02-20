@@ -82,13 +82,13 @@ export default function SettingsPage() {
     { key: 'multi_branch', label: 'Multi-Branch' },
   ];
 
-  const PORTALS = ['schooltino', 'teachtino'];
-  const PORTAL_LABELS = { schooltino: 'SchoolTino (Admin)', teachtino: 'TeachTino (Teachers)' };
+  const PORTALS = ['schooltino'];
+  const PORTAL_LABELS = { schooltino: 'SchoolTino (Admin)' };
 
   const defaultVisibility = () => {
     const settings = {};
     MODULE_LIST.forEach(m => {
-      settings[m.key] = { schooltino: true, teachtino: true };
+      settings[m.key] = { schooltino: true };
     });
     return settings;
   };
