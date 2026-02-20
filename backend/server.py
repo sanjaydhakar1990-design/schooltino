@@ -11613,11 +11613,12 @@ async def get_pending_online_payments(school_id: str, current_user: dict = Depen
 @api_router.post("/admin/verify-payment/{payment_id}")
 async def verify_online_payment(
     payment_id: str,
-    action: str = Body(...),  # approve or reject
-    remarks: str = Body(default=""),
+    body: dict = Body(...),
     current_user: dict = Depends(get_current_user)
 ):
     """Verify and approve/reject online payment"""
+    action = body.get("action", "")
+    remarks = body.get("remarks", "")
     if current_user["role"] not in ["director", "principal", "admin", "admin_staff"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     

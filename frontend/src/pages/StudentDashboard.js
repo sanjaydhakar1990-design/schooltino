@@ -88,6 +88,15 @@ export default function StudyTinoDashboard() {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentMode, setPaymentMode] = useState('free');
+  const [paymentSettings, setPaymentSettings] = useState(null);
+  const [screenshotFile, setScreenshotFile] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [upiPaymentMode, setUpiPaymentMode] = useState('upi');
+  const [paymentRemarks, setPaymentRemarks] = useState('');
+  const [myPayments, setMyPayments] = useState([]);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
   
   const [leaveForm, setLeaveForm] = useState({ leave_type: 'sick', from_date: '', to_date: '', reason: '' });
   const [isBlocked, setIsBlocked] = useState(false);
@@ -235,6 +244,69 @@ export default function StudyTinoDashboard() {
     } catch (error) { toast.error('Failed to initiate payment'); } finally { setPaymentProcessing(false); }
   }, [paymentAmount, user, profile]);
 
+  const fetchPaymentSettings = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const [settingsRes, paymentsRes] = await Promise.allSettled([
+        axios.get(`${API}/school/payment-settings?school_id=${profile?.school_id || user?.school_id}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/parent/fee-details/${user?.id}`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      if (settingsRes.status === 'fulfilled') setPaymentSettings(settingsRes.value.data);
+      if (paymentsRes.status === 'fulfilled') setMyPayments(paymentsRes.value.data?.payment_history || []);
+    } catch (e) {}
+  }, [profile, user]);
+
+  const openPaymentDialog = useCallback(() => {
+    fetchPaymentSettings();
+    setShowPaymentDialog(true);
+    setPaymentMode('free');
+    setScreenshotFile(null);
+    setScreenshotPreview('');
+    setTransactionId('');
+    setPaymentAmount('');
+  }, [fetchPaymentSettings]);
+
+  const handleScreenshotChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('File size must be less than 5MB'); return; }
+    setScreenshotFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setScreenshotPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleFreePayment = async () => {
+    if (!paymentAmount || isNaN(paymentAmount) || Number(paymentAmount) <= 0) { toast.error('Please enter amount'); return; }
+    if (!transactionId.trim()) { toast.error('Please enter UPI Transaction ID / Reference Number'); return; }
+    setPaymentProcessing(true);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      let screenshotUrl = null;
+      if (screenshotFile) {
+        const formData = new FormData();
+        formData.append('file', screenshotFile);
+        formData.append('school_id', profile?.school_id || '');
+        const uploadRes = await axios.post(`${API}/upload/photo`, formData, { headers: { ...headers, 'Content-Type': 'multipart/form-data' } });
+        screenshotUrl = uploadRes.data.url || uploadRes.data.photo_url;
+      }
+      await axios.post(`${API}/parent/record-payment`, {
+        student_id: user?.id,
+        amount: Number(paymentAmount),
+        payment_mode: upiPaymentMode,
+        transaction_id: transactionId.trim(),
+        payer_name: profile?.father_name || profile?.name || user?.name,
+        remarks: paymentRemarks.trim() || `Fee payment via ${upiPaymentMode.toUpperCase()}`,
+        screenshot_url: screenshotUrl
+      }, { headers });
+      toast.success('Payment submitted! Admin will verify and update your fees.');
+      setShowPaymentDialog(false);
+      setPaymentAmount(''); setTransactionId(''); setScreenshotFile(null); setScreenshotPreview(''); setPaymentRemarks('');
+    } catch (error) { toast.error(error.response?.data?.detail || 'Failed to submit payment'); }
+    finally { setPaymentProcessing(false); }
+  };
+
   const openWallet = async () => {
     try {
       const res = await axios.get(`${API}/student/wallet?student_id=${user?.id}`);
@@ -359,7 +431,7 @@ export default function StudyTinoDashboard() {
 
   const studentModuleCards = [
     { id: 'studyai', name: 'StudyAI', desc: 'AI-powered study assistant for homework help & learning.', icon: Brain, lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => setShowAIHelper(true) },
-    { id: 'feetino', name: 'FeeTino', desc: 'Pay school fees online securely via Razorpay.', icon: Wallet, lightBg: 'bg-green-50', iconColor: 'text-green-600', action: () => setShowPaymentDialog(true) },
+    { id: 'feetino', name: 'FeeTino', desc: 'Pay school fees online via UPI or Razorpay.', icon: Wallet, lightBg: 'bg-green-50', iconColor: 'text-green-600', action: () => openPaymentDialog() },
     { id: 'classchat', name: 'ClassChat', desc: 'Real-time chat with classmates & group discussions.', icon: MessageCircle, lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => openClassChat() },
     { id: 'admitcard', name: 'AdmitCard', desc: 'View & download exam admit cards instantly.', icon: Award, lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => setShowAdmitCardDialog(true) },
     { id: 'activities', name: 'Activities', desc: 'Track your extra-curricular activities & achievements.', icon: Trophy, lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => openActivities() },
@@ -577,7 +649,7 @@ export default function StudyTinoDashboard() {
             { icon: Home, label: t('home'), active: true },
             { icon: BookOpen, label: 'Study', action: () => navigate('/app/exams') },
             { icon: Bell, label: t('notices') },
-            { icon: Wallet, label: t('fees'), action: () => setShowPaymentDialog(true) },
+            { icon: Wallet, label: t('fees'), action: () => openPaymentDialog() },
             { icon: Brain, label: 'AI', action: () => setShowAIHelper(true) },
           ].map((item, idx) => (
             <button key={idx} onClick={item.action || undefined} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${item.active ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-gray-600'}`}>
@@ -755,18 +827,150 @@ export default function StudyTinoDashboard() {
       </Dialog>
 
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent>
-          <DialogHeader><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-green-50 rounded flex items-center justify-center"><Wallet className="w-4 h-4 text-green-500" /></div>Pay Fees Online</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md bg-white rounded-xl">
+          <DialogHeader className="border-b border-gray-100 pb-3">
+            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
+              <div className="w-7 h-7 bg-green-50 rounded-lg flex items-center justify-center"><Wallet className="w-4 h-4 text-green-500" /></div>
+              FeeTino - Pay Fees
+            </DialogTitle>
+          </DialogHeader>
           <div className="space-y-4 py-2">
             {pendingFees > 0 && (
-              <div className="p-3 bg-red-50 rounded-xl border border-red-100 mb-2">
-                <p className="text-xs text-red-500">Pending Fee</p>
-                <p className="text-xl font-bold text-red-600">₹{pendingFees.toLocaleString('en-IN')}</p>
+              <div className="p-3 bg-red-50 rounded-xl border border-red-100 flex items-center justify-between">
+                <div><p className="text-xs text-red-500">Pending Fee</p><p className="text-xl font-bold text-red-600">₹{pendingFees.toLocaleString('en-IN')}</p></div>
+                <button onClick={() => setShowPaymentHistory(!showPaymentHistory)} className="text-xs text-blue-500 hover:text-blue-700 underline">
+                  {showPaymentHistory ? 'Hide' : 'View'} History
+                </button>
               </div>
             )}
-            <div><Label className="text-sm text-gray-600 font-medium">Amount (INR)</Label><Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Enter amount..." className="mt-1 border-gray-200" min="1" /></div>
-            <Button onClick={handlePayFees} disabled={paymentProcessing} className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg">{paymentProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CreditCard className="w-4 h-4 mr-2" />}{paymentProcessing ? 'Processing...' : 'Pay Now'}</Button>
-            <p className="text-xs text-center text-gray-400">Secured by Razorpay</p>
+
+            {showPaymentHistory && myPayments.length > 0 && (
+              <div className="max-h-32 overflow-y-auto space-y-2">
+                {myPayments.slice(0, 5).map((p, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-xs">
+                    <div>
+                      <p className="font-medium text-gray-700">₹{p.amount?.toLocaleString('en-IN')}</p>
+                      <p className="text-gray-400">{p.payment_mode?.toUpperCase()} • {new Date(p.created_at).toLocaleDateString('en-IN')}</p>
+                    </div>
+                    <Badge className={`text-[10px] ${p.status === 'verified' || p.status === 'paid' ? 'bg-green-100 text-green-700' : p.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                      {p.status === 'verified' || p.status === 'paid' ? 'Paid' : p.status === 'rejected' ? 'Rejected' : 'Pending'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+              <button onClick={() => setPaymentMode('free')} className={`flex-1 py-2.5 text-sm font-medium transition-colors ${paymentMode === 'free' ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                UPI / QR (Free)
+              </button>
+              <button onClick={() => setPaymentMode('razorpay')} className={`flex-1 py-2.5 text-sm font-medium transition-colors border-l border-gray-200 ${paymentMode === 'razorpay' ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                Razorpay (Online)
+              </button>
+            </div>
+
+            {paymentMode === 'free' ? (
+              <div className="space-y-3">
+                {(paymentSettings?.upi_id || paymentSettings?.gpay_number || paymentSettings?.phonepe_number || paymentSettings?.paytm_number || paymentSettings?.qr_code_url) ? (
+                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                    {paymentSettings?.qr_code_url && (
+                      <div className="flex justify-center mb-3">
+                        <div className="bg-white p-2 rounded-xl border-2 border-blue-200 shadow-sm">
+                          <img src={paymentSettings.qr_code_url} alt="School QR Code" className="w-44 h-44 rounded-lg object-contain" />
+                        </div>
+                      </div>
+                    )}
+                    {paymentSettings?.qr_code_url && <p className="text-[10px] text-center text-blue-500 mb-2">Scan QR code to pay, then fill details below</p>}
+                    <p className="text-xs font-semibold text-blue-700 mb-2">School Payment Details:</p>
+                    <div className="space-y-1.5 text-xs text-blue-800">
+                      {paymentSettings?.upi_id && <p><span className="font-medium">UPI ID:</span> {paymentSettings.upi_id}</p>}
+                      {paymentSettings?.gpay_number && <p><span className="font-medium">GPay:</span> {paymentSettings.gpay_number}</p>}
+                      {paymentSettings?.phonepe_number && <p><span className="font-medium">PhonePe:</span> {paymentSettings.phonepe_number}</p>}
+                      {paymentSettings?.paytm_number && <p><span className="font-medium">Paytm:</span> {paymentSettings.paytm_number}</p>}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-yellow-50 rounded-xl border border-yellow-100">
+                    <p className="text-xs text-yellow-700">School payment details not configured yet. Please pay directly to school and enter details below.</p>
+                  </div>
+                )}
+
+                <div>
+                  <Label className="text-xs font-medium text-gray-600">Payment Mode</Label>
+                  <select value={upiPaymentMode} onChange={(e) => setUpiPaymentMode(e.target.value)} className="w-full mt-1 p-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:border-green-500">
+                    <option value="upi">UPI</option>
+                    <option value="gpay">Google Pay</option>
+                    <option value="phonepe">PhonePe</option>
+                    <option value="paytm">Paytm</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="cash">Cash</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium text-gray-600">Amount (₹)</Label>
+                  <Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Enter amount..." className="mt-1 border-gray-200" min="1" />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium text-gray-600">Transaction ID / Reference No.</Label>
+                  <Input value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="Enter UPI ref number..." className="mt-1 border-gray-200" />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium text-gray-600">Remarks / Note (Optional)</Label>
+                  <textarea 
+                    value={paymentRemarks} 
+                    onChange={(e) => setPaymentRemarks(e.target.value)} 
+                    placeholder="E.g., Paid for April month fees, Tuition fee for Term 2..." 
+                    className="w-full mt-1 p-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:border-green-500 resize-none" 
+                    rows={2} 
+                    maxLength={200}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-0.5 text-right">{paymentRemarks.length}/200</p>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium text-gray-600">Payment Screenshot (Optional)</Label>
+                  <div className="mt-1 border-2 border-dashed border-gray-200 rounded-lg p-3 text-center hover:border-green-400 transition-colors cursor-pointer" onClick={() => document.getElementById('screenshot-input').click()}>
+                    {screenshotPreview ? (
+                      <div className="relative">
+                        <img src={screenshotPreview} alt="Screenshot" className="max-h-40 mx-auto rounded-lg" />
+                        <button onClick={(e) => { e.stopPropagation(); setScreenshotFile(null); setScreenshotPreview(''); }} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs">✕</button>
+                      </div>
+                    ) : (
+                      <div className="py-4">
+                        <Paperclip className="w-6 h-6 mx-auto text-gray-300 mb-2" />
+                        <p className="text-xs text-gray-400">Tap to upload payment screenshot</p>
+                        <p className="text-[10px] text-gray-300 mt-1">JPG, PNG up to 5MB</p>
+                      </div>
+                    )}
+                  </div>
+                  <input id="screenshot-input" type="file" accept="image/*" className="hidden" onChange={handleScreenshotChange} />
+                </div>
+
+                <Button onClick={handleFreePayment} disabled={paymentProcessing} className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg">
+                  {paymentProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                  {paymentProcessing ? 'Submitting...' : 'Submit Payment'}
+                </Button>
+                <p className="text-[10px] text-center text-gray-400">Admin will verify your payment and update your fees</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                  <p className="text-xs text-blue-600">Pay securely via Razorpay gateway. Supports Credit/Debit Card, Net Banking, UPI & Wallets.</p>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-600">Amount (₹)</Label>
+                  <Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Enter amount..." className="mt-1 border-gray-200" min="1" />
+                </div>
+                <Button onClick={handlePayFees} disabled={paymentProcessing} className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg">
+                  {paymentProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CreditCard className="w-4 h-4 mr-2" />}
+                  {paymentProcessing ? 'Processing...' : 'Pay via Razorpay'}
+                </Button>
+                <p className="text-[10px] text-center text-gray-400">Secured by Razorpay • 2% transaction fee applies</p>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

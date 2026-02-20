@@ -84,6 +84,8 @@ export default function FeeManagementPage() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [saving, setSaving] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState(null);
+  const [onlinePayments, setOnlinePayments] = useState([]);
+  const [viewScreenshot, setViewScreenshot] = useState(null);
   
   const [structureForm, setStructureForm] = useState({
     class_id: '',
@@ -151,13 +153,14 @@ export default function FeeManagementPage() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [classRes, feeRes, collectionRes, duesRes, schemeRes, studentSchemeRes] = await Promise.all([
+      const [classRes, feeRes, collectionRes, duesRes, schemeRes, studentSchemeRes, onlineRes] = await Promise.all([
         axios.get(`${API}/classes?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/fee-structures?school_id=${schoolId}&academic_year=${selectedAcademicYear}`, { headers }),
         axios.get(`${API}/fee-collections?school_id=${schoolId}&academic_year=${selectedAcademicYear}`, { headers }),
         axios.get(`${API}/old-dues?school_id=${schoolId}`, { headers }),
         axios.get(`${API}/scholarships?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/student-scholarships?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] }))
+        axios.get(`${API}/student-scholarships?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] })),
+        axios.get(`${API}/admin/pending-payments?school_id=${schoolId}`, { headers }).catch(() => ({ data: [] }))
       ]);
       
       setClasses(classRes.data);
@@ -166,6 +169,7 @@ export default function FeeManagementPage() {
       setOldDues(duesRes.data || []);
       setScholarships(schemeRes.data || []);
       setStudentScholarships(studentSchemeRes.data || []);
+      setOnlinePayments(Array.isArray(onlineRes.data) ? onlineRes.data : []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -227,6 +231,20 @@ export default function FeeManagementPage() {
     });
     
     return total;
+  };
+
+  const handleVerifyPayment = async (paymentId, action) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/admin/verify-payment/${paymentId}`, 
+        { action, remarks: '' },
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+      );
+      toast.success(action === 'approve' ? 'Payment approved!' : 'Payment rejected');
+      fetchAllData();
+    } catch (error) {
+      toast.error('Failed to verify payment');
+    }
   };
 
   const handleSaveStructure = async () => {
@@ -667,7 +685,7 @@ export default function FeeManagementPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-slate-100 p-1 rounded-lg">
+        <TabsList className="grid w-full grid-cols-6 bg-slate-100 p-1 rounded-lg">
           <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <Building2 className="w-4 h-4" />
             <span className="hidden md:inline">{t('fee_structure')}</span>
@@ -691,6 +709,16 @@ export default function FeeManagementPage() {
           <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm">
             <FileText className="w-4 h-4" />
             {t('reports')}
+          </TabsTrigger>
+          <TabsTrigger value="online_payments" className="gap-2 data-[state=active]:bg-white text-xs md:text-sm relative">
+            <Receipt className="w-4 h-4" />
+            <span className="hidden md:inline">Online</span>
+            <span className="md:hidden">Online</span>
+            {onlinePayments.filter(p => p.status === 'pending_verification').length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                {onlinePayments.filter(p => p.status === 'pending_verification').length}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -1241,7 +1269,81 @@ export default function FeeManagementPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="online_payments" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="w-5 h-5" />
+                Online Payment Verification
+              </CardTitle>
+              <CardDescription>Verify UPI/QR payments submitted by students with screenshots</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {onlinePayments.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                  <p className="font-medium">No online payments pending</p>
+                  <p className="text-sm mt-1">Students' UPI/QR payments will appear here for verification</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {onlinePayments.map((payment) => (
+                    <div key={payment.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-all">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-gray-800">{payment.student_name}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              payment.status === 'pending_verification' ? 'bg-yellow-100 text-yellow-700' :
+                              payment.status === 'verified' ? 'bg-green-100 text-green-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {payment.status === 'pending_verification' ? 'Pending' : payment.status === 'verified' ? 'Approved' : 'Rejected'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500">{payment.class_name}</p>
+                          <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                            <div><span className="text-gray-400">Amount:</span> <span className="font-semibold text-green-600">₹{payment.amount?.toLocaleString('en-IN')}</span></div>
+                            <div><span className="text-gray-400">Mode:</span> <span className="font-medium text-gray-700">{payment.payment_mode?.toUpperCase()}</span></div>
+                            <div><span className="text-gray-400">Txn ID:</span> <span className="font-medium text-gray-700">{payment.transaction_id}</span></div>
+                            <div><span className="text-gray-400">Date:</span> <span className="text-gray-600">{new Date(payment.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
+                          </div>
+                          {payment.remarks && <p className="text-xs text-gray-400 mt-1">{payment.remarks}</p>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {payment.screenshot_url && (
+                            <Button variant="outline" size="sm" onClick={() => setViewScreenshot(payment.screenshot_url)} className="text-xs gap-1">
+                              <FileText className="w-3 h-3" /> Screenshot
+                            </Button>
+                          )}
+                          {payment.status === 'pending_verification' && (
+                            <>
+                              <Button size="sm" onClick={() => handleVerifyPayment(payment.id, 'approve')} className="bg-green-500 hover:bg-green-600 text-white text-xs gap-1">
+                                <Check className="w-3 h-3" /> Approve
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleVerifyPayment(payment.id, 'reject')} className="text-red-500 border-red-200 hover:bg-red-50 text-xs gap-1">
+                                <AlertCircle className="w-3 h-3" /> Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      <Dialog open={!!viewScreenshot} onOpenChange={() => setViewScreenshot(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Payment Screenshot</DialogTitle></DialogHeader>
+          {viewScreenshot && <img src={viewScreenshot} alt="Payment Screenshot" className="w-full rounded-lg border border-gray-200" />}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showStructureDialog} onOpenChange={setShowStructureDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

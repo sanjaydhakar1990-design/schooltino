@@ -610,12 +610,47 @@ export default function SchoolManagementPage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <Label>QR Code URL (Optional)</Label>
-                  <Input
-                    value={paymentSettings.qr_code_url}
-                    onChange={e => setPaymentSettings(s => ({ ...s, qr_code_url: e.target.value }))}
-                    placeholder="Upload QR code somewhere and paste URL"
-                  />
+                  <Label>QR Code Image (Upload your payment QR)</Label>
+                  <div className="mt-2 flex items-start gap-4">
+                    {paymentSettings.qr_code_url ? (
+                      <div className="relative">
+                        <img src={paymentSettings.qr_code_url} alt="QR Code" className="w-36 h-36 rounded-lg border-2 border-green-200 object-contain bg-white p-1" />
+                        <button onClick={() => setPaymentSettings(s => ({ ...s, qr_code_url: '' }))} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs shadow hover:bg-red-600">✕</button>
+                      </div>
+                    ) : null}
+                    <div className="flex-1">
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-green-400 transition-colors cursor-pointer"
+                        onClick={() => document.getElementById('qr-upload-input').click()}
+                      >
+                        <Upload className="w-8 h-8 mx-auto text-gray-300 mb-2" />
+                        <p className="text-sm text-gray-500 font-medium">Click to upload QR code</p>
+                        <p className="text-xs text-gray-400 mt-1">JPG, PNG up to 5MB</p>
+                      </div>
+                      <input 
+                        id="qr-upload-input" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          if (file.size > 5 * 1024 * 1024) { toast.error('File too large (max 5MB)'); return; }
+                          try {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            formData.append('school_id', schoolId);
+                            const token = localStorage.getItem('token');
+                            const res = await axios.post(`${API}/upload/photo`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
+                            setPaymentSettings(s => ({ ...s, qr_code_url: res.data.url }));
+                            toast.success('QR code uploaded!');
+                          } catch (err) {
+                            toast.error('QR upload failed');
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
