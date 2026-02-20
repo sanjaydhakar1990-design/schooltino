@@ -18,7 +18,6 @@ import {
 import { Settings as SettingsIcon, School, Globe, Plus, Loader2, Check, Upload, PenTool, Stamp, Image, Wallet, Sparkles, Camera, X, ToggleLeft, Link, Eye, EyeOff, Move, ZoomIn, RotateCcw, Save, CreditCard, FileText, Bell, Calendar as CalendarIcon, Smartphone, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Slider } from '../components/ui/slider';
-import StaffPermissions from '../components/StaffPermissions';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
@@ -790,26 +789,6 @@ export default function SettingsPage() {
               </table>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Staff Permissions */}
-      {user?.role === 'director' && (
-        <div className="stat-card border-2 border-blue-100">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="w-5 h-5 text-blue-600" />
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">
-                {i18n.language === 'hi' ? 'स्टाफ परमिशन प्रबंधन' : 'Staff Permission Management'}
-              </h2>
-              <p className="text-sm text-slate-500">
-                {i18n.language === 'hi'
-                  ? 'प्रत्येक स्टाफ के लिए मॉड्यूल एक्सेस सेट करें'
-                  : 'Set module access for each staff member individually'}
-              </p>
-            </div>
-          </div>
-          <StaffPermissions />
         </div>
       )}
 
