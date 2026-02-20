@@ -321,8 +321,8 @@ export default function TimetableManagement() {
     if (!assignTeacherId || !selectedClass) return;
     setSaving(true);
     try {
-      await axios.post(`${API}/class-teacher/assign`, { school_id: schoolId, class_id: selectedClass.id, teacher_id: assignTeacherId }, { headers });
-      toast.success('Class teacher assigned! Homeroom entries created.');
+      const res = await axios.post(`${API}/class-teacher/assign`, { school_id: schoolId, class_id: selectedClass.id, teacher_id: assignTeacherId }, { headers });
+      toast.success(res.data?.message || 'Class teacher assigned! Homeroom entries created.');
       setShowAssignDialog(false);
       setAssignTeacherId('');
       fetchAllData();

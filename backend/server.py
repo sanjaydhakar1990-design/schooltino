@@ -6593,6 +6593,15 @@ Language: {request.language}."""
 
 # ==================== TEACHTINO - TEACHER PORTAL ROUTES ====================
 
+async def get_teacher_all_ids(current_user: dict) -> list:
+    ids = [current_user["id"]]
+    if current_user.get("staff_id"):
+        ids.append(current_user["staff_id"])
+    staff_rec = await db.staff.find_one({"user_id": current_user["id"]}, {"_id": 0, "id": 1})
+    if staff_rec and staff_rec["id"] not in ids:
+        ids.append(staff_rec["id"])
+    return list(set(ids))
+
 class TeacherDashboardStats(BaseModel):
     my_classes: List[Dict[str, Any]]
     total_students: int
@@ -6611,13 +6620,13 @@ async def get_teacher_dashboard(current_user: dict = Depends(get_current_user)):
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     school_id = current_user.get("school_id")
     
-    # Get classes where user is class teacher
+    teacher_ids = await get_teacher_all_ids(current_user)
+    
     my_classes = await db.classes.find(
-        {"class_teacher_id": current_user["id"]},
+        {"class_teacher_id": {"$in": teacher_ids}},
         {"_id": 0}
     ).to_list(20)
     
-    # If no specific classes, get all classes for school (for principal/director)
     if not my_classes and current_user["role"] in ["principal", "vice_principal", "director"]:
         my_classes = await db.classes.find(
             {"school_id": school_id},
@@ -6664,12 +6673,13 @@ async def get_my_classes(current_user: dict = Depends(get_current_user)):
     if current_user["role"] not in ["teacher", "principal", "vice_principal", "director"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    teacher_ids = await get_teacher_all_ids(current_user)
+    
     classes = await db.classes.find(
-        {"class_teacher_id": current_user["id"]},
+        {"class_teacher_id": {"$in": teacher_ids}},
         {"_id": 0}
     ).to_list(20)
     
-    # Enrich with student count
     for cls in classes:
         cls["student_count"] = await db.students.count_documents({
             "class_id": cls["id"],
@@ -6918,12 +6928,12 @@ async def get_pending_count(current_user: dict = Depends(get_current_user)):
 async def get_teacher_syllabus(current_user: dict = Depends(get_current_user)):
     """Get syllabus progress for teacher's classes"""
     # Get classes assigned to this teacher
+    teacher_ids = await get_teacher_all_ids(current_user)
     my_classes = await db.classes.find(
-        {"class_teacher_id": current_user["id"]},
+        {"class_teacher_id": {"$in": teacher_ids}},
         {"_id": 0}
     ).to_list(20)
     
-    # If no specific classes, return all for school
     if not my_classes:
         school_id = current_user.get("school_id")
         my_classes = await db.classes.find(
@@ -7063,13 +7073,12 @@ async def get_ai_daily_plan(current_user: dict = Depends(get_current_user)):
     today = datetime.now(timezone.utc)
     teacher_name = current_user.get("name", "Teacher").split()[0]
     
-    # Get teacher's classes
+    teacher_ids = await get_teacher_all_ids(current_user)
     my_classes = await db.classes.find(
-        {"class_teacher_id": current_user["id"]},
+        {"class_teacher_id": {"$in": teacher_ids}},
         {"_id": 0}
     ).to_list(10)
     
-    # Generate AI plan (mock for now - can integrate with actual AI)
     today_classes = []
     times = ["8:00 AM", "9:00 AM", "10:30 AM", "11:30 AM", "1:00 PM", "2:00 PM"]
     for idx, cls in enumerate(my_classes[:6]):
@@ -7129,14 +7138,14 @@ async def get_ai_daily_plan(current_user: dict = Depends(get_current_user)):
 @api_router.get("/teacher/weak-students")
 async def get_weak_students(current_user: dict = Depends(get_current_user)):
     """Get weak students for teacher's classes with AI strategies"""
+    teacher_ids = await get_teacher_all_ids(current_user)
     my_classes = await db.classes.find(
-        {"class_teacher_id": current_user["id"]},
+        {"class_teacher_id": {"$in": teacher_ids}},
         {"_id": 0}
     ).to_list(10)
     
     class_ids = [c["id"] for c in my_classes]
     
-    # Get students with weak performance (demo data)
     weak_students = await db.weak_students.find(
         {"class_id": {"$in": class_ids}},
         {"_id": 0}
@@ -13244,24 +13253,55 @@ async def assign_class_teacher(data: ClassTeacherAssignment, current_user: dict 
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    existing = await db.classes.find_one({
+    staff_record = await db.staff.find_one({"id": data.teacher_id}, {"_id": 0})
+    user_record = await db.users.find_one({"id": data.teacher_id}, {"_id": 0})
+    
+    if not staff_record and not user_record:
+        staff_record = await db.staff.find_one({"user_id": data.teacher_id}, {"_id": 0})
+    if not user_record and staff_record and staff_record.get("user_id"):
+        user_record = await db.users.find_one({"id": staff_record["user_id"]}, {"_id": 0})
+    
+    if not staff_record and not user_record:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    teacher_name = (staff_record or user_record or {}).get("name", "Unknown")
+    
+    if user_record:
+        resolved_id = user_record["id"]
+    elif staff_record and staff_record.get("user_id"):
+        resolved_id = staff_record["user_id"]
+    else:
+        resolved_id = data.teacher_id
+    
+    all_ids = list(set(filter(None, [
+        data.teacher_id,
+        resolved_id,
+        staff_record.get("id") if staff_record else None,
+        staff_record.get("user_id") if staff_record else None,
+        user_record.get("id") if user_record else None,
+        user_record.get("staff_id") if user_record else None
+    ])))
+    
+    old_classes = await db.classes.find({
         "school_id": data.school_id,
-        "class_teacher_id": data.teacher_id,
+        "class_teacher_id": {"$in": all_ids},
         "id": {"$ne": data.class_id}
-    })
-    if existing:
-        raise HTTPException(status_code=400, detail=f"Teacher already assigned as class teacher for {existing.get('name', 'another class')}")
+    }).to_list(10)
     
-    teacher = await db.staff.find_one({"id": data.teacher_id}, {"_id": 0, "name": 1})
-    if not teacher:
-        teacher = await db.users.find_one({"id": data.teacher_id}, {"_id": 0, "name": 1})
-    
-    teacher_name = teacher.get("name", "Unknown") if teacher else "Unknown"
+    for old_class in old_classes:
+        await db.classes.update_one(
+            {"id": old_class["id"]},
+            {"$set": {"class_teacher_id": None, "class_teacher": None}}
+        )
+        await db.timetables.update_many(
+            {"school_id": data.school_id, "class_id": old_class["id"], "is_homeroom": True},
+            {"$set": {"teacher_id": None, "teacher_name": None}}
+        )
     
     await db.classes.update_one(
         {"id": data.class_id, "school_id": data.school_id},
         {"$set": {
-            "class_teacher_id": data.teacher_id,
+            "class_teacher_id": resolved_id,
             "class_teacher": teacher_name,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
@@ -13280,7 +13320,7 @@ async def assign_class_teacher(data: ClassTeacherAssignment, current_user: dict 
                 "period_id": 1,
                 "subject_id": "homeroom",
                 "subject_name": "Homeroom / Attendance",
-                "teacher_id": data.teacher_id,
+                "teacher_id": resolved_id,
                 "teacher_name": teacher_name,
                 "is_homeroom": True,
                 "is_locked": True,
@@ -13289,7 +13329,12 @@ async def assign_class_teacher(data: ClassTeacherAssignment, current_user: dict 
             upsert=True
         )
     
-    return {"success": True, "message": f"{teacher_name} assigned as class teacher", "teacher_name": teacher_name}
+    old_class_names = ", ".join([c.get("name", "") for c in old_classes]) if old_classes else ""
+    msg = f"{teacher_name} assigned as class teacher"
+    if old_class_names:
+        msg += f" (removed from {old_class_names})"
+    
+    return {"success": True, "message": msg, "teacher_name": teacher_name}
 
 # ==================== SUBSTITUTION MANAGEMENT ====================
 
