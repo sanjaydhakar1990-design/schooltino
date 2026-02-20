@@ -23,7 +23,7 @@ import {
 } from '../components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
-  Plus, Search, Edit, Trash2, Eye, Loader2, User, UserPlus, 
+  Plus, Search, Edit, Trash2, Eye, EyeOff, Loader2, User, UserPlus, 
   Copy, Check, Ban, RefreshCw, LogOut, MoreVertical, AlertTriangle, Camera, CreditCard,
   Upload, X, Fingerprint, Image, Printer, ArrowUpCircle, FileUp, GraduationCap, Key, MessageCircle, Share2,
   Phone, Wallet, Bus, Heart, Users

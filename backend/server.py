@@ -3864,6 +3864,70 @@ async def reset_employee_password(
     
     return {"message": f"Password reset for {employee['name']}", "employee_id": employee_id}
 
+@api_router.post("/admin/bulk-reset-passwords-to-mobile")
+async def bulk_reset_passwords_to_mobile(
+    current_user: dict = Depends(get_current_user)
+):
+    """Reset ALL staff and student passwords to their mobile numbers"""
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can do this")
+    
+    school_id = current_user.get("school_id")
+    results = {"staff_updated": 0, "students_updated": 0, "staff_skipped": 0, "students_skipped": 0}
+    
+    staff_list = await db.staff.find({"school_id": school_id}, {"_id": 0}).to_list(None)
+    for s in staff_list:
+        mobile = (s.get("mobile") or "").replace(" ", "").replace("-", "").strip()
+        if not mobile or not s.get("user_id"):
+            results["staff_skipped"] += 1
+            continue
+        hashed = bcrypt.hashpw(mobile.encode(), bcrypt.gensalt()).decode()
+        await db.users.update_one(
+            {"id": s["user_id"]},
+            {"$set": {"password": hashed, "plain_password": mobile}}
+        )
+        results["staff_updated"] += 1
+    
+    students = await db.students.find({"school_id": school_id}, {"_id": 0}).to_list(None)
+    for stu in students:
+        mobile = (stu.get("mobile") or stu.get("father_mobile") or stu.get("mother_mobile") or "").replace(" ", "").replace("-", "").strip()
+        if not mobile:
+            results["students_skipped"] += 1
+            continue
+        hashed = bcrypt.hashpw(mobile.encode(), bcrypt.gensalt()).decode()
+        if stu.get("user_id"):
+            await db.users.update_one(
+                {"id": stu["user_id"]},
+                {"$set": {"password": hashed, "plain_password": mobile}}
+            )
+            await db.students.update_one(
+                {"id": stu["id"]},
+                {"$set": {"plain_password": mobile}}
+            )
+        else:
+            user_id = str(uuid.uuid4())
+            student_user = {
+                "id": user_id,
+                "email": stu.get("student_id", ""),
+                "password": hashed,
+                "plain_password": mobile,
+                "name": stu.get("name", ""),
+                "role": "student",
+                "mobile": mobile,
+                "school_id": school_id,
+                "student_id": stu.get("student_id", ""),
+                "is_active": True,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(student_user)
+            await db.students.update_one(
+                {"id": stu["id"]},
+                {"$set": {"user_id": user_id, "plain_password": mobile}}
+            )
+        results["students_updated"] += 1
+    
+    return {"message": "All passwords reset to mobile numbers", **results}
+
 @api_router.get("/admin/credentials")
 async def get_all_credentials(
     type: Optional[str] = "all",
