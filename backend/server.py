@@ -152,6 +152,90 @@ class UserPermissions(BaseModel):
     reports: bool = False  # View all reports
 
 # Default permissions for each role
+MODULE_PERMISSIONS_DEFAULT = {
+    "director": {
+        "dashboard": True, "students": True, "staff": True, "classes": True,
+        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
+        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
+        "fee_management": True, "admissions": True, "communication_hub": True,
+        "front_office": True, "transport": True, "inventory": True, "cctv": True,
+        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": True,
+        "settings": True, "login_credentials": True, "student_leave": True
+    },
+    "principal": {
+        "dashboard": True, "students": True, "staff": True, "classes": True,
+        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
+        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
+        "fee_management": True, "admissions": True, "communication_hub": True,
+        "front_office": True, "transport": True, "inventory": True, "cctv": True,
+        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": False,
+        "settings": False, "login_credentials": False, "student_leave": True
+    },
+    "vice_principal": {
+        "dashboard": True, "students": True, "staff": True, "classes": True,
+        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
+        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
+        "fee_management": True, "admissions": False, "communication_hub": True,
+        "front_office": True, "transport": False, "inventory": False, "cctv": True,
+        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": False,
+        "settings": False, "login_credentials": False, "student_leave": True
+    },
+    "teacher": {
+        "dashboard": True, "students": True, "staff": False, "classes": True,
+        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
+        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
+        "fee_management": False, "admissions": False, "communication_hub": True,
+        "front_office": False, "transport": False, "inventory": False, "cctv": False,
+        "calendar": True, "ai_tools": True, "analytics": False, "multi_branch": False,
+        "settings": False, "login_credentials": False, "student_leave": True
+    },
+    "accountant": {
+        "dashboard": True, "students": True, "staff": False, "classes": False,
+        "attendance": False, "timetable": False, "exams_reports": False, "homework": False,
+        "syllabus_tracking": False, "digital_library": False, "live_classes": False,
+        "fee_management": True, "admissions": False, "communication_hub": False,
+        "front_office": False, "transport": True, "inventory": True, "cctv": False,
+        "calendar": False, "ai_tools": False, "analytics": True, "multi_branch": False,
+        "settings": False, "login_credentials": False, "student_leave": False
+    },
+    "clerk": {
+        "dashboard": True, "students": True, "staff": False, "classes": True,
+        "attendance": True, "timetable": False, "exams_reports": False, "homework": False,
+        "syllabus_tracking": False, "digital_library": False, "live_classes": False,
+        "fee_management": False, "admissions": True, "communication_hub": True,
+        "front_office": True, "transport": False, "inventory": False, "cctv": False,
+        "calendar": False, "ai_tools": False, "analytics": False, "multi_branch": False,
+        "settings": False, "login_credentials": False, "student_leave": False
+    },
+    "admission_staff": {
+        "dashboard": True, "students": True, "staff": False, "classes": False,
+        "attendance": False, "timetable": False, "exams_reports": False, "homework": False,
+        "syllabus_tracking": False, "digital_library": False, "live_classes": False,
+        "fee_management": False, "admissions": True, "communication_hub": False,
+        "front_office": True, "transport": False, "inventory": False, "cctv": False,
+        "calendar": False, "ai_tools": False, "analytics": False, "multi_branch": False,
+        "settings": False, "login_credentials": False, "student_leave": False
+    },
+    "admin_staff": {
+        "dashboard": True, "students": True, "staff": True, "classes": True,
+        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
+        "syllabus_tracking": True, "digital_library": True, "live_classes": False,
+        "fee_management": True, "admissions": True, "communication_hub": True,
+        "front_office": True, "transport": True, "inventory": True, "cctv": False,
+        "calendar": True, "ai_tools": False, "analytics": True, "multi_branch": False,
+        "settings": False, "login_credentials": False, "student_leave": False
+    },
+    "co_director": {
+        "dashboard": True, "students": True, "staff": True, "classes": True,
+        "attendance": True, "timetable": True, "exams_reports": True, "homework": True,
+        "syllabus_tracking": True, "digital_library": True, "live_classes": True,
+        "fee_management": True, "admissions": True, "communication_hub": True,
+        "front_office": True, "transport": True, "inventory": True, "cctv": True,
+        "calendar": True, "ai_tools": True, "analytics": True, "multi_branch": True,
+        "settings": False, "login_credentials": False, "student_leave": True
+    }
+}
+
 DEFAULT_PERMISSIONS = {
     "director": {
         "dashboard": True, "school_analytics": True, "user_management": True,
@@ -1416,7 +1500,6 @@ async def get_me(current_user: dict = Depends(get_current_user)):
             "mother_name": current_user.get("mother_name")
         }
     
-    # Get permissions for user
     user_role = current_user["role"]
     if user_role == "director":
         permissions = DEFAULT_PERMISSIONS["director"]
@@ -1425,7 +1508,13 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     else:
         permissions = DEFAULT_PERMISSIONS.get(user_role, {})
     
-    # For regular users - return with permissions
+    if user_role == "director":
+        module_permissions = MODULE_PERMISSIONS_DEFAULT["director"]
+    elif "module_permissions" in current_user and current_user["module_permissions"]:
+        module_permissions = current_user["module_permissions"]
+    else:
+        module_permissions = MODULE_PERMISSIONS_DEFAULT.get(user_role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
+    
     return {
         "id": current_user["id"],
         "email": current_user["email"],
@@ -1435,7 +1524,8 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "school_id": current_user.get("school_id"),
         "photo_url": current_user.get("photo_url"),
         "created_at": current_user["created_at"],
-        "permissions": permissions
+        "permissions": permissions,
+        "module_permissions": module_permissions
     }
 
 # ==================== USER MANAGEMENT ROUTES ====================
@@ -1823,6 +1913,74 @@ async def update_user_permissions(user_id: str, perm_data: dict, current_user: d
     })
     
     return {"message": "Permissions updated successfully", "user_id": user_id}
+
+@api_router.get("/staff/module-permissions")
+async def get_all_staff_module_permissions(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can view staff permissions")
+    school_id = current_user.get("school_id")
+    staff = await db.users.find(
+        {"school_id": school_id, "role": {"$nin": ["director", "student"]}},
+        {"_id": 0, "id": 1, "name": 1, "email": 1, "role": 1, "module_permissions": 1, "employee_id": 1}
+    ).to_list(500)
+    result = []
+    for s in staff:
+        role = s.get("role", "teacher")
+        mp = s.get("module_permissions") or MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
+        result.append({
+            "id": s["id"],
+            "name": s.get("name", ""),
+            "email": s.get("email", ""),
+            "role": role,
+            "employee_id": s.get("employee_id", ""),
+            "module_permissions": mp,
+            "is_custom": bool(s.get("module_permissions"))
+        })
+    return result
+
+@api_router.put("/staff/{user_id}/module-permissions")
+async def update_staff_module_permissions(user_id: str, perm_data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can update permissions")
+    user = await db.users.find_one({"id": user_id, "school_id": current_user.get("school_id")}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    if user["role"] == "director":
+        raise HTTPException(status_code=400, detail="Cannot modify Director permissions")
+    module_perms = perm_data.get("module_permissions", {})
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "module_permissions": module_perms,
+            "module_permissions_updated_at": datetime.now(timezone.utc).isoformat(),
+            "module_permissions_updated_by": current_user["id"]
+        }}
+    )
+    await log_audit(current_user["id"], "update_module_permissions", "users", {
+        "user_id": user_id, "user_name": user["name"], "module_permissions": module_perms
+    })
+    return {"message": "Module permissions updated", "user_id": user_id}
+
+@api_router.post("/staff/{user_id}/reset-module-permissions")
+async def reset_staff_module_permissions(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can reset permissions")
+    user = await db.users.find_one({"id": user_id, "school_id": current_user.get("school_id")}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    await db.users.update_one(
+        {"id": user_id},
+        {"$unset": {"module_permissions": "", "module_permissions_updated_at": "", "module_permissions_updated_by": ""}}
+    )
+    role = user.get("role", "teacher")
+    default_perms = MODULE_PERMISSIONS_DEFAULT.get(role, MODULE_PERMISSIONS_DEFAULT.get("teacher", {}))
+    return {"message": "Permissions reset to defaults", "module_permissions": default_perms}
+
+@api_router.get("/module-permissions/defaults")
+async def get_module_permission_defaults(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only Director can view defaults")
+    return MODULE_PERMISSIONS_DEFAULT
 
 @api_router.post("/users/{user_id}/grant-full-access")
 async def grant_full_access(user_id: str, current_user: dict = Depends(get_current_user)):

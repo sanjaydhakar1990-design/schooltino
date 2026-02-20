@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { 
-  Users, BookOpen, Calendar, Bell, ClipboardCheck, 
+  Users, BookOpen, Calendar, Bell, ClipboardCheck, Clipboard,
   GraduationCap, Clock, FileText, Sparkles,
   Settings, LogOut, CheckCircle, XCircle,
   Send, User, CalendarDays, Loader2, Brain,
@@ -148,25 +148,36 @@ export default function TeachTinoDashboard() {
     { label: t('attendance'), value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3, subtext: 'Overall attendance percentage', bgColor: 'bg-emerald-50', iconColor: 'text-emerald-500' },
   ];
 
+  const mp = user?.module_permissions || {};
+  const hasModule = (key) => mp[key] !== false;
+
   const teacherModuleCards = [
-    { id: 'smartroll', name: 'SmartRoll', desc: 'Automated attendance marking via biometric & AI face recognition.', icon: ClipboardCheck, image: '/images/smartroll.png', gradient: 'from-orange-500 to-orange-600', lightBg: 'bg-orange-50', iconColor: 'text-orange-600', action: () => navigate('/app/attendance') },
-    { id: 'papergenie', name: 'PaperGenie', desc: 'Generates syllabus-based question papers instantly using AI.', icon: Sparkles, image: '/images/papergenie.png', gradient: 'from-pink-500 to-pink-600', lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => navigate('/app/ai-paper') },
-    { id: 'classtino', name: 'ClassTino', desc: 'View & manage your assigned classes and schedules.', icon: BookOpen, image: '/images/classtino.png', gradient: 'from-emerald-500 to-emerald-600', lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => navigate('/app/classes') },
-    { id: 'examtino', name: 'ExamTino', desc: 'Exam management, report cards & result processing.', icon: FileText, image: '/images/examtino.png', gradient: 'from-purple-500 to-purple-600', lightBg: 'bg-purple-50', iconColor: 'text-purple-600', action: () => navigate('/app/exam-report') },
-    { id: 'tinoai', name: 'TinoAI', desc: 'AI Command Center - voice assistant & smart automation.', icon: Brain, image: '/images/tinoai.png', gradient: 'from-violet-500 to-violet-600', lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => navigate('/app/tino-ai') },
-    { id: 'noticeboard', name: 'NoticeBoard', desc: 'Send announcements & notices to students and parents.', icon: Bell, image: '/images/noticeboard.png', gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => setShowNoticeDialog(true) },
-  ];
+    hasModule('attendance') && { id: 'smartroll', name: 'SmartRoll', desc: 'Automated attendance marking via biometric & AI face recognition.', icon: ClipboardCheck, gradient: 'from-orange-500 to-orange-600', lightBg: 'bg-orange-50', iconColor: 'text-orange-600', action: () => navigate('/app/attendance') },
+    hasModule('homework') && { id: 'homework', name: 'Homework', desc: 'Assign & manage homework, track submissions from students.', icon: Clipboard, gradient: 'from-teal-500 to-teal-600', lightBg: 'bg-teal-50', iconColor: 'text-teal-600', action: () => navigate('/app/homework') },
+    hasModule('timetable') && { id: 'timetable', name: 'Timetable', desc: 'View your teaching schedule, subjects & class allocations.', icon: Clock, gradient: 'from-cyan-500 to-cyan-600', lightBg: 'bg-cyan-50', iconColor: 'text-cyan-600', action: () => navigate('/app/timetable') },
+    hasModule('exams_reports') && { id: 'examtino', name: 'ExamTino', desc: 'Exam management, report cards & result processing.', icon: FileText, gradient: 'from-purple-500 to-purple-600', lightBg: 'bg-purple-50', iconColor: 'text-purple-600', action: () => navigate('/app/exams') },
+    hasModule('live_classes') && { id: 'liveclasses', name: 'Live Classes', desc: 'Conduct online classes from anywhere, share screen & materials.', icon: Camera, gradient: 'from-red-500 to-red-600', lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => navigate('/app/live-classes') },
+    hasModule('ai_tools') && { id: 'papergenie', name: 'PaperGenie', desc: 'Generates syllabus-based question papers instantly using AI.', icon: Sparkles, gradient: 'from-pink-500 to-pink-600', lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => navigate('/app/ai-tools') },
+    hasModule('classes') && { id: 'classtino', name: 'ClassTino', desc: 'View & manage your assigned classes and students.', icon: BookOpen, gradient: 'from-emerald-500 to-emerald-600', lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => navigate('/app/classes') },
+    hasModule('communication_hub') && { id: 'noticeboard', name: 'NoticeBoard', desc: 'Send announcements & notices to students and parents.', icon: Bell, gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => setShowNoticeDialog(true) },
+    hasModule('syllabus_tracking') && { id: 'syllabus', name: 'Syllabus', desc: 'Track syllabus progress, plan what to teach next.', icon: BarChart3, gradient: 'from-amber-500 to-amber-600', lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => navigate('/app/homework') },
+    hasModule('students') && { id: 'students', name: 'My Students', desc: 'View student profiles, contact details & progress.', icon: Users, gradient: 'from-indigo-500 to-indigo-600', lightBg: 'bg-indigo-50', iconColor: 'text-indigo-600', action: () => navigate('/app/students') },
+    hasModule('student_leave') && { id: 'studentleave', name: 'Student Leave', desc: 'Approve or reject student leave requests as class teacher.', icon: CalendarDays, gradient: 'from-rose-500 to-rose-600', lightBg: 'bg-rose-50', iconColor: 'text-rose-600', action: () => navigate('/app/attendance') },
+    { id: 'tinoai', name: 'TinoAI', desc: 'AI Command Center - voice assistant & smart automation.', icon: Brain, gradient: 'from-violet-500 to-violet-600', lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => navigate('/app/ai-tools') },
+  ].filter(Boolean);
 
   const quickModules = [
-    { icon: ClipboardCheck, label: 'Mark Attendance', desc: 'Daily attendance tracking', action: () => navigate('/app/attendance') },
-    { icon: Sparkles, label: 'AI Paper Generator', desc: 'Auto generate papers', action: () => navigate('/app/ai-paper') },
-    { icon: Bell, label: 'Send Notice', desc: 'Send announcements', action: () => setShowNoticeDialog(true) },
+    hasModule('attendance') && { icon: ClipboardCheck, label: 'Mark Attendance', desc: 'Daily attendance tracking', action: () => navigate('/app/attendance'), moduleKey: 'attendance' },
+    hasModule('homework') && { icon: Clipboard, label: 'Homework', desc: 'Assign & manage homework', action: () => navigate('/app/homework'), moduleKey: 'homework' },
+    hasModule('timetable') && { icon: Clock, label: 'Timetable', desc: 'View your schedule', action: () => navigate('/app/timetable'), moduleKey: 'timetable' },
+    hasModule('communication_hub') && { icon: Bell, label: 'Send Notice', desc: 'Send announcements', action: () => setShowNoticeDialog(true), moduleKey: 'communication_hub' },
     { icon: Calendar, label: 'Apply Leave', desc: 'Submit leave application', action: () => setShowLeaveDialog(true) },
-    { icon: BookOpen, label: 'My Classes', desc: 'View assigned classes', action: () => navigate('/app/classes') },
-    { icon: Brain, label: 'Tino AI', desc: 'AI Assistant', action: () => navigate('/app/tino-ai') },
-    { icon: FileText, label: 'Exam Reports', desc: 'View exam results', action: () => navigate('/app/exam-report') },
+    hasModule('classes') && { icon: BookOpen, label: 'My Classes', desc: 'View assigned classes', action: () => navigate('/app/classes'), moduleKey: 'classes' },
+    hasModule('exams_reports') && { icon: FileText, label: 'Exam Reports', desc: 'View exam results', action: () => navigate('/app/exams'), moduleKey: 'exams_reports' },
+    hasModule('live_classes') && { icon: Camera, label: 'Live Class', desc: 'Start online class', action: () => navigate('/app/live-classes'), moduleKey: 'live_classes' },
+    { icon: Brain, label: 'Tino AI', desc: 'AI Assistant', action: () => navigate('/app/ai-tools') },
     { icon: User, label: 'My Profile', desc: 'Profile & Settings', action: () => setShowProfileDialog(true) },
-  ];
+  ].filter(Boolean);
 
   const filteredModules = quickModules.filter(m => {
     if (!searchQuery) return true;

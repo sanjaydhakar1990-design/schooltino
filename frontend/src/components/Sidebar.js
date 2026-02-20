@@ -75,7 +75,16 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const handleLogout = () => { logout(); navigate('/login'); };
   const isDirector = user?.role === 'director';
   const permissions = user?.permissions || {};
+  const modulePermissions = user?.module_permissions || {};
   const hasPermission = (k) => isDirector || permissions[k] === true;
+  const hasModulePermission = (moduleKey) => {
+    if (isDirector) return true;
+    if (!moduleKey) return true;
+    if (Object.keys(modulePermissions).length > 0) {
+      return modulePermissions[moduleKey] !== false;
+    }
+    return true;
+  };
 
   const handleNavClick = () => {
     if (window.innerWidth < 1024 && onClose) onClose();
@@ -118,6 +127,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
     if (item.directorOnly && !isDirector) return false;
     if (item.permKey && !hasPermission(item.permKey)) return false;
     if (!isModuleEnabled(item.moduleKey)) return false;
+    if (!hasModulePermission(item.moduleKey)) return false;
     if (searchQuery) return t(item.labelKey).toLowerCase().includes(searchQuery.toLowerCase());
     return true;
   });
