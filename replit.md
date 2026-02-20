@@ -37,6 +37,10 @@ The design is heavily inspired by NextOS K-12, emphasizing simplicity and clarit
 - **Security**: Settings page access restricted to director-level users.
 - **Module Management**: Enhanced with toggleable modules for Admissions CRM, Multi-Branch, and Front Office, controlling sidebar visibility and dashboard presence.
 - **Centralized Syllabus System**: MongoDB `syllabus_master` collection with 85 entries (67 NCERT: Nursery-Class 12, 18 MPBSE: Class 9-12). Per-school customization via `school_syllabus` collection. API endpoints: `/api/syllabus-chapters` and `/api/syllabus-subjects` with auth + school isolation. Linked to Homework (chapter/topic selection) and AI Paper Generator (chapters from DB, topics in prompt). All schools default to NCERT board.
+- **TeachTino Attendance**: Inline class-wise attendance marking with date picker, bulk present/absent, edit mode for existing records. Uses tab navigation (Home/Attendance/Syllabus) in TeachTinoDashboard.
+- **TeachTino Syllabus Tracker**: Chapter/topic status tracking with 4 statuses (not_started, in_progress, completed, skipped). Visual progress bars, status cycling on tap, AI confirmation messages.
+- **StudyTino Syllabus View**: Real-time syllabus progress fetched from API with chapter-level detail, completion percentages, and status badges (Done/Partial/Skipped/Pending).
+- **Teacher Performance Analytics**: SchoolTino analytics shows per-teacher metrics: attendance entries marked (30 days), overall syllabus completion %, and leaves taken. Real computed data from attendance, syllabus_progress, and leaves collections.
 
 ### Feature Specifications
 - **Core Modules**: Approximately 25 modules across three portals.
