@@ -14277,6 +14277,33 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def create_indexes():
+    try:
+        await db.users.create_index("id", unique=True, sparse=True)
+        await db.users.create_index("email", sparse=True)
+        await db.users.create_index("school_id")
+        await db.users.create_index("employee_id", sparse=True)
+        await db.students.create_index("id", unique=True, sparse=True)
+        await db.students.create_index("student_id", sparse=True)
+        await db.students.create_index("school_id")
+        await db.students.create_index([("class_id", 1), ("status", 1)])
+        await db.staff.create_index("id", unique=True, sparse=True)
+        await db.staff.create_index("user_id", sparse=True)
+        await db.staff.create_index("school_id")
+        await db.classes.create_index("id", unique=True, sparse=True)
+        await db.classes.create_index("school_id")
+        await db.classes.create_index("class_teacher_id", sparse=True)
+        await db.attendance.create_index([("student_id", 1), ("date", 1)])
+        await db.attendance.create_index([("class_id", 1), ("date", 1)])
+        await db.fee_invoices.create_index("student_id")
+        await db.notices.create_index([("school_id", 1), ("is_active", 1)])
+        await db.timetables.create_index([("school_id", 1), ("class_id", 1), ("day", 1)])
+        await db.online_payments.create_index([("school_id", 1), ("status", 1)])
+        logger.info("Database indexes created successfully")
+    except Exception as e:
+        logger.warning(f"Index creation warning: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
