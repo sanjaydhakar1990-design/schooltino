@@ -49,8 +49,10 @@ try:
     from openai import OpenAI
     if OPENAI_API_KEY and not emergent_chat:
         openai_client = OpenAI(api_key=OPENAI_API_KEY)
-except:
-    pass
+except ImportError:
+    logger.warning("openai package not installed - direct OpenAI fallback disabled")
+except Exception as e:
+    logger.error(f"Failed to initialize OpenAI client: {e}")
 
 # Helper function to get AI response
 async def get_ai_response(prompt: str, system_message: str, session_id: str = None) -> str:

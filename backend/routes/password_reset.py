@@ -107,11 +107,10 @@ async def forgot_password(data: ForgotPasswordRequest):
                 user_type = "student"
     
     if not user:
-        # Don't reveal if user exists (security)
+        # Don't reveal if user exists (security - prevents user enumeration)
         return {
             "success": True,
-            "message": "Agar yeh account exist karta hai, toh OTP bhej diya gaya hai",
-            "demo_mode": True
+            "message": "Agar yeh account exist karta hai, toh OTP bhej diya gaya hai"
         }
     
     # Generate OTP
@@ -145,16 +144,17 @@ async def forgot_password(data: ForgotPasswordRequest):
     elif identifier and len(identifier) > 4:
         masked_identifier = f"{identifier[:2]}***{identifier[-2:]}"
     
+    # TODO: Integrate real SMS/Email service here
+    # Example: await send_otp_via_sms(identifier, otp)
+    # Example: await send_otp_via_email(identifier, otp)
+    # NEVER expose the OTP in the API response in production!
+
     return {
         "success": True,
-        "message": f"OTP sent to {masked_identifier}",
+        "message": f"OTP bhej diya gaya hai {masked_identifier} par",
         "user_type": user_type,
         "user_name": user.get("name", "User"),
-        "expires_in_minutes": 10,
-        # DEMO MODE - Remove in production!
-        "demo_otp": otp,
-        "demo_mode": True,
-        "note": "Demo mode - OTP shown for testing. In production, OTP will be sent via SMS/Email"
+        "expires_in_minutes": 10
     }
 
 
@@ -193,12 +193,28 @@ async def verify_otp(data: VerifyOTPRequest):
     # Verify OTP
     if not bcrypt.checkpw(data.otp.encode(), otp_record["otp_hash"].encode()):
         raise HTTPException(status_code=400, detail="Invalid OTP")
-    
+
+    # Generate a secure reset token (valid for 15 minutes)
+    reset_token = generate_reset_token()
+    token_expires_at = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+
+    # Save reset token and mark OTP as verified
+    await db.password_reset_otps.update_one(
+        {"id": otp_record["id"]},
+        {"$set": {
+            "verified": True,
+            "reset_token": reset_token,
+            "token_expires_at": token_expires_at,
+            "verified_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+
     return {
         "valid": True,
-        "message": "OTP verified",
+        "message": "OTP verify ho gaya! Ab naya password set karein.",
         "user_type": otp_record.get("user_type"),
-        "expires_at": token_expiry
+        "reset_token": reset_token,
+        "token_expires_at": token_expires_at
     }
 
 
@@ -269,13 +285,18 @@ async def admin_reset_student_password(data: AdminResetStudentPassword):
         "timestamp": datetime.now(timezone.utc).isoformat()
     })
     
+    # SECURITY: Temporary password is NOT returned in the API response
+    # to prevent it from appearing in logs, network traffic or browser history.
+    # Deliver the password to the student via a secure out-of-band method
+    # (e.g., printed slip, SMS to parent's registered number).
+    # The student MUST change it on first login (password_reset_required=True is set).
     return {
         "success": True,
-        "message": f"Password reset for {student.get('name')}",
+        "message": f"{student.get('name')} ka password reset ho gaya. Unhe naya password securely dein.",
         "student_id": student.get("student_id"),
         "student_name": student.get("name"),
-        "temporary_password": temp_password,
-        "note": "Student ko ye password dein. Pehle login pe change karna hoga."
+        "password_reset_required": True,
+        "note": "Pehle login pe student ko password change karna hoga."
     }
 
 
@@ -337,11 +358,12 @@ async def bulk_reset_student_passwords(data: BulkStudentPasswordReset):
             }}
         )
         
+        # SECURITY: Do NOT return plain text passwords in API response
         results.append({
             "student_id": student.get("student_id"),
             "student_name": student.get("name"),
             "success": True,
-            "temporary_password": temp_password
+            "password_reset_required": True
         })
     
     return {

@@ -48,6 +48,29 @@ __pycache__/
 venv/
 .venv/
 
+# ====================== SENSITIVE DATA FILES ======================
+# NEVER commit these files to version control!
+**/production_data*.json
+**/production_data*.csv
+**/school_data_export*.json
+**/school_data_export*.csv
+**/*passwords*.json
+**/*passwords*.csv
+**/*backup*.json
+**/*backup*.tar.gz
+**/*backup*.tar
+**/*dump*.json
+**/*dump*.sql
+*mongodb_backup*
+*_backup*
+*.bak
+
+# Uploaded user files (can contain student photos, documents etc.)
+backend/uploads/
+
+# Local DB dumps
+*.mongodump
+
 # Development tools
 chainlit.md
 .chainlit
@@ -68,3 +91,10 @@ chainlit.md
 # Build caches
 .cache/
 frontend/node_modules/.cache/
+
+# React build output (generated files - do not commit)
+frontend/build/
+
+# Claude Code tool directories
+.claude/
+.local/

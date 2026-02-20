@@ -29,14 +29,22 @@ load_dotenv(ROOT_DIR / '.env')
 
 from core.database import client, db
 
-# JWT Settings
-JWT_SECRET = os.environ.get('JWT_SECRET', 'schooltino-secret-key-2024')
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 24
+# JWT Settings - Import from core.auth to avoid duplicate secret definitions
+# This ensures only ONE secret is used throughout the entire application
+from core.auth import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRATION_HOURS
 
 app = FastAPI(title="Schooltino API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
+
+# ====================== RATE LIMITING ======================
+from core.rate_limiter import limiter, _rate_limit_exceeded_handler, RateLimitExceeded, RATE_LIMIT_AVAILABLE
+if RATE_LIMIT_AVAILABLE:
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    logging.info("Rate limiting is ACTIVE")
+else:
+    logging.warning("Rate limiting is NOT active. Install slowapi: pip install slowapi")
 
 # Import modular routes
 from routes.ncert import router as ncert_router
@@ -86,6 +94,10 @@ from routes.staff_attendance import router as staff_attendance_router
 from routes.e_store import router as e_store_router
 from routes.integrations import router as integrations_router
 from routes.school_feed import router as school_feed_router
+
+# ==================== NEW SAAS & MULTI-TENANT ROUTES ====================
+from routes.saas_billing import router as saas_billing_router
+from routes.school_onboarding import router as school_onboarding_router
 
 # ==================== MODELS ====================
 
@@ -14438,6 +14450,11 @@ api_router.include_router(staff_attendance_router)
 api_router.include_router(e_store_router)
 api_router.include_router(integrations_router)
 api_router.include_router(school_feed_router)
+
+# ========== NEW SAAS ROUTES ==========
+api_router.include_router(saas_billing_router)        # /api/billing/*
+api_router.include_router(school_onboarding_router)   # /api/onboarding/*
+
 app.include_router(api_router)
 
 @app.get("/")
@@ -14490,12 +14507,32 @@ else:
     async def serve_fallback(full_path: str):
         return {"status": "ok", "message": "Schooltino API - frontend build not found"}
 
+# SECURITY: CORS - Only allow specific origins
+# Set CORS_ORIGINS in your .env file, e.g.:
+# CORS_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
+_cors_origins_env = os.environ.get('CORS_ORIGINS', '')
+if _cors_origins_env and _cors_origins_env.strip() != '*':
+    _allowed_origins = [o.strip() for o in _cors_origins_env.split(',') if o.strip()]
+else:
+    # Default safe origins for development - DO NOT use '*' in production
+    _allowed_origins = [
+        "http://localhost:3000",
+        "http://localhost:5000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5000",
+    ]
+    if not _cors_origins_env:
+        logging.warning(
+            "SECURITY WARNING: CORS_ORIGINS not set in .env. "
+            "Defaulting to localhost only. Set CORS_ORIGINS for production!"
+        )
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_allowed_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
 )
 
 logging.basicConfig(

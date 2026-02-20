@@ -5,6 +5,18 @@ const AuthContext = createContext(null);
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
+// SECURITY NOTE:
+// Storing JWT in localStorage is vulnerable to XSS attacks.
+// For maximum security, the backend should set httpOnly cookies instead.
+// This is the recommended migration path:
+//   1. Backend: response.set_cookie("token", value=jwt, httponly=True, secure=True, samesite="strict")
+//   2. Frontend: Remove localStorage.setItem('token', ...) and use axios withCredentials: true
+//
+// Until that migration is done, we minimize what we store in localStorage:
+// - Store ONLY the token (not full user object)
+// - Never store passwords, SSNs, or other PII
+// - Clear everything on logout
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -78,14 +90,15 @@ export const AuthProvider = ({ children }) => {
   const setupDirector = async (userData) => {
     const response = await axios.post(`${API}/auth/setup-director`, userData);
     const { access_token, user: newUser } = response.data;
-    
+
+    // SECURITY: Store only the token - NOT the full user object
+    // User data is fetched fresh from the server on each load via fetchUser()
     localStorage.setItem('token', access_token);
-    localStorage.setItem('user', JSON.stringify(newUser));
     axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-    
+
     setToken(access_token);
     setUser(newUser);
-    
+
     return newUser;
   };
 
@@ -96,8 +109,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('token', access_token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
     
+    // SECURITY: Do NOT store full user/student object in localStorage (XSS risk)
     const userData = { ...student, role: 'student' };
-    localStorage.setItem('user', JSON.stringify(userData));
     
     setToken(access_token);
     setUser(userData);
@@ -117,12 +130,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // SECURITY: Clear ALL auth-related items from localStorage on logout
     localStorage.removeItem('token');
     localStorage.removeItem('schoolId');
+    localStorage.removeItem('user');   // Remove legacy user storage if present
+    // Clear any other cached keys
+    sessionStorage.clear();
     delete axios.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);
     setSchoolId(null);
+    setSchoolData(null);
   };
 
   const selectSchool = (id) => {
