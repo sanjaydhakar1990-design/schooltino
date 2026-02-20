@@ -2126,8 +2126,26 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
     if current_user["role"] not in ["director", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
+    while await db.schools.find_one({"id": school_id}):
+        school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
+    
+    name_words = [w for w in school.name.upper().split() if w not in ("THE", "OF", "AND", "FOR", "IN", "AT", "A", "AN", "SCHOOL", "VIDYALAYA", "CONVENT", "PUBLIC", "HIGHER", "SECONDARY")]
+    if len(name_words) >= 2:
+        school_code = ''.join(w[0] for w in name_words[:3])
+    elif name_words:
+        school_code = name_words[0][:3]
+    else:
+        school_code = school.name.upper().replace(" ", "")[:3]
+    if len(school_code) < 2:
+        school_code = school_id[-4:].upper()
+    existing_code = await db.schools.find_one({"school_code": school_code})
+    if existing_code:
+        school_code = school_code + school_id[-2:].upper()
+    
     school_data = {
-        "id": f"SCH-{school.name[:3].upper()}-{datetime.now().year}",
+        "id": school_id,
+        "school_code": school_code,
         **school.model_dump(),
         "is_active": True,
         "created_by": current_user["id"],
@@ -2135,7 +2153,6 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
     }
     await db.schools.insert_one(school_data)
     
-    # Add this school to user's managed_schools list
     await db.users.update_one(
         {"id": current_user["id"]},
         {"$addToSet": {"managed_schools": school_data["id"]}}
@@ -2144,6 +2161,28 @@ async def create_school(school: SchoolCreate, current_user: dict = Depends(get_c
     await log_audit(current_user["id"], "create", "schools", {"school_id": school_data["id"], "name": school.name})
     
     return SchoolResponse(**school_data)
+
+@api_router.delete("/schools/{school_id}")
+async def delete_school(school_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "director":
+        raise HTTPException(status_code=403, detail="Only director can delete schools")
+    
+    student_count = await db.students.count_documents({"school_id": school_id})
+    employee_count = await db.employees.count_documents({"school_id": school_id})
+    user_count = await db.users.count_documents({"school_id": school_id})
+    
+    if student_count > 0 or employee_count > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete school with {student_count} students and {employee_count} employees. Remove all data first.")
+    
+    result = await db.schools.delete_one({"id": school_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    await db.classes.delete_many({"school_id": school_id})
+    
+    await log_audit(current_user["id"], "delete", "schools", {"school_id": school_id})
+    
+    return {"message": "School deleted successfully"}
 
 @api_router.get("/schools", response_model=List[SchoolResponse])
 async def get_schools(current_user: dict = Depends(get_current_user)):
