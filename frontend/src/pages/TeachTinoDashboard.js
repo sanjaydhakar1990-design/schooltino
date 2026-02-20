@@ -20,7 +20,8 @@ import {
   Send, User, CalendarDays, Loader2, Brain,
   BarChart3, Zap, Camera, Home, PlusCircle,
   ChevronRight, AlertTriangle, Search,
-  ChevronLeft, ChevronFirst, ChevronLast
+  ChevronLeft, ChevronFirst, ChevronLast,
+  Key, Eye, EyeOff, Phone, Mail, Shield, Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
 import StaffPhotoUpload from '../components/StaffPhotoUpload';
@@ -52,6 +53,11 @@ export default function TeachTinoDashboard() {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNoticeDialog, setShowNoticeDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showOldPw, setShowOldPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   
   const [leaveForm, setLeaveForm] = useState({
     leave_type: 'casual', from_date: '', to_date: '', reason: ''
@@ -93,6 +99,38 @@ export default function TeachTinoDashboard() {
   };
 
   const handleLogout = () => { logout(); navigate('/teachtino'); };
+
+  const handleChangePassword = async () => {
+    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      toast.error('Please fill all fields'); return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('New passwords do not match'); return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters'); return;
+    }
+    setChangingPassword(true);
+    try {
+      const formData = new FormData();
+      formData.append('old_password', passwordForm.oldPassword);
+      formData.append('new_password', passwordForm.newPassword);
+      const res = await fetch(`${API}/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Password changed successfully!');
+        setShowPasswordSection(false);
+        setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        toast.error(data.detail || 'Failed to change password');
+      }
+    } catch (error) { toast.error('Error changing password'); }
+    finally { setChangingPassword(false); }
+  };
 
   const handleApplyLeave = async () => {
     if (!leaveForm.from_date || !leaveForm.to_date || !leaveForm.reason) { toast.error('Please fill all fields'); return; }
@@ -507,12 +545,12 @@ export default function TeachTinoDashboard() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-        <DialogContent className="max-w-md bg-white rounded-xl">
+      <Dialog open={showProfileDialog} onOpenChange={(v) => { setShowProfileDialog(v); if (!v) { setShowPasswordSection(false); setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); } }}>
+        <DialogContent className="max-w-md bg-white rounded-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader className="border-b border-gray-100 pb-3">
             <DialogTitle className="text-base font-semibold text-gray-800">{t('profile')}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-2">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
                 <User className="w-8 h-8 text-blue-500" />
@@ -520,10 +558,43 @@ export default function TeachTinoDashboard() {
               <div>
                 <h3 className="font-semibold text-gray-800">{user?.name}</h3>
                 <p className="text-sm text-gray-600 mt-0.5">{user?.email}</p>
-                <Badge className="mt-2 capitalize bg-blue-50 text-blue-600 border border-blue-100">{user?.role}</Badge>
+                <Badge className="mt-2 capitalize bg-blue-50 text-blue-600 border border-blue-100">{user?.role?.replace('_', ' ')}</Badge>
               </div>
             </div>
-            <div className="border-t border-gray-100 pt-4">
+            <div className="space-y-2 p-3 bg-gray-50 rounded-xl text-sm border border-gray-100">
+              {user?.employee_id && <div className="flex justify-between"><span className="text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Employee ID</span><span className="font-medium text-gray-700">{user.employee_id}</span></div>}
+              {user?.mobile && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Phone className="w-3 h-3" /> Mobile</span><span className="font-medium text-gray-700">{user.mobile}</span></div>}
+              {user?.email && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Mail className="w-3 h-3" /> Email</span><span className="font-medium text-gray-700">{user.email}</span></div>}
+              {user?.designation && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Designation</span><span className="font-medium text-gray-700">{user.designation}</span></div>}
+              {user?.department && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Department</span><span className="font-medium text-gray-700">{user.department}</span></div>}
+            </div>
+
+            <button onClick={() => setShowPasswordSection(!showPasswordSection)} className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors">
+              <div className="flex items-center gap-2">
+                <Key className="w-4 h-4 text-amber-600" />
+                <span className="text-sm font-medium text-amber-700">Change Password</span>
+              </div>
+              <Edit className="w-4 h-4 text-amber-400" />
+            </button>
+
+            {showPasswordSection && (
+              <div className="space-y-3 p-3 bg-white rounded-xl border border-gray-200">
+                <div className="relative">
+                  <Input type={showOldPw ? 'text' : 'password'} placeholder="Current Password" value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="pr-10" />
+                  <button type="button" onClick={() => setShowOldPw(!showOldPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showOldPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                </div>
+                <div className="relative">
+                  <Input type={showNewPw ? 'text' : 'password'} placeholder="New Password (min 6 chars)" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="pr-10" />
+                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                </div>
+                <Input type="password" placeholder="Confirm New Password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} />
+                <Button onClick={handleChangePassword} disabled={changingPassword} className="w-full bg-amber-500 hover:bg-amber-600 text-white">
+                  {changingPassword ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Changing...</> : 'Update Password'}
+                </Button>
+              </div>
+            )}
+
+            <div className="border-t border-gray-100 pt-3">
               <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
                 <div className="bg-blue-50 p-1 rounded"><Camera className="w-4 h-4 text-blue-500" /></div>
                 Face Recognition Setup

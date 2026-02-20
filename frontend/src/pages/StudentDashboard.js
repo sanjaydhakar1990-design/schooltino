@@ -20,8 +20,8 @@ import {
   Download, LogOut, School, ChevronRight, Search, Settings, 
   FileText, CalendarDays, AlertTriangle, Loader2, Brain, 
   Send, CreditCard, Wallet, Phone, Lock, Home,
-  Eye, Paperclip, Star, ClipboardList, MessageCircle, Users,
-  Trophy, Activity, AlertOctagon, Award, Zap,
+  Eye, EyeOff, Paperclip, Star, ClipboardList, MessageCircle, Users,
+  Trophy, Activity, AlertOctagon, Award, Zap, Key, Edit, Mail, Shield,
   ChevronLeft, ChevronFirst, ChevronLast,
   ShoppingBag, Video, Rss, Heart, Share2, Play, Plus, ArrowUpRight, ArrowDownLeft, IndianRupee, Store
 } from 'lucide-react';
@@ -73,6 +73,11 @@ export default function StudyTinoDashboard() {
   const [showActivitiesDialog, setShowActivitiesDialog] = useState(false);
   const [showAdmitCardDialog, setShowAdmitCardDialog] = useState(false);
   const [selectedNotice, setSelectedNotice] = useState(null);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showOldPw, setShowOldPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   
   const [chatMessages, setChatMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -108,6 +113,38 @@ export default function StudyTinoDashboard() {
   const [aiMessages, setAiMessages] = useState([]);
   const [aiInput, setAiInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+
+  const handleStudentChangePassword = async () => {
+    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      toast.error('Please fill all fields'); return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('New passwords do not match'); return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters'); return;
+    }
+    setChangingPassword(true);
+    try {
+      const formData = new FormData();
+      formData.append('old_password', passwordForm.oldPassword);
+      formData.append('new_password', passwordForm.newPassword);
+      const res = await fetch(`${API}/student/change-password`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Password changed successfully!');
+        setShowPasswordSection(false);
+        setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        toast.error(data.detail || 'Failed to change password');
+      }
+    } catch (error) { toast.error('Error changing password'); }
+    finally { setChangingPassword(false); }
+  };
 
   useEffect(() => { fetchDashboardData(); }, []);
 
@@ -691,19 +728,58 @@ export default function StudyTinoDashboard() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-        <DialogContent>
+      <Dialog open={showProfileDialog} onOpenChange={(v) => { setShowProfileDialog(v); if (!v) { setShowPasswordSection(false); setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); } }}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="text-base font-semibold text-gray-800">{t('profile')}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center"><User className="w-8 h-8 text-blue-500" /></div>
-              <div><p className="font-bold text-lg text-gray-800">{profile?.name}</p><p className="text-sm text-gray-400">{profile?.class_name}</p></div>
+              <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center"><User className="w-8 h-8 text-purple-500" /></div>
+              <div>
+                <p className="font-bold text-lg text-gray-800">{profile?.name}</p>
+                <p className="text-sm text-gray-400">{profile?.class_name}{profile?.section ? ` - ${profile.section}` : ''}</p>
+              </div>
             </div>
-            <div className="space-y-2 p-4 bg-gray-50 rounded-xl text-sm border border-gray-200">
-              <div className="flex justify-between"><span className="text-gray-500">Student ID</span><span className="font-medium text-gray-700">{profile?.student_id}</span></div>
+            <div className="space-y-2 p-3 bg-gray-50 rounded-xl text-sm border border-gray-100">
+              <div className="flex justify-between"><span className="text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Student ID</span><span className="font-medium text-gray-700">{profile?.student_id}</span></div>
               <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Admission No</span><span className="font-medium text-gray-700">{profile?.admission_no}</span></div>
-              <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Contact</span><span className="font-medium text-gray-700">{profile?.mobile}</span></div>
+              {profile?.mobile && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Phone className="w-3 h-3" /> Contact</span><span className="font-medium text-gray-700">{profile.mobile}</span></div>}
+              {profile?.email && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Mail className="w-3 h-3" /> Email</span><span className="font-medium text-gray-700">{profile.email}</span></div>}
+              {profile?.father_name && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Father</span><span className="font-medium text-gray-700">{profile.father_name}</span></div>}
+              {profile?.mother_name && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Mother</span><span className="font-medium text-gray-700">{profile.mother_name}</span></div>}
+              {profile?.dob && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Calendar className="w-3 h-3" /> Date of Birth</span><span className="font-medium text-gray-700">{new Date(profile.dob).toLocaleDateString('en-IN')}</span></div>}
+              {profile?.gender && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Gender</span><span className="font-medium text-gray-700 capitalize">{profile.gender}</span></div>}
+              {profile?.blood_group && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Blood Group</span><span className="font-medium text-gray-700">{profile.blood_group}</span></div>}
+              {profile?.address && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Address</span><span className="font-medium text-gray-700 text-right max-w-[60%]">{profile.address}</span></div>}
+              {profile?.admission_date && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Admission Date</span><span className="font-medium text-gray-700">{new Date(profile.admission_date).toLocaleDateString('en-IN')}</span></div>}
+              {profile?.aadhar_number && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Aadhar</span><span className="font-medium text-gray-700">{profile.aadhar_number}</span></div>}
+              {profile?.category && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Category</span><span className="font-medium text-gray-700">{profile.category}</span></div>}
+              {profile?.religion && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Religion</span><span className="font-medium text-gray-700">{profile.religion}</span></div>}
             </div>
+
+            <button onClick={() => setShowPasswordSection(!showPasswordSection)} className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors">
+              <div className="flex items-center gap-2">
+                <Key className="w-4 h-4 text-amber-600" />
+                <span className="text-sm font-medium text-amber-700">Change Password</span>
+              </div>
+              <Edit className="w-4 h-4 text-amber-400" />
+            </button>
+
+            {showPasswordSection && (
+              <div className="space-y-3 p-3 bg-white rounded-xl border border-gray-200">
+                <div className="relative">
+                  <Input type={showOldPw ? 'text' : 'password'} placeholder="Current Password" value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="pr-10" />
+                  <button type="button" onClick={() => setShowOldPw(!showOldPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showOldPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                </div>
+                <div className="relative">
+                  <Input type={showNewPw ? 'text' : 'password'} placeholder="New Password (min 6 chars)" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="pr-10" />
+                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                </div>
+                <Input type="password" placeholder="Confirm New Password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} />
+                <Button onClick={handleStudentChangePassword} disabled={changingPassword} className="w-full bg-amber-500 hover:bg-amber-600 text-white">
+                  {changingPassword ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Changing...</> : 'Update Password'}
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

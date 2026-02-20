@@ -2876,24 +2876,20 @@ async def admit_student(student: StudentCreate, current_user: dict = Depends(get
         student_id = await generate_smart_student_id(student.school_id, admission_year)
         retry_count += 1
     
-    # Generate temporary password
-    temp_password = generate_temp_password()
-    hashed_pw = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt()).decode()
+    default_password = student.mobile or "123456"
+    hashed_pw = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
     
-    # Determine status - if Director/Principal adds, directly active
-    # If staff adds, pending approval (optional - can be configured)
     status = "active" if current_user["role"] in ["director", "principal"] else "active"
     
-    # Create student record
     student_data = {
         "id": str(uuid.uuid4()),
         "student_id": student_id,
-        "admission_no": student_id,  # Same as student_id for backward compatibility
+        "admission_no": student_id,
         **student.model_dump(),
         "status": status,
         "is_active": True,
         "password": hashed_pw,
-        "plain_password": temp_password,
+        "plain_password": default_password,
         "password_changed": False,
         "admitted_by": current_user["id"],
         "admitted_at": datetime.now(timezone.utc).isoformat(),
@@ -3188,8 +3184,8 @@ async def create_student(student: StudentCreate, current_user: dict = Depends(ge
     while await db.students.find_one({"student_id": student_id}):
         student_id = generate_student_id(student.school_id)
     
-    temp_password = generate_temp_password()
-    hashed_pw = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt()).decode()
+    default_password = student.mobile or "123456"
+    hashed_pw = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
     
     student_data = {
         "id": str(uuid.uuid4()),
@@ -3199,7 +3195,7 @@ async def create_student(student: StudentCreate, current_user: dict = Depends(ge
         "status": "active",
         "is_active": True,
         "password": hashed_pw,
-        "plain_password": temp_password,
+        "plain_password": default_password,
         "password_changed": False,
         "admitted_by": current_user["id"],
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -9736,17 +9732,15 @@ async def change_password(
     new_password: str = Form(...),
     current_user: dict = Depends(get_current_user)
 ):
-    """Change user password"""
+    """Change user password - syncs to staff/students collection for admin visibility"""
     user = await db.users.find_one({"id": current_user["id"]})
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Verify old password
     if not bcrypt.checkpw(old_password.encode(), user["password"].encode()):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     
-    # Hash new password
     hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
     
     await db.users.update_one(
@@ -9761,7 +9755,47 @@ async def change_password(
         }
     )
     
+    if user.get("staff_id") or user.get("employee_id"):
+        staff_filter = {"id": user["staff_id"]} if user.get("staff_id") else {"employee_id": user.get("employee_id")}
+        await db.staff.update_one(
+            staff_filter,
+            {"$set": {"plain_password": new_password, "password_changed_at": datetime.now(timezone.utc).isoformat()}}
+        )
+    
     await log_audit(current_user["id"], "change_password", "users", {"user_id": current_user["id"]})
+    
+    return {"message": "Password changed successfully"}
+
+@api_router.post("/student/change-password")
+async def student_change_password_auth(
+    old_password: str = Form(...),
+    new_password: str = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Student changes password from StudyTino profile - syncs to students collection for admin visibility"""
+    student = await db.students.find_one({"id": current_user["id"]})
+    if not student:
+        student = await db.students.find_one({"student_id": current_user.get("student_id")})
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    if not bcrypt.checkpw(old_password.encode(), student["password"].encode()):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    
+    await db.students.update_one(
+        {"id": student["id"]},
+        {"$set": {
+            "password": hashed_pw,
+            "plain_password": new_password,
+            "password_changed": True,
+            "password_changed_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await log_audit(student["id"], "change_password", "students", {"student_id": student["id"]})
     
     return {"message": "Password changed successfully"}
 
