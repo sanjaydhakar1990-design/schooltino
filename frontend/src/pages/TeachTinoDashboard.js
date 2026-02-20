@@ -25,6 +25,8 @@ import {
 import { toast } from 'sonner';
 import StaffPhotoUpload from '../components/StaffPhotoUpload';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
+import TeachTinoAttendance from '../components/TeachTinoAttendance';
+import TeachTinoSyllabus from '../components/TeachTinoSyllabus';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
@@ -211,13 +213,13 @@ export default function TeachTinoDashboard() {
   const hasModule = (key) => mp[key] !== false;
 
   const teacherModules = [
-    hasModule('attendance') && { id: 'attendance', name: 'SmartRoll', desc: 'Mark & track attendance', icon: ClipboardCheck, color: 'bg-orange-50 text-orange-600', action: () => navigate('/app/attendance') },
+    hasModule('attendance') && { id: 'attendance', name: 'SmartRoll', desc: 'Mark & track attendance', icon: ClipboardCheck, color: 'bg-orange-50 text-orange-600', action: () => setActiveTab('attendance') },
+    hasModule('syllabus_tracking') && { id: 'syllabus', name: 'Syllabus', desc: 'Track chapters', icon: BookOpen, color: 'bg-emerald-50 text-emerald-600', action: () => setActiveTab('syllabus') },
     hasModule('homework') && { id: 'homework', name: 'Homework', desc: 'Assign & manage', icon: Clipboard, color: 'bg-teal-50 text-teal-600', action: () => navigate('/app/homework') },
     hasModule('timetable') && { id: 'timetable', name: 'Timetable', desc: 'View schedule', icon: Clock, color: 'bg-cyan-50 text-cyan-600', action: () => navigate('/app/timetable') },
     hasModule('exams_reports') && { id: 'exams', name: 'ExamTino', desc: 'Exams & results', icon: FileText, color: 'bg-purple-50 text-purple-600', action: () => navigate('/app/exams') },
     hasModule('live_classes') && { id: 'live', name: 'Live Class', desc: 'Online teaching', icon: Camera, color: 'bg-red-50 text-red-600', action: () => navigate('/app/live-classes') },
     hasModule('ai_tools') && { id: 'ai', name: 'PaperGenie', desc: 'AI question papers', icon: Sparkles, color: 'bg-pink-50 text-pink-600', action: () => navigate('/app/ai-tools') },
-    hasModule('classes') && { id: 'classes', name: 'My Classes', desc: 'Students & sections', icon: BookOpen, color: 'bg-emerald-50 text-emerald-600', action: () => navigate('/app/classes') },
     hasModule('communication_hub') && { id: 'notice', name: 'NoticeBoard', desc: 'Send notices', icon: Bell, color: 'bg-blue-50 text-blue-600', action: () => setShowNoticeDialog(true) },
     hasModule('students') && { id: 'students', name: 'My Students', desc: 'Student profiles', icon: Users, color: 'bg-indigo-50 text-indigo-600', action: () => navigate('/app/students') },
     { id: 'leave', name: 'Apply Leave', desc: 'Leave application', icon: CalendarDays, color: 'bg-rose-50 text-rose-600', action: () => setShowLeaveDialog(true) },
@@ -264,6 +266,13 @@ export default function TeachTinoDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-4 pb-24 space-y-5">
+        {activeTab === 'attendance' && (
+          <TeachTinoAttendance onBack={() => setActiveTab('home')} />
+        )}
+        {activeTab === 'syllabus' && (
+          <TeachTinoSyllabus onBack={() => setActiveTab('home')} />
+        )}
+        {activeTab === 'home' && <>
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
@@ -457,14 +466,15 @@ export default function TeachTinoDashboard() {
             </div>
           </div>
         )}
+        </>}
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 border-t border-gray-200">
         <div className="grid grid-cols-5 gap-1 p-1.5 max-w-lg mx-auto">
           {[
             { icon: Home, label: 'Home', id: 'home', action: () => setActiveTab('home') },
-            { icon: BookOpen, label: 'Classes', id: 'classes', action: () => navigate('/app/classes') },
-            { icon: ClipboardCheck, label: 'Attendance', id: 'attendance', action: () => navigate('/app/attendance') },
+            { icon: ClipboardCheck, label: 'Attendance', id: 'attendance', action: () => setActiveTab('attendance') },
+            { icon: BookOpen, label: 'Syllabus', id: 'syllabus', action: () => setActiveTab('syllabus') },
             { icon: Calendar, label: 'Leave', id: 'leave', action: () => setShowLeaveDialog(true) },
             { icon: User, label: 'Profile', id: 'profile', action: () => setShowProfileDialog(true) },
           ].map((item) => (

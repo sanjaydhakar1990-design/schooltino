@@ -217,23 +217,29 @@ export default function SchoolAnalytics() {
           <TabsTrigger value="classes">📊 {t('class_performance')}</TabsTrigger>
         </TabsList>
 
-        {/* Teachers Progress Tab */}
+        {/* Teachers Performance Tab */}
         <TabsContent value="teachers">
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div className="p-4 border-b border-slate-100">
-              <h3 className="font-semibold text-slate-900">All Teachers - Syllabus & Results</h3>
+              <h3 className="font-semibold text-slate-900">Teacher Performance</h3>
+              <p className="text-xs text-slate-500 mt-1">Attendance marking (30 days), overall syllabus progress, and leave data</p>
             </div>
+            {teachers.length === 0 ? (
+              <div className="p-8 text-center text-slate-400">
+                <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p>No teacher data available</p>
+              </div>
+            ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('staff')}</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{t('subject')}</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('classes') || 'Classes'}</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('reports')} %</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('exam_analytics')}</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('students')}</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{t('status')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Teacher</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Classes</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Attendance Marked</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Syllabus Progress</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Leaves</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -241,46 +247,57 @@ export default function SchoolAnalytics() {
                     <tr key={teacher.id} className="hover:bg-slate-50">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-medium text-indigo-600">{teacher.name.charAt(0)}</span>
+                          {teacher.photo_url ? (
+                            <img src={teacher.photo_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-medium text-indigo-600">{(teacher.name || '?').charAt(0)}</span>
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-medium text-slate-900 block">{teacher.name}</span>
+                            <span className="text-[10px] text-slate-400 capitalize">{teacher.designation}</span>
                           </div>
-                          <span className="font-medium text-slate-900">{teacher.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-slate-600">{teacher.subject}</td>
-                      <td className="px-4 py-4 text-center">{teacher.classes}</td>
+                      <td className="px-4 py-4">
+                        <span className="text-sm font-medium text-slate-700">{teacher.classes_assigned || 0}</span>
+                        {teacher.class_names && teacher.class_names.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate max-w-[120px]">{teacher.class_names.join(', ')}</p>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`text-sm font-bold ${
+                          teacher.attendance_marked_30d > 100 ? 'text-emerald-600' :
+                          teacher.attendance_marked_30d > 0 ? 'text-blue-600' : 'text-slate-400'
+                        }`}>{teacher.attendance_marked_30d || 0}</span>
+                        <p className="text-[10px] text-slate-400">entries</p>
+                      </td>
                       <td className="px-4 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <div className="w-16 bg-slate-100 rounded-full h-2">
                             <div 
                               className={`h-2 rounded-full ${
                                 teacher.syllabus_progress >= 70 ? 'bg-emerald-500' :
-                                teacher.syllabus_progress >= 50 ? 'bg-amber-500' : 'bg-red-500'
+                                teacher.syllabus_progress >= 30 ? 'bg-amber-500' : 'bg-slate-300'
                               }`}
-                              style={{ width: `${teacher.syllabus_progress}%` }}
+                              style={{ width: `${Math.min(teacher.syllabus_progress || 0, 100)}%` }}
                             />
                           </div>
-                          <span className="text-sm font-medium">{teacher.syllabus_progress}%</span>
+                          <span className="text-sm font-medium">{teacher.syllabus_progress || 0}%</span>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className={`font-medium ${
-                          teacher.avg_result >= 75 ? 'text-emerald-600' :
-                          teacher.avg_result >= 60 ? 'text-amber-600' : 'text-red-600'
-                        }`}>
-                          {teacher.avg_result}%
-                        </span>
+                        <p className="text-[10px] text-slate-400">{teacher.syllabus_completed || 0}/{teacher.syllabus_total || 0} chapters</p>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          teacher.weak_students <= 2 ? 'bg-emerald-100 text-emerald-700' :
-                          teacher.weak_students <= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                          teacher.leaves_30d === 0 ? 'bg-emerald-100 text-emerald-700' :
+                          teacher.leaves_30d <= 3 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                         }`}>
-                          {teacher.weak_students}
+                          {teacher.leaves_30d || 0}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {teacher.syllabus_progress >= 60 && teacher.avg_result >= 70 ? (
+                        {(teacher.attendance_marked_30d > 0 || teacher.syllabus_progress > 0) ? (
                           <CheckCircle className="w-5 h-5 text-emerald-500 mx-auto" />
                         ) : (
                           <AlertCircle className="w-5 h-5 text-amber-500 mx-auto" />
@@ -291,6 +308,7 @@ export default function SchoolAnalytics() {
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         </TabsContent>
 

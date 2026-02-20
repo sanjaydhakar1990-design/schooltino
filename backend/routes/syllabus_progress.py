@@ -35,7 +35,7 @@ class ChapterProgressUpdate(BaseModel):
     board: str  # NCERT or MPBSE
     chapter_number: int
     chapter_name: str
-    status: str  # not_started, in_progress, completed
+    status: str  # not_started, in_progress, completed, skipped
     topics_covered: Optional[List[str]] = []
     notes: Optional[str] = None
 
@@ -158,7 +158,9 @@ async def update_chapter_progress(
     if progress.status == "completed":
         ai_message = f"✅ {teacher_name} ji, {progress.chapter_name} successfully complete mark ho gaya hai! Sabhi {progress.class_name} ke students ko notification bhej diya gaya hai."
     elif progress.status == "in_progress":
-        ai_message = f"📖 {progress.chapter_name} in-progress mark ho gaya hai. Jab complete ho jaye tab update kar dena!"
+        ai_message = f"📖 {progress.chapter_name} partially taught mark ho gaya hai. Jab complete ho jaye tab update kar dena!"
+    elif progress.status == "skipped":
+        ai_message = f"⏭️ {progress.chapter_name} skipped mark ho gaya hai."
     else:
         ai_message = f"📋 {progress.chapter_name} ka status update ho gaya hai."
     

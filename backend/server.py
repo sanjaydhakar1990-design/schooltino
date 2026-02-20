@@ -11364,22 +11364,61 @@ async def get_fee_payment_summary(school_id: str, current_user: dict = Depends(g
 
 @api_router.get("/analytics/teachers")
 async def get_teacher_analytics(school_id: str, current_user: dict = Depends(get_current_user)):
-    """Get teacher analytics for school analytics page"""
+    """Get teacher analytics with real computed metrics"""
     teachers = await db.users.find(
-        {"school_id": school_id, "role": {"$in": ["teacher", "staff"]}, "is_active": True},
+        {"school_id": school_id, "role": {"$in": ["teacher", "principal", "vice_principal"]}, "is_active": True},
         {"_id": 0, "password": 0}
     ).to_list(100)
     
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+    
     result = []
     for t in teachers:
+        tid = t.get("id", "")
+        teacher_ids = [tid]
+        staff = await db.staff.find_one({"user_id": tid}, {"_id": 0, "id": 1})
+        if staff:
+            teacher_ids.append(staff["id"])
+        
+        assigned_classes = await db.classes.find(
+            {"class_teacher_id": {"$in": teacher_ids}},
+            {"_id": 0, "id": 1, "name": 1, "section": 1}
+        ).to_list(10)
+        class_ids = [c["id"] for c in assigned_classes]
+        class_names = [f"{c.get('name','')}{' - '+c['section'] if c.get('section') else ''}" for c in assigned_classes]
+        
+        attendance_marked = await db.attendance.count_documents({
+            "marked_by": {"$in": teacher_ids},
+            "date": {"$gte": thirty_days_ago}
+        }) if teacher_ids else 0
+        
+        syllabus_entries = await db.syllabus_progress.find(
+            {"updated_by": {"$in": teacher_ids}},
+            {"_id": 0, "status": 1}
+        ).to_list(200)
+        total_chapters = len(syllabus_entries)
+        completed_chapters = len([s for s in syllabus_entries if s.get("status") == "completed"])
+        syllabus_pct = round((completed_chapters / total_chapters * 100), 1) if total_chapters > 0 else 0
+        
+        leaves_taken = await db.leaves.count_documents({
+            "user_id": tid,
+            "status": "approved",
+            "from_date": {"$gte": thirty_days_ago}
+        })
+        
         result.append({
-            "id": t.get("id", ""),
+            "id": tid,
             "name": t.get("name", "Unknown"),
-            "subject": t.get("subject", t.get("department", "General")),
-            "classes": t.get("classes_count", 2),
-            "syllabus_progress": t.get("syllabus_progress", 0),
-            "avg_result": t.get("avg_result", 0),
-            "weak_students": t.get("weak_students_count", 0)
+            "designation": t.get("designation", t.get("role", "teacher")),
+            "photo_url": t.get("photo_url", ""),
+            "classes_assigned": len(assigned_classes),
+            "class_names": class_names,
+            "attendance_marked_30d": attendance_marked,
+            "syllabus_total": total_chapters,
+            "syllabus_completed": completed_chapters,
+            "syllabus_progress": syllabus_pct,
+            "leaves_30d": leaves_taken
         })
     
     return result
@@ -14303,6 +14342,9 @@ async def create_indexes():
         await db.notices.create_index([("school_id", 1), ("is_active", 1)])
         await db.timetables.create_index([("school_id", 1), ("class_id", 1), ("day", 1)])
         await db.online_payments.create_index([("school_id", 1), ("status", 1)])
+        await db.syllabus_progress.create_index([("school_id", 1), ("class_id", 1), ("subject", 1)])
+        await db.syllabus_progress.create_index("updated_by", sparse=True)
+        await db.attendance.create_index([("marked_by", 1), ("date", 1)])
         logger.info("Database indexes created successfully")
     except Exception as e:
         logger.warning(f"Index creation warning: {e}")

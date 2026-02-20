@@ -179,7 +179,29 @@ export default function StudyTinoDashboard() {
       }
       setNotices(prev => prev.length > 0 ? prev : (noticesRes.status === 'fulfilled' ? (noticesRes.value.data || []) : []));
       setHomework(homeworkRes.status === 'fulfilled' ? (homeworkRes.value.data || []) : []);
-      setSyllabus([]);
+
+      if (dashboardRes.status === 'fulfilled') {
+        const prof = dashboardRes.value.data?.profile;
+        if (prof?.school_id && prof?.class_id) {
+          try {
+            const syllabusRes = await axios.get(`${API}/syllabus-progress/student/${prof.school_id}/${prof.class_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+            const subjects = syllabusRes.data?.subjects || [];
+            setSyllabus(subjects.map(s => ({
+              subject: s.subject,
+              completed: s.completion_percentage || 0,
+              current: s.chapters?.find(c => c.status === 'in_progress')?.chapter_name || (s.completed_count > 0 ? 'Completed' : 'Not Started'),
+              chapters: s.chapters || [],
+              total: s.total_count || 0,
+              completedCount: s.completed_count || 0,
+              inProgressCount: s.in_progress_count || 0
+            })));
+          } catch (e) { setSyllabus([]); }
+        } else {
+          setSyllabus([]);
+        }
+      } else {
+        setSyllabus([]);
+      }
     } catch (error) { console.error('Dashboard fetch error:', error); } finally { setLoading(false); }
   };
 
@@ -577,32 +599,52 @@ export default function StudyTinoDashboard() {
             <h2 className="text-xl font-bold text-gray-900">Syllabus Progress</h2>
             <p className="text-sm text-gray-500 mt-1">Subject-wise syllabus completion status.</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Subject <SortIcon /></th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Current Topic <SortIcon /></th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Progress <SortIcon /></th>
-                </tr>
-              </thead>
-              <tbody>
-                {syllabus.map((subject, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                    <td className="px-5 py-3.5 text-sm text-gray-800">{subject.subject}</td>
-                    <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell">{subject.current}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-gray-100 rounded-full h-2 max-w-[120px]">
-                          <div className={`h-2 rounded-full ${idx === 0 ? 'bg-blue-500' : idx === 1 ? 'bg-green-500' : idx === 2 ? 'bg-purple-500' : 'bg-amber-500'}`} style={{ width: `${subject.completed}%` }} />
+          <div className="space-y-3 px-5 pb-5">
+            {syllabus.map((subject, idx) => {
+              const colors = ['blue', 'green', 'purple', 'amber', 'teal', 'rose'];
+              const c = colors[idx % colors.length];
+              return (
+                <div key={idx} className="border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-gray-800">{subject.subject}</h3>
+                    <span className={`text-sm font-bold text-${c}-600`}>{subject.completed}%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
+                    <div className={`h-2 rounded-full bg-${c}-500 transition-all`} style={{ width: `${subject.completed}%` }} />
+                  </div>
+                  <div className="flex items-center gap-3 text-[10px] text-gray-500 mb-2">
+                    <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-500" /> {subject.completedCount || 0} Done</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500" /> {subject.inProgressCount || 0} In Progress</span>
+                    <span className="text-gray-400">Total: {subject.total || 0}</span>
+                  </div>
+                  {subject.current && subject.current !== 'Not Started' && (
+                    <p className="text-xs text-gray-500">Currently: <span className="font-medium text-gray-700">{subject.current}</span></p>
+                  )}
+                  {subject.chapters && subject.chapters.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {subject.chapters.slice(0, 5).map((ch, ci) => (
+                        <div key={ci} className="flex items-center gap-2 text-xs">
+                          {ch.status === 'completed' ? <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" /> :
+                           ch.status === 'in_progress' ? <Clock className="w-3 h-3 text-amber-500 flex-shrink-0" /> :
+                           ch.status === 'skipped' ? <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" /> :
+                           <BookOpen className="w-3 h-3 text-gray-300 flex-shrink-0" />}
+                          <span className="text-gray-600 truncate">{ch.chapter_name || `Chapter ${ch.chapter_number}`}</span>
+                          <span className={`ml-auto text-[10px] px-1.5 py-0.5 rounded ${
+                            ch.status === 'completed' ? 'bg-green-50 text-green-600' :
+                            ch.status === 'in_progress' ? 'bg-amber-50 text-amber-600' :
+                            ch.status === 'skipped' ? 'bg-red-50 text-red-600' :
+                            'bg-gray-50 text-gray-400'
+                          }`}>{ch.status === 'completed' ? 'Done' : ch.status === 'in_progress' ? 'Partial' : ch.status === 'skipped' ? 'Skipped' : 'Pending'}</span>
                         </div>
-                        <span className="text-xs font-medium text-gray-600">{subject.completed}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      ))}
+                      {subject.chapters.length > 5 && (
+                        <p className="text-[10px] text-gray-400 pl-5">+{subject.chapters.length - 5} more chapters</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
         )}
