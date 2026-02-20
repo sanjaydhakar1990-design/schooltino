@@ -16,11 +16,10 @@ import {
 import { 
   Users, BookOpen, Calendar, Bell, ClipboardCheck, Clipboard,
   GraduationCap, Clock, FileText, Sparkles,
-  Settings, LogOut, CheckCircle, XCircle,
+  LogOut, CheckCircle, XCircle,
   Send, User, CalendarDays, Loader2, Brain,
-  BarChart3, Zap, Camera, Home, PlusCircle,
-  ChevronRight, AlertTriangle, Search,
-  ChevronLeft, ChevronFirst, ChevronLast,
+  BarChart3, Camera, Home,
+  ChevronRight,
   Key, Eye, EyeOff, Phone, Mail, Shield, Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -28,27 +27,23 @@ import StaffPhotoUpload from '../components/StaffPhotoUpload';
 import { GlobalWatermark } from '../components/SchoolLogoWatermark';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
-const ITEMS_PER_PAGE = 5;
-
-const SortIcon = () => (
-  <span className="inline-flex flex-col ml-1 -space-y-1 opacity-40">
-    <span className="text-[8px] leading-none">&#9650;</span>
-    <span className="text-[8px] leading-none">&#9660;</span>
-  </span>
-);
 
 export default function TeachTinoDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, schoolData } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('home');
   
   const [myClasses, setMyClasses] = useState([]);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [todayAttendance, setTodayAttendance] = useState({ present: 0, absent: 0 });
   const [recentNotices, setRecentNotices] = useState([]);
   const [pendingLeaves, setPendingLeaves] = useState([]);
-  const [todayAttendance, setTodayAttendance] = useState({ present: 0, absent: 0, total: 0 });
+  const [myRequests, setMyRequests] = useState([]);
+  const [leaveBalance, setLeaveBalance] = useState(null);
+  const [timetableToday, setTimetableToday] = useState([]);
+  const [staffProfile, setStaffProfile] = useState(null);
   
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNoticeDialog, setShowNoticeDialog] = useState(false);
@@ -63,36 +58,62 @@ export default function TeachTinoDashboard() {
     leave_type: 'casual', from_date: '', to_date: '', reason: ''
   });
   const [noticeForm, setNoticeForm] = useState({ title: '', content: '' });
-
-  const [myRequests, setMyRequests] = useState([]);
   
   const isPrincipal = user?.role === 'principal' || user?.role === 'vice_principal';
   const canApproveLeave = isPrincipal || user?.role === 'director';
 
-  useEffect(() => { fetchData(); fetchMyRequests(); }, []);
+  useEffect(() => { fetchDashboard(); }, []);
 
-  const fetchMyRequests = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/teacher/requests`, { headers: { Authorization: `Bearer ${token}` } });
-      setMyRequests(res.data || []);
-    } catch (e) {}
-  };
-
-  const fetchData = async () => {
+  const fetchDashboard = async () => {
     setLoading(true);
     try {
-      const [classesRes, noticesRes, leavesRes] = await Promise.allSettled([
-        axios.get(`${API}/classes?school_id=${user?.school_id}`),
-        axios.get(`${API}/notices?limit=5`),
-        axios.get(`${API}/leave/pending`)
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const [dashRes, reqRes, leaveBalRes, timetableRes] = await Promise.allSettled([
+        axios.get(`${API}/teacher/dashboard`, { headers }),
+        axios.get(`${API}/teacher/requests`, { headers }),
+        axios.get(`${API}/leave/balance`, { headers }),
+        axios.get(`${API}/timetable?school_id=${user?.school_id}`, { headers })
       ]);
-      if (classesRes.status === 'fulfilled') setMyClasses(classesRes.value.data?.slice(0, 6) || []);
-      if (noticesRes.status === 'fulfilled') setRecentNotices(noticesRes.value.data?.slice(0, 5) || []);
-      if (leavesRes.status === 'fulfilled') setPendingLeaves(leavesRes.value.data || []);
-      setTodayAttendance({ present: 42, absent: 3, total: 45 });
+      
+      let dashClasses = [];
+      if (dashRes.status === 'fulfilled') {
+        const d = dashRes.value.data;
+        dashClasses = Array.isArray(d.my_classes) ? d.my_classes : [];
+        setMyClasses(dashClasses);
+        setTotalStudents(d.total_students || 0);
+        setTodayAttendance(d.attendance_today || { present: 0, absent: 0 });
+        setRecentNotices(Array.isArray(d.recent_notices) ? d.recent_notices : []);
+      }
+      
+      if (reqRes.status === 'fulfilled') setMyRequests(Array.isArray(reqRes.value.data) ? reqRes.value.data : []);
+      if (leaveBalRes.status === 'fulfilled') setLeaveBalance(leaveBalRes.value.data);
+      
+      if (timetableRes.status === 'fulfilled') {
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const today = days[new Date().getDay()];
+        const allTimetables = Array.isArray(timetableRes.value.data) ? timetableRes.value.data : [];
+        const todayPeriods = [];
+        allTimetables.forEach(tt => {
+          if (tt.schedule && tt.schedule[today]) {
+            tt.schedule[today].forEach(period => {
+              if (period.teacher_id === user?.id || period.teacher_name === user?.name) {
+                todayPeriods.push({ ...period, class_name: tt.class_name || tt.class_id });
+              }
+            });
+          }
+        });
+        setTimetableToday(todayPeriods.sort((a, b) => (a.period || 0) - (b.period || 0)));
+      }
+
+      try {
+        const leavesRes = await axios.get(`${API}/leave/pending`, { headers });
+        setPendingLeaves(Array.isArray(leavesRes.data) ? leavesRes.data : []);
+      } catch (e) {}
+
     } catch (error) {
-      console.error('Fetch error:', error);
+      console.error('Dashboard fetch error:', error);
     } finally {
       setLoading(false);
     }
@@ -132,13 +153,16 @@ export default function TeachTinoDashboard() {
     finally { setChangingPassword(false); }
   };
 
+  const getHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
+
   const handleApplyLeave = async () => {
     if (!leaveForm.from_date || !leaveForm.to_date || !leaveForm.reason) { toast.error('Please fill all fields'); return; }
     try {
-      await axios.post(`${API}/leave/apply`, { ...leaveForm, school_id: user?.school_id });
+      await axios.post(`${API}/leave/apply`, { ...leaveForm, school_id: user?.school_id }, { headers: getHeaders() });
       toast.success('Leave applied successfully!');
       setShowLeaveDialog(false);
       setLeaveForm({ leave_type: 'casual', from_date: '', to_date: '', reason: '' });
+      fetchDashboard();
     } catch (error) { toast.error('Failed to apply leave'); }
   };
 
@@ -152,340 +176,301 @@ export default function TeachTinoDashboard() {
         description: noticeForm.content,
         data: { ...noticeForm, target_audience: ['students', 'parents'], priority: 'normal' }
       }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Notice submitted for admin approval! Admin will review and publish it.');
+      toast.success('Notice submitted for admin approval!');
       setShowNoticeDialog(false);
       setNoticeForm({ title: '', content: '' });
-      fetchMyRequests();
+      fetchDashboard();
     } catch (error) { toast.error('Failed to submit notice request'); }
   };
 
   const handleApproveLeave = async (leaveId) => {
-    try { await axios.post(`${API}/leave/${leaveId}/approve`); toast.success('Leave approved!'); fetchData(); } catch (error) { toast.error('Failed to approve'); }
+    try { await axios.post(`${API}/leave/${leaveId}/approve`, {}, { headers: getHeaders() }); toast.success('Leave approved!'); fetchDashboard(); } catch (error) { toast.error('Failed to approve'); }
   };
 
   const handleRejectLeave = async (leaveId) => {
-    try { await axios.post(`${API}/leave/${leaveId}/reject`); toast.success('Leave rejected'); fetchData(); } catch (error) { toast.error('Failed to reject'); }
+    try { await axios.post(`${API}/leave/${leaveId}/reject`, {}, { headers: getHeaders() }); toast.success('Leave rejected'); fetchDashboard(); } catch (error) { toast.error('Failed to reject'); }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <div className="text-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <GraduationCap className="w-7 h-7 text-white" />
+          </div>
+          <Loader2 className="w-6 h-6 animate-spin text-green-500 mx-auto" />
+          <p className="text-sm text-gray-400 mt-2">Loading TeachTino...</p>
+        </div>
       </div>
     );
   }
 
-  const statCards = [
-    { label: t('classes'), value: myClasses.length, icon: BookOpen, subtext: 'Assigned class sections', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
-    { label: t('present'), value: todayAttendance.present, icon: CheckCircle, subtext: 'Students present today', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
-    { label: t('absent'), value: todayAttendance.absent, icon: XCircle, subtext: 'Students absent today', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
-    { label: t('total_students'), value: todayAttendance.total, icon: Users, subtext: 'Across all your classes', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-500' },
-    { label: t('leave'), value: pendingLeaves.length, icon: Calendar, subtext: 'Awaiting your approval', bgColor: 'bg-amber-50', iconColor: 'text-amber-500' },
-    { label: t('notices'), value: recentNotices.length, icon: Bell, subtext: 'Published announcements', bgColor: 'bg-cyan-50', iconColor: 'text-cyan-500' },
-    { label: t('exams'), value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
-    { label: t('attendance'), value: todayAttendance.total > 0 ? `${Math.round((todayAttendance.present / todayAttendance.total) * 100)}%` : '0%', icon: BarChart3, subtext: 'Overall attendance percentage', bgColor: 'bg-emerald-50', iconColor: 'text-emerald-500' },
-  ];
+  const attendancePercent = totalStudents > 0 ? Math.round((todayAttendance.present / totalStudents) * 100) : 0;
 
   const mp = user?.module_permissions || {};
   const hasModule = (key) => mp[key] !== false;
 
-  const teacherModuleCards = [
-    hasModule('attendance') && { id: 'smartroll', name: 'SmartRoll', desc: 'Automated attendance marking via biometric & AI face recognition.', icon: ClipboardCheck, gradient: 'from-orange-500 to-orange-600', lightBg: 'bg-orange-50', iconColor: 'text-orange-600', action: () => navigate('/app/attendance') },
-    hasModule('homework') && { id: 'homework', name: 'Homework', desc: 'Assign & manage homework, track submissions from students.', icon: Clipboard, gradient: 'from-teal-500 to-teal-600', lightBg: 'bg-teal-50', iconColor: 'text-teal-600', action: () => navigate('/app/homework') },
-    hasModule('timetable') && { id: 'timetable', name: 'Timetable', desc: 'View your teaching schedule, subjects & class allocations.', icon: Clock, gradient: 'from-cyan-500 to-cyan-600', lightBg: 'bg-cyan-50', iconColor: 'text-cyan-600', action: () => navigate('/app/timetable') },
-    hasModule('exams_reports') && { id: 'examtino', name: 'ExamTino', desc: 'Exam management, report cards & result processing.', icon: FileText, gradient: 'from-purple-500 to-purple-600', lightBg: 'bg-purple-50', iconColor: 'text-purple-600', action: () => navigate('/app/exams') },
-    hasModule('live_classes') && { id: 'liveclasses', name: 'Live Classes', desc: 'Conduct online classes from anywhere, share screen & materials.', icon: Camera, gradient: 'from-red-500 to-red-600', lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => navigate('/app/live-classes') },
-    hasModule('ai_tools') && { id: 'papergenie', name: 'PaperGenie', desc: 'Generates syllabus-based question papers instantly using AI.', icon: Sparkles, gradient: 'from-pink-500 to-pink-600', lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => navigate('/app/ai-tools') },
-    hasModule('classes') && { id: 'classtino', name: 'ClassTino', desc: 'View & manage your assigned classes and students.', icon: BookOpen, gradient: 'from-emerald-500 to-emerald-600', lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => navigate('/app/classes') },
-    hasModule('communication_hub') && { id: 'noticeboard', name: 'NoticeBoard', desc: 'Send announcements & notices to students and parents.', icon: Bell, gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => setShowNoticeDialog(true) },
-    hasModule('syllabus_tracking') && { id: 'syllabus', name: 'Syllabus', desc: 'Track syllabus progress, plan what to teach next.', icon: BarChart3, gradient: 'from-amber-500 to-amber-600', lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => navigate('/app/homework') },
-    hasModule('students') && { id: 'students', name: 'My Students', desc: 'View student profiles, contact details & progress.', icon: Users, gradient: 'from-indigo-500 to-indigo-600', lightBg: 'bg-indigo-50', iconColor: 'text-indigo-600', action: () => navigate('/app/students') },
-    hasModule('student_leave') && { id: 'studentleave', name: 'Student Leave', desc: 'Approve or reject student leave requests as class teacher.', icon: CalendarDays, gradient: 'from-rose-500 to-rose-600', lightBg: 'bg-rose-50', iconColor: 'text-rose-600', action: () => navigate('/app/attendance') },
-    { id: 'tinoai', name: 'TinoAI', desc: 'AI Command Center - voice assistant & smart automation.', icon: Brain, gradient: 'from-violet-500 to-violet-600', lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => navigate('/app/ai-tools') },
+  const teacherModules = [
+    hasModule('attendance') && { id: 'attendance', name: 'SmartRoll', desc: 'Mark & track attendance', icon: ClipboardCheck, color: 'bg-orange-50 text-orange-600', action: () => navigate('/app/attendance') },
+    hasModule('homework') && { id: 'homework', name: 'Homework', desc: 'Assign & manage', icon: Clipboard, color: 'bg-teal-50 text-teal-600', action: () => navigate('/app/homework') },
+    hasModule('timetable') && { id: 'timetable', name: 'Timetable', desc: 'View schedule', icon: Clock, color: 'bg-cyan-50 text-cyan-600', action: () => navigate('/app/timetable') },
+    hasModule('exams_reports') && { id: 'exams', name: 'ExamTino', desc: 'Exams & results', icon: FileText, color: 'bg-purple-50 text-purple-600', action: () => navigate('/app/exams') },
+    hasModule('live_classes') && { id: 'live', name: 'Live Class', desc: 'Online teaching', icon: Camera, color: 'bg-red-50 text-red-600', action: () => navigate('/app/live-classes') },
+    hasModule('ai_tools') && { id: 'ai', name: 'PaperGenie', desc: 'AI question papers', icon: Sparkles, color: 'bg-pink-50 text-pink-600', action: () => navigate('/app/ai-tools') },
+    hasModule('classes') && { id: 'classes', name: 'My Classes', desc: 'Students & sections', icon: BookOpen, color: 'bg-emerald-50 text-emerald-600', action: () => navigate('/app/classes') },
+    hasModule('communication_hub') && { id: 'notice', name: 'NoticeBoard', desc: 'Send notices', icon: Bell, color: 'bg-blue-50 text-blue-600', action: () => setShowNoticeDialog(true) },
+    hasModule('students') && { id: 'students', name: 'My Students', desc: 'Student profiles', icon: Users, color: 'bg-indigo-50 text-indigo-600', action: () => navigate('/app/students') },
+    { id: 'leave', name: 'Apply Leave', desc: 'Leave application', icon: CalendarDays, color: 'bg-rose-50 text-rose-600', action: () => setShowLeaveDialog(true) },
+    { id: 'tinoai', name: 'Tino AI', desc: 'AI assistant', icon: Brain, color: 'bg-violet-50 text-violet-600', action: () => navigate('/app/ai-tools') },
+    { id: 'profile', name: 'My Profile', desc: 'Settings', icon: User, color: 'bg-gray-100 text-gray-600', action: () => setShowProfileDialog(true) },
   ].filter(Boolean);
 
-  const quickModules = [
-    hasModule('attendance') && { icon: ClipboardCheck, label: 'Mark Attendance', desc: 'Daily attendance tracking', action: () => navigate('/app/attendance'), moduleKey: 'attendance' },
-    hasModule('homework') && { icon: Clipboard, label: 'Homework', desc: 'Assign & manage homework', action: () => navigate('/app/homework'), moduleKey: 'homework' },
-    hasModule('timetable') && { icon: Clock, label: 'Timetable', desc: 'View your schedule', action: () => navigate('/app/timetable'), moduleKey: 'timetable' },
-    hasModule('communication_hub') && { icon: Bell, label: 'Send Notice', desc: 'Send announcements', action: () => setShowNoticeDialog(true), moduleKey: 'communication_hub' },
-    { icon: Calendar, label: 'Apply Leave', desc: 'Submit leave application', action: () => setShowLeaveDialog(true) },
-    hasModule('classes') && { icon: BookOpen, label: 'My Classes', desc: 'View assigned classes', action: () => navigate('/app/classes'), moduleKey: 'classes' },
-    hasModule('exams_reports') && { icon: FileText, label: 'Exam Reports', desc: 'View exam results', action: () => navigate('/app/exams'), moduleKey: 'exams_reports' },
-    hasModule('live_classes') && { icon: Camera, label: 'Live Class', desc: 'Start online class', action: () => navigate('/app/live-classes'), moduleKey: 'live_classes' },
-    { icon: Brain, label: 'Tino AI', desc: 'AI Assistant', action: () => navigate('/app/ai-tools') },
-    { icon: User, label: 'My Profile', desc: 'Profile & Settings', action: () => setShowProfileDialog(true) },
-  ].filter(Boolean);
-
-  const filteredModules = quickModules.filter(m => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return m.label.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q);
-  });
-
-  const totalPages = Math.ceil(filteredModules.length / ITEMS_PER_PAGE);
-  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedModules = filteredModules.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisible = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
-    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  };
+  const userPhoto = user?.photo_url || user?.profile_photo;
 
   return (
     <div className="min-h-screen bg-gray-50 relative" data-testid="teachtino-dashboard">
       <GlobalWatermark />
+      
       <header className="bg-white sticky top-0 z-40 shadow-sm">
-        <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+        <div className="h-1 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500"></div>
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-gray-800">TeachTino</h1>
-                <p className="text-xs text-gray-400">{user?.name}</p>
+                <h1 className="font-bold text-gray-800 text-sm">TeachTino</h1>
+                <p className="text-xs text-gray-400">{schoolData?.name || 'School'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setShowProfileDialog(true)} className="text-gray-600 hover:bg-gray-100">
-                <Settings className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-600 hover:bg-red-50">
-                <LogOut className="w-5 h-5" />
+              <button onClick={() => setShowProfileDialog(true)} className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors">
+                {userPhoto ? (
+                  <img src={userPhoto} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-green-200" />
+                ) : (
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-green-600" />
+                  </div>
+                )}
+                <span className="text-sm font-medium text-gray-700 hidden sm:block">{user?.name?.split(' ')[0]}</span>
+              </button>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-500 hover:bg-red-50">
+                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-5 pb-24 space-y-6">
-        <div className="flex items-center gap-2 text-sm">
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors shadow-sm">
-            <Home className="w-3.5 h-3.5" />
-            {t('home')}
-          </button>
-          <span className="text-gray-400">›</span>
-          <span className="text-gray-500 text-xs">{t('dashboard')}</span>
-        </div>
-
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
-          <h2 className="text-xl font-bold text-gray-800">Welcome back, {user?.name || 'Teacher'}!</h2>
-          <p className="text-sm text-gray-500 mt-1">{t('dashboard')}</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {statCards.map((card, idx) => (
-            <div key={idx} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-sm text-slate-500 font-medium">{card.label}</span>
-                <div className={`w-8 h-8 ${card.bgColor} rounded-lg flex items-center justify-center`}>
-                  <card.icon className={`w-4 h-4 ${card.iconColor}`} />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-slate-800 mb-1">{card.value}</div>
-              <div className="text-xs text-slate-400">{card.subtext}</div>
+      <main className="max-w-7xl mx-auto px-4 py-4 pb-24 space-y-5">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-5 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm">Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'},</p>
+              <h2 className="text-xl font-bold mt-0.5">{user?.name || 'Teacher'}</h2>
+              <p className="text-green-100 text-xs mt-1 capitalize">{user?.role?.replace('_', ' ')} {user?.designation ? `- ${user.designation}` : ''}</p>
             </div>
-          ))}
+            <div className="text-right">
+              <p className="text-green-100 text-xs">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              {myClasses.length > 0 && (
+                <p className="text-sm font-medium mt-1">{myClasses.length} {myClasses.length === 1 ? 'Class' : 'Classes'} Assigned</p>
+              )}
+            </div>
+          </div>
         </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <Users className="w-5 h-5 text-blue-500" />
+              <span className="text-xs text-gray-400">Students</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-800">{totalStudents}</p>
+            <p className="text-xs text-gray-400 mt-0.5">In your classes</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              <span className="text-xs text-gray-400">Present</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-800">{todayAttendance.present}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Today</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <XCircle className="w-5 h-5 text-red-500" />
+              <span className="text-xs text-gray-400">Absent</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-800">{todayAttendance.absent}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Today</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <BarChart3 className="w-5 h-5 text-emerald-500" />
+              <span className="text-xs text-gray-400">Rate</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-800">{attendancePercent}%</p>
+            <p className="text-xs text-gray-400 mt-0.5">Attendance</p>
+          </div>
+        </div>
+
+        {myClasses.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800 text-sm">My Classes</h3>
+              <button onClick={() => navigate('/app/classes')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
+                View All <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {myClasses.slice(0, 6).map((cls) => (
+                <div key={cls.id} onClick={() => navigate('/app/classes')} className="p-3 bg-green-50 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition-colors">
+                  <p className="font-semibold text-gray-800 text-sm">{cls.name || cls.class_name}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{cls.section ? `Section ${cls.section}` : ''}</p>
+                  <div className="flex items-center gap-1 mt-1.5">
+                    <Users className="w-3 h-3 text-green-600" />
+                    <span className="text-xs text-green-700 font-medium">{cls.student_count || 0} Students</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {timetableToday.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800 text-sm">Today's Schedule</h3>
+              <button onClick={() => navigate('/app/timetable')} className="text-xs text-green-600 font-medium flex items-center gap-1 hover:underline">
+                Full Timetable <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="p-3 space-y-2">
+              {timetableToday.map((period, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-bold text-green-700">P{period.period}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{period.subject || 'Period'}</p>
+                    <p className="text-xs text-gray-400">{period.class_name} {period.start_time ? `| ${period.start_time} - ${period.end_time}` : ''}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Key Features</h2>
-            <p className="text-sm text-gray-500 mt-1">Powerful tools designed to enhance your teaching experience.</p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
-            {teacherModuleCards.map((card) => (
-              <div
-                key={card.id}
-                onClick={card.action}
-                className="group cursor-pointer bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300"
+          <h3 className="font-semibold text-gray-800 text-sm mb-3">Modules</h3>
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+            {teacherModules.map((mod) => (
+              <button
+                key={mod.id}
+                onClick={mod.action}
+                className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 text-center"
               >
-                <div className={`w-12 h-12 ${card.lightBg} rounded-xl flex items-center justify-center mb-3`}>
-                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+                <div className={`w-10 h-10 ${mod.color.split(' ')[0]} rounded-xl flex items-center justify-center mx-auto mb-2`}>
+                  <mod.icon className={`w-5 h-5 ${mod.color.split(' ')[1]}`} />
                 </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-1">{card.name}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{card.desc}</p>
-              </div>
+                <p className="text-xs font-semibold text-gray-800 truncate">{mod.name}</p>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5">{mod.desc}</p>
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="px-5 pt-5 pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Quick Actions</h2>
-                <p className="text-sm text-gray-500 mt-1">List of actions available. Use the "Open" button to navigate.</p>
-              </div>
-              <div className="relative flex-shrink-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input type="text" placeholder="Search keyword" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 w-full sm:w-56 text-gray-700 bg-white" />
-              </div>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Module Name <SortIcon /></th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Description <SortIcon /></th>
-                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedModules.map((module, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <module.icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-800">{module.label}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 hidden sm:table-cell"><span className="text-sm text-gray-500">{module.desc}</span></td>
-                    <td className="px-5 py-3.5 text-right">
-                      <button onClick={module.action} className="px-5 py-1.5 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 transition-colors">Open</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="px-5 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-sm text-gray-500">Showing {startIdx + 1} to {Math.min(startIdx + ITEMS_PER_PAGE, filteredModules.length)} of {filteredModules.length}</p>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronFirst className="w-4 h-4" /></button>
-              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="w-4 h-4" /></button>
-              {getPageNumbers().map(page => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${currentPage === page ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>{page}</button>
-              ))}
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="w-4 h-4" /></button>
-              <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLast className="w-4 h-4" /></button>
-            </div>
-          </div>
-        </div>
-
         {canApproveLeave && pendingLeaves.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="px-5 pt-5 pb-4">
-              <h2 className="text-xl font-bold text-gray-900">Pending Leave Approvals</h2>
-              <p className="text-sm text-gray-500 mt-1">Staff leave requests awaiting your approval.</p>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <h3 className="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                Pending Leave Approvals
+                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs">{pendingLeaves.length}</span>
+              </h3>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Staff Name <SortIcon /></th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Type <SortIcon /></th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden md:table-cell whitespace-nowrap">Reason <SortIcon /></th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingLeaves.slice(0, 5).map((leave) => (
-                    <tr key={leave.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                      <td className="px-5 py-3.5 text-sm text-gray-800">{leave.user_name || 'Staff'}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell capitalize">{leave.leave_type}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden md:table-cell">{leave.reason}</td>
-                      <td className="px-5 py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => handleApproveLeave(leave.id)} className="px-4 py-1.5 bg-green-500 text-white text-xs font-medium rounded hover:bg-green-600 transition-colors">{t('approve')}</button>
-                          <button onClick={() => handleRejectLeave(leave.id)} className="px-4 py-1.5 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors">{t('reject')}</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-gray-50">
+              {pendingLeaves.slice(0, 5).map((leave) => (
+                <div key={leave.id} className="px-4 py-3 flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{leave.user_name || 'Staff'}</p>
+                    <p className="text-xs text-gray-400 capitalize">{leave.leave_type} | {leave.from_date} to {leave.to_date}</p>
+                    {leave.reason && <p className="text-xs text-gray-400 truncate mt-0.5">{leave.reason}</p>}
+                  </div>
+                  <div className="flex items-center gap-2 ml-3">
+                    <button onClick={() => handleApproveLeave(leave.id)} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors">
+                      <CheckCircle className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleRejectLeave(leave.id)} className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors">
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
         {recentNotices.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="px-5 pt-5 pb-4">
-              <h2 className="text-xl font-bold text-gray-900">Recent Notices</h2>
-              <p className="text-sm text-gray-500 mt-1">Latest announcements and notices.</p>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <h3 className="font-semibold text-gray-800 text-sm">Recent Notices</h3>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Title <SortIcon /></th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Content <SortIcon /></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentNotices.map((notice) => (
-                    <tr key={notice.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                      <td className="px-5 py-3.5 text-sm text-gray-800">{notice.title}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell line-clamp-1">{notice.content}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-gray-50">
+              {recentNotices.map((notice) => (
+                <div key={notice.id} className="px-4 py-3">
+                  <div className="flex items-start gap-2">
+                    <Bell className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{notice.title}</p>
+                      {notice.created_at && <p className="text-xs text-gray-400 mt-0.5">{new Date(notice.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>}
+                    </div>
+                    {notice.priority === 'urgent' && <Badge className="ml-auto bg-red-100 text-red-600 text-[10px]">Urgent</Badge>}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
         {myRequests.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="px-5 pt-5 pb-4">
-              <h2 className="text-xl font-bold text-gray-900">My Requests (मेरे अनुरोध)</h2>
-              <p className="text-sm text-gray-500 mt-1">Your requests sent to admin for approval.</p>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <h3 className="font-semibold text-gray-800 text-sm">My Requests</h3>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-t border-b border-gray-200 bg-gray-50/80">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Title</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell whitespace-nowrap">Type</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Status</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-600 hidden md:table-cell whitespace-nowrap">Admin Note</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {myRequests.slice(0, 10).map((req) => (
-                    <tr key={req.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                      <td className="px-5 py-3.5 text-sm text-gray-800">{req.title}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden sm:table-cell capitalize">{req.request_type}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
-                          req.status === 'approved' ? 'bg-green-100 text-green-700' :
-                          req.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>
-                          {req.status === 'pending' ? t('pending') : req.status === 'approved' ? t('approved') : t('rejected')}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-500 hidden md:table-cell">{req.review_note || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-gray-50">
+              {myRequests.slice(0, 5).map((req) => (
+                <div key={req.id} className="px-4 py-3 flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-800 truncate">{req.title}</p>
+                    <p className="text-xs text-gray-400 capitalize">{req.request_type}</p>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                    req.status === 'approved' ? 'bg-green-100 text-green-700' :
+                    req.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                    'bg-amber-100 text-amber-700'
+                  }`}>
+                    {req.status === 'pending' ? 'Pending' : req.status === 'approved' ? 'Approved' : 'Rejected'}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-        <div className="grid grid-cols-5 gap-1 p-2 max-w-lg mx-auto">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 border-t border-gray-200">
+        <div className="grid grid-cols-5 gap-1 p-1.5 max-w-lg mx-auto">
           {[
-            { icon: Home, label: t('home'), active: true, action: () => {} },
-            { icon: BookOpen, label: t('classes'), action: () => navigate('/app/classes') },
-            { icon: ClipboardCheck, label: t('attendance'), action: () => navigate('/app/attendance') },
-            { icon: Bell, label: t('notices'), action: () => navigate('/app/notices') },
-            { icon: Brain, label: 'Tino AI', action: () => navigate('/app/tino-ai') },
-          ].map((item, idx) => (
-            <button key={idx} onClick={item.action} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${item.active ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}>
+            { icon: Home, label: 'Home', id: 'home', action: () => setActiveTab('home') },
+            { icon: BookOpen, label: 'Classes', id: 'classes', action: () => navigate('/app/classes') },
+            { icon: ClipboardCheck, label: 'Attendance', id: 'attendance', action: () => navigate('/app/attendance') },
+            { icon: Calendar, label: 'Leave', id: 'leave', action: () => setShowLeaveDialog(true) },
+            { icon: User, label: 'Profile', id: 'profile', action: () => setShowProfileDialog(true) },
+          ].map((item) => (
+            <button key={item.id} onClick={item.action} className={`flex flex-col items-center gap-0.5 py-2 rounded-lg transition-colors ${activeTab === item.id ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:text-gray-600'}`}>
               <item.icon className="w-5 h-5" />
-              <span className="text-xs">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </button>
           ))}
         </div>
@@ -497,29 +482,47 @@ export default function TeachTinoDashboard() {
             <DialogTitle className="text-base font-semibold text-gray-800">Apply for Leave</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {leaveBalance && (
+              <div className="grid grid-cols-3 gap-2 p-3 bg-gray-50 rounded-lg">
+                <div className="text-center">
+                  <p className="text-lg font-bold text-blue-600">{leaveBalance.casual?.remaining ?? '-'}</p>
+                  <p className="text-[10px] text-gray-500">Casual</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-red-600">{leaveBalance.sick?.remaining ?? '-'}</p>
+                  <p className="text-[10px] text-gray-500">Sick</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-green-600">{leaveBalance.earned?.remaining ?? '-'}</p>
+                  <p className="text-[10px] text-gray-500">Earned</p>
+                </div>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-gray-700">Leave Type</label>
-              <select value={leaveForm.leave_type} onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })} className="w-full mt-2 p-2 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500">
+              <select value={leaveForm.leave_type} onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })} className="w-full mt-2 p-2.5 border border-gray-200 rounded-lg text-gray-700 text-sm focus:outline-none focus:border-green-500">
                 <option value="casual">Casual Leave</option>
                 <option value="sick">Sick Leave</option>
                 <option value="earned">Earned Leave</option>
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium text-gray-700">From Date</label>
-                <Input type="date" value={leaveForm.from_date} onChange={(e) => setLeaveForm({ ...leaveForm, from_date: e.target.value })} className="mt-2 border-gray-200" />
+                <label className="text-sm font-medium text-gray-700">From</label>
+                <Input type="date" value={leaveForm.from_date} onChange={(e) => setLeaveForm({ ...leaveForm, from_date: e.target.value })} className="mt-1.5 border-gray-200" />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">To Date</label>
-                <Input type="date" value={leaveForm.to_date} onChange={(e) => setLeaveForm({ ...leaveForm, to_date: e.target.value })} className="mt-2 border-gray-200" />
+                <label className="text-sm font-medium text-gray-700">To</label>
+                <Input type="date" value={leaveForm.to_date} onChange={(e) => setLeaveForm({ ...leaveForm, to_date: e.target.value })} className="mt-1.5 border-gray-200" />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">Reason</label>
-              <Textarea value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} placeholder="Enter reason for leave..." className="mt-2 border-gray-200" />
+              <Textarea value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} placeholder="Enter reason..." rows={3} className="mt-1.5 border-gray-200" />
             </div>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg" onClick={handleApplyLeave}>Submit Application</Button>
+            <Button className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={handleApplyLeave}>
+              <Send className="w-4 h-4 mr-2" /> Submit Leave
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -527,19 +530,20 @@ export default function TeachTinoDashboard() {
       <Dialog open={showNoticeDialog} onOpenChange={setShowNoticeDialog}>
         <DialogContent className="bg-white rounded-xl">
           <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="text-base font-semibold text-gray-800">Send Notice</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-800">Send Notice (Admin Approval Required)</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
               <label className="text-sm font-medium text-gray-700">Title</label>
-              <Input value={noticeForm.title} onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })} placeholder="Notice title..." className="mt-2 border-gray-200" />
+              <Input value={noticeForm.title} onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })} placeholder="Notice title..." className="mt-1.5 border-gray-200" />
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">Content</label>
-              <Textarea value={noticeForm.content} onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })} placeholder="Notice content..." rows={4} className="mt-2 border-gray-200" />
+              <Textarea value={noticeForm.content} onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })} placeholder="Notice content..." rows={4} className="mt-1.5 border-gray-200" />
             </div>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg" onClick={handleSendNotice}>
-              <Send className="w-4 h-4 mr-2" /> Send Notice
+            <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">Notice will be sent to admin for approval before publishing.</p>
+            <Button className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={handleSendNotice}>
+              <Send className="w-4 h-4 mr-2" /> Submit for Approval
             </Button>
           </div>
         </DialogContent>
@@ -548,17 +552,21 @@ export default function TeachTinoDashboard() {
       <Dialog open={showProfileDialog} onOpenChange={(v) => { setShowProfileDialog(v); if (!v) { setShowPasswordSection(false); setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); } }}>
         <DialogContent className="max-w-md bg-white rounded-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader className="border-b border-gray-100 pb-3">
-            <DialogTitle className="text-base font-semibold text-gray-800">{t('profile')}</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-800">My Profile</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-blue-500" />
-              </div>
+              {userPhoto ? (
+                <img src={userPhoto} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-green-200" />
+              ) : (
+                <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-green-500" />
+                </div>
+              )}
               <div>
                 <h3 className="font-semibold text-gray-800">{user?.name}</h3>
-                <p className="text-sm text-gray-600 mt-0.5">{user?.email}</p>
-                <Badge className="mt-2 capitalize bg-blue-50 text-blue-600 border border-blue-100">{user?.role?.replace('_', ' ')}</Badge>
+                <p className="text-sm text-gray-500 mt-0.5">{user?.email}</p>
+                <Badge className="mt-1.5 capitalize bg-green-50 text-green-600 border border-green-100">{user?.role?.replace('_', ' ')}</Badge>
               </div>
             </div>
             <div className="space-y-2 p-3 bg-gray-50 rounded-xl text-sm border border-gray-100">
@@ -567,6 +575,7 @@ export default function TeachTinoDashboard() {
               {user?.email && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500 flex items-center gap-1"><Mail className="w-3 h-3" /> Email</span><span className="font-medium text-gray-700">{user.email}</span></div>}
               {user?.designation && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Designation</span><span className="font-medium text-gray-700">{user.designation}</span></div>}
               {user?.department && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Department</span><span className="font-medium text-gray-700">{user.department}</span></div>}
+              {user?.joining_date && <div className="flex justify-between border-t border-gray-100 pt-2"><span className="text-gray-500">Joining Date</span><span className="font-medium text-gray-700">{new Date(user.joining_date).toLocaleDateString('en-IN')}</span></div>}
             </div>
 
             <button onClick={() => setShowPasswordSection(!showPasswordSection)} className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors">
@@ -596,15 +605,14 @@ export default function TeachTinoDashboard() {
 
             <div className="border-t border-gray-100 pt-3">
               <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
-                <div className="bg-blue-50 p-1 rounded"><Camera className="w-4 h-4 text-blue-500" /></div>
-                Face Recognition Setup
+                <div className="bg-green-50 p-1 rounded"><Camera className="w-4 h-4 text-green-500" /></div>
+                Profile Photo
               </h4>
               <StaffPhotoUpload userId={user?.id} schoolId={user?.school_id} />
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
