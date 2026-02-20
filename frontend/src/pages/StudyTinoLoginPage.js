@@ -9,7 +9,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import {
   GraduationCap, Heart, Phone, Lock, Eye, EyeOff, LogIn, Loader2,
-  User, IdCard, ArrowRight, BookOpen, Users
+  User, IdCard, ArrowRight, BookOpen, Users, Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,27 +27,27 @@ export default function StudyTinoLoginPage() {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    student_id: '',
-    parent_id: '',
     mobile: '',
+    dob: '',
+    parent_id: '',
     password: ''
   });
 
   const handleStudentLogin = async (e) => {
     e.preventDefault();
     
-    if (!form.student_id) {
-      toast.error(isHindi ? 'Student ID enter kijiye' : 'Enter Student ID');
+    if (!form.mobile) {
+      toast.error(isHindi ? 'Mobile Number enter kijiye' : 'Enter Mobile Number');
       return;
     }
-    if (!form.password) {
-      toast.error(isHindi ? 'Password enter kijiye' : 'Enter Password');
+    if (!form.dob) {
+      toast.error(isHindi ? 'Date of Birth enter kijiye' : 'Enter Date of Birth');
       return;
     }
 
     setLoading(true);
     try {
-      const payload = { student_id: form.student_id, password: form.password };
+      const payload = { mobile: form.mobile, dob: form.dob };
 
       await studentLogin(payload);
       toast.success(isHindi ? 'Login successful!' : 'Login successful!');
@@ -195,7 +195,7 @@ export default function StudyTinoLoginPage() {
                   onClick={() => {
                     setLoginType('student');
                     setLoginMethod('id');
-                    setForm({ ...form, student_id: '', parent_id: '', mobile: '', password: '' });
+                    setForm({ ...form, mobile: '', dob: '', parent_id: '', password: '' });
                   }}
                   className={`flex-1 p-4 rounded-xl border transition-all ${
                     loginType === 'student'
@@ -238,7 +238,7 @@ export default function StudyTinoLoginPage() {
                 </h3>
                 <p className="text-xs text-gray-500">
                   {loginType === 'student'
-                    ? (isHindi ? 'Student ID aur Password se login kijiye' : 'Login with Student ID and Password')
+                    ? (isHindi ? 'Mobile Number aur Date of Birth se login kijiye' : 'Login with Mobile Number and Date of Birth')
                     : (isHindi ? 'Parent ID ya Mobile se login kijiye' : 'Login with Parent ID or Mobile')}
                 </p>
               </div>
@@ -270,13 +270,15 @@ export default function StudyTinoLoginPage() {
               <form onSubmit={loginType === 'student' ? handleStudentLogin : handleParentLogin} className="space-y-4">
                 {loginType === 'student' && (
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">{t('student_id')}</Label>
+                    <Label className="text-sm font-medium text-gray-700">{isHindi ? 'Mobile Number' : 'Mobile Number'}</Label>
                     <div className="relative mt-2">
-                      <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
-                        value={form.student_id}
-                        onChange={(e) => setForm({ ...form, student_id: e.target.value })}
-                        placeholder="STU-2026-00001"
+                        type="tel"
+                        value={form.mobile}
+                        onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                        placeholder="9876543210"
+                        maxLength={10}
                         className="pl-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
                       />
                     </div>
@@ -315,26 +317,43 @@ export default function StudyTinoLoginPage() {
                   </div>
                 )}
 
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">{t('password')}</Label>
-                  <div className="relative mt-2">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      placeholder="••••••••"
-                      className="pl-10 pr-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                {loginType === 'student' && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">{isHindi ? 'Date of Birth' : 'Date of Birth'}</Label>
+                    <div className="relative mt-2">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        type="date"
+                        value={form.dob}
+                        onChange={(e) => setForm({ ...form, dob: e.target.value })}
+                        className="pl-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {loginType === 'parent' && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">{t('password')}</Label>
+                    <div className="relative mt-2">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        placeholder="••••••••"
+                        className="pl-10 pr-10 h-11 border-gray-200 bg-white text-gray-900 focus:border-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <Button 
                   type="submit" 
@@ -350,11 +369,20 @@ export default function StudyTinoLoginPage() {
                 </Button>
               </form>
 
-              <p className="text-center text-xs text-gray-500 mt-5">
-                {isHindi 
-                  ? 'Password school se mila hai. Forgot? Contact school.'
-                  : 'Password provided by school. Forgot? Contact school.'}
-              </p>
+              {loginType === 'parent' && (
+                <p className="text-center text-xs text-gray-500 mt-5">
+                  {isHindi 
+                    ? 'Password school se mila hai. Forgot? Contact school.'
+                    : 'Password provided by school. Forgot? Contact school.'}
+                </p>
+              )}
+              {loginType === 'student' && (
+                <p className="text-center text-xs text-gray-500 mt-5">
+                  {isHindi 
+                    ? 'Aapke mobile aur date of birth se login kijiye'
+                    : 'Login with your registered mobile number and date of birth'}
+                </p>
+              )}
             </div>
           </div>
         </div>

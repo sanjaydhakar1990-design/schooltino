@@ -99,6 +99,7 @@ export default function StudyTinoDashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
   const [walletTransactions, setWalletTransactions] = useState([]);
   const [walletAddAmount, setWalletAddAmount] = useState('');
+  const [pendingFees, setPendingFees] = useState(0);
 
   const [showLiveClassDialog, setShowLiveClassDialog] = useState(false);
   const [liveClasses, setLiveClasses] = useState([]);
@@ -160,22 +161,19 @@ export default function StudyTinoDashboard() {
         const data = dashboardRes.value.data;
         setProfile(data.profile);
         if (data.profile?.status === 'blocked') setIsBlocked(true);
+        if (data.attendance_summary) {
+          setAttendance({ present: data.attendance_summary.percentage || 0, total: data.attendance_summary.total || 0 });
+        }
+        if (data.fee_status) {
+          setPendingFees(data.fee_status.pending || 0);
+        }
+        if (data.recent_notices) {
+          setNotices(data.recent_notices);
+        }
       }
-      setNotices(noticesRes.status === 'fulfilled' ? noticesRes.value.data : [
-        { id: '1', title: 'Winter Break Notice', content: 'School closed 25 Dec - 1 Jan', priority: 'high', created_at: new Date().toISOString() },
-        { id: '2', title: 'Annual Sports Day', content: '15th January - All must participate', priority: 'normal', created_at: new Date().toISOString() }
-      ]);
-      setHomework(homeworkRes.status === 'fulfilled' ? homeworkRes.value.data : [
-        { id: '1', subject: 'Mathematics', topic: 'Exercise 5.3', due_date: '2026-01-04', status: 'pending' },
-        { id: '2', subject: 'English', topic: 'Essay Writing', due_date: '2026-01-05', status: 'pending' }
-      ]);
-      setSyllabus([
-        { subject: 'Mathematics', completed: 60, current: 'Quadratic Equations' },
-        { subject: 'Science', completed: 55, current: 'Light Reflection' },
-        { subject: 'Hindi', completed: 70, current: 'नेताजी का चश्मा' },
-        { subject: 'English', completed: 50, current: 'The Hundred Dresses' }
-      ]);
-      setAttendance({ present: 85, total: 100 });
+      setNotices(prev => prev.length > 0 ? prev : (noticesRes.status === 'fulfilled' ? (noticesRes.value.data || []) : []));
+      setHomework(homeworkRes.status === 'fulfilled' ? (homeworkRes.value.data || []) : []);
+      setSyllabus([]);
     } catch (error) { console.error('Dashboard fetch error:', error); } finally { setLoading(false); }
   };
 
@@ -246,12 +244,8 @@ export default function StudyTinoDashboard() {
       setWalletBalance(res.data.balance || 0);
       setWalletTransactions(res.data.transactions || []);
     } catch (error) {
-      setWalletBalance(500);
-      setWalletTransactions([
-        { id: '1', type: 'credit', amount: 1000, description: 'Added by parent', date: '2026-02-01T10:00:00Z' },
-        { id: '2', type: 'debit', amount: 200, description: 'Canteen purchase', date: '2026-02-03T13:30:00Z' },
-        { id: '3', type: 'debit', amount: 300, description: 'Stationery purchase', date: '2026-02-05T09:15:00Z' },
-      ]);
+      setWalletBalance(0);
+      setWalletTransactions([]);
     }
     setShowWalletDialog(true);
   };
@@ -261,27 +255,20 @@ export default function StudyTinoDashboard() {
     try {
       await axios.post(`${API}/student/wallet/add`, { student_id: user?.id, amount: Number(walletAddAmount) });
       toast.success(`₹${walletAddAmount} added to wallet!`);
-      setWalletBalance(prev => prev + Number(walletAddAmount));
-      setWalletTransactions(prev => [{ id: Date.now().toString(), type: 'credit', amount: Number(walletAddAmount), description: 'Money added', date: new Date().toISOString() }, ...prev]);
+      openWallet();
       setWalletAddAmount('');
     } catch (error) {
-      toast.success(`₹${walletAddAmount} added to wallet!`);
-      setWalletBalance(prev => prev + Number(walletAddAmount));
-      setWalletTransactions(prev => [{ id: Date.now().toString(), type: 'credit', amount: Number(walletAddAmount), description: 'Money added', date: new Date().toISOString() }, ...prev]);
-      setWalletAddAmount('');
+      toast.error('Wallet feature coming soon');
     }
   };
 
   const openLiveClasses = async () => {
     try {
       const res = await axios.get(`${API}/student/live-classes`);
-      setLiveClasses(res.data.classes || res.data || []);
+      const classes = res.data.classes || res.data || [];
+      setLiveClasses(Array.isArray(classes) ? classes : []);
     } catch (error) {
-      setLiveClasses([
-        { id: '1', subject: 'Mathematics', topic: 'Quadratic Equations', teacher: 'Mr. Sharma', status: 'live', scheduled_at: new Date().toISOString(), join_url: '#', recording_url: null },
-        { id: '2', subject: 'Science', topic: 'Light & Reflection', teacher: 'Mrs. Gupta', status: 'upcoming', scheduled_at: new Date(Date.now() + 3600000).toISOString(), join_url: null, recording_url: null },
-        { id: '3', subject: 'English', topic: 'Essay Writing', teacher: 'Ms. Patel', status: 'completed', scheduled_at: new Date(Date.now() - 86400000).toISOString(), join_url: null, recording_url: '#' },
-      ]);
+      setLiveClasses([]);
     }
     setShowLiveClassDialog(true);
   };
@@ -291,11 +278,7 @@ export default function StudyTinoDashboard() {
       const res = await axios.get(`${API}/school-feed`);
       setFeedPosts(res.data.posts || res.data || []);
     } catch (error) {
-      setFeedPosts([
-        { id: '1', author: 'School Admin', avatar: null, content: 'Annual Sports Day is on 15th January! All students must participate. Exciting prizes await! 🏆', image: null, likes: 24, liked: false, comments: [{ id: 'c1', author: 'Rahul', text: 'Can\'t wait! 🎉' }], created_at: new Date(Date.now() - 3600000).toISOString() },
-        { id: '2', author: 'Science Department', avatar: null, content: 'Science Exhibition winners announced! Congratulations to Class 10A for their innovative Solar Car project. 🔬', image: null, likes: 42, liked: false, comments: [], created_at: new Date(Date.now() - 86400000).toISOString() },
-        { id: '3', author: 'Principal', avatar: null, content: 'Proud moment for our school! Our students won 3 gold medals at the State Level Olympiad. 🥇', image: null, likes: 89, liked: false, comments: [{ id: 'c2', author: 'Priya', text: 'Congratulations!' }, { id: 'c3', author: 'Amit', text: 'So proud! 🎖️' }], created_at: new Date(Date.now() - 172800000).toISOString() },
-      ]);
+      setFeedPosts([]);
     }
     setShowFeedDialog(true);
   };
@@ -326,14 +309,7 @@ export default function StudyTinoDashboard() {
       const res = await axios.get(`${API}/e-store/items`);
       setStoreItems(res.data.items || res.data || []);
     } catch (error) {
-      setStoreItems([
-        { id: '1', name: 'School Notebook (Pack of 5)', price: 150, image: null, category: 'Stationery', in_stock: true },
-        { id: '2', name: 'School Bag - Premium', price: 1200, image: null, category: 'Bags', in_stock: true },
-        { id: '3', name: 'Geometry Box Set', price: 250, image: null, category: 'Stationery', in_stock: true },
-        { id: '4', name: 'School Uniform - Summer', price: 800, image: null, category: 'Uniform', in_stock: false },
-        { id: '5', name: 'Water Bottle (500ml)', price: 180, image: null, category: 'Accessories', in_stock: true },
-        { id: '6', name: 'School Tie', price: 120, image: null, category: 'Uniform', in_stock: true },
-      ]);
+      setStoreItems([]);
     }
     setShowEStoreDialog(true);
   };
@@ -345,10 +321,10 @@ export default function StudyTinoDashboard() {
     setAiInput('');
     setAiLoading(true);
     try {
-      const res = await axios.post(`${API}/tino-ai/chat`, { message: aiInput, student_id: user?.id, context: 'study_help' });
+      const res = await axios.post(`${API}/tino-ai/chat`, { message: aiInput, user_id: user?.id, school_id: profile?.school_id || user?.school_id, language: 'hi' });
       setAiMessages(prev => [...prev, { role: 'assistant', content: res.data.response || res.data.message || 'I can help you with your studies! Try asking me about any subject.' }]);
     } catch (error) {
-      setAiMessages(prev => [...prev, { role: 'assistant', content: 'I\'m here to help with your studies! Ask me about Mathematics, Science, English, Hindi or any other subject. I can explain concepts, solve problems, and help with homework.' }]);
+      setAiMessages(prev => [...prev, { role: 'assistant', content: 'Could not connect. Please try again.' }]);
     } finally { setAiLoading(false); }
   };
 
@@ -379,7 +355,7 @@ export default function StudyTinoDashboard() {
     { label: t('notices'), value: notices.length, icon: Bell, subtext: 'School announcements', bgColor: 'bg-blue-50', textColor: 'text-blue-500' },
     { label: t('subjects'), value: syllabus.length, icon: ClipboardList, subtext: 'Enrolled subjects', bgColor: 'bg-indigo-50', textColor: 'text-indigo-500' },
     { label: 'Syllabus Completed', value: `${Math.round(syllabus.reduce((a, b) => a + b.completed, 0) / (syllabus.length || 1))}%`, icon: Award, subtext: 'Overall syllabus progress', bgColor: 'bg-purple-50', textColor: 'text-purple-500' },
-    { label: t('fees'), value: '₹0', icon: Wallet, subtext: 'Pending fee balance', bgColor: 'bg-red-50', textColor: 'text-red-500' },
+    { label: t('fees'), value: pendingFees > 0 ? '₹' + pendingFees.toLocaleString('en-IN') : '₹0', icon: Wallet, subtext: 'Pending fee balance', bgColor: 'bg-red-50', textColor: 'text-red-500' },
     { label: 'Activities', value: 0, icon: Trophy, subtext: 'Extra-curricular activities', bgColor: 'bg-orange-50', textColor: 'text-orange-500' },
     { label: t('exams'), value: 0, icon: FileText, subtext: 'Upcoming examinations', bgColor: 'bg-cyan-50', textColor: 'text-cyan-500' },
   ];
@@ -387,13 +363,11 @@ export default function StudyTinoDashboard() {
   const studentModuleCards = [
     { id: 'studyai', name: 'StudyAI', desc: 'AI-powered study assistant for homework help & learning.', icon: Brain, image: '/images/studyai.png', gradient: 'from-violet-500 to-violet-600', lightBg: 'bg-violet-50', iconColor: 'text-violet-600', action: () => setShowAIHelper(true) },
     { id: 'feetino', name: 'FeeTino', desc: 'Pay school fees online securely via Razorpay.', icon: Wallet, image: '/images/feetino.png', gradient: 'from-green-500 to-green-600', lightBg: 'bg-green-50', iconColor: 'text-green-600', action: () => setShowPaymentDialog(true) },
-    { id: 'examtino', name: 'ExamTino', desc: 'Take online exams, practice tests & view results.', icon: FileText, image: '/images/examtino.png', gradient: 'from-purple-500 to-purple-600', lightBg: 'bg-purple-50', iconColor: 'text-purple-600', action: () => navigate('/app/exams') },
     { id: 'classchat', name: 'ClassChat', desc: 'Real-time chat with classmates & group discussions.', icon: MessageCircle, image: '/images/classchat.png', gradient: 'from-blue-500 to-blue-600', lightBg: 'bg-blue-50', iconColor: 'text-blue-600', action: () => openClassChat() },
     { id: 'admitcard', name: 'AdmitCard', desc: 'View & download exam admit cards instantly.', icon: Award, image: '/images/admitcard.png', gradient: 'from-amber-500 to-amber-600', lightBg: 'bg-amber-50', iconColor: 'text-amber-600', action: () => setShowAdmitCardDialog(true) },
     { id: 'activities', name: 'Activities', desc: 'Track your extra-curricular activities & achievements.', icon: Trophy, image: '/images/activities.png', gradient: 'from-red-500 to-red-600', lightBg: 'bg-red-50', iconColor: 'text-red-600', action: () => openActivities() },
     { id: 'wallet', name: 'My Wallet', desc: 'View balance, add money & track spending.', icon: IndianRupee, image: '/images/feetino.png', gradient: 'from-emerald-500 to-emerald-600', lightBg: 'bg-emerald-50', iconColor: 'text-emerald-600', action: () => openWallet() },
     { id: 'liveclass', name: 'Live Class', desc: 'Join live classes, view schedule & recordings.', icon: Video, image: '/images/classtino.png', gradient: 'from-pink-500 to-pink-600', lightBg: 'bg-pink-50', iconColor: 'text-pink-600', action: () => openLiveClasses() },
-    { id: 'schoolfeed', name: 'School Feed', desc: 'Stay updated with school news, events & announcements.', icon: Rss, image: '/images/noticeboard.png', gradient: 'from-cyan-500 to-cyan-600', lightBg: 'bg-cyan-50', iconColor: 'text-cyan-600', action: () => openSchoolFeed() },
   ];
 
   const quickModules = [
@@ -403,13 +377,7 @@ export default function StudyTinoDashboard() {
     { icon: AlertOctagon, label: 'Complaint', desc: 'Submit a complaint', action: () => setShowComplaintDialog(true) },
     { icon: Trophy, label: 'Activities', desc: 'My activities & awards', action: () => openActivities() },
     { icon: CalendarDays, label: 'Apply Leave', desc: 'Submit leave application', action: () => setShowLeaveDialog(true) },
-    { icon: Brain, label: 'AI Help', desc: 'Study assistant', action: () => setShowAIHelper(true) },
-    { icon: FileText, label: 'Online Exam', desc: 'Take practice tests', action: () => navigate('/app/exams') },
     { icon: User, label: 'My Profile', desc: 'View profile details', action: () => setShowProfileDialog(true) },
-    { icon: IndianRupee, label: 'My Wallet', desc: 'Balance & transactions', action: () => openWallet() },
-    { icon: Video, label: 'Live Class', desc: 'Join live classes', action: () => openLiveClasses() },
-    { icon: Rss, label: 'School Feed', desc: 'News & announcements', action: () => openSchoolFeed() },
-    { icon: ShoppingBag, label: 'E-Store', desc: 'School store', action: () => openEStore() },
   ];
 
   const filteredModules = quickModules.filter(m => {
@@ -452,16 +420,16 @@ export default function StudyTinoDashboard() {
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {(schoolData?.logo_url || schoolData?.logo) ? (
-                <img src={schoolData.logo_url || schoolData.logo} alt="" className="w-10 h-10 rounded-xl object-cover border border-blue-100" />
+              {profile?.photo_url ? (
+                <img src={profile.photo_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-blue-100" />
               ) : (
-                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                  <School className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 font-bold text-sm">
+                  {(profile?.name || 'S').charAt(0)}
                 </div>
               )}
               <div>
-                <h1 className="font-semibold text-gray-800 text-sm">{schoolData?.name || profile?.school_name || 'StudyTino'}</h1>
-                <p className="text-xs text-gray-400">{profile?.class_name || 'Class'} | {profile?.student_name || user?.name || 'Student'}</p>
+                <h1 className="font-semibold text-gray-800 text-sm">{profile?.name || user?.name || 'Student'}</h1>
+                <p className="text-xs text-gray-400">{profile?.class_name || 'Class'}{profile?.section ? ' - ' + profile.section : ''} | {profile?.student_id || ''}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -614,6 +582,7 @@ export default function StudyTinoDashboard() {
           </div>
         )}
 
+        {syllabus.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <div className="px-5 pt-5 pb-4">
             <h2 className="text-xl font-bold text-gray-900">Syllabus Progress</h2>
@@ -647,6 +616,7 @@ export default function StudyTinoDashboard() {
             </table>
           </div>
         </div>
+        )}
 
         {notices.length > 0 && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -871,6 +841,12 @@ export default function StudyTinoDashboard() {
         <DialogContent>
           <DialogHeader><DialogTitle className="flex items-center gap-2 text-base font-semibold text-gray-800"><div className="w-6 h-6 bg-green-50 rounded flex items-center justify-center"><Wallet className="w-4 h-4 text-green-500" /></div>Pay Fees Online</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
+            {pendingFees > 0 && (
+              <div className="p-3 bg-red-50 rounded-xl border border-red-100 mb-2">
+                <p className="text-xs text-red-500">Pending Fee</p>
+                <p className="text-xl font-bold text-red-600">₹{pendingFees.toLocaleString('en-IN')}</p>
+              </div>
+            )}
             <div><Label className="text-sm text-gray-600 font-medium">Amount (INR)</Label><Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Enter amount..." className="mt-1 border-gray-200" min="1" /></div>
             <Button onClick={handlePayFees} disabled={paymentProcessing} className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg">{paymentProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CreditCard className="w-4 h-4 mr-2" />}{paymentProcessing ? 'Processing...' : 'Pay Now'}</Button>
             <p className="text-xs text-center text-gray-400">Secured by Razorpay</p>

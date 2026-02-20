@@ -2994,10 +2994,24 @@ async def student_login(request: StudentLoginRequest):
             raise HTTPException(status_code=401, detail="Invalid password")
     
     elif request.mobile and request.dob:
-        query = {"mobile": request.mobile, "dob": request.dob}
+        clean_mobile = request.mobile.replace(" ", "").replace("-", "").strip()
+        base_query = {"dob": request.dob}
         if request.school_id:
-            query["school_id"] = request.school_id
-        student = await db.students.find_one(query, {"_id": 0})
+            base_query["school_id"] = request.school_id
+        student = await db.students.find_one({**base_query, "mobile": clean_mobile}, {"_id": 0})
+        if not student:
+            student = await db.students.find_one({**base_query, "father_mobile": clean_mobile}, {"_id": 0})
+        if not student:
+            student = await db.students.find_one({**base_query, "mother_mobile": clean_mobile}, {"_id": 0})
+        if not student:
+            all_students = await db.students.find(base_query, {"_id": 0}).to_list(500)
+            for s in all_students:
+                s_mobile = (s.get("mobile") or "").replace(" ", "").replace("-", "").strip()
+                s_father = (s.get("father_mobile") or "").replace(" ", "").replace("-", "").strip()
+                s_mother = (s.get("mother_mobile") or "").replace(" ", "").replace("-", "").strip()
+                if clean_mobile in [s_mobile, s_father, s_mother]:
+                    student = s
+                    break
         if not student:
             raise HTTPException(status_code=401, detail="Invalid Mobile or Date of Birth")
     
