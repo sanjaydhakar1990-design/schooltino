@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -25,6 +26,8 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 
 export default function ImprovedTimetableManagement() {
   const { schoolId, user } = useAuth();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -105,12 +108,16 @@ export default function ImprovedTimetableManagement() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white">
-        <h1 className="text-3xl font-bold flex items-center gap-3">
-          <Clock className="w-8 h-8" />
-          Timetable Management
-        </h1>
-        <p className="text-purple-100 mt-1">Editable time slots • Teacher assignments • Substitute system</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <Clock className="w-5 h-5" />
+            </div>
+            Timetable Management
+          </h1>
+          <p className="text-gray-500 mt-1">Editable time slots • Teacher assignments • Substitute system</p>
+        </div>
       </div>
 
       {/* Controls */}
