@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -1884,13 +1885,20 @@ function AIPaperGeneratorTab() {
 
 const AIToolsPage = () => {
   const { t } = useTranslation();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const [mainTab, setMainTab] = useState('paper-generator');
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t('ai_tools')}</h1>
-        <p className="text-sm text-gray-500 mt-1">AI-powered tools for paper generation, content creation and event design</p>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+          <Sparkles className="w-5 h-5" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{t('ai_tools')}</h1>
+          <p className="text-sm text-gray-500">AI-powered tools for paper generation, content creation and event design</p>
+        </div>
       </div>
 
       <Tabs value={mainTab} onValueChange={setMainTab} className="space-y-6">

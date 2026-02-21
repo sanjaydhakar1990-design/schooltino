@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -31,6 +32,8 @@ export default function IntegratedCommunicationPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const [activeTab, setActiveTab] = useState('sms');
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -444,40 +447,30 @@ export default function IntegratedCommunicationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
-              <MessageSquare className="w-8 h-8" />
-              {t('communication_hub')}
-            </h1>
-            <p className="text-indigo-100 mt-2">
-              {t('send_sms')}, {t('send_whatsapp')}
-            </p>
-          </div>
-          <div className="hidden md:flex items-center gap-3">
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <div className="flex items-center gap-1 justify-center">
-                <Wallet className="w-4 h-4" />
-                <p className="text-2xl font-bold">{creditLoading ? '...' : creditBalance}</p>
-              </div>
-              <p className="text-xs text-indigo-100">{t('available')}</p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <MessageSquare className="w-5 h-5" />
             </div>
-            <Button
-              onClick={() => navigate('/app/credit-system')}
-              className="bg-white/20 hover:bg-white/30 text-white border-0"
-            >
-              <CreditCard className="w-4 h-4 mr-2" /> {t('send')}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/10"
-              onClick={fetchCreditBalance}
-            >
-              <RefreshCw className={`w-4 h-4 ${creditLoading ? 'animate-spin' : ''}`} />
-            </Button>
+            {t('communication_hub')}
+          </h1>
+          <p className="text-gray-500 mt-1">Send SMS, WhatsApp & announcements to students and parents</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="bg-gray-50 border rounded-xl px-4 py-2 text-center">
+            <div className="flex items-center gap-1 justify-center">
+              <Wallet className="w-4 h-4 text-gray-500" />
+              <p className="text-xl font-bold text-gray-900">{creditLoading ? '...' : creditBalance}</p>
+            </div>
+            <p className="text-xs text-gray-500">{t('available')} Credits</p>
           </div>
+          <Button onClick={() => navigate('/app/credit-system')} variant="outline" className="gap-2">
+            <CreditCard className="w-4 h-4" /> Buy Credits
+          </Button>
+          <Button size="sm" variant="ghost" onClick={fetchCreditBalance}>
+            <RefreshCw className={`w-4 h-4 ${creditLoading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </div>
 

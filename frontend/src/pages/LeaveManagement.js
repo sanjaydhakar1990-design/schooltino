@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -24,6 +25,8 @@ const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 export default function LeaveManagement() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [myLeaves, setMyLeaves] = useState([]);
@@ -144,29 +147,30 @@ export default function LeaveManagement() {
   return (
     <div className="space-y-6" data-testid="leave-management">
       {/* Header */}
-      <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
-              <Calendar className="w-8 h-8" />
-              {t('leave_management')}
-            </h1>
-            <p className="text-teal-100 mt-2">
-              {canApproveLeave && !canApplyLeave 
-                ? 'Approve or reject leave applications' 
-                : 'Apply for leave, check balance & track status'}
-            </p>
-          </div>
-          {canApplyLeave && (
-            <Button 
-              onClick={() => setShowApplyDialog(true)}
-              className="bg-white text-teal-600 hover:bg-teal-50"
-            >
-              <Send className="w-4 h-4 mr-2" />
-              {t('apply_leave')}
-            </Button>
-          )}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <Calendar className="w-5 h-5" />
+            </div>
+            {t('leave_management')}
+          </h1>
+          <p className="text-gray-500 mt-1">
+            {canApproveLeave && !canApplyLeave
+              ? 'Approve or reject leave applications'
+              : 'Apply for leave, check balance & track status'}
+          </p>
         </div>
+        {canApplyLeave && (
+          <Button
+            onClick={() => setShowApplyDialog(true)}
+            className="gap-2 text-white"
+            style={{ backgroundColor: accent }}
+          >
+            <Send className="w-4 h-4" />
+            {t('apply_leave')}
+          </Button>
+        )}
       </div>
 
       {/* Leave Balance Cards */}
