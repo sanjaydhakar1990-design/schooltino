@@ -62,11 +62,12 @@ const NAV_GROUPS = [
   {
     label: 'Tools',
     items: [
-      { path: '/app/ai-tools',   icon: Brain,    labelKey: 'ai_tools',          moduleKey: 'ai_tools' },
-      { path: '/app/analytics',  icon: BarChart3, labelKey: 'analytics',        moduleKey: 'analytics' },
-      { path: '/app/live-classes',icon: Tv,       labelKey: 'live_classes',     moduleKey: 'live_classes' },
-      { path: '/app/cctv',       icon: Video,    labelKey: 'cctv_integration',  moduleKey: 'cctv' },
-      { path: '/app/settings',   icon: Settings, labelKey: 'settings',          directorOnly: true },
+      { path: '/app/ai-tools',        icon: Brain,    labelKey: 'ai_tools',          moduleKey: 'ai_tools' },
+      { path: '/app/analytics',       icon: BarChart3, labelKey: 'analytics',        moduleKey: 'analytics' },
+      { path: '/app/live-classes',    icon: Tv,       labelKey: 'live_classes',     moduleKey: 'live_classes' },
+      { path: '/app/cctv',            icon: Video,    labelKey: 'cctv_integration',  moduleKey: 'cctv' },
+      { path: '/app/module-settings', icon: Package,  labelKey: 'module_settings',   directorOnly: true },
+      { path: '/app/settings',        icon: Settings, labelKey: 'settings',          directorOnly: true },
     ]
   },
 ];

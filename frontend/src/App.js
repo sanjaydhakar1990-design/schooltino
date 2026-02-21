@@ -36,6 +36,8 @@ import EmployeeManagementPage from './pages/EmployeeManagementPage';
 import FeeManagementPage from './pages/FeeManagementPage';
 import ProfilePage from './pages/ProfilePage';
 
+import ModuleManagementPage from './pages/ModuleManagementPage';
+
 // Sidebar pages (in /src/pages/ folder)
 import DigitalLibraryPage from './pages/DigitalLibraryPage';
 import IntegratedCommunicationPage from './pages/IntegratedCommunicationPage';
@@ -388,6 +390,9 @@ function AppRoutes() {
         {/* Path aliases for cleaner sidebar URLs */}
         <Route path="analytics" element={<Navigate to="/app/school-analytics" replace />} />
         <Route path="calendar" element={<Navigate to="/app/school-calendar" replace />} />
+
+        {/* Module Management */}
+        <Route path="module-settings" element={<ModuleManagementPage />} />
       </Route>
       
       {/* Old routes redirect to /app */}

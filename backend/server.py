@@ -11048,6 +11048,128 @@ class OnlinePaymentCreate(BaseModel):
     payer_name: Optional[str] = None
     remarks: Optional[str] = None
 
+# ==================== MODULE MANAGEMENT API ====================
+
+@api_router.get("/settings/module-visibility")
+async def get_module_visibility(current_user: dict = Depends(get_current_user)):
+    """
+    Get module visibility for current school.
+    Returns merged result of plan limits + school preferences.
+    """
+    from core.tenant import PLAN_MODULES, MODULE_INFO, ALL_MODULES, PLAN_PRICING
+
+    school_id = current_user.get("school_id")
+    if not school_id:
+        raise HTTPException(status_code=400, detail="School ID not found")
+
+    # Get school subscription plan
+    school = await db.schools.find_one({"school_id": school_id}, {"_id": 0})
+    plan = "free"
+    if school:
+        plan = school.get("subscription_plan", "free")
+
+    # Get school's custom module preferences from DB
+    module_prefs = await db.module_settings.find_one({"school_id": school_id}, {"_id": 0}) or {}
+    school_prefs = module_prefs.get("modules", {})
+
+    # Build visibility response
+    plan_allowed_modules = PLAN_MODULES.get(plan, PLAN_MODULES["free"])
+    visibility = {}
+
+    for module_key in ALL_MODULES:
+        in_plan = module_key in plan_allowed_modules
+        school_choice = school_prefs.get(module_key, True)  # Default: enabled if in plan
+        actually_visible = in_plan and school_choice
+
+        info = MODULE_INFO.get(module_key, {})
+        visibility[module_key] = {
+            "schooltino": actually_visible,
+            "plan_allowed": in_plan,
+            "school_enabled": school_choice,
+            "label": info.get("label", module_key),
+            "icon": info.get("icon", "📦"),
+            "category": info.get("category", "Other"),
+            "desc": info.get("desc", ""),
+        }
+
+    return {
+        "plan": plan,
+        "plan_label": PLAN_PRICING.get(plan, {}).get("label", plan.title()),
+        "modules": visibility,
+    }
+
+
+@api_router.post("/settings/module-visibility")
+async def save_module_visibility(request: Request, current_user: dict = Depends(get_current_user)):
+    """
+    Save module preferences for school (director only).
+    Schools can only DISABLE modules in their plan - cannot unlock locked ones.
+    Body: {"modules": {"students": true, "transport": false, ...}}
+    """
+    from core.tenant import PLAN_MODULES, ALL_MODULES
+
+    if current_user["role"] not in ["director", "co_director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Only Directors can manage module settings")
+
+    school_id = current_user.get("school_id")
+    body = await request.json()
+    modules = body.get("modules", {})
+
+    # Get school subscription plan
+    school = await db.schools.find_one({"school_id": school_id}, {"_id": 0})
+    plan = school.get("subscription_plan", "free") if school else "free"
+    plan_allowed_modules = PLAN_MODULES.get(plan, PLAN_MODULES["free"])
+
+    # Security: only save preferences for modules in their plan
+    filtered_modules = {}
+    for module_key, enabled in modules.items():
+        if module_key in ALL_MODULES and module_key in plan_allowed_modules:
+            filtered_modules[module_key] = bool(enabled)
+
+    await db.module_settings.update_one(
+        {"school_id": school_id},
+        {"$set": {
+            "school_id": school_id,
+            "modules": filtered_modules,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_by": current_user.get("id", ""),
+        }},
+        upsert=True
+    )
+
+    return {"message": "Module settings saved successfully", "modules": filtered_modules}
+
+
+@api_router.get("/settings/subscription-plans")
+async def get_subscription_plans_info():
+    """Get all subscription plans with module info for comparison page"""
+    from core.tenant import PLAN_MODULES, MODULE_INFO, PLAN_PRICING, ALL_MODULES
+
+    plans_data = []
+    for plan_name, pricing in PLAN_PRICING.items():
+        if plan_name == "trial":
+            continue
+
+        modules_in_plan = PLAN_MODULES.get(plan_name, [])
+        plans_data.append({
+            "id": plan_name,
+            "label": pricing["label"],
+            "color": pricing.get("color", "#6b7280"),
+            "monthly": pricing["monthly"],
+            "yearly": pricing["yearly"],
+            "yearly_discount": round((1 - (pricing["yearly"] / (pricing["monthly"] * 12))) * 100) if pricing["monthly"] > 0 else 0,
+            "modules": modules_in_plan,
+            "module_count": len(modules_in_plan),
+            "total_modules": len(ALL_MODULES),
+        })
+
+    return {
+        "plans": plans_data,
+        "module_info": MODULE_INFO,
+        "all_modules": ALL_MODULES,
+    }
+
+
 @api_router.get("/school/settings")
 async def get_school_settings(school_id: str, current_user: dict = Depends(get_current_user)):
     """Get school settings"""

@@ -25,6 +25,127 @@ import { useRazorpay } from 'react-razorpay';
 
 const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 
+/* ============================================================
+   MODULE COMPARISON TABLE
+   Shows which modules are included in each plan
+   ============================================================ */
+const PLAN_MODULES_FRONTEND = {
+  'free':       ['students', 'classes', 'attendance', 'fee_management'],
+  'starter':    ['students', 'classes', 'attendance', 'fee_management', 'timetable', 'exams_reports', 'digital_library', 'communication_hub', 'calendar', 'staff'],
+  'growth':     ['students', 'classes', 'attendance', 'fee_management', 'timetable', 'exams_reports', 'digital_library', 'communication_hub', 'calendar', 'staff', 'admissions', 'transport', 'front_office', 'inventory'],
+  'pro':        ['students', 'classes', 'attendance', 'fee_management', 'timetable', 'exams_reports', 'digital_library', 'communication_hub', 'calendar', 'staff', 'admissions', 'transport', 'front_office', 'inventory', 'ai_tools', 'analytics', 'live_classes'],
+  'enterprise': ['students', 'classes', 'attendance', 'fee_management', 'timetable', 'exams_reports', 'digital_library', 'communication_hub', 'calendar', 'staff', 'admissions', 'transport', 'front_office', 'inventory', 'ai_tools', 'analytics', 'live_classes', 'cctv', 'multi_branch'],
+};
+
+const MODULE_LABELS = {
+  students: '👨‍🎓 Students',  classes: '🏫 Classes',  attendance: '✅ Attendance',  fee_management: '💰 Fee Management',
+  timetable: '📅 Timetable',  exams_reports: '📝 Exams & Reports',  digital_library: '📚 Digital Library',
+  communication_hub: '💬 Communication',  calendar: '🗓️ Calendar',  staff: '👩‍💼 Staff',
+  admissions: '🎯 Admissions',  transport: '🚌 Transport',  front_office: '🏢 Front Office',  inventory: '📦 Inventory',
+  ai_tools: '🤖 AI Tools',  analytics: '📊 Analytics',  live_classes: '📹 Live Classes',
+  cctv: '📷 CCTV',  multi_branch: '🌐 Multi-Branch',
+};
+
+const PLAN_COLORS_COMP = {
+  free: { dot: '#6b7280', light: '#f3f4f6' },
+  starter: { dot: '#3b82f6', light: '#eff6ff' },
+  growth: { dot: '#10b981', light: '#ecfdf5' },
+  pro: { dot: '#f59e0b', light: '#fffbeb' },
+  enterprise: { dot: '#ef4444', light: '#fef2f2' },
+};
+
+const PLAN_PRICES = {
+  free: { label: 'Free', price: '₹0', period: 'forever' },
+  starter: { label: 'Starter', price: '₹499', period: '/month' },
+  growth: { label: 'Growth', price: '₹999', period: '/month' },
+  pro: { label: 'Pro', price: '₹1,999', period: '/month' },
+  enterprise: { label: 'Enterprise', price: '₹3,999', period: '/month' },
+};
+
+function ModuleComparisonTable() {
+  const allModules = Object.keys(MODULE_LABELS);
+  const plans = ['free', 'starter', 'growth', 'pro', 'enterprise'];
+  const categories = [
+    { name: 'Core', modules: ['students','classes','attendance','fee_management'], color: '#3b82f6' },
+    { name: 'Academic', modules: ['timetable','exams_reports','digital_library'], color: '#10b981' },
+    { name: 'Communication', modules: ['communication_hub','calendar','staff'], color: '#8b5cf6' },
+    { name: 'Management', modules: ['admissions','transport','front_office','inventory'], color: '#f59e0b' },
+    { name: 'Advanced', modules: ['ai_tools','analytics','live_classes'], color: '#ec4899' },
+    { name: 'Enterprise', modules: ['cctv','multi_branch'], color: '#6b7280' },
+  ];
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="p-6 border-b border-slate-100">
+        <h2 className="text-xl font-bold text-slate-900">Modules Included Per Plan</h2>
+        <p className="text-sm text-slate-500 mt-1">India's cheapest school ERP — pick what your school needs</p>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-slate-100">
+              <th className="text-left p-4 font-semibold text-slate-600 text-sm w-44">Module</th>
+              {plans.map(p => (
+                <th key={p} className="p-4 text-center" style={{ minWidth: 100 }}>
+                  <div className="font-bold text-slate-900 text-sm">{PLAN_PRICES[p].label}</div>
+                  <div className="text-indigo-600 font-bold">{PLAN_PRICES[p].price}<span className="text-slate-400 font-normal text-[10px]">{PLAN_PRICES[p].period}</span></div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map(cat => (
+              <>
+                <tr key={`cat-${cat.name}`} className="bg-slate-50">
+                  <td colSpan={6} className="px-4 py-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: cat.color }}>
+                      {cat.name}
+                    </span>
+                  </td>
+                </tr>
+                {cat.modules.map(mod => (
+                  <tr key={mod} className="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td className="p-4 text-sm text-slate-700 font-medium">{MODULE_LABELS[mod]}</td>
+                    {plans.map(plan => {
+                      const included = PLAN_MODULES_FRONTEND[plan]?.includes(mod);
+                      return (
+                        <td key={plan} className="p-4 text-center">
+                          {included
+                            ? <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-emerald-100"><Check className="w-3 h-3 text-emerald-600" /></span>
+                            : <span className="w-5 h-5 inline-block text-slate-200 text-lg leading-none">—</span>
+                          }
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-slate-50 border-t-2 border-slate-200">
+              <td className="p-4 text-sm font-bold text-slate-700">Total Modules</td>
+              {plans.map(plan => (
+                <td key={plan} className="p-4 text-center">
+                  <span className="text-lg font-black text-slate-900">{PLAN_MODULES_FRONTEND[plan]?.length || 0}</span>
+                  <span className="text-[10px] text-slate-400">/{allModules.length}</span>
+                </td>
+              ))}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div className="p-4 bg-indigo-50 text-center">
+        <p className="text-xs text-indigo-700 font-medium">
+          💡 Within your plan, you can enable/disable any module from <a href="/app/module-settings" className="underline font-bold">Module Settings</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function SubscriptionPage() {
   const { t } = useTranslation();
   const { user, schoolId } = useAuth();
@@ -353,6 +474,9 @@ export default function SubscriptionPage() {
           );
         })}
       </div>
+
+      {/* Module Comparison Table */}
+      <ModuleComparisonTable />
 
       {/* Features Comparison */}
       <div className="bg-white rounded-2xl border border-slate-200 p-8">

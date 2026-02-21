@@ -182,14 +182,94 @@ PLAN_FEATURES = {
     },
 }
 
-# Pricing in INR (Indian Rupees)
+# Pricing in INR (Indian Rupees) - Cheapest School ERP in India!
 PLAN_PRICING = {
-    "free":       {"monthly": 0,    "yearly": 0,      "label": "Free"},
-    "trial":      {"monthly": 0,    "yearly": 0,      "label": "14-Day Trial"},
-    "starter":    {"monthly": 999,  "yearly": 9990,   "label": "Starter"},   # Save ₹999 yearly
-    "growth":     {"monthly": 2499, "yearly": 24990,  "label": "Growth"},    # Save ₹2499 yearly
-    "pro":        {"monthly": 4999, "yearly": 49990,  "label": "Pro"},       # Save ₹4999 yearly
-    "enterprise": {"monthly": 9999, "yearly": 99990,  "label": "Enterprise"},
+    "free":       {"monthly": 0,    "yearly": 0,      "label": "Free",       "color": "#6b7280"},
+    "trial":      {"monthly": 0,    "yearly": 0,      "label": "14-Day Trial","color": "#8b5cf6"},
+    "starter":    {"monthly": 499,  "yearly": 4990,   "label": "Starter",    "color": "#3b82f6"},
+    "growth":     {"monthly": 999,  "yearly": 9990,   "label": "Growth",     "color": "#10b981"},
+    "pro":        {"monthly": 1999, "yearly": 19990,  "label": "Pro",        "color": "#f59e0b"},
+    "enterprise": {"monthly": 3999, "yearly": 39990,  "label": "Enterprise", "color": "#ef4444"},
+}
+
+# ====================== MODULE PLAN MAPPING ======================
+# Defines which sidebar modules are AVAILABLE per subscription plan
+# Modules listed here can be enabled/disabled by the school within their plan
+
+ALL_MODULES = [
+    "students", "classes", "attendance", "fee_management",      # Core - Free
+    "timetable", "exams_reports", "digital_library",            # Academic - Starter
+    "communication_hub", "calendar", "staff",                   # Communication - Starter
+    "admissions", "transport", "front_office", "inventory",     # Management - Growth
+    "ai_tools", "analytics", "live_classes",                    # Advanced - Pro
+    "cctv", "multi_branch",                                     # Enterprise only
+]
+
+PLAN_MODULES = {
+    "free": [
+        # Only 4 core modules - enough to run a basic school
+        "students", "classes", "attendance", "fee_management",
+    ],
+    "trial": [
+        # Full access during trial - so they see the value
+        "students", "classes", "attendance", "fee_management",
+        "timetable", "exams_reports", "digital_library",
+        "communication_hub", "calendar", "staff",
+        "admissions", "transport", "front_office", "inventory",
+        "ai_tools", "analytics", "live_classes",
+    ],
+    "starter": [
+        # Core + Academic + Communication
+        "students", "classes", "attendance", "fee_management",
+        "timetable", "exams_reports", "digital_library",
+        "communication_hub", "calendar", "staff",
+    ],
+    "growth": [
+        # All Starter + Management features
+        "students", "classes", "attendance", "fee_management",
+        "timetable", "exams_reports", "digital_library",
+        "communication_hub", "calendar", "staff",
+        "admissions", "transport", "front_office", "inventory",
+    ],
+    "pro": [
+        # All Growth + Advanced features (AI, Analytics, Live)
+        "students", "classes", "attendance", "fee_management",
+        "timetable", "exams_reports", "digital_library",
+        "communication_hub", "calendar", "staff",
+        "admissions", "transport", "front_office", "inventory",
+        "ai_tools", "analytics", "live_classes",
+    ],
+    "enterprise": [
+        # Everything including CCTV + Multi-branch
+        "students", "classes", "attendance", "fee_management",
+        "timetable", "exams_reports", "digital_library",
+        "communication_hub", "calendar", "staff",
+        "admissions", "transport", "front_office", "inventory",
+        "ai_tools", "analytics", "live_classes",
+        "cctv", "multi_branch",
+    ],
+}
+
+MODULE_INFO = {
+    "students":          {"label": "Students",         "icon": "👨‍🎓", "category": "Core",         "desc": "Student profiles, records, ID cards"},
+    "classes":           {"label": "Classes",          "icon": "🏫", "category": "Core",         "desc": "Classes, sections, subjects"},
+    "attendance":        {"label": "Attendance",       "icon": "✅", "category": "Core",         "desc": "Daily attendance tracking"},
+    "fee_management":    {"label": "Fee Management",   "icon": "💰", "category": "Core",         "desc": "Fee collection, receipts, dues"},
+    "timetable":         {"label": "Timetable",        "icon": "📅", "category": "Academic",     "desc": "Class scheduling & timetables"},
+    "exams_reports":     {"label": "Exams & Reports",  "icon": "📝", "category": "Academic",     "desc": "Exams, marks, report cards"},
+    "digital_library":   {"label": "Digital Library",  "icon": "📚", "category": "Academic",     "desc": "Books, resources, e-library"},
+    "communication_hub": {"label": "Communication",    "icon": "💬", "category": "Communication","desc": "Notices, SMS, announcements"},
+    "calendar":          {"label": "Calendar",         "icon": "🗓️", "category": "Communication","desc": "Events, holidays, schedule"},
+    "staff":             {"label": "Staff",            "icon": "👩‍💼", "category": "Communication","desc": "Staff management, leave, salary"},
+    "admissions":        {"label": "Admissions",       "icon": "🎯", "category": "Management",   "desc": "Admission CRM, enquiries"},
+    "transport":         {"label": "Transport",        "icon": "🚌", "category": "Management",   "desc": "Bus routes, vehicle tracking"},
+    "front_office":      {"label": "Front Office",     "icon": "🏢", "category": "Management",   "desc": "Visitor management, reception"},
+    "inventory":         {"label": "Inventory",        "icon": "📦", "category": "Management",   "desc": "School inventory & assets"},
+    "ai_tools":          {"label": "AI Tools",         "icon": "🤖", "category": "Advanced",     "desc": "AI paper generation, insights"},
+    "analytics":         {"label": "Analytics",        "icon": "📊", "category": "Advanced",     "desc": "School performance analytics"},
+    "live_classes":      {"label": "Live Classes",     "icon": "📹", "category": "Advanced",     "desc": "Online classes, video sessions"},
+    "cctv":              {"label": "CCTV",             "icon": "📷", "category": "Enterprise",   "desc": "CCTV monitoring integration"},
+    "multi_branch":      {"label": "Multi-Branch",     "icon": "🌐", "category": "Enterprise",   "desc": "Manage multiple school branches"},
 }
 
 
