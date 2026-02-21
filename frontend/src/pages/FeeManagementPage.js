@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -65,6 +66,8 @@ export default function FeeManagementPage() {
   const { t } = useTranslation();
   const { schoolId, user } = useAuth();
   const { isHindi } = useLanguage();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   
   const [activeTab, setActiveTab] = useState('structure');
   const [selectedAcademicYear, setSelectedAcademicYear] = useState(getDefaultAcademicYear());
@@ -613,7 +616,8 @@ export default function FeeManagementPage() {
           </Button>
           <Button
             onClick={() => setShowCollectionDialog(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+            className="gap-2 text-white font-medium"
+            style={{ backgroundColor: accent }}
             data-testid="collect-fee-btn"
           >
             <IndianRupee className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -73,6 +74,8 @@ const curriculumContent = [
 export default function DigitalLibraryPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const schoolId = user?.school_id || localStorage.getItem('school_id');
   const [activeTab, setActiveTab] = useState('library');
   const [searchQuery, setSearchQuery] = useState('');
@@ -201,34 +204,28 @@ export default function DigitalLibraryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-purple-600 to-fuchsia-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
-              <Library className="w-8 h-8" />
-              {t('digital_library')} & EdTech
-            </h1>
-            <p className="text-purple-100 mt-2">
-              {t('digital_library')} & EdTech
-            </p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <Library className="w-5 h-5" />
+            </div>
+            {t('digital_library')} & EdTech
+          </h1>
+          <p className="text-gray-500 mt-1">Manage books, e-resources, and EdTech tools</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="bg-gray-50 border rounded-xl px-4 py-2 text-center">
+            <p className="text-xl font-bold text-gray-900">{books.length}</p>
+            <p className="text-xs text-gray-500">{t('total_books')}</p>
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{books.length}</p>
-              <p className="text-xs text-purple-100">{t('total_books')}</p>
-            </div>
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{ebooks.length}</p>
-              <p className="text-xs text-purple-100">{t('digital_library')}</p>
-            </div>
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{edtechTools.length}</p>
-              <p className="text-xs text-purple-100">{t('actions')}</p>
-            </div>
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{issues.filter(i => i.status === 'issued').length}</p>
-              <p className="text-xs text-purple-100">{t('issued')}</p>
-            </div>
+          <div className="bg-gray-50 border rounded-xl px-4 py-2 text-center">
+            <p className="text-xl font-bold text-gray-900">{ebooks.length}</p>
+            <p className="text-xs text-gray-500">E-Books</p>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-center">
+            <p className="text-xl font-bold text-amber-600">{issues.filter(i => i.status === 'issued').length}</p>
+            <p className="text-xs text-amber-600">{t('issued')}</p>
           </div>
         </div>
       </div>

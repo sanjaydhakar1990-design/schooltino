@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -51,6 +52,8 @@ const demoPurchaseOrders = [
 export default function InventoryPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const [activeTab, setActiveTab] = useState('stock');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -140,34 +143,28 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-slate-600 to-zinc-700 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
-              <Warehouse className="w-8 h-8" />
-              {t('inventory')}
-            </h1>
-            <p className="text-slate-200 mt-2">
-              Track, issue, and manage — complete stock control
-            </p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <Warehouse className="w-5 h-5" />
+            </div>
+            {t('inventory')}
+          </h1>
+          <p className="text-gray-500 mt-1">Track, issue, and manage — complete stock control</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="bg-gray-50 border rounded-xl px-4 py-2 text-center">
+            <p className="text-xl font-bold text-gray-900">{inventory.length}</p>
+            <p className="text-xs text-gray-500">Total Items</p>
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{inventory.length}</p>
-              <p className="text-xs text-slate-200">Total Items</p>
-            </div>
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">₹{(totalStockValue / 100000).toFixed(1)}L</p>
-              <p className="text-xs text-slate-200">Stock Value</p>
-            </div>
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{lowStockItems.length}</p>
-              <p className="text-xs text-slate-200">{t('low_stock')}</p>
-            </div>
-            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-              <p className="text-2xl font-bold">{pendingPOs.length}</p>
-              <p className="text-xs text-slate-200">Pending POs</p>
-            </div>
+          <div className="bg-gray-50 border rounded-xl px-4 py-2 text-center">
+            <p className="text-xl font-bold text-gray-900">₹{(totalStockValue / 100000).toFixed(1)}L</p>
+            <p className="text-xs text-gray-500">Stock Value</p>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-center">
+            <p className="text-xl font-bold text-amber-600">{lowStockItems.length}</p>
+            <p className="text-xs text-amber-600">{t('low_stock')}</p>
           </div>
         </div>
       </div>

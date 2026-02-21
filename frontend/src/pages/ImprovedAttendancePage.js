@@ -9,6 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -30,6 +31,8 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function ImprovedAttendancePage() {
   const { schoolId, user } = useAuth();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
@@ -220,24 +223,25 @@ export default function ImprovedAttendancePage() {
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Modern Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 shadow-xl text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <CalendarCheck className="w-8 h-8" />
-              Attendance Management
-            </h1>
-            <p className="text-blue-100 mt-1">Mark attendance • Manage leaves • Upload old records</p>
-          </div>
-          <Button 
-            onClick={() => setShowBulkUploadDialog(true)}
-            className="bg-white text-blue-600 hover:bg-blue-50"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Bulk Upload
-          </Button>
+      {/* Clean Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <CalendarCheck className="w-5 h-5" />
+            </div>
+            Attendance Management
+          </h1>
+          <p className="text-gray-500 mt-1 ml-13">Mark attendance • Manage leaves • Upload old records</p>
         </div>
+        <Button
+          onClick={() => setShowBulkUploadDialog(true)}
+          variant="outline"
+          className="gap-2"
+        >
+          <Upload className="w-4 h-4" />
+          Bulk Upload
+        </Button>
       </div>
 
       {/* Quick Stats */}
@@ -293,7 +297,8 @@ export default function ImprovedAttendancePage() {
           <div className="flex items-end">
             <Button
               onClick={handleSave}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full text-white font-medium"
+              style={{ backgroundColor: accent }}
               disabled={saving || !selectedClass}
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}

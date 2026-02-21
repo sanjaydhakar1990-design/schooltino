@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -93,6 +94,8 @@ const REPORT_DESIGNS = [
 export default function ExamReportCard() {
   const { t } = useTranslation();
   const { schoolId, user } = useAuth();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
@@ -473,39 +476,34 @@ export default function ExamReportCard() {
 
   return (
     <div className="space-y-6" data-testid="exam-report-card">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-3xl font-bold font-heading flex items-center gap-3">
-              <ClipboardList className="w-8 h-8" />
-              {t('exams')} & {t('report_card')}
-            </h1>
-            <p className="text-blue-100 mt-2">
-              {t('exams_reports')}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={() => setShowExamDialog(true)} className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30" variant="outline">
-              <Plus className="w-4 h-4" />
-              {t('create_exam')}
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          {[
-            { label: t('exams'), value: exams.length || EXAM_TYPES.length, icon: Calendar },
-            { label: t('classes'), value: classes.length, icon: GraduationCap },
-            { label: t('students'), value: students.length, icon: Users },
-            { label: t('grade'), value: gradingSystem.toUpperCase(), icon: Award }
-          ].map((stat, i) => (
-            <div key={i} className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <stat.icon className="w-4 h-4 text-blue-200" />
-                <span className="text-sm text-blue-200">{stat.label}</span>
-              </div>
-              <p className="text-xl font-bold mt-1">{stat.value}</p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <ClipboardList className="w-5 h-5" />
             </div>
-          ))}
+            {t('exams')} & {t('report_card')}
+          </h1>
+          <p className="text-gray-500 mt-1">Enter marks, generate report cards, analyse results</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: t('exams'), value: exams.length || EXAM_TYPES.length, icon: Calendar },
+              { label: t('classes'), value: classes.length, icon: GraduationCap },
+              { label: t('students'), value: students.length, icon: Users },
+              { label: t('grade'), value: gradingSystem.toUpperCase(), icon: Award }
+            ].map((stat, i) => (
+              <div key={i} className="bg-gray-50 border rounded-xl px-3 py-2 text-center">
+                <p className="text-lg font-bold text-gray-900">{stat.value}</p>
+                <p className="text-xs text-gray-500">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+          <Button onClick={() => setShowExamDialog(true)} className="gap-2 text-white" style={{ backgroundColor: accent }}>
+            <Plus className="w-4 h-4" />
+            {t('create_exam')}
+          </Button>
         </div>
       </div>
 
