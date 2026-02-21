@@ -13,6 +13,7 @@ import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
 import ClassesPage from './pages/ClassesPage';
 import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
+import ImprovedTimetableManagement from './pages/ImprovedTimetableManagement';
 import AIPaperPage from './pages/AIPaperPage';
 import SettingsPage from './pages/SettingsPage';
 import TeachTinoDashboard from './pages/TeachTinoDashboard';
@@ -322,7 +323,7 @@ function AppRoutes() {
         <Route path="staff" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="classes" element={<ClassesPage />} />
         <Route path="attendance" element={<ImprovedAttendancePage />} />
-        <Route path="fees" element={<FeesPage />} />
+        <Route path="fees" element={<FeeManagementPage />} />
         <Route path="notices" element={<NoticesPage />} />
         <Route path="ai-paper" element={<AIPaperPage />} />
         <Route path="ai-content" element={<Navigate to="/app/event-designer" replace />} />
@@ -349,13 +350,13 @@ function AppRoutes() {
         <Route path="school-registration" element={<SchoolRegistrationForm />} />
         <Route path="setup-wizard" element={<SetupWizard />} />
         <Route path="subscription" element={<SubscriptionPage />} />
-        <Route path="exams" element={<OnlineExamSystem />} />
+        <Route path="exams" element={<ExamReportCard />} />
         <Route path="ai-history" element={<AIHistoryPage />} />
         <Route path="front-office" element={<FrontOfficePage />} />
         <Route path="transport" element={<TransportPage />} />
         <Route path="health" element={<HealthModulePage />} />
         <Route path="biometric" element={<BiometricPage />} />
-        <Route path="timetable" element={<TimetablePage />} />
+        <Route path="timetable" element={<ImprovedTimetableManagement />} />
         <Route path="teacher-roles" element={<Navigate to="/app/employee-management" replace />} />
         <Route path="director-ai" element={<DirectorAIDashboard />} />
         <Route path="tino-brain" element={<TinoBrainDashboard />} />
