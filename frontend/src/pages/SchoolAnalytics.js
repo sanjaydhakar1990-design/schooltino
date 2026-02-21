@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -17,6 +18,8 @@ const API = `${(process.env.REACT_APP_BACKEND_URL || '')}/api`;
 export default function SchoolAnalytics() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [teachers, setTeachers] = useState([]);
@@ -148,7 +151,12 @@ export default function SchoolAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">📊 {t('school_analytics')}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            {t('school_analytics')}
+          </h1>
           <p className="text-slate-500">{t('complete_overview') || 'Complete overview of school performance'}</p>
         </div>
         <Button onClick={fetchAnalytics} variant="outline">
