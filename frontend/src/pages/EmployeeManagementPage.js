@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import IDCardViewer from '../components/IDCardViewer';
 import BulkImport from '../components/BulkImport';
 import DocumentUpload from '../components/DocumentUpload';
+import { useTheme } from '../context/ThemeContext';
 
 const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
 
@@ -150,6 +151,8 @@ export default function EmployeeManagementPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const schoolId = user?.school_id;
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState([]);
@@ -842,7 +845,11 @@ export default function EmployeeManagementPage() {
             {bulkPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
             {t('bulk_print_id_cards')}
           </Button>
-          <Button onClick={openAddForm} className="gap-2 bg-blue-600 hover:bg-blue-700">
+          <Button
+            onClick={openAddForm}
+            className="gap-2 text-white"
+            style={{ backgroundColor: accent }}
+          >
             <Plus className="w-4 h-4" /> {t('add_employee')}
           </Button>
         </div>
@@ -861,9 +868,10 @@ export default function EmployeeManagementPage() {
             onClick={() => setActivePageTab(tab.id)}
             className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
               activePageTab === tab.id
-                ? 'bg-white text-blue-700 shadow-md border border-blue-100'
+                ? 'bg-white shadow-md'
                 : 'text-slate-600 hover:bg-white/60 hover:text-slate-800'
             }`}
+            style={activePageTab === tab.id ? { color: accent } : {}}
           >
             <tab.icon className="w-4 h-4" />
             {tab.label}
