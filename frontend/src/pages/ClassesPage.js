@@ -21,8 +21,9 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table';
-import { Plus, Edit, Trash2, Loader2, GraduationCap, BookOpen, CheckCircle2, Circle } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, GraduationCap, BookOpen, CheckCircle2, Circle, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTheme } from '../context/ThemeContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -46,6 +47,9 @@ function getSubjectsForClass(className) {
 export default function ClassesPage() {
   const { t } = useTranslation();
   const { schoolId, token } = useAuth();
+  const { getAccentColor, getAccentBg } = useTheme();
+  const accent = getAccentColor();
+  const accentBg = getAccentBg();
   const [classes, setClasses] = useState([]);
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -279,13 +283,13 @@ export default function ClassesPage() {
   }
 
   return (
-    <div className="space-y-6" data-testid="classes-page">
+    <div className="space-y-6 p-1" data-testid="classes-page">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{t('classes')}</h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Manage class teachers and subjects
+          <h1 className="text-2xl font-bold text-gray-900">{t('classes')}</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            {classes.length} classes · Manage teachers and subjects
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -368,33 +372,65 @@ export default function ClassesPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {classes.map((cls) => (
-            <div key={cls.id} className="border rounded-lg p-5 bg-white hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-bold text-lg">{cls.name} {cls.section && `(${cls.section})`}</h3>
-                  <p className="text-sm text-slate-500">
-                    {t('class_teacher')}: {cls.class_teacher_id 
-                      ? <span className="font-medium text-slate-700">{getTeacherName(cls.class_teacher_id)}</span>
-                      : <span className="text-orange-600">Not Assigned</span>
-                    }
-                  </p>
+            <div key={cls.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-150 overflow-hidden group">
+              {/* Colored top strip */}
+              <div
+                className="px-5 pt-5 pb-4"
+                style={{ borderTop: `3px solid ${accent}` }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  {/* Class icon + name */}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-sm"
+                      style={{ backgroundColor: accent }}
+                    >
+                      {cls.section || cls.name?.charAt(0) || 'C'}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 leading-tight">
+                        {cls.name}
+                        {cls.section && <span className="ml-1.5 text-xs font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{cls.section}</span>}
+                      </h3>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        {cls.class_teacher_id
+                          ? <span className="text-gray-600 font-medium">{getTeacherName(cls.class_teacher_id)}</span>
+                          : <span className="text-amber-500">⚠ No Teacher</span>
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => openSubjectModal(cls)} className="p-1.5 hover:bg-blue-50 rounded-lg" title="Assign Subjects">
+                      <BookOpen className="h-3.5 w-3.5 text-blue-600" />
+                    </button>
+                    <button onClick={() => handleEdit(cls)} className="p-1.5 hover:bg-gray-100 rounded-lg">
+                      <Edit className="h-3.5 w-3.5 text-gray-500" />
+                    </button>
+                    <button onClick={() => handleDelete(cls.id)} className="p-1.5 hover:bg-red-50 rounded-lg">
+                      <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <button onClick={() => openSubjectModal(cls)} className="p-2 hover:bg-slate-100 rounded" title="Assign Subjects">
-                    <BookOpen className="h-4 w-4 text-blue-600" />
-                  </button>
-                  <button onClick={() => handleEdit(cls)} className="p-2 hover:bg-slate-100 rounded">
-                    <Edit className="h-4 w-4 text-slate-600" />
-                  </button>
-                  <button onClick={() => handleDelete(cls.id)} className="p-2 hover:bg-slate-100 rounded">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </button>
+
+                {/* Stats row */}
+                <div className="flex items-center gap-1.5 pt-2 border-t border-gray-50">
+                  <Users className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-sm font-semibold text-gray-700">{cls.student_count || 0}</span>
+                  <span className="text-xs text-gray-400">students</span>
+                  {cls.subjects?.length > 0 && (
+                    <>
+                      <span className="text-gray-200 mx-1">•</span>
+                      <BookOpen className="w-3.5 h-3.5 text-gray-400" />
+                      <span className="text-sm font-semibold text-gray-700">{cls.subjects.length}</span>
+                      <span className="text-xs text-gray-400">subjects</span>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div className="text-sm text-slate-600">
-                Student Count: <span className="font-semibold">{cls.student_count || 0}</span>
               </div>
             </div>
           ))}

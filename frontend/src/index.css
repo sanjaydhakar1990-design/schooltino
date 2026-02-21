@@ -131,12 +131,14 @@
 }
 
 .btn-primary {
-    @apply text-white rounded-xl px-5 py-2.5 font-semibold text-sm shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200;
-    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    @apply text-white rounded-xl px-5 py-2.5 font-semibold text-sm shadow-sm transition-all duration-200;
+    background-color: var(--theme-accent, #4f46e5);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--theme-accent, #4f46e5) 30%, transparent);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+    filter: brightness(0.92);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-accent, #4f46e5) 40%, transparent);
 }
 
 .btn-secondary {

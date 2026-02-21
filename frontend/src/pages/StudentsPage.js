@@ -863,12 +863,14 @@ Note: First login पर password change करें।`;
   }
 
   return (
-    <div className="space-y-6" data-testid="students-page">
+    <div className="space-y-5" data-testid="students-page">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-bold font-heading text-slate-900">{t('students')}</h1>
-          <p className="text-slate-500 mt-1">Student Admission & Management</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('students')}</h1>
+          <p className="text-gray-500 text-sm mt-0.5">
+            {students.length} active · {suspendedStudents.length} suspended · Student Admission & Management
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {/* Bulk Import Button */}
