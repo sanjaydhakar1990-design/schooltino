@@ -1751,6 +1751,9 @@ async def create_user_account(user_data: UserCreate, current_user: dict = Depend
 @api_router.get("/users/school/{school_id}", response_model=List[UserListResponse])
 async def get_school_users(school_id: str, current_user: dict = Depends(get_current_user)):
     """Get all active users for a school"""
+    # Multi-tenant isolation: users can only view their own school's data
+    if current_user.get("role") != "owner" and current_user.get("school_id") != school_id:
+        raise HTTPException(status_code=403, detail="Access denied: cross-school data access not allowed")
     users = await db.users.find(
         {"school_id": school_id, "is_active": True, "$or": [{"status": "active"}, {"status": {"$exists": False}}]},
         {"_id": 0, "password": 0}
@@ -1779,8 +1782,11 @@ async def get_school_users(school_id: str, current_user: dict = Depends(get_curr
 @api_router.get("/users/pending/{school_id}", response_model=List[UserListResponse])
 async def get_pending_users(school_id: str, current_user: dict = Depends(get_current_user)):
     """Get pending approval users - only Director can see this"""
-    if current_user["role"] != "director":
+    if current_user["role"] not in ("director", "owner"):
         raise HTTPException(status_code=403, detail="Only Director can view pending users")
+    # Multi-tenant isolation: directors can only view their own school's pending users
+    if current_user.get("role") != "owner" and current_user.get("school_id") != school_id:
+        raise HTTPException(status_code=403, detail="Access denied: cross-school data access not allowed")
     
     users = await db.users.find(
         {"school_id": school_id, "status": "pending"},
@@ -2360,8 +2366,15 @@ async def get_teacher_subjects(
     current_user: dict = Depends(get_current_user)
 ):
     """Get teacher's assigned subjects with class info and timetable"""
-    resolved_teacher_id = teacher_id or current_user.get("id")
-    resolved_school_id = school_id or current_user.get("school_id")
+    # Multi-tenant isolation: always use the authenticated user's school_id
+    # Teachers can only query their own subjects; admins/directors can query any teacher in their school
+    user_school_id = current_user.get("school_id")
+    resolved_school_id = user_school_id  # Always enforce user's own school
+    # Teachers can only view their own data; admins can view any teacher in their school
+    if current_user.get("role") in ("teacher", "student", "parent"):
+        resolved_teacher_id = current_user.get("id")  # Force to own ID
+    else:
+        resolved_teacher_id = teacher_id or current_user.get("id")
     teacher_name = current_user.get("name", "")
 
     # Method 1: Get from subject_allocations
@@ -2751,9 +2764,13 @@ async def create_class(class_data: ClassCreate, current_user: dict = Depends(get
 
 @api_router.get("/classes", response_model=List[ClassResponse])
 async def get_classes(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    query = {}
-    if school_id:
-        query["school_id"] = school_id
+    # Multi-tenant isolation: always scope to authenticated user's school
+    # Owner role can optionally query any school; all others are restricted to their own school
+    if current_user.get("role") == "owner":
+        effective_school_id = school_id or current_user.get("school_id")
+    else:
+        effective_school_id = current_user.get("school_id")
+    query = {"school_id": effective_school_id}
     classes = await db.classes.find(query, {"_id": 0}).to_list(100)
     return [ClassResponse(**c) for c in classes]
 
@@ -3751,9 +3768,12 @@ async def get_students(
     status: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    query = {}
-    if school_id:
-        query["school_id"] = school_id
+    # Multi-tenant isolation: always scope to authenticated user's school
+    if current_user.get("role") == "owner":
+        effective_school_id = school_id or current_user.get("school_id")
+    else:
+        effective_school_id = current_user.get("school_id")
+    query = {"school_id": effective_school_id}
     if class_id:
         query["class_id"] = class_id
     if status:
@@ -4964,9 +4984,12 @@ async def create_fee_plan(plan: FeePlanCreate, current_user: dict = Depends(get_
 
 @api_router.get("/fees/plans", response_model=List[FeePlanResponse])
 async def get_fee_plans(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    query = {"is_active": True}
-    if school_id:
-        query["school_id"] = school_id
+    # Multi-tenant isolation: always scope to authenticated user's school
+    if current_user.get("role") == "owner":
+        effective_school_id = school_id or current_user.get("school_id")
+    else:
+        effective_school_id = current_user.get("school_id")
+    query = {"is_active": True, "school_id": effective_school_id}
     plans = await db.fee_plans.find(query, {"_id": 0}).to_list(100)
     return [FeePlanResponse(**p) for p in plans]
 
@@ -8979,10 +9002,13 @@ class MeetingSummaryRequest(BaseModel):
 @api_router.get("/meetings")
 async def get_meetings(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     """Get all meetings for the school"""
-    query = {"is_active": True}
-    if school_id:
-        query["school_id"] = school_id
-    
+    # Multi-tenant isolation: always scope to authenticated user's school
+    if current_user.get("role") == "owner":
+        effective_school_id = school_id or current_user.get("school_id")
+    else:
+        effective_school_id = current_user.get("school_id")
+    query = {"is_active": True, "school_id": effective_school_id}
+
     meetings = await db.meetings.find(query, {"_id": 0}).sort("start_time", -1).to_list(100)
     return meetings
 
