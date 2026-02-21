@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import './i18n';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // ============================================================
 // ACTIVE PAGES (in /src/pages/ folder)
@@ -47,6 +48,10 @@ import InventoryPage from './pages/InventoryPage';
 import MultiBranchPage from './pages/MultiBranchPage';
 import AIToolsPage from './pages/AIToolsPage';
 import LiveClassesPage from './pages/LiveClassesPage';
+import HomeworkPage from './pages/HomeworkPage';
+import LoginCredentialsPage from './pages/LoginCredentialsPage';
+import RegisterPage from './pages/RegisterPage';
+import SchoolFeedPage from './pages/SchoolFeedPage';
 
 // ============================================================
 // LEGACY PAGES (in /src/pages/legacy/ folder)
@@ -64,7 +69,6 @@ import CCTVDashboard from './pages/legacy/CCTVDashboard';
 import PermissionManager from './pages/legacy/PermissionManager';
 import SchoolRegistrationForm from './pages/legacy/SchoolRegistrationForm';
 import ZoomMeetings from './pages/legacy/ZoomMeetings';
-import OnlineExamSystem from './pages/legacy/OnlineExamSystem';
 import CCTVManagement from './pages/legacy/CCTVManagement';
 import StorageBackup from './pages/legacy/StorageBackup';
 import AdminActivityDashboard from './pages/legacy/AdminActivityDashboard';
@@ -387,6 +391,9 @@ function AppRoutes() {
         <Route path="multi-branch" element={<MultiBranchPage />} />
         <Route path="ai-tools" element={<AIToolsPage />} />
         <Route path="live-classes" element={<LiveClassesPage />} />
+        <Route path="homework" element={<HomeworkPage />} />
+        <Route path="login-credentials" element={<LoginCredentialsPage />} />
+        <Route path="school-feed" element={<SchoolFeedPage />} />
 
         {/* Path aliases for cleaner sidebar URLs */}
         <Route path="analytics" element={<Navigate to="/app/school-analytics" replace />} />
@@ -396,6 +403,9 @@ function AppRoutes() {
         <Route path="module-settings" element={<ModuleManagementPage />} />
       </Route>
       
+      {/* School Registration - Public */}
+      <Route path="/register" element={<RegisterPage />} />
+
       {/* Old routes redirect to /app */}
       <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
       <Route path="/students" element={<Navigate to="/app/students" replace />} />
@@ -426,16 +436,6 @@ function AppRoutes() {
           >
             <UnifiedPortal />
           </RoleProtectedRoute>
-        }
-      />
-
-      {/* Student Portal - Standalone */}
-      <Route
-        path="/student-dashboard"
-        element={
-          <ProtectedRoute>
-            <StudentDashboard />
-          </ProtectedRoute>
         }
       />
 
@@ -493,29 +493,31 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <LanguageProvider>
-          {/* Trial Banner removed from admin dashboard per user request */}
-          
-          <AppRoutes />
-          
-          {/* PWA Install Prompt - Shows after login */}
-          <PWAInstallPromptWrapper />
-          
-          {/* Notice Popup - Shows unread notices as popup */}
-          <NoticePopup />
-          
-          {/* Support FAB - Bottom right */}
-          <SupportFAB />
-          
-          <Toaster 
-            position="top-right" 
-            richColors 
-            closeButton
-            toastOptions={{
-              style: {
-                fontFamily: 'Inter, sans-serif'
-              }
-            }}
-          />
+          <ThemeProvider>
+            {/* Trial Banner removed from admin dashboard per user request */}
+
+            <AppRoutes />
+
+            {/* PWA Install Prompt - Shows after login */}
+            <PWAInstallPromptWrapper />
+
+            {/* Notice Popup - Shows unread notices as popup */}
+            <NoticePopup />
+
+            {/* Support FAB - Bottom right */}
+            <SupportFAB />
+
+            <Toaster
+              position="top-right"
+              richColors
+              closeButton
+              toastOptions={{
+                style: {
+                  fontFamily: 'Inter, sans-serif'
+                }
+              }}
+            />
+          </ThemeProvider>
         </LanguageProvider>
       </AuthProvider>
     </BrowserRouter>

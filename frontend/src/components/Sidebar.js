@@ -9,7 +9,7 @@ import {
   Clock, Brain, ChevronLeft, ChevronRight,
   BookOpen, Video, MessageSquare, Calendar,
   Shield, FileText, Building, Package,
-  Tv, Target, BarChart3
+  Tv, Target, BarChart3, ClipboardList, Newspaper, KeyRound
 } from 'lucide-react';
 
 const API = (process.env.REACT_APP_BACKEND_URL || '');
@@ -33,6 +33,7 @@ const NAV_GROUPS = [
       { path: '/app/attendance', icon: CalendarCheck, labelKey: 'attendance',     moduleKey: 'attendance' },
       { path: '/app/exams',      icon: FileText,      labelKey: 'exams_reports',  moduleKey: 'exams_reports' },
       { path: '/app/library',    icon: BookOpen,      labelKey: 'digital_library',moduleKey: 'digital_library' },
+      { path: '/app/homework',   icon: ClipboardList, labelKey: 'homework',        moduleKey: 'homework' },
     ]
   },
   {
@@ -46,6 +47,7 @@ const NAV_GROUPS = [
     items: [
       { path: '/app/communication', icon: MessageSquare, labelKey: 'communication_hub', moduleKey: 'communication_hub' },
       { path: '/app/calendar',      icon: Calendar,      labelKey: 'calendar',          moduleKey: 'calendar' },
+      { path: '/app/school-feed',   icon: Newspaper,     labelKey: 'school_feed',       moduleKey: 'school_feed' },
     ]
   },
   {
@@ -66,8 +68,9 @@ const NAV_GROUPS = [
       { path: '/app/analytics',       icon: BarChart3, labelKey: 'analytics',        moduleKey: 'analytics' },
       { path: '/app/live-classes',    icon: Tv,       labelKey: 'live_classes',     moduleKey: 'live_classes' },
       { path: '/app/cctv',            icon: Video,    labelKey: 'cctv_integration',  moduleKey: 'cctv' },
-      { path: '/app/module-settings', icon: Package,  labelKey: 'module_settings',   directorOnly: true },
-      { path: '/app/settings',        icon: Settings, labelKey: 'settings',          directorOnly: true },
+      { path: '/app/login-credentials', icon: KeyRound, labelKey: 'login_credentials', directorOnly: true },
+      { path: '/app/module-settings',   icon: Package,  labelKey: 'module_settings',   directorOnly: true },
+      { path: '/app/settings',          icon: Settings, labelKey: 'settings',           directorOnly: true },
     ]
   },
 ];

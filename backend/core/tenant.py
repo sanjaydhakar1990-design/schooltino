@@ -198,8 +198,8 @@ PLAN_PRICING = {
 
 ALL_MODULES = [
     "students", "classes", "attendance", "fee_management",      # Core - Free
-    "timetable", "exams_reports", "digital_library",            # Academic - Starter
-    "communication_hub", "calendar", "staff",                   # Communication - Starter
+    "timetable", "exams_reports", "digital_library", "homework",# Academic - Starter
+    "communication_hub", "calendar", "school_feed", "staff",    # Communication - Starter
     "admissions", "transport", "front_office", "inventory",     # Management - Growth
     "ai_tools", "analytics", "live_classes",                    # Advanced - Pro
     "cctv", "multi_branch",                                     # Enterprise only
@@ -207,43 +207,44 @@ ALL_MODULES = [
 
 PLAN_MODULES = {
     "free": [
-        # Only 4 core modules - enough to run a basic school
+        # Core + Homework (basic academic) - enough to run a basic school
         "students", "classes", "attendance", "fee_management",
+        "homework", "school_feed",
     ],
     "trial": [
         # Full access during trial - so they see the value
         "students", "classes", "attendance", "fee_management",
-        "timetable", "exams_reports", "digital_library",
-        "communication_hub", "calendar", "staff",
+        "timetable", "exams_reports", "digital_library", "homework",
+        "communication_hub", "calendar", "school_feed", "staff",
         "admissions", "transport", "front_office", "inventory",
         "ai_tools", "analytics", "live_classes",
     ],
     "starter": [
         # Core + Academic + Communication
         "students", "classes", "attendance", "fee_management",
-        "timetable", "exams_reports", "digital_library",
-        "communication_hub", "calendar", "staff",
+        "timetable", "exams_reports", "digital_library", "homework",
+        "communication_hub", "calendar", "school_feed", "staff",
     ],
     "growth": [
         # All Starter + Management features
         "students", "classes", "attendance", "fee_management",
-        "timetable", "exams_reports", "digital_library",
-        "communication_hub", "calendar", "staff",
+        "timetable", "exams_reports", "digital_library", "homework",
+        "communication_hub", "calendar", "school_feed", "staff",
         "admissions", "transport", "front_office", "inventory",
     ],
     "pro": [
         # All Growth + Advanced features (AI, Analytics, Live)
         "students", "classes", "attendance", "fee_management",
-        "timetable", "exams_reports", "digital_library",
-        "communication_hub", "calendar", "staff",
+        "timetable", "exams_reports", "digital_library", "homework",
+        "communication_hub", "calendar", "school_feed", "staff",
         "admissions", "transport", "front_office", "inventory",
         "ai_tools", "analytics", "live_classes",
     ],
     "enterprise": [
         # Everything including CCTV + Multi-branch
         "students", "classes", "attendance", "fee_management",
-        "timetable", "exams_reports", "digital_library",
-        "communication_hub", "calendar", "staff",
+        "timetable", "exams_reports", "digital_library", "homework",
+        "communication_hub", "calendar", "school_feed", "staff",
         "admissions", "transport", "front_office", "inventory",
         "ai_tools", "analytics", "live_classes",
         "cctv", "multi_branch",
@@ -258,8 +259,10 @@ MODULE_INFO = {
     "timetable":         {"label": "Timetable",        "icon": "📅", "category": "Academic",     "desc": "Class scheduling & timetables"},
     "exams_reports":     {"label": "Exams & Reports",  "icon": "📝", "category": "Academic",     "desc": "Exams, marks, report cards"},
     "digital_library":   {"label": "Digital Library",  "icon": "📚", "category": "Academic",     "desc": "Books, resources, e-library"},
+    "homework":          {"label": "Homework",         "icon": "📋", "category": "Academic",     "desc": "Homework assignments & submissions"},
     "communication_hub": {"label": "Communication",    "icon": "💬", "category": "Communication","desc": "Notices, SMS, announcements"},
     "calendar":          {"label": "Calendar",         "icon": "🗓️", "category": "Communication","desc": "Events, holidays, schedule"},
+    "school_feed":       {"label": "School Feed",      "icon": "📰", "category": "Communication","desc": "School announcements & news feed"},
     "staff":             {"label": "Staff",            "icon": "👩‍💼", "category": "Communication","desc": "Staff management, leave, salary"},
     "admissions":        {"label": "Admissions",       "icon": "🎯", "category": "Management",   "desc": "Admission CRM, enquiries"},
     "transport":         {"label": "Transport",        "icon": "🚌", "category": "Management",   "desc": "Bus routes, vehicle tracking"},

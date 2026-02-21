@@ -1595,9 +1595,11 @@ async def quick_school_setup(data: QuickSchoolSetup):
 
 
 @api_router.get("/auth/schools-list")
-async def get_registered_schools():
-    """Get list of all registered schools (for admin/support)"""
-    schools = await db.schools.find({}, {"_id": 0, "id": 1, "name": 1, "email": 1, "phone": 1, "is_trial": 1, "created_at": 1}).to_list(100)
+async def get_registered_schools(current_user: dict = Depends(get_current_user)):
+    """Get list of all registered schools (for admin/support — director/super_admin only)"""
+    if current_user.get("role") not in ["director", "co_director", "super_admin"]:
+        raise HTTPException(status_code=403, detail="Access denied. Director access only.")
+    schools = await db.schools.find({}, {"_id": 0, "id": 1, "name": 1, "is_trial": 1, "created_at": 1}).to_list(100)
     return {"schools": schools, "total": len(schools)}
 
 
@@ -3631,22 +3633,28 @@ async def student_login(
     }
 
 @api_router.post("/students/{student_id}/change-password")
-async def student_change_password(student_id: str, old_password: str, new_password: str):
-    """Student changes password (mandatory on first login)"""
+async def student_change_password(student_id: str, old_password: str, new_password: str, current_user: dict = Depends(get_current_user)):
+    """Student changes password (mandatory on first login) — requires JWT auth"""
+    # Only the student themselves or an admin can change the password
+    caller_role = current_user.get("role", "")
+    caller_id = current_user.get("id", "")
+    if caller_id != student_id and caller_role not in ["director", "co_director", "principal", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized to change this student's password")
+
     student = await db.students.find_one({"student_id": student_id})
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
-    
+
     if not bcrypt.checkpw(old_password.encode(), student["password"].encode()):
         raise HTTPException(status_code=401, detail="Current password is incorrect")
-    
+
     new_hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
-    
+
     await db.students.update_one(
         {"student_id": student_id},
         {"$set": {"password": new_hashed, "password_changed": True}}
     )
-    
+
     return {"message": "Password changed successfully"}
 
 @api_router.post("/students/{id}/suspend")
@@ -3804,16 +3812,20 @@ async def get_students(
     return [StudentResponse(**s) for s in students]
 
 
-# Simple search endpoints for accountant dashboard (no auth required)
+# Search endpoints for accountant dashboard — JWT required, school_id from token
 @api_router.get("/students/search")
-async def search_students_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
+async def search_students_simple(q: str, limit: int = 20, current_user: dict = Depends(get_current_user)):
     """
-    Simple student search for accountant forms
+    Student search for accountant forms — returns only current school's students
     """
     if not q or len(q) < 2:
         return {"students": []}
-    
+
+    # Always scope to authenticated user's school — never trust client-provided school_id
+    school_id = current_user["school_id"]
+
     query = {
+        "school_id": school_id,
         "status": {"$in": ["active", None]},
         "$or": [
             {"name": {"$regex": q, "$options": "i"}},
@@ -3821,19 +3833,16 @@ async def search_students_simple(q: str, school_id: Optional[str] = None, limit:
             {"id": {"$regex": q, "$options": "i"}}
         ]
     }
-    
-    if school_id:
-        query["school_id"] = school_id
-    
+
     students = await db.students.find(
         query,
         {"_id": 0}
     ).limit(limit).to_list(limit)
-    
+
     # Remove password from results
     for s in students:
         s.pop("password", None)
-    
+
     return {"students": students}
 
 
@@ -3883,42 +3892,43 @@ async def delete_student(student_id: str, current_user: dict = Depends(get_curre
 
 
 @api_router.get("/staff/search")
-async def search_staff_simple(q: str, school_id: Optional[str] = None, limit: int = 20):
+async def search_staff_simple(q: str, limit: int = 20, current_user: dict = Depends(get_current_user)):
     """
-    Simple staff search for accountant forms
+    Staff search for accountant forms — returns only current school's staff
     """
     if not q or len(q) < 2:
         return {"staff": []}
-    
+
+    # Always scope to authenticated user's school — never trust client-provided school_id
+    school_id = current_user["school_id"]
+
     query = {
+        "school_id": school_id,
         "$or": [
             {"name": {"$regex": q, "$options": "i"}},
             {"email": {"$regex": q, "$options": "i"}}
         ]
     }
-    
-    if school_id:
-        query["school_id"] = school_id
-    
+
     # Search in users collection (teachers, directors, accountants)
     users = await db.users.find(
         {**query, "role": {"$in": ["teacher", "director", "principal", "accountant", "clerk"]}},
         {"_id": 0}
     ).limit(limit).to_list(limit)
-    
+
     # Remove passwords from results
     for u in users:
         u.pop("password", None)
-    
+
     # Also search in staff collection
     staff = await db.staff.find(
         query,
         {"_id": 0}
     ).limit(limit).to_list(limit)
-    
+
     # Combine results
     all_staff = users + staff
-    
+
     return {"staff": all_staff}
 
 
@@ -4255,17 +4265,18 @@ async def update_employee_permissions(
     """Update employee permissions only"""
     if current_user["role"] not in ["director", "principal"]:
         raise HTTPException(status_code=403, detail="Only Director/Principal can change permissions")
-    
+
+    school_id = current_user["school_id"]
     employee = await db.staff.find_one(
-        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
         {"_id": 0}
     )
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
-    # Update staff permissions
+
+    # Update staff permissions (scoped to school)
     await db.staff.update_one(
-        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
         {"$set": {"permissions": permissions}}
     )
     
@@ -4288,14 +4299,15 @@ async def toggle_employee_login(
     """Enable or disable login for an employee"""
     if current_user["role"] not in ["director", "principal", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
+    school_id = current_user["school_id"]
     employee = await db.staff.find_one(
-        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
         {"_id": 0}
     )
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
+
     if enable:
         if employee.get("user_id"):
             # Re-enable existing user
@@ -4328,10 +4340,10 @@ async def toggle_employee_login(
             await db.users.insert_one(user_data)
             
             await db.staff.update_one(
-                {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+                {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
                 {"$set": {"user_id": user_data["id"], "has_login": True}}
             )
-        
+
         return {"message": "Login enabled", "default_password": password or employee.get("mobile")}
     else:
         # Disable login
@@ -4340,9 +4352,9 @@ async def toggle_employee_login(
                 {"id": employee["user_id"]},
                 {"$set": {"is_active": False}}
             )
-        
+
         await db.staff.update_one(
-            {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+            {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
             {"$set": {"has_login": False}}
         )
         
@@ -4377,18 +4389,19 @@ async def delete_employee(employee_id: str, current_user: dict = Depends(get_cur
     """
     if current_user["role"] not in ["director", "admin"]:
         raise HTTPException(status_code=403, detail="Only Director/Admin can delete employees")
-    
-    # Find employee
+
+    school_id = current_user["school_id"]
+    # Find employee — scoped to current school to prevent cross-tenant IDOR
     employee = await db.staff.find_one(
-        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
         {"_id": 0}
     )
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
-    # Deactivate employee
+
+    # Deactivate employee (scoped to school)
     await db.staff.update_one(
-        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
         {"$set": {"is_active": False, "deactivated_at": datetime.now(timezone.utc).isoformat(), "deactivated_by": current_user["id"]}}
     )
     
@@ -4454,9 +4467,10 @@ async def permanently_delete_employee(employee_id: str, current_user: dict = Dep
     """
     if current_user["role"] != "director":
         raise HTTPException(status_code=403, detail="Only Director can permanently delete employees")
-    
+
+    school_id = current_user["school_id"]
     employee = await db.staff.find_one(
-        {"$or": [{"id": employee_id}, {"employee_id": employee_id}]},
+        {"school_id": school_id, "$or": [{"id": employee_id}, {"employee_id": employee_id}]},
         {"_id": 0}
     )
     if not employee:
@@ -5015,14 +5029,12 @@ async def create_fee_invoice(invoice: FeeInvoiceCreate, current_user: dict = Dep
 
 @api_router.get("/fees/invoices", response_model=List[FeeInvoiceResponse])
 async def get_fee_invoices(
-    school_id: Optional[str] = None,
     student_id: Optional[str] = None,
     status: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    query = {}
-    if school_id:
-        query["school_id"] = school_id
+    # Always scope to authenticated user's school — never trust client-supplied school_id
+    query = {"school_id": current_user["school_id"]}
     if student_id:
         query["student_id"] = student_id
     if status:
@@ -5143,13 +5155,11 @@ async def create_notice(notice: NoticeCreate, current_user: dict = Depends(get_c
 
 @api_router.get("/notices", response_model=List[NoticeResponse])
 async def get_notices(
-    school_id: Optional[str] = None,
     priority: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    query = {"is_active": True}
-    if school_id:
-        query["school_id"] = school_id
+    # Always scope to authenticated user's school — prevents cross-tenant notice leakage
+    query = {"is_active": True, "school_id": current_user["school_id"]}
     if priority:
         query["priority"] = priority
     
@@ -5192,13 +5202,15 @@ async def delete_notice(notice_id: str, current_user: dict = Depends(get_current
 
 @api_router.get("/notices/unread")
 async def get_unread_notices(
-    school_id: str,
-    user_id: str,
-    user_role: Optional[str] = None
+    current_user: dict = Depends(get_current_user)
 ):
-    """Get unread notices for popup display"""
+    """Get unread notices for popup display — user identity from JWT"""
     now = datetime.now(timezone.utc).isoformat()
-    
+    # Identity always from JWT — never trust client-supplied school_id / user_id
+    school_id = current_user["school_id"]
+    user_id = current_user["id"]
+    user_role = current_user.get("role", "")
+
     # Build query for active, non-expired notices
     query = {
         "school_id": school_id,
@@ -5209,24 +5221,24 @@ async def get_unread_notices(
             {"expires_at": {"$gt": now}}
         ]
     }
-    
+
     # Get notices
     notices = await db.notices.find(query, {"_id": 0}).sort("created_at", -1).limit(10).to_list(10)
-    
+
     # Filter out already read notices
     read_notices = await db.notice_reads.find(
         {"user_id": user_id},
         {"_id": 0, "notice_id": 1}
     ).to_list(1000)
-    
+
     read_ids = {r["notice_id"] for r in read_notices}
-    
+
     unread = []
     for notice in notices:
         if notice["id"] not in read_ids:
             # Check if notice is for this user/role
             target_type = notice.get("target_type", "all")
-            
+
             if target_type == "all":
                 unread.append(notice)
             elif target_type == "students" and user_role == "student":
@@ -5243,24 +5255,25 @@ async def get_unread_notices(
             elif target_type == "class":
                 # Would need to check student's class - simplified for now
                 unread.append(notice)
-    
+
     # Enrich with creator names
     for notice in unread:
-        user = await db.users.find_one({"id": notice.get("created_by")}, {"_id": 0, "name": 1})
-        if user:
-            notice["created_by_name"] = user["name"]
-    
+        creator = await db.users.find_one({"id": notice.get("created_by")}, {"_id": 0, "name": 1})
+        if creator:
+            notice["created_by_name"] = creator["name"]
+
     return unread
 
 
 @api_router.get("/notices/unread-count")
 async def get_unread_notice_count(
-    school_id: str,
-    user_id: str
+    current_user: dict = Depends(get_current_user)
 ):
-    """Get count of unread notices for badge display"""
+    """Get count of unread notices for badge display — user identity from JWT"""
     now = datetime.now(timezone.utc).isoformat()
-    
+    school_id = current_user["school_id"]
+    user_id = current_user["id"]
+
     # Count active notices
     total = await db.notices.count_documents({
         "school_id": school_id,
@@ -5271,23 +5284,24 @@ async def get_unread_notice_count(
             {"expires_at": {"$gt": now}}
         ]
     })
-    
+
     # Count read notices
     read = await db.notice_reads.count_documents({"user_id": user_id})
-    
+
     return {"count": max(0, total - read)}
 
 
 @api_router.post("/notices/{notice_id}/mark-read")
-async def mark_notice_as_read(notice_id: str, user_id: str):
-    """Mark a notice as read by a user"""
-    
+async def mark_notice_as_read(notice_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a notice as read by a user — user identity from JWT"""
+    user_id = current_user["id"]
+
     # Check if already marked
     existing = await db.notice_reads.find_one({
         "notice_id": notice_id,
         "user_id": user_id
     })
-    
+
     if not existing:
         await db.notice_reads.insert_one({
             "id": str(uuid.uuid4()),
@@ -5295,7 +5309,7 @@ async def mark_notice_as_read(notice_id: str, user_id: str):
             "user_id": user_id,
             "read_at": datetime.now(timezone.utc).isoformat()
         })
-    
+
     return {"success": True, "message": "Notice marked as read"}
 
 
@@ -9056,9 +9070,11 @@ async def get_recordings(school_id: Optional[str] = None, current_user: dict = D
     return recordings
 
 @api_router.get("/meetings/summaries")
-async def get_summaries(school_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """Get all AI-generated meeting summaries"""
-    summaries = await db.meeting_summaries.find({}, {"_id": 0}).sort("generated_at", -1).to_list(50)
+async def get_summaries(current_user: dict = Depends(get_current_user)):
+    """Get AI-generated meeting summaries for current school only"""
+    # Always scope to authenticated user's school — never expose cross-tenant data
+    school_id = current_user["school_id"]
+    summaries = await db.meeting_summaries.find({"school_id": school_id}, {"_id": 0}).sort("generated_at", -1).to_list(50)
     return summaries
 
 @api_router.post("/meetings/recordings/{recording_id}/summarize")
@@ -9599,9 +9615,14 @@ async def create_director_for_school(
     email: EmailStr,
     name: str,
     mobile: Optional[str] = None,
-    school_name: Optional[str] = None
+    school_name: Optional[str] = None,
+    registration_key: Optional[str] = None
 ):
-    """Create a new Director account with unique ID - Public endpoint for onboarding"""
+    """Create a new Director account with unique ID - Protected school onboarding endpoint"""
+    # Verify registration key from env — prevents mass account creation abuse
+    expected_key = os.environ.get("REGISTRATION_KEY", "")
+    if expected_key and registration_key != expected_key:
+        raise HTTPException(status_code=401, detail="Invalid registration key")
     # Check if email already exists
     existing = await db.users.find_one({"email": email})
     if existing:
@@ -9765,10 +9786,10 @@ async def get_school_stats_for_onetino(current_user: dict = Depends(get_current_
 @api_router.get("/onetino/all-schools")
 async def get_all_schools_for_onetino(api_key: str = None):
     """Get all schools connected to OneTino (Super Admin API)"""
-    # In production, verify OneTino API key
-    if api_key != "onetino-master-key":
-        # For now, allow without key for testing
-        pass
+    # Verify OneTino master key from env — NEVER hardcode in production
+    master_key = os.environ.get("ONETINO_MASTER_KEY", "")
+    if not master_key or api_key != master_key:
+        raise HTTPException(status_code=401, detail="Unauthorized: valid OneTino API key required")
     
     schools = await db.schools.find({}, {"_id": 0}).to_list(100)
     
@@ -12810,8 +12831,9 @@ class StudentScholarshipModel(BaseModel):
     assigned_date: Optional[str] = None
 
 @api_router.get("/scholarships")
-async def get_scholarships(school_id: str):
-    """Get all scholarships/govt schemes for a school"""
+async def get_scholarships(current_user: dict = Depends(get_current_user)):
+    """Get all scholarships/govt schemes for a school — school_id from JWT"""
+    school_id = current_user["school_id"]
     scholarships = await db.scholarships.find(
         {"school_id": school_id},
         {"_id": 0}
@@ -12819,57 +12841,69 @@ async def get_scholarships(school_id: str):
     return scholarships
 
 @api_router.post("/scholarships")
-async def create_scholarship(data: ScholarshipModel):
-    """Create a new scholarship/govt scheme"""
+async def create_scholarship(data: ScholarshipModel, current_user: dict = Depends(get_current_user)):
+    """Create a new scholarship/govt scheme — director/accountant only"""
+    if current_user.get("role") not in ["director", "co_director", "principal", "accountant", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
     scholarship = data.dict()
     scholarship["id"] = str(uuid.uuid4())
+    scholarship["school_id"] = current_user["school_id"]  # Always override with JWT school_id
     scholarship["created_at"] = datetime.now(timezone.utc).isoformat()
-    
+
     await db.scholarships.insert_one(scholarship)
     scholarship.pop("_id", None)
     return scholarship
 
 @api_router.delete("/scholarships/{scholarship_id}")
-async def delete_scholarship(scholarship_id: str):
-    """Delete a scholarship"""
-    result = await db.scholarships.delete_one({"id": scholarship_id})
+async def delete_scholarship(scholarship_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a scholarship — director/accountant only"""
+    if current_user.get("role") not in ["director", "co_director", "principal", "accountant"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    # Scope delete to current school to prevent cross-tenant deletion
+    result = await db.scholarships.delete_one({"id": scholarship_id, "school_id": current_user["school_id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Scholarship not found")
     return {"status": "deleted"}
 
 @api_router.get("/student-scholarships")
-async def get_student_scholarships(school_id: str, student_id: Optional[str] = None):
-    """Get scholarships assigned to students"""
+async def get_student_scholarships(student_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get scholarships assigned to students — school_id from JWT"""
+    school_id = current_user["school_id"]
     query = {"school_id": school_id}
     if student_id:
         query["student_id"] = student_id
-    
+
     scholarships = await db.student_scholarships.find(query, {"_id": 0}).to_list(500)
     return scholarships
 
 @api_router.post("/student-scholarships")
-async def assign_scholarship_to_student(data: StudentScholarshipModel):
-    """Assign a scholarship to a student"""
+async def assign_scholarship_to_student(data: StudentScholarshipModel, current_user: dict = Depends(get_current_user)):
+    """Assign a scholarship to a student — director/accountant only"""
+    if current_user.get("role") not in ["director", "co_director", "principal", "accountant", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
     # Check if already assigned
     existing = await db.student_scholarships.find_one({
         "student_id": data.student_id,
         "scholarship_id": data.scholarship_id,
-        "school_id": data.school_id
+        "school_id": current_user["school_id"]
     })
     if existing:
         raise HTTPException(status_code=400, detail="This scholarship is already assigned to this student")
-    
+
     assignment = data.dict()
     assignment["id"] = str(uuid.uuid4())
+    assignment["school_id"] = current_user["school_id"]  # Override with JWT school_id
     assignment["created_at"] = datetime.now(timezone.utc).isoformat()
-    
+
     await db.student_scholarships.insert_one(assignment)
     assignment.pop("_id", None)
     return assignment
 
 @api_router.put("/student-scholarships/{assignment_id}")
-async def update_student_scholarship(assignment_id: str, status: str = None, amount: float = None, remarks: str = None):
-    """Update scholarship assignment status"""
+async def update_student_scholarship(assignment_id: str, status: str = None, amount: float = None, remarks: str = None, current_user: dict = Depends(get_current_user)):
+    """Update scholarship assignment status — director/accountant only"""
+    if current_user.get("role") not in ["director", "co_director", "principal", "accountant", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
     update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
     if status:
         update_data["status"] = status
@@ -12877,21 +12911,23 @@ async def update_student_scholarship(assignment_id: str, status: str = None, amo
         update_data["amount"] = amount
     if remarks:
         update_data["remarks"] = remarks
-    
+
     result = await db.student_scholarships.update_one(
-        {"id": assignment_id},
+        {"id": assignment_id, "school_id": current_user["school_id"]},
         {"$set": update_data}
     )
-    
+
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Assignment not found")
-    
+
     return {"status": "updated"}
 
 @api_router.delete("/student-scholarships/{assignment_id}")
-async def remove_student_scholarship(assignment_id: str):
-    """Remove scholarship from student"""
-    result = await db.student_scholarships.delete_one({"id": assignment_id})
+async def remove_student_scholarship(assignment_id: str, current_user: dict = Depends(get_current_user)):
+    """Remove scholarship from student — director/accountant only"""
+    if current_user.get("role") not in ["director", "co_director", "principal", "accountant"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    result = await db.student_scholarships.delete_one({"id": assignment_id, "school_id": current_user["school_id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Assignment not found")
     return {"status": "deleted"}
@@ -13786,7 +13822,9 @@ app.mount("/api/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    # PRODUCTION: set CORS_ORIGINS env var to your frontend domain(s), comma-separated
+    # e.g. CORS_ORIGINS=https://app.schooltino.com,https://schooltino.com
+    allow_origins=os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )

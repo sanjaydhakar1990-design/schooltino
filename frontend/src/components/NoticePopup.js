@@ -41,15 +41,14 @@ export default function NoticePopup() {
 
   // Fetch unread notices for this user
   const fetchNotices = useCallback(async () => {
-    if (!user || !schoolId) return;
+    if (!user) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
     try {
       const response = await axios.get(`${API}/notices/unread`, {
-        params: {
-          school_id: schoolId,
-          user_id: user.id,
-          user_role: user.role
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       const unreadNotices = response.data.filter(
@@ -95,8 +94,9 @@ export default function NoticePopup() {
 
     // Mark as read on server
     try {
-      await axios.post(`${API}/notices/${noticeId}/mark-read`, {
-        user_id: user.id
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/notices/${noticeId}/mark-read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
       });
     } catch (error) {
       console.error('Failed to mark notice as read:', error);
@@ -121,8 +121,11 @@ export default function NoticePopup() {
 
     // Mark all as read
     try {
+      const token = localStorage.getItem('token');
       await Promise.all(
-        allIds.map(id => axios.post(`${API}/notices/${id}/mark-read`, { user_id: user.id }))
+        allIds.map(id => axios.post(`${API}/notices/${id}/mark-read`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        }))
       );
     } catch (error) {
       console.error('Failed to mark notices as read:', error);
@@ -294,11 +297,13 @@ export function NoticeNotificationBadge() {
 
   useEffect(() => {
     const fetchCount = async () => {
-      if (!user || !schoolId) return;
-      
+      if (!user) return;
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
       try {
         const response = await axios.get(`${API}/notices/unread-count`, {
-          params: { school_id: schoolId, user_id: user.id }
+          headers: { Authorization: `Bearer ${token}` }
         });
         setUnreadCount(response.data.count || 0);
       } catch (error) {
