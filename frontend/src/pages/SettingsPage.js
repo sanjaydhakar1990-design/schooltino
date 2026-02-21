@@ -7,6 +7,7 @@ import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import ThemePicker from '../components/ThemePicker';
 import {
   Dialog,
   DialogContent,
@@ -452,39 +453,31 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* ---- BEAUTIFUL THEME PICKER ---- */}
         <div className="mb-6">
-          <Label className="text-sm font-medium text-slate-700 mb-3 block">{t('header_color')}</Label>
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-3">
-            {Object.entries(THEME_PRESETS).map(([key, preset]) => (
-              <button
-                key={key}
-                onClick={() => { setActivePreset(key); setCustomHeaderColor(''); }}
-                className={`relative w-full aspect-square rounded-xl border-2 transition-all hover:scale-110 ${activePreset === key && !customHeaderColor ? 'border-slate-900 ring-2 ring-offset-2 ring-blue-400' : 'border-transparent'}`}
-                style={{ backgroundColor: preset.headerBg }}
-                title={preset.name}
-              >
-                {activePreset === key && !customHeaderColor && (
-                  <Check className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                )}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-3 mt-3">
-            <Label className="text-xs text-slate-500 whitespace-nowrap">{t('customize')}:</Label>
+          <Label className="text-sm font-medium text-slate-700 mb-4 block">Choose Theme Template</Label>
+          <ThemePicker />
+        </div>
+
+        {/* Custom color override */}
+        <div className="mb-4">
+          <Label className="text-xs font-medium text-slate-500 mb-2 block">Custom Accent Color (override theme)</Label>
+          <div className="flex items-center gap-3">
             <input
               type="color"
-              value={customHeaderColor || '#3b82f6'}
+              value={customHeaderColor || '#4f46e5'}
               onChange={(e) => setCustomHeaderColor(e.target.value)}
               className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200"
             />
+            <span className="text-xs text-slate-500">Pick any custom color for your school branding</span>
             {customHeaderColor && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setCustomHeaderColor('')}
-                className="text-xs text-slate-500"
+                className="text-xs text-slate-500 ml-auto"
               >
-                {t('reset')}
+                Reset to Theme
               </Button>
             )}
           </div>

@@ -11,6 +11,7 @@ import { GlobalWatermark } from './SchoolLogoWatermark';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL || '';
 
@@ -71,8 +72,14 @@ export const Layout = () => {
   const { user, schoolData, logout } = useAuth();
   const { isHindi, toggleLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { getHeaderBg, getHeaderText, getAccentColor, isDarkMode, currentPreset } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const headerBg = getHeaderBg();
+  const headerText = getHeaderText();
+  const accent = getAccentColor();
+  const isWhiteHeader = headerBg === '#ffffff' || headerBg === 'white';
 
   const schoolLogo = schoolData?.logo_url || schoolData?.logo;
   const schoolName = schoolData?.name || user?.school_name || 'SchoolTino';
@@ -216,8 +223,12 @@ export const Layout = () => {
 
         {/* ============ TOP HEADER ============ */}
         <header
-          className="flex-shrink-0 bg-white border-b border-gray-100 shadow-sm z-30"
-          style={{ paddingTop: 'env(safe-area-inset-top)' }}
+          className="flex-shrink-0 shadow-sm z-30 border-b"
+          style={{
+            paddingTop: 'env(safe-area-inset-top)',
+            backgroundColor: headerBg,
+            borderColor: isWhiteHeader ? (isDarkMode ? currentPreset.sidebarBorder : '#f3f4f6') : 'transparent',
+          }}
         >
           <div className="flex items-center justify-between h-14 px-4 lg:px-5">
 
@@ -226,9 +237,10 @@ export const Layout = () => {
               {/* Mobile hamburger */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
+                className="lg:hidden p-2 rounded-lg transition-colors flex-shrink-0"
+                style={{ color: isWhiteHeader ? '#6b7280' : `${headerText}99` }}
               >
-                <Menu className="w-5 h-5 text-gray-500" />
+                <Menu className="w-5 h-5" />
               </button>
 
               {/* School Logo */}
@@ -236,27 +248,34 @@ export const Layout = () => {
                 <img
                   src={schoolLogo}
                   alt={schoolName}
-                  className="w-8 h-8 rounded-lg object-cover flex-shrink-0 ring-1 ring-gray-200"
+                  className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                  style={{ boxShadow: isWhiteHeader ? '0 0 0 1px #e5e7eb' : '0 0 0 1px rgba(255,255,255,0.2)' }}
                 />
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap className="w-4 h-4 text-indigo-600" />
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: isWhiteHeader ? `${accent}15` : 'rgba(255,255,255,0.15)' }}
+                >
+                  <GraduationCap className="w-4 h-4" style={{ color: isWhiteHeader ? accent : headerText }} />
                 </div>
               )}
 
               {/* School Name + Current Page */}
               <div className="min-w-0 hidden sm:block">
-                <h1 className="text-sm font-bold text-gray-900 truncate leading-tight">{schoolName}</h1>
+                <h1
+                  className="text-sm font-bold truncate leading-tight"
+                  style={{ color: isWhiteHeader ? (isDarkMode ? '#f1f5f9' : '#111827') : headerText }}
+                >{schoolName}</h1>
                 {/* Breadcrumb inline on desktop */}
                 <div className="hidden lg:flex items-center gap-1 mt-0.5">
-                  <Home className="w-3 h-3 text-gray-300" />
-                  <ChevronRight className="w-3 h-3 text-gray-300" />
-                  <span className="text-xs text-gray-500 font-medium">{currentPage}</span>
+                  <Home className="w-3 h-3" style={{ color: isWhiteHeader ? '#d1d5db' : `${headerText}60` }} />
+                  <ChevronRight className="w-3 h-3" style={{ color: isWhiteHeader ? '#d1d5db' : `${headerText}60` }} />
+                  <span className="text-xs font-medium" style={{ color: isWhiteHeader ? '#6b7280' : `${headerText}aa` }}>{currentPage}</span>
                 </div>
               </div>
 
               {/* Current page title on mobile */}
-              <span className="sm:hidden text-sm font-semibold text-gray-800 truncate">{currentPage}</span>
+              <span className="sm:hidden text-sm font-semibold truncate" style={{ color: isWhiteHeader ? (isDarkMode ? '#f1f5f9' : '#374151') : headerText }}>{currentPage}</span>
             </div>
 
             {/* RIGHT: actions */}
@@ -265,7 +284,13 @@ export const Layout = () => {
               {/* Language toggle */}
               <button
                 onClick={toggleLanguage}
-                className="px-2.5 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-2.5 py-1.5 text-xs font-bold rounded-lg transition-colors"
+                style={{
+                  color: isWhiteHeader ? (isDarkMode ? '#9ca3af' : '#6b7280') : `${headerText}cc`,
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={e => e.target.style.backgroundColor = isWhiteHeader ? '#f3f4f6' : 'rgba(255,255,255,0.1)'}
+                onMouseLeave={e => e.target.style.backgroundColor = 'transparent'}
                 title={isHindi ? 'Switch to English' : 'हिंदी में बदलें'}
               >
                 {isHindi ? 'EN' : 'हि'}
@@ -275,10 +300,14 @@ export const Layout = () => {
               {isTinoChatEnabled() && (
                 <button
                   onClick={() => setShowTinoChat(!showTinoChat)}
-                  className={`p-2 rounded-lg transition-colors ${showTinoChat ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className="p-2 rounded-lg transition-colors"
+                  style={{
+                    color: showTinoChat ? accent : (isWhiteHeader ? (isDarkMode ? '#9ca3af' : '#6b7280') : `${headerText}cc`),
+                    backgroundColor: showTinoChat ? (isWhiteHeader ? `${accent}15` : 'rgba(255,255,255,0.15)') : 'transparent',
+                  }}
                   title="Tino AI Assistant"
                 >
-                  <Brain className="w-4.5 h-4.5 w-[18px] h-[18px]" />
+                  <Brain className="w-[18px] h-[18px]" />
                 </button>
               )}
 
@@ -286,7 +315,8 @@ export const Layout = () => {
               <div className="relative notif-dropdown">
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); setShowUserMenu(false); }}
-                  className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                  className="relative p-2 rounded-lg transition-colors"
+                  style={{ color: isWhiteHeader ? (isDarkMode ? '#9ca3af' : '#6b7280') : `${headerText}cc` }}
                 >
                   <Bell className="w-[18px] h-[18px]" />
                   {unreadCount > 0 && (
@@ -384,16 +414,23 @@ export const Layout = () => {
           </div>
 
           {/* Mobile breadcrumb bar */}
-          <div className="lg:hidden flex items-center gap-1.5 px-4 pb-2 -mt-1">
-            <Home className="w-3 h-3 text-gray-300" />
-            <ChevronRight className="w-3 h-3 text-gray-300" />
-            <span className="text-xs text-gray-500 font-medium">{currentPage}</span>
-          </div>
+          {!isWhiteHeader && (
+            <div className="lg:hidden px-4 pb-2.5 -mt-1">
+              {/* spacer - breadcrumb shows in school name area for colored headers */}
+            </div>
+          )}
+          {isWhiteHeader && (
+            <div className="lg:hidden flex items-center gap-1.5 px-4 pb-2 -mt-1">
+              <Home className="w-3 h-3 text-gray-300" />
+              <ChevronRight className="w-3 h-3 text-gray-300" />
+              <span className="text-xs text-gray-500 font-medium">{currentPage}</span>
+            </div>
+          )}
         </header>
 
         {/* ============ PAGE CONTENT ============ */}
         <main
-          className="flex-1 overflow-y-auto overscroll-contain bg-gray-50"
+          className={`flex-1 overflow-y-auto overscroll-contain ${isDarkMode ? 'bg-gray-950' : 'bg-gray-50'}`}
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <div
