@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -80,6 +81,8 @@ const VACATION_DATES = {
 export default function SchoolCalendarPage() {
   const { t, i18n } = useTranslation();
   const { user, schoolId } = useAuth();
+  const { getAccentColor } = useTheme();
+  const accent = getAccentColor();
   const calendarRef = useRef(null);
   const isHindi = i18n.language === 'hi';
   
@@ -454,8 +457,10 @@ export default function SchoolCalendarPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Calendar className="w-7 h-7 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <Calendar className="w-5 h-5" />
+            </div>
             {isHindi ? 'विद्यालय कैलेंडर' : 'School Calendar'}
           </h1>
           <p className="text-slate-500">

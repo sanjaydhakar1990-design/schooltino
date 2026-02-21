@@ -822,8 +822,10 @@ export default function EmployeeManagementPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="w-7 h-7 text-blue-600" />
+          <h1 className="text-2xl font-bold flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: accent }}>
+              <Users className="w-5 h-5" />
+            </div>
             {t('staff_management')}
           </h1>
           <p className="text-gray-500 text-sm">{t('manage_staff_users')}</p>
