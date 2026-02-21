@@ -4,86 +4,100 @@ import './i18n';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 
-// Pages
+// ============================================================
+// ACTIVE PAGES (in /src/pages/ folder)
+// ============================================================
 import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentsPage from './pages/StudentsPage';
-// StaffPage removed - merged into EmployeeManagementPage
 import ClassesPage from './pages/ClassesPage';
-import AttendancePage from './pages/AttendancePage';
 import ImprovedAttendancePage from './pages/ImprovedAttendancePage';
-import FeesPage from './pages/FeesPage';
-import NoticesPage from './pages/NoticesPage';
 import AIPaperPage from './pages/AIPaperPage';
-import AuditLogsPage from './pages/AuditLogsPage';
 import SettingsPage from './pages/SettingsPage';
-import UserManagementPage from './pages/UserManagementPage';
 import TeachTinoDashboard from './pages/TeachTinoDashboard';
 import StudentDashboard from './pages/StudentDashboard';
-import AIContentStudio from './pages/AIContentStudio';
-import VoiceAssistant from './pages/VoiceAssistant';
-import ImageGallery from './pages/ImageGallery';
-import SMSCenter from './pages/SMSCenter';
-import WebsiteIntegration from './pages/WebsiteIntegration';
 import LeaveManagement from './pages/LeaveManagement';
-import CCTVDashboard from './pages/CCTVDashboard';
 import SchoolAnalytics from './pages/SchoolAnalytics';
-import PermissionManager from './pages/PermissionManager';
-import SchoolRegistrationForm from './pages/SchoolRegistrationForm';
-import ZoomMeetings from './pages/ZoomMeetings';
 import SetupWizard from './pages/SetupWizard';
 import SubscriptionPage from './pages/SubscriptionPage';
 import TeachTinoLogin from './pages/TeachTinoLogin';
-import StudyTinoLogin from './pages/StudyTinoLogin';
-import OnlineExamSystem from './pages/OnlineExamSystem';
-import CCTVManagement from './pages/CCTVManagement';
-import StorageBackup from './pages/StorageBackup';
-import AdminActivityDashboard from './pages/AdminActivityDashboard';
-import FeePaymentPage from './pages/FeePaymentPage';
-import AccountantDashboard from './pages/AccountantDashboard';
-import SchoolSettingsPage from './pages/SchoolSettingsPage';
-import BoardNotificationsPage from './pages/BoardNotificationsPage';
-import FeeStructureManagement from './pages/FeeStructureManagement';
-import AIHistoryPage from './pages/AIHistoryPage';
 import FrontOfficePage from './pages/FrontOfficePage';
 import TransportPage from './pages/TransportPage';
-import HealthModulePage from './pages/HealthModulePage';
-import BiometricPage from './pages/BiometricPage';
-import TimetablePage from './pages/TimetablePage';
-import DirectorAIDashboard from './pages/DirectorAIDashboard';
-import MultiYearFeesPage from './pages/MultiYearFeesPage';
-import SalaryTrackingPage from './pages/SalaryTrackingPage';
-import StudentReceiptsPage from './pages/StudentReceiptsPage';
-import UnifiedPortal from './pages/UnifiedPortal';
-import TinoBrainDashboard from './pages/TinoBrainDashboard';
-import MarketingPage from './pages/MarketingPage';
+import TimetableManagement from './pages/TimetableManagement';
+import ExamReportCard from './pages/ExamReportCard';
 import WhatsAppPamphlets from './pages/WhatsAppPamphlets';
 import SchoolMarketingPage from './pages/SchoolMarketingPage';
-import AdmitCardManagement from './pages/AdmitCardManagement';
-import ImprovedAdmitCardManagement from './pages/ImprovedAdmitCardManagement';
 import AdmitCardManagementFixed from './pages/AdmitCardManagementFixed';
 import PDFDownloadPage from './pages/PDFDownloadPage';
-import SetupGuidePage from './pages/SetupGuidePage';
-import SuperAdminPanel from './pages/SuperAdminPanel';
-import TeacherRoleManager from './pages/TeacherRoleManager';
 import SchoolCalendarPage from './pages/SchoolCalendarPage';
-import ComplaintFeedbackPage from './pages/ComplaintFeedbackPage';
-import PrayerSystemPage from './pages/PrayerSystemPage';
-import EventDesignerPage from './pages/EventDesignerPage';
-import FamilyPortalPage from './pages/FamilyPortalPage';
-import ParentPortalPage from './pages/ParentPortalPage';
 import StudyTinoLoginPage from './pages/StudyTinoLoginPage';
-import ParentPaymentPortal from './pages/ParentPaymentPortal';
-import SchoolManagementPage from './pages/SchoolManagementPage';
 import EmployeeManagementPage from './pages/EmployeeManagementPage';
-import LogoWatermarkSettings from './pages/LogoWatermarkSettings';
 import FeeManagementPage from './pages/FeeManagementPage';
-import TimetableManagement from './pages/TimetableManagement';
-import CertificateGenerator from './pages/CertificateGenerator';
-import ExamReportCard from './pages/ExamReportCard';
-import TinoAICenter from './pages/AIJarvisCenter';
-import TinoAIAgent from './pages/TinoAIAgent';
+import ProfilePage from './pages/ProfilePage';
+
+// Sidebar pages (in /src/pages/ folder)
+import DigitalLibraryPage from './pages/DigitalLibraryPage';
+import IntegratedCommunicationPage from './pages/IntegratedCommunicationPage';
+import AdmissionCRMPage from './pages/AdmissionCRMPage';
+import InventoryPage from './pages/InventoryPage';
+import MultiBranchPage from './pages/MultiBranchPage';
+import AIToolsPage from './pages/AIToolsPage';
+import LiveClassesPage from './pages/LiveClassesPage';
+
+// ============================================================
+// LEGACY PAGES (in /src/pages/legacy/ folder)
+// ============================================================
+import FeesPage from './pages/legacy/FeesPage';
+import NoticesPage from './pages/legacy/NoticesPage';
+import AuditLogsPage from './pages/legacy/AuditLogsPage';
+import UserManagementPage from './pages/legacy/UserManagementPage';
+import AIContentStudio from './pages/legacy/AIContentStudio';
+import VoiceAssistant from './pages/legacy/VoiceAssistant';
+import ImageGallery from './pages/legacy/ImageGallery';
+import SMSCenter from './pages/legacy/SMSCenter';
+import WebsiteIntegration from './pages/legacy/WebsiteIntegration';
+import CCTVDashboard from './pages/legacy/CCTVDashboard';
+import PermissionManager from './pages/legacy/PermissionManager';
+import SchoolRegistrationForm from './pages/legacy/SchoolRegistrationForm';
+import ZoomMeetings from './pages/legacy/ZoomMeetings';
+import OnlineExamSystem from './pages/legacy/OnlineExamSystem';
+import CCTVManagement from './pages/legacy/CCTVManagement';
+import StorageBackup from './pages/legacy/StorageBackup';
+import AdminActivityDashboard from './pages/legacy/AdminActivityDashboard';
+import FeePaymentPage from './pages/legacy/FeePaymentPage';
+import AccountantDashboard from './pages/legacy/AccountantDashboard';
+import SchoolSettingsPage from './pages/legacy/SchoolSettingsPage';
+import BoardNotificationsPage from './pages/legacy/BoardNotificationsPage';
+import FeeStructureManagement from './pages/legacy/FeeStructureManagement';
+import AIHistoryPage from './pages/legacy/AIHistoryPage';
+import HealthModulePage from './pages/legacy/HealthModulePage';
+import BiometricPage from './pages/legacy/BiometricPage';
+import DirectorAIDashboard from './pages/legacy/DirectorAIDashboard';
+import MultiYearFeesPage from './pages/legacy/MultiYearFeesPage';
+import SalaryTrackingPage from './pages/legacy/SalaryTrackingPage';
+import StudentReceiptsPage from './pages/legacy/StudentReceiptsPage';
+import UnifiedPortal from './pages/legacy/UnifiedPortal';
+import TinoBrainDashboard from './pages/legacy/TinoBrainDashboard';
+import SetupGuidePage from './pages/legacy/SetupGuidePage';
+import SuperAdminPanel from './pages/legacy/SuperAdminPanel';
+import TeacherRoleManager from './pages/legacy/TeacherRoleManager';
+import ComplaintFeedbackPage from './pages/legacy/ComplaintFeedbackPage';
+import PrayerSystemPage from './pages/legacy/PrayerSystemPage';
+import EventDesignerPage from './pages/legacy/EventDesignerPage';
+import FamilyPortalPage from './pages/legacy/FamilyPortalPage';
+import ParentPortalPage from './pages/legacy/ParentPortalPage';
+import ParentPaymentPortal from './pages/legacy/ParentPaymentPortal';
+import SchoolManagementPage from './pages/legacy/SchoolManagementPage';
+import LogoWatermarkSettings from './pages/legacy/LogoWatermarkSettings';
+import CertificateGenerator from './pages/legacy/CertificateGenerator';
+import TinoAICenter from './pages/legacy/AIJarvisCenter';
+import TinoAIAgent from './pages/legacy/TinoAIAgent';
+
+// TimetablePage → alias to TimetableManagement (same functionality)
+const TimetablePage = TimetableManagement;
+// MarketingPage → alias to SchoolMarketingPage
+const MarketingPage = SchoolMarketingPage;
 
 // PWA Install Prompt
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -93,10 +107,6 @@ import { TrialBanner, SupportFAB } from './components/TrialMode';
 
 // Notice Popup System
 import NoticePopup from './components/NoticePopup';
-
-// New Pages
-// StaffDirectory removed - merged into EmployeeManagementPage
-import ProfilePage from './pages/ProfilePage';
 
 // Components
 import Layout from './components/Layout';
@@ -365,6 +375,19 @@ function AppRoutes() {
         <Route path="school-management" element={<SchoolManagementPage />} />
         <Route path="employee-management" element={<EmployeeManagementPage />} />
         <Route path="logo-settings" element={<LogoWatermarkSettings />} />
+
+        {/* Sidebar navigation routes - previously missing */}
+        <Route path="library" element={<DigitalLibraryPage />} />
+        <Route path="communication" element={<IntegratedCommunicationPage />} />
+        <Route path="admissions" element={<AdmissionCRMPage />} />
+        <Route path="inventory" element={<InventoryPage />} />
+        <Route path="multi-branch" element={<MultiBranchPage />} />
+        <Route path="ai-tools" element={<AIToolsPage />} />
+        <Route path="live-classes" element={<LiveClassesPage />} />
+
+        {/* Path aliases for cleaner sidebar URLs */}
+        <Route path="analytics" element={<Navigate to="/app/school-analytics" replace />} />
+        <Route path="calendar" element={<Navigate to="/app/school-calendar" replace />} />
       </Route>
       
       {/* Old routes redirect to /app */}
