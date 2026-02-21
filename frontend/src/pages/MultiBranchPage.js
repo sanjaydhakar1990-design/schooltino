@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 export default function MultiBranchPage() {
   const { t } = useTranslation();
@@ -39,7 +39,7 @@ export default function MultiBranchPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/api/branches?school_id=${schoolId}`, {
+      const res = await axios.get(`${API}/branches?school_id=${schoolId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBranches(res.data?.branches || []);
@@ -62,12 +62,12 @@ export default function MultiBranchPage() {
       const token = localStorage.getItem('token');
       const payload = { ...form, school_id: schoolId };
       if (editingBranch) {
-        await axios.put(`${API}/api/branches/${editingBranch.id}`, payload, {
+        await axios.put(`${API}/branches/${editingBranch.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Branch updated!');
       } else {
-        await axios.post(`${API}/api/branches`, payload, {
+        await axios.post(`${API}/branches`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Branch added!');

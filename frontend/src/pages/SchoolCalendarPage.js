@@ -14,7 +14,7 @@ import {
 import { toast } from 'sonner';
 import PrintableCalendar from '../components/PrintableCalendar';
 
-const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 // Government Holidays by State (2025-26)
 const STATE_HOLIDAYS = {
@@ -135,14 +135,14 @@ export default function SchoolCalendarPage() {
       const token = localStorage.getItem('token');
       
       // Fetch school data
-      const schoolRes = await axios.get(`${API}/api/school/${schoolId}`, {
+      const schoolRes = await axios.get(`${API}/school/${schoolId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSchool(schoolRes.data);
       
       // Fetch events
       try {
-        const eventsRes = await axios.get(`${API}/api/school/${schoolId}/calendar-events`, {
+        const eventsRes = await axios.get(`${API}/school/${schoolId}/calendar-events`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setEvents(eventsRes.data || []);
@@ -152,7 +152,7 @@ export default function SchoolCalendarPage() {
       
       // Fetch photos
       try {
-        const photosRes = await axios.get(`${API}/api/school/${schoolId}/calendar-photos`, {
+        const photosRes = await axios.get(`${API}/school/${schoolId}/calendar-photos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setCalendarPhotos(photosRes.data || []);
@@ -162,7 +162,7 @@ export default function SchoolCalendarPage() {
       
       // Fetch testimonials
       try {
-        const testRes = await axios.get(`${API}/api/school/${schoolId}/testimonials`, {
+        const testRes = await axios.get(`${API}/school/${schoolId}/testimonials`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTestimonials(testRes.data || []);
@@ -217,12 +217,12 @@ export default function SchoolCalendarPage() {
     try {
       const token = localStorage.getItem('token');
       if (editingEvent) {
-        await axios.put(`${API}/api/school/${schoolId}/calendar-events/${editingEvent.id}`, eventForm, {
+        await axios.put(`${API}/school/${schoolId}/calendar-events/${editingEvent.id}`, eventForm, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success(isHindi ? 'कार्यक्रम अपडेट हो गया' : 'Event updated');
       } else {
-        await axios.post(`${API}/api/school/${schoolId}/calendar-events`, eventForm, {
+        await axios.post(`${API}/school/${schoolId}/calendar-events`, eventForm, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success(isHindi ? 'कार्यक्रम जोड़ा गया' : 'Event added');
@@ -246,7 +246,7 @@ export default function SchoolCalendarPage() {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API}/api/school/${schoolId}/calendar-events/${eventId}`, {
+      await axios.delete(`${API}/school/${schoolId}/calendar-events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
@@ -287,7 +287,7 @@ export default function SchoolCalendarPage() {
       formData.append('type', 'calendar');
       
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${API}/api/upload`, formData, {
+      const res = await axios.post(`${API}/upload`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       
@@ -324,11 +324,11 @@ export default function SchoolCalendarPage() {
     try {
       const token = localStorage.getItem('token');
       if (editingTestimonial) {
-        await axios.put(`${API}/api/school/${schoolId}/testimonials/${editingTestimonial.id}`, testimonialForm, {
+        await axios.put(`${API}/school/${schoolId}/testimonials/${editingTestimonial.id}`, testimonialForm, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post(`${API}/api/school/${schoolId}/testimonials`, testimonialForm, {
+        await axios.post(`${API}/school/${schoolId}/testimonials`, testimonialForm, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -376,7 +376,7 @@ export default function SchoolCalendarPage() {
       const token = localStorage.getItem('token');
       const eventsForPrompt = getAllEvents().slice(0, 15).map(e => `${e.date}: ${e.name}`).join('\n');
       
-      const response = await axios.post(`${API}/api/calendar/generate-image`, {
+      const response = await axios.post(`${API}/calendar/generate-image`, {
         school_id: schoolId,
         school_name: school?.name || 'School',
         year: '2025-26',

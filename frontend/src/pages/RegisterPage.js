@@ -6,7 +6,7 @@ import { GraduationCap, ArrowLeft, Loader2, CheckCircle2, Copy, Eye, EyeOff, Sch
 import axios from 'axios';
 import { toast } from 'sonner';
 
-const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 const boards = [
   'CBSE', 'ICSE', 'MP Board', 'RBSE', 'UP Board', 'Bihar Board',
@@ -62,7 +62,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${API}/api/auth/register-school`, {
+      const res = await axios.post(`${API}/auth/register-school`, {
         school_name: form.school_name,
         school_board: form.school_board,
         school_city: form.school_city,

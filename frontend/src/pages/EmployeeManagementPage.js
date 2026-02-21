@@ -25,7 +25,7 @@ import BulkImport from '../components/BulkImport';
 import DocumentUpload from '../components/DocumentUpload';
 import { useTheme } from '../context/ThemeContext';
 
-const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 const PERMISSION_PRESETS = {
   full_access: {
@@ -266,7 +266,7 @@ export default function EmployeeManagementPage() {
   const fetchSchool = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API}/api/schools/${schoolId}`, {
+      const response = await axios.get(`${API}/schools/${schoolId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSchool(response.data);
@@ -284,7 +284,7 @@ export default function EmployeeManagementPage() {
       if (filterHasLogin) params.append('has_login', filterHasLogin);
       if (searchTerm) params.append('search', searchTerm);
       
-      const response = await axios.get(`${API}/api/employees?${params}`, {
+      const response = await axios.get(`${API}/employees?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEmployees(response.data || []);
@@ -293,7 +293,7 @@ export default function EmployeeManagementPage() {
       // Fallback to staff API
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${API}/api/staff?school_id=${schoolId}`, {
+        const response = await axios.get(`${API}/staff?school_id=${schoolId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setEmployees(response.data || []);
@@ -308,7 +308,7 @@ export default function EmployeeManagementPage() {
   const fetchDesignations = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API}/api/employees/designations/list`, {
+      const response = await axios.get(`${API}/employees/designations/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDesignations(response.data || []);
@@ -349,7 +349,7 @@ export default function EmployeeManagementPage() {
         reader.onload = async (e) => {
           try {
             const base64Data = e.target.result;
-            const res = await axios.post(`${API}/api/staff/${employeeId}/update-photo`, 
+            const res = await axios.post(`${API}/staff/${employeeId}/update-photo`, 
               { photo_data: base64Data },
               { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -375,7 +375,7 @@ export default function EmployeeManagementPage() {
       fd.append('school_id', schoolId);
       
       try {
-        const res = await axios.post(`${API}/api/upload/photo`, fd, {
+        const res = await axios.post(`${API}/upload/photo`, fd, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
         });
         const photoUrl = res.data?.url || res.data?.photo_url;
@@ -535,12 +535,12 @@ export default function EmployeeManagementPage() {
       };
       
       if (editingEmployee) {
-        await axios.put(`${API}/api/employees/${editingEmployee.id}`, payload, {
+        await axios.put(`${API}/employees/${editingEmployee.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Employee updated!');
       } else {
-        await axios.post(`${API}/api/employees`, payload, {
+        await axios.post(`${API}/employees`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Employee added!');
@@ -559,7 +559,7 @@ export default function EmployeeManagementPage() {
   const toggleLogin = async (employee, enable) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/api/employees/${employee.id}/toggle-login`, 
+      await axios.post(`${API}/employees/${employee.id}/toggle-login`, 
         { enable, password: employee.mobile },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -580,7 +580,7 @@ export default function EmployeeManagementPage() {
     setDeleting(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API}/api/users/${deleteEmployee.id}`, {
+      await axios.delete(`${API}/users/${deleteEmployee.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Employee data permanently deleted');
@@ -609,7 +609,7 @@ export default function EmployeeManagementPage() {
     setResettingPassword(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API}/api/employees/${resetPasswordEmployee.employee_id || resetPasswordEmployee.id}/reset-password`, 
+      await axios.put(`${API}/employees/${resetPasswordEmployee.employee_id || resetPasswordEmployee.id}/reset-password`, 
         { new_password: newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -721,11 +721,11 @@ export default function EmployeeManagementPage() {
   const saveQuickPermissions = async (empId, permissions) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API}/api/staff/${empId}/module-permissions`, 
+      await axios.put(`${API}/staff/${empId}/module-permissions`, 
         { module_permissions: permissions },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      await axios.put(`${API}/api/employees/${empId}/permissions`, 
+      await axios.put(`${API}/employees/${empId}/permissions`, 
         permissions,
         { headers: { Authorization: `Bearer ${token}` } }
       ).catch(() => {});

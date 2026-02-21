@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 // Icon map for modules
 const MODULE_ICONS = {
@@ -87,7 +87,7 @@ export default function ModuleManagementPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API}/api/settings/module-visibility`, {
+      const res = await fetch(`${API}/settings/module-visibility`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -122,7 +122,7 @@ export default function ModuleManagementPage() {
     try {
       setSaving(true);
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API}/api/settings/module-visibility`, {
+      const res = await fetch(`${API}/settings/module-visibility`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ modules: localEnabled }),

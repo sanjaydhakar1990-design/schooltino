@@ -12,7 +12,7 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 export default function LoginCredentialsPage() {
   const { t, i18n } = useTranslation();
@@ -37,7 +37,7 @@ export default function LoginCredentialsPage() {
     setLoading(true);
     try {
       const params = { type: 'all' };
-      const res = await axios.get(`${API}/api/admin/credentials`, {
+      const res = await axios.get(`${API}/admin/credentials`, {
         headers: { Authorization: `Bearer ${token}` },
         params
       });
@@ -151,8 +151,8 @@ export default function LoginCredentialsPage() {
     setResetting(true);
     try {
       const endpoint = resetDialog.type === 'staff'
-        ? `${API}/api/employees/${resetDialog.employee_id}/reset-password`
-        : `${API}/api/students/${resetDialog.id}/reset-password`;
+        ? `${API}/employees/${resetDialog.employee_id}/reset-password`
+        : `${API}/students/${resetDialog.id}/reset-password`;
 
       await axios.put(endpoint, { new_password: newPassword }, {
         headers: { Authorization: `Bearer ${token}` }

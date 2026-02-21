@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, Loader2, Crown, GraduationCap, Users, Wallet, Shield, Brain, MessageSquare, Smartphone, BarChart3, BookOpen, Fingerprint, CheckCircle2, ArrowRight, Globe, Layers, Lock, Zap, Cloud, Cpu, School, Apple, UserCircle } from 'lucide-react';
 import axios from 'axios';
 
-const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 const k12Tabs = [
   { id: 'enrollment', label: 'Enrollment Conversion', icon: Users },
@@ -184,7 +184,7 @@ export default function LoginPage() {
     setSuperAdminLoading(true);
     setError('');
     try {
-      const res = await axios.post(`${API}/api/owner-console-x7k9m2/login`, superAdminForm);
+      const res = await axios.post(`${API}/owner-console-x7k9m2/login`, superAdminForm);
       localStorage.setItem('ownerToken', res.data.access_token);
       navigate('/owner-x7k9m2');
     } catch (err) {
@@ -198,7 +198,7 @@ export default function LoginPage() {
 
   const checkSetup = async () => {
     try {
-      const res = await axios.get(`${API}/api/auth/check-setup`);
+      const res = await axios.get(`${API}/auth/check-setup`);
       setSetupRequired(res.data.setup_required);
     } catch (err) {
       console.error('Setup check failed');
@@ -237,7 +237,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/api/auth/setup-director`, {
+      const res = await axios.post(`${API}/auth/setup-director`, {
         email: formData.email, password: formData.password, name: formData.name, role: 'director'
       });
       localStorage.setItem('token', res.data.access_token);
@@ -261,7 +261,7 @@ export default function LoginPage() {
       let payload = studentLoginMethod === 'id'
         ? { student_id: studentForm.student_id, password: studentForm.password }
         : { mobile: studentForm.mobile, dob: studentForm.dob };
-      const res = await axios.post(`${API}/api/students/login`, payload);
+      const res = await axios.post(`${API}/students/login`, payload);
       const { access_token, student } = res.data;
       localStorage.setItem('token', access_token);
       const userData = { ...student, role: 'student' };

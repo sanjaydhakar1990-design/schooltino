@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import MultiFaceEnrollment from '../components/MultiFaceEnrollment';
 import IDCardViewer from '../components/IDCardViewer';
 
-const API = (process.env.REACT_APP_BACKEND_URL || '') || '';
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -107,7 +107,7 @@ export default function ProfilePage() {
       formData.append('old_password', passwordForm.oldPassword);
       formData.append('new_password', passwordForm.newPassword);
 
-      const response = await fetch(`${API}/api/auth/change-password`, {
+      const response = await fetch(`${API}/auth/change-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -196,11 +196,11 @@ export default function ProfilePage() {
     try {
       let endpoint;
       if (user?.role === 'student') {
-        endpoint = `${API}/api/students/${user.id}/update-photo`;
+        endpoint = `${API}/students/${user.id}/update-photo`;
       } else if (user?.role === 'director' || user?.role === 'principal' || user?.role === 'admin') {
-        endpoint = `${API}/api/users/${user.id}/update-photo`;
+        endpoint = `${API}/users/${user.id}/update-photo`;
       } else {
-        endpoint = `${API}/api/staff/${user.id}/update-photo`;
+        endpoint = `${API}/staff/${user.id}/update-photo`;
       }
       
       await axios.post(endpoint, {
@@ -211,7 +211,7 @@ export default function ProfilePage() {
       toast.success('Profile photo updated!');
 
       try {
-        await axios.post(`${API}/api/ai-greeting/parent-photo/upload`, {
+        await axios.post(`${API}/ai-greeting/parent-photo/upload`, {
           student_id: user?.id || 'staff',
           school_id: schoolId || 'default',
           photo_type: user?.role === 'student' ? 'student' : 'staff',

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = `${process.env.REACT_APP_BACKEND_URL || ''}/api`;
 
 export default function StaffDirectory() {
   const { user, token, schoolId } = useAuth();
@@ -36,7 +36,7 @@ export default function StaffDirectory() {
 
       // Fetch school details
       try {
-        const schoolRes = await fetch(`${API}/api/schools/${schoolId}`, {
+        const schoolRes = await fetch(`${API}/schools/${schoolId}`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (schoolRes.ok) {
@@ -50,7 +50,7 @@ export default function StaffDirectory() {
       // Fetch staff (only if not student)
       if (!isStudent) {
         try {
-          const staffRes = await fetch(`${API}/api/staff?school_id=${schoolId}`, {
+          const staffRes = await fetch(`${API}/staff?school_id=${schoolId}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
           if (staffRes.ok) {
@@ -59,7 +59,7 @@ export default function StaffDirectory() {
           }
         } catch (e) {
           // Try users endpoint
-          const usersRes = await fetch(`${API}/api/users/school/${schoolId}`, {
+          const usersRes = await fetch(`${API}/users/school/${schoolId}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
           if (usersRes.ok) {
