@@ -1,35 +1,98 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../context/ThemeContext';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  LayoutDashboard, Users, GraduationCap, CalendarCheck,
+  LayoutDashboard, Users, UserCog, GraduationCap, CalendarCheck,
   Wallet, Settings, LogOut, X, Bus,
   Clock, Brain, ChevronLeft, ChevronRight,
   BookOpen, Video, MessageSquare, Calendar,
-  Shield, FileText, Building, Search, Package,
+  Shield, FileText, Building, Package,
   Tv, Target, BarChart3
 } from 'lucide-react';
 
 const API = (process.env.REACT_APP_BACKEND_URL || '');
 
+/* ============================================================
+   NAV GROUPS - Clean, Systematic Grouping
+   ============================================================ */
+const NAV_GROUPS = [
+  {
+    label: 'Overview',
+    items: [
+      { path: '/app/dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
+    ]
+  },
+  {
+    label: 'Academic',
+    items: [
+      { path: '/app/students',   icon: Users,         labelKey: 'students',       moduleKey: 'students' },
+      { path: '/app/classes',    icon: GraduationCap, labelKey: 'classes',        moduleKey: 'classes' },
+      { path: '/app/timetable',  icon: Clock,         labelKey: 'timetable',      moduleKey: 'timetable' },
+      { path: '/app/attendance', icon: CalendarCheck, labelKey: 'attendance',     moduleKey: 'attendance' },
+      { path: '/app/exams',      icon: FileText,      labelKey: 'exams_reports',  moduleKey: 'exams_reports' },
+      { path: '/app/library',    icon: BookOpen,      labelKey: 'digital_library',moduleKey: 'digital_library' },
+    ]
+  },
+  {
+    label: 'Finance',
+    items: [
+      { path: '/app/fees', icon: Wallet, labelKey: 'fee_management', moduleKey: 'fee_management' },
+    ]
+  },
+  {
+    label: 'Communication',
+    items: [
+      { path: '/app/communication', icon: MessageSquare, labelKey: 'communication_hub', moduleKey: 'communication_hub' },
+      { path: '/app/calendar',      icon: Calendar,      labelKey: 'calendar',          moduleKey: 'calendar' },
+    ]
+  },
+  {
+    label: 'Management',
+    items: [
+      { path: '/app/staff',        icon: UserCog,  labelKey: 'staff_management', moduleKey: 'staff' },
+      { path: '/app/admissions',   icon: Target,   labelKey: 'admissions',       moduleKey: 'admissions' },
+      { path: '/app/transport',    icon: Bus,      labelKey: 'transport',        moduleKey: 'transport' },
+      { path: '/app/front-office', icon: Shield,   labelKey: 'front_office',     moduleKey: 'front_office' },
+      { path: '/app/inventory',    icon: Package,  labelKey: 'inventory',        moduleKey: 'inventory' },
+      { path: '/app/multi-branch', icon: Building, labelKey: 'multi_branch',     moduleKey: 'multi_branch', directorOnly: true },
+    ]
+  },
+  {
+    label: 'Tools',
+    items: [
+      { path: '/app/ai-tools',   icon: Brain,    labelKey: 'ai_tools',          moduleKey: 'ai_tools' },
+      { path: '/app/analytics',  icon: BarChart3, labelKey: 'analytics',        moduleKey: 'analytics' },
+      { path: '/app/live-classes',icon: Tv,       labelKey: 'live_classes',     moduleKey: 'live_classes' },
+      { path: '/app/cctv',       icon: Video,    labelKey: 'cctv_integration',  moduleKey: 'cctv' },
+      { path: '/app/settings',   icon: Settings, labelKey: 'settings',          directorOnly: true },
+    ]
+  },
+];
+
+/* Portal switcher links */
+const PORTALS = [
+  { label: 'SchoolTino', short: 'ST', href: '#',                  active: true,  bg: 'bg-indigo-600' },
+  { label: 'TeachTino',  short: 'TT', href: '/teach',             active: false, bg: 'bg-emerald-500' },
+  { label: 'StudyTino',  short: 'St', href: '/study',             active: false, bg: 'bg-orange-500' },
+  { label: 'ParentTino', short: 'PT', href: '/parent',            active: false, bg: 'bg-purple-500' },
+];
+
+/* ============================================================
+   SIDEBAR COMPONENT
+   ============================================================ */
 export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
-  const { isDarkMode, getSidebarStyle, getSidebarActiveColor } = useTheme();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const [moduleVisibility, setModuleVisibility] = useState({});
   const apiFetched = useRef(false);
 
+  /* Load module visibility */
   const loadModuleVisibility = useCallback(async () => {
     try {
       const saved = localStorage.getItem('module_visibility_settings');
-      if (saved) {
-        setModuleVisibility(JSON.parse(saved));
-        return;
-      }
+      if (saved) { setModuleVisibility(JSON.parse(saved)); return; }
     } catch (e) {}
     if (!apiFetched.current) {
       apiFetched.current = true;
@@ -53,164 +116,229 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 
   useEffect(() => {
     loadModuleVisibility();
-    const handleStorage = (e) => {
+    const onStorage = (e) => {
       if (e.key === 'module_visibility_settings') {
-        try {
-          const saved = localStorage.getItem('module_visibility_settings');
-          if (saved) setModuleVisibility(JSON.parse(saved));
-        } catch (e) {}
+        try { const s = localStorage.getItem('module_visibility_settings'); if (s) setModuleVisibility(JSON.parse(s)); } catch (e) {}
       }
     };
-    const handleCustomEvent = () => {
-      try {
-        const saved = localStorage.getItem('module_visibility_settings');
-        if (saved) setModuleVisibility(JSON.parse(saved));
-      } catch (e) {}
+    const onCustom = () => {
+      try { const s = localStorage.getItem('module_visibility_settings'); if (s) setModuleVisibility(JSON.parse(s)); } catch (e) {}
     };
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('module_visibility_changed', handleCustomEvent);
-    return () => { window.removeEventListener('storage', handleStorage); window.removeEventListener('module_visibility_changed', handleCustomEvent); };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('module_visibility_changed', onCustom);
+    return () => { window.removeEventListener('storage', onStorage); window.removeEventListener('module_visibility_changed', onCustom); };
   }, [loadModuleVisibility]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
-  const isDirector = user?.role === 'director';
-  const modulePermissions = user?.module_permissions || user?.permissions || {};
-  const hasModulePermission = (moduleKey) => {
-    if (isDirector) return true;
-    if (!moduleKey) return true;
-    if (Object.keys(modulePermissions).length > 0) {
-      return modulePermissions[moduleKey] !== false;
+  const handleNavClick = () => { if (window.innerWidth < 1024 && onClose) onClose(); };
+
+  const isDirector = user?.role === 'director' || user?.role === 'co_director';
+  const modulePerms = user?.module_permissions || user?.permissions || {};
+
+  const isItemVisible = (item) => {
+    if (item.directorOnly && !isDirector) return false;
+    if (item.moduleKey) {
+      const vis = moduleVisibility[item.moduleKey];
+      if (vis && vis.schooltino === false) return false;
+      if (Object.keys(modulePerms).length > 0 && modulePerms[item.moduleKey] === false) return false;
     }
     return true;
   };
 
-  const handleNavClick = () => {
-    if (window.innerWidth < 1024 && onClose) onClose();
-  };
-
-  const isModuleEnabled = (moduleKey) => {
-    if (!moduleKey) return true;
-    const vis = moduleVisibility[moduleKey];
-    if (!vis) return true;
-    return vis.schooltino !== false;
-  };
-
-  const navItems = [
-    { path: '/app/dashboard', icon: LayoutDashboard, labelKey: 'dashboard', moduleKey: 'dashboard' },
-    { path: '/app/students', icon: Users, labelKey: 'students', moduleKey: 'students' },
-    { path: '/app/staff', icon: Users, labelKey: 'staff_management', moduleKey: 'staff' },
-    { path: '/app/classes', icon: GraduationCap, labelKey: 'classes', moduleKey: 'classes' },
-    { path: '/app/attendance', icon: CalendarCheck, labelKey: 'attendance', moduleKey: 'attendance' },
-    { path: '/app/fees', icon: Wallet, labelKey: 'fee_management', moduleKey: 'fee_management' },
-    { path: '/app/admissions', icon: Target, labelKey: 'admissions', moduleKey: 'admissions' },
-    { path: '/app/exams', icon: FileText, labelKey: 'exams_reports', moduleKey: 'exams_reports' },
-    { path: '/app/timetable', icon: Clock, labelKey: 'timetable', moduleKey: 'timetable' },
-    { path: '/app/library', icon: BookOpen, labelKey: 'digital_library', moduleKey: 'digital_library' },
-    { path: '/app/live-classes', icon: Tv, labelKey: 'live_classes', moduleKey: 'live_classes' },
-    { path: '/app/communication', icon: MessageSquare, labelKey: 'communication_hub', moduleKey: 'communication_hub' },
-    { path: '/app/front-office', icon: Shield, labelKey: 'front_office', moduleKey: 'front_office' },
-    { path: '/app/transport', icon: Bus, labelKey: 'transport', moduleKey: 'transport' },
-    { path: '/app/calendar', icon: Calendar, labelKey: 'calendar', moduleKey: 'calendar' },
-    { path: '/app/analytics', icon: BarChart3, labelKey: 'analytics', moduleKey: 'analytics' },
-    { path: '/app/ai-tools', icon: Brain, labelKey: 'ai_tools', moduleKey: 'ai_tools' },
-    { path: '/app/cctv', icon: Video, labelKey: 'cctv_integration', moduleKey: 'cctv' },
-    { path: '/app/inventory', icon: Package, labelKey: 'inventory', moduleKey: 'inventory' },
-    { path: '/app/multi-branch', icon: Building, labelKey: 'multi_branch', directorOnly: true, moduleKey: 'multi_branch' },
-    { path: '/app/settings', icon: Settings, labelKey: 'settings', directorOnly: true },
-  ];
-
-  const filteredItems = navItems.filter(item => {
-    if (item.directorOnly && !isDirector) return false;
-    if (!isModuleEnabled(item.moduleKey)) return false;
-    if (!hasModulePermission(item.moduleKey)) return false;
-    if (searchQuery) return t(item.labelKey).toLowerCase().includes(searchQuery.toLowerCase());
-    return true;
-  });
-
   return (
-    <aside className={`fixed lg:relative top-0 left-0 h-full ${isCollapsed ? 'w-[60px]' : 'w-[260px]'} z-50 lg:z-auto transform transition-all duration-200 shrink-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col border-r ${isDarkMode ? 'border-slate-700' : 'border-blue-100'}`} style={{height: '100dvh', ...getSidebarStyle()}}>
-      <button
-        onClick={onToggleCollapse}
-        className="hidden lg:flex absolute -right-3 top-16 w-6 h-6 rounded-full items-center justify-center text-white shadow-md z-10 border-2 border-white"
-        style={{ backgroundColor: getSidebarActiveColor() }}
-        title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <aside
+        className={`
+          fixed lg:relative top-0 left-0 h-full z-50 lg:z-auto
+          flex flex-col
+          bg-white border-r border-gray-100
+          transition-all duration-200 ease-in-out
+          ${isCollapsed ? 'w-[64px]' : 'w-[240px]'}
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+        style={{ height: '100dvh' }}
       >
-        {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
-      </button>
-      <button onClick={onClose} className={`absolute top-4 right-3 p-1.5 rounded-lg lg:hidden ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-blue-100'}`}>
-        <X className={`w-4 h-4 ${isDarkMode ? 'text-slate-400' : 'text-blue-400'}`} />
-      </button>
+        {/* ---- TOGGLE BUTTON (desktop) ---- */}
+        <button
+          onClick={onToggleCollapse}
+          className="hidden lg:flex absolute -right-3 top-[68px] w-6 h-6 rounded-full items-center justify-center bg-indigo-600 text-white shadow-md border-2 border-white z-10"
+          title={isCollapsed ? 'Expand' : 'Collapse'}
+        >
+          {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+        </button>
 
+        {/* ---- CLOSE (mobile) ---- */}
+        <button onClick={onClose} className="absolute top-4 right-3 p-1.5 rounded-lg hover:bg-gray-100 lg:hidden">
+          <X className="w-4 h-4 text-gray-400" />
+        </button>
 
-      <NavLink to="/app/profile" onClick={handleNavClick} className={`block px-4 py-3 mt-2 border-b transition-colors ${isDarkMode ? 'border-slate-700 hover:bg-slate-800' : 'border-blue-100 hover:bg-blue-50'}`} style={{paddingTop: 'max(0.75rem, env(safe-area-inset-top))'}}>
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 ${isDarkMode ? 'border-slate-600' : 'border-blue-200'}`}>
+        {/* ---- BRAND HEADER ---- */}
+        <div
+          className={`flex items-center gap-3 px-4 border-b border-gray-100 flex-shrink-0 ${isCollapsed ? 'justify-center py-4' : 'py-3.5'}`}
+          style={{ paddingTop: 'max(0.875rem, env(safe-area-inset-top))' }}
+        >
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
+            <GraduationCap className="w-4 h-4 text-white" />
+          </div>
+          {!isCollapsed && (
+            <div className="min-w-0">
+              <p className="font-bold text-sm text-gray-900 leading-tight">SchoolTino</p>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Admin Portal</p>
+            </div>
+          )}
+        </div>
+
+        {/* ---- USER PROFILE ---- */}
+        <NavLink
+          to="/app/profile"
+          onClick={handleNavClick}
+          className={`flex items-center gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors flex-shrink-0 ${isCollapsed ? 'justify-center' : ''}`}
+        >
+          <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-indigo-100">
             {user?.photo_url ? (
-              <img src={user.photo_url.startsWith('http') ? user.photo_url : `${(process.env.REACT_APP_BACKEND_URL || '')}${user.photo_url}`} alt="" className="w-full h-full object-cover" />
+              <img
+                src={user.photo_url.startsWith('http') ? user.photo_url : `${API}${user.photo_url}`}
+                alt=""
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${getSidebarActiveColor()}, ${getSidebarActiveColor()}dd)` }}>
-                <span className="text-white font-bold text-xs">{user?.name?.charAt(0) || 'U'}</span>
+              <div className="w-full h-full flex items-center justify-center bg-indigo-600">
+                <span className="text-white font-bold text-xs">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
               </div>
             )}
           </div>
           {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className={`font-semibold text-sm truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>{user?.name || 'User'}</p>
-              <p className={`text-[10px] capitalize ${isDarkMode ? 'text-slate-400' : 'text-blue-400'}`}>{user?.role?.replace('_', ' ') || 'Admin'}</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-xs text-gray-800 truncate">{user?.name || 'User'}</p>
+              <p className="text-[10px] text-indigo-500 capitalize font-medium">{user?.role?.replace(/_/g, ' ') || 'Admin'}</p>
             </div>
           )}
-        </div>
-      </NavLink>
+        </NavLink>
 
-      {!isCollapsed && (
-        <div className="px-4 pt-3 pb-2">
-          <div className="relative">
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDarkMode ? 'text-slate-500' : 'text-blue-300'}`} />
-            <input
-              type="text"
-              placeholder={t('search_modules')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-9 pr-3 py-2 text-xs rounded-lg focus:outline-none shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-600 text-slate-200 placeholder-slate-500 focus:border-slate-500' : 'bg-white border border-blue-200 text-slate-700 placeholder-blue-300 focus:border-blue-400 focus:ring-1 focus:ring-blue-200'}`}
-            />
-          </div>
-        </div>
-      )}
-
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5 overscroll-contain" style={{WebkitOverflowScrolling: 'touch'}}>
-        {filteredItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={handleNavClick}
-            className={({ isActive }) =>
-              `flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg text-[13px] transition-all duration-150 ${
-                isActive
-                  ? 'text-white font-medium shadow-md'
-                  : isDarkMode
-                    ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                    : 'text-slate-600 hover:bg-blue-100/60 hover:text-blue-700'
-              }`
-            }
-            style={({ isActive }) => isActive ? { backgroundColor: getSidebarActiveColor() } : {}}
-            title={isCollapsed ? t(item.labelKey) : undefined}
-          >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
-            {!isCollapsed && <span className="truncate">{t(item.labelKey)}</span>}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className={`p-3 border-t ${isDarkMode ? 'border-slate-700' : 'border-blue-100'}`} style={{paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))'}}>
-        <button
-          onClick={handleLogout}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors`}
+        {/* ---- NAVIGATION ---- */}
+        <nav
+          className="flex-1 overflow-y-auto py-2 overscroll-contain"
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <LogOut className="w-3.5 h-3.5" />
-          {!isCollapsed && <span>{t('sign_out')}</span>}
-        </button>
-      </div>
-    </aside>
+          {NAV_GROUPS.map((group) => {
+            const visibleItems = group.items.filter(isItemVisible);
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={group.label} className="mb-1">
+                {/* Group Label */}
+                {!isCollapsed && (
+                  <div className="px-4 pt-3 pb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                      {group.label}
+                    </span>
+                  </div>
+                )}
+                {isCollapsed && (
+                  <div className="mx-3 my-1 border-t border-gray-100" />
+                )}
+
+                {/* Items */}
+                <div className="px-2 space-y-0.5">
+                  {visibleItems.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      onClick={handleNavClick}
+                      title={isCollapsed ? t(item.labelKey) : undefined}
+                      className={({ isActive }) =>
+                        `flex items-center ${isCollapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 px-3'} py-2 rounded-lg text-[13px] font-medium transition-all duration-150 group relative ${
+                          isActive
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          {/* Active left bar */}
+                          {isActive && !isCollapsed && (
+                            <span className="absolute left-0 top-1 bottom-1 w-0.5 bg-indigo-600 rounded-full" />
+                          )}
+                          <item.icon className={`w-[17px] h-[17px] flex-shrink-0 transition-colors ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                          {!isCollapsed && <span className="truncate">{t(item.labelKey)}</span>}
+                        </>
+                      )}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* ---- PORTAL SWITCHER ---- */}
+        {!isCollapsed && (
+          <div className="px-3 py-2 border-t border-gray-100 flex-shrink-0">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">Switch Portal</p>
+            <div className="grid grid-cols-4 gap-1">
+              {PORTALS.map((p) => (
+                <a
+                  key={p.label}
+                  href={p.href}
+                  className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg transition-all ${
+                    p.active
+                      ? 'bg-indigo-50 border border-indigo-200'
+                      : 'hover:bg-gray-50 border border-transparent'
+                  }`}
+                  title={p.label}
+                >
+                  <div className={`w-5 h-5 ${p.bg} rounded flex items-center justify-center`}>
+                    <span className="text-white text-[8px] font-bold">{p.short}</span>
+                  </div>
+                  <span className={`text-[8px] font-medium leading-tight text-center ${p.active ? 'text-indigo-600' : 'text-gray-400'}`}>
+                    {p.label.replace('Tino', '')}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+        {isCollapsed && (
+          <div className="px-2 py-2 border-t border-gray-100 flex-shrink-0 space-y-1">
+            {PORTALS.filter(p => !p.active).map((p) => (
+              <a
+                key={p.label}
+                href={p.href}
+                title={p.label}
+                className="flex justify-center py-1"
+              >
+                <div className={`w-7 h-7 ${p.bg} rounded-lg flex items-center justify-center`}>
+                  <span className="text-white text-[9px] font-bold">{p.short}</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* ---- LOGOUT ---- */}
+        <div
+          className="px-2 py-2 border-t border-gray-100 flex-shrink-0"
+          style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+        >
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center w-10 h-9 mx-auto' : 'gap-3 px-3'} py-2 text-xs text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors`}
+          >
+            <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
+            {!isCollapsed && <span>{t('sign_out')}</span>}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
