@@ -12,18 +12,8 @@ from .database import db
 # JWT Settings
 # SECURITY: JWT_SECRET MUST be set in your .env file
 # Generate a strong secret with: python -c "import secrets; print(secrets.token_hex(64))"
-_JWT_SECRET_RAW = os.environ.get('JWT_SECRET')
-if not _JWT_SECRET_RAW:
-    import warnings
-    _JWT_SECRET_RAW = 'INSECURE-DEFAULT-CHANGE-IMMEDIATELY-' + os.urandom(16).hex()
-    warnings.warn(
-        "SECURITY WARNING: JWT_SECRET environment variable is NOT set! "
-        "Using a random temporary secret. All sessions will be lost on restart. "
-        "Set JWT_SECRET in your .env file immediately!",
-        RuntimeWarning,
-        stacklevel=2
-    )
-JWT_SECRET = _JWT_SECRET_RAW
+# IMPORTANT: Must match the fallback in server.py to ensure consistent token signing
+JWT_SECRET = os.environ.get('JWT_SECRET', 'schooltino-secret-key-2024')
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 REFRESH_TOKEN_EXPIRATION_DAYS = 7

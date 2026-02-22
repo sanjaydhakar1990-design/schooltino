@@ -13819,12 +13819,14 @@ async def readiness_check():
 app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 app.mount("/api/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="static")
 
+_default_cors = 'http://localhost:3000,http://localhost:5000'
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     # PRODUCTION: set CORS_ORIGINS env var to your frontend domain(s), comma-separated
     # e.g. CORS_ORIGINS=https://app.schooltino.com,https://schooltino.com
-    allow_origins=os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(','),
+    # Default includes port 3000 and port 5000 (Replit dev server port)
+    allow_origins=os.environ.get('CORS_ORIGINS', _default_cors).split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
